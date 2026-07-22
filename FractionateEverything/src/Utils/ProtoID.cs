@@ -457,7 +457,6 @@ public static partial class Utils {
     internal const int IFE信息解析数据 = 8165;
     internal const int IFE引力解析数据 = 8166;
     internal const int IFE宇宙解析数据 = 8167;
-    internal const int IFE记忆源点 = 8168;
     internal const int ISM熔炉采矿机A型 = 9446;
     internal const int ISM熔炉采矿机B型 = 9447;
     internal const int ISM化工采矿机C型 = 9448;

@@ -8,7 +8,7 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Buildings.Migration;
 
 /// <summary>
-/// 将 FE 2.x 中仍有现役对应物的物品、建筑、模型、配方和科技 ID 幂等迁移到 3.x 区间。
+/// 迁移 FE 旧版本中仍有现役对应物的 ID，并清理没有新对应物的废弃物品。
 /// </summary>
 public static class LegacyProtoMigration {
     private static readonly Dictionary<int, int> ItemIds = new() {
@@ -21,6 +21,9 @@ public static class LegacyProtoMigration {
         [8028] = IFE行星内物流交互站,
         [8029] = IFE星际物流交互站,
     };
+
+    // 3.0 首版曾注册记忆源点；单一残片货币落地后直接丢弃，不折算为新资源。
+    private static readonly HashSet<int> DeprecatedItemIds = [8168];
 
     private static readonly Dictionary<int, int> ModelIds = new() {
         [601] = MFE交互塔,
@@ -51,7 +54,12 @@ public static class LegacyProtoMigration {
         [1286] = TFE阶段补给6,
     };
 
-    public static int MapItemId(int id) => ItemIds.TryGetValue(id, out int mapped) ? mapped : id;
+    public static int MapItemId(int id) {
+        if (DeprecatedItemIds.Contains(id)) {
+            return 0;
+        }
+        return ItemIds.TryGetValue(id, out int mapped) ? mapped : id;
+    }
 
     public static int MapModelId(int id) => ModelIds.TryGetValue(id, out int mapped) ? mapped : id;
 
@@ -60,9 +68,16 @@ public static class LegacyProtoMigration {
     public static int MapTechId(int id) => TechIds.TryGetValue(id, out int mapped) ? mapped : id;
 
     /// <summary>
-    /// 合并数据中心中旧 ID 槽位，并清空已迁移槽位以保证重复加载幂等。
+    /// 合并数据中心中有现役对应物的旧槽位，并清空已迁移或废弃槽位。
     /// </summary>
     public static void MigrateDataCenterInventory(long[] counts, long[] incs) {
+        foreach (int itemId in DeprecatedItemIds) {
+            if (itemId >= counts.Length) {
+                continue;
+            }
+            counts[itemId] = 0;
+            incs[itemId] = 0;
+        }
         foreach (KeyValuePair<int, int> pair in ItemIds) {
             if (pair.Key >= counts.Length || pair.Value >= counts.Length || pair.Key == pair.Value) {
                 continue;

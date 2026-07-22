@@ -47,29 +47,30 @@ Fractionate Everything has added brand new buildings which are very powerful in 
 
 万物分馏能力不再作为主脑科技树里的普通研究项。数据中心内的残缺文明 AI 只管理档案索引、权限和设施调度，不能读取协议正文或自行创造科技。玩家通过解析塔生产实体解析数据，再将数据上传到分馏数据中心，逐步生成越来越昂贵的检索机会。
 
-检索分为三种策略：广域检索只消耗机会；方向检索额外消耗残片，将候选限制到一种配方方向；锚定检索额外消耗记忆源点，固定发现或推进选中的未完成协议。残片和记忆源点是普通检索货币；远古文明科技点是只用于科技树的永久资源，三者不能互换。失败检索会返还残片，连续失败和连续未发现都有保底；批量检索仍按相同单次顺序逐次结算。随机性只改变恢复顺序和速度，协议最终都能取得。完整度达到 100 后，对应配方才可运行；没有协议的阶段会直接进入深层解析。
+检索分为三种策略：广域检索只消耗机会；方向检索额外消耗 8 残片，将候选限制到一种配方方向；锚定检索额外消耗 32 残片，固定发现或推进选中的未完成协议。残片是唯一普通检索货币；远古文明科技点只用于科技树，两者不能互换，记忆源点不再作为 active 物品。首轮教学只要求广域检索；无效响应会提供残片，并在此后提示方向和锚定策略。连续失败和连续未发现都有保底；批量检索仍按相同单次顺序逐次结算。随机性只改变恢复顺序和速度，协议最终都能取得。完整度达到 100 后，对应配方才可运行；阶段主协议完成后，广域检索直接进入深层解析，未完成附属协议仍可用方向或锚定恢复并保证有效，不再产生失败残片。
 
 Fractionate Everything abilities are no longer ordinary core-game research. The damaged archive AI only manages indexes,
 permissions, and facility scheduling; it cannot read protocol contents or invent technology. Analysis Towers produce
 physical analysis data, and uploading it to the Data Center generates progressively more expensive retrieval opportunities.
 
-Broad retrieval spends only an opportunity. Directional retrieval also spends fragments to restrict the recipe family,
-while anchored retrieval spends a memory source point to target one unfinished protocol. Fragments and memory source
-points are ordinary retrieval currencies; ancient technology points are permanent and only purchase technology-tree
-nodes, with no exchange between them. Failed retrievals award fragments, pity rules prevent permanent stalls, and batch
-retrieval settles the same single-step rules in order. A
-managed recipe becomes usable at 100 completeness; stages with no protocols proceed directly to deep analysis.
+Broad retrieval spends only an opportunity. Directional retrieval spends 8 fragments to restrict the recipe family,
+while anchored retrieval spends 32 fragments to target one unfinished protocol. Fragments are the only ordinary retrieval
+currency; ancient technology points are permanent and only purchase technology-tree nodes, with no exchange between them.
+The first tutorial retrieval is broad. Invalid responses award fragments and then introduce directional and anchored
+strategies. Pity rules prevent permanent stalls, and batch retrieval settles the same single-step rules in order. A managed
+recipe becomes usable at 100 completeness. After a stage's required protocols are complete, broad retrieval enters deep
+analysis; unfinished auxiliary protocols remain available through guaranteed-effective directional or anchored retrieval.
 
 ### 远古科技树 Ancient Technology Tree
 
-阶段内协议全部完成后，后续检索转为深层解析，并稳定产出唯一一种远古文明科技点。科技树包含交互塔、资源塔、转化塔、解析塔四条并列纵向主干；每条主干按以下顺序推进：
+阶段内主协议全部完成后，后续广域检索转为深层解析，并稳定产出唯一一种远古文明科技点。科技树包含交互塔、资源塔、转化塔、解析塔四条并列纵向主干；每条主干按以下顺序推进：
 
 `流动输出堆叠 → 产物输出堆叠 → 分馏永动 → 主路锁定 → 副产物弃置`
 
 节点有真实前置关系和递增价格，同类所有实体塔共享解锁状态。五项能力均已接入运行逻辑。主路锁定和副产物弃置还要求当前配方累计成功次数达到校准门槛，并由单座塔保存目标或开关；这些实例状态随存档、复制粘贴、蓝图和联机同步。主路锁定只选择主产物，副产物弃置只销毁副产物且不提供补偿。
 
-After all required protocols in a stage are complete, later retrievals become deep analysis and award the single ancient
-technology point type. The tree has four parallel vertical paths for Interaction, Analysis, Resource, and Conversion
+After all required protocols in a stage are complete, later broad retrievals become deep analysis and award the single
+ancient technology point type. The tree has four parallel vertical paths for Interaction, Analysis, Resource, and Conversion
 Towers. All five shared abilities are active. Main-output locking and byproduct discard additionally require recipe
 calibration through actual successful production and per-building settings. Those settings persist through saves,
 copy/paste, blueprints, and multiplayer sync. Locking only selects main outputs; discard destroys side outputs without

@@ -51,7 +51,7 @@ public static partial class TutorialManager {
              1. Build the production line for a Matrix stage.
              2. Feed matrices into the Analysis Tower. It outputs physical analysis data for that stage.
              3. Upload the analysis data through an Interaction Tower or another data-centre upload path. Data is converted into progressively more expensive retrieval opportunities.
-             4. Spend an opportunity on Protocol Recovery. Broad retrieval uses only the opportunity; directional retrieval also spends fragments to restrict the recipe family; anchored retrieval spends a memory source point to target one unfinished protocol. Failed retrievals award fragments.
+             4. Start Protocol Recovery with broad retrieval, which spends only the opportunity. An invalid response awards fragments; after that, use fragments for directional retrieval or save more fragments for the costlier anchored retrieval.
              5. A recipe becomes usable at 100% completeness. You may prioritise one discovered protocol, and batch retrieval follows the same single-step rules in order.
 
              {"[Ancient Technology]".WithColor(Blue)}
@@ -90,7 +90,7 @@ public static partial class TutorialManager {
              1.搭建某个矩阵阶段的生产线。
              2.将矩阵输入解析塔，得到该阶段的实体解析数据。
              3.通过交互塔或其他数据中心上传入口上传解析数据。数据会转化为检索机会，且后续机会所需数据越来越多。
-             4.在“文明协议恢复”页面消耗机会。广域检索只消耗机会；方向检索额外消耗残片并限制配方方向；锚定检索消耗记忆源点并固定一个未完成协议。失败检索会获得残片。
+             4.第一次进入“文明协议恢复”页面时先使用广域检索，它只消耗机会。无效响应会提供残片；此后可以消耗残片选择方向检索，或积累更多残片使用成本更高的锚定检索。
              5.协议完整度达到 100% 后，对应配方才可运行。已发现协议可以设为优先目标；批量检索仍按同一单次规则逐次结算。
 
              {"【远古科技】".WithColor(Blue)}

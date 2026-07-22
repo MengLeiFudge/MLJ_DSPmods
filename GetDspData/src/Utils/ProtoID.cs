@@ -454,7 +454,6 @@ public static partial class Utils {
     internal const int IFE信息解析数据 = 8165;
     internal const int IFE引力解析数据 = 8166;
     internal const int IFE宇宙解析数据 = 8167;
-    internal const int IFE记忆源点 = 8168;
     internal const int IBC插件效果分享塔 = 8051;
     internal const int IBC插件效果分享站 = 8052;
     internal const int IBC速度插件MK1 = 8061;

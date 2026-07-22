@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using FE.Compatibility.Nebula;
 using FE.Logic.Civilization.Analysis;
-using FE.Logic.DataCenter;
 using FE.Logic.Fractionation.FracRecipes;
 using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
@@ -27,7 +26,6 @@ public enum ProtocolRetrievalStopReason {
     NoOpportunity,
     NoCandidate,
     InsufficientFragments,
-    InsufficientMemorySourcePoints,
     AwaitingHost,
 }
 
@@ -77,7 +75,6 @@ public readonly struct ProtocolRetrievalResult(
     int currentCompleteness,
     bool awardedTechPoint,
     int spentFragments,
-    int spentMemorySourcePoints,
     int awardedFragments,
     ProtocolRetrievalStopReason stopReason = ProtocolRetrievalStopReason.None) {
     public ProtocolRetrievalOutcome Outcome { get; } = outcome;
@@ -86,7 +83,6 @@ public readonly struct ProtocolRetrievalResult(
     public int CurrentCompleteness { get; } = currentCompleteness;
     public bool AwardedTechPoint { get; } = awardedTechPoint;
     public int SpentFragments { get; } = spentFragments;
-    public int SpentMemorySourcePoints { get; } = spentMemorySourcePoints;
     public int AwardedFragments { get; } = awardedFragments;
     public ProtocolRetrievalStopReason StopReason { get; } = stopReason;
 }
@@ -103,7 +99,6 @@ public readonly struct ProtocolRetrievalBatchResult(
     int deepAnalysisCount,
     int awardedTechPoints,
     int spentFragments,
-    int spentMemorySourcePoints,
     int awardedFragments,
     ProtocolRetrievalStopReason stopReason) {
     public int ExecutedCount { get; } = executedCount;
@@ -114,7 +109,6 @@ public readonly struct ProtocolRetrievalBatchResult(
     public int DeepAnalysisCount { get; } = deepAnalysisCount;
     public int AwardedTechPoints { get; } = awardedTechPoints;
     public int SpentFragments { get; } = spentFragments;
-    public int SpentMemorySourcePoints { get; } = spentMemorySourcePoints;
     public int AwardedFragments { get; } = awardedFragments;
     public ProtocolRetrievalStopReason StopReason { get; } = stopReason;
 }
@@ -153,7 +147,6 @@ public readonly struct ProtocolRetrievalStageSnapshot(
     bool hasRequiredProtocols,
     bool hasPriorityCandidate,
     long fragments,
-    long memorySourcePoints,
     IReadOnlyList<ProtocolRetrievalProtocolSnapshot> protocols) {
     public int AvailableOpportunities { get; } = availableOpportunities;
     public long PendingData { get; } = pendingData;
@@ -164,7 +157,6 @@ public readonly struct ProtocolRetrievalStageSnapshot(
     public bool HasRequiredProtocols { get; } = hasRequiredProtocols;
     public bool HasPriorityCandidate { get; } = hasPriorityCandidate;
     public long Fragments { get; } = fragments;
-    public long MemorySourcePoints { get; } = memorySourcePoints;
     public IReadOnlyList<ProtocolRetrievalProtocolSnapshot> Protocols { get; } = protocols;
 }
 
@@ -173,7 +165,7 @@ public readonly struct ProtocolRetrievalStageSnapshot(
 /// </summary>
 public static class ProtocolRetrievalService {
     public const int DirectionalFragmentCost = 8;
-    public const int AnchoredMemorySourcePointCost = 1;
+    public const int AnchoredFragmentCost = 32;
     public const int FailedRetrievalFragmentReward = 2;
     public const int DefaultBatchCount = 10;
 
@@ -209,9 +201,8 @@ public static class ProtocolRetrievalService {
         }
 
         List<ProtocolDefinition> candidates = GetCandidates(request);
-        bool deepAnalysis = request.Mode == ProtocolRetrievalMode.Broad
-                            && candidates.Count == 0
-                            && ProtocolCatalog.IsStageComplete(request.StageKey);
+        bool stageComplete = ProtocolCatalog.IsStageComplete(request.StageKey);
+        bool deepAnalysis = request.Mode == ProtocolRetrievalMode.Broad && stageComplete;
         if (!deepAnalysis && candidates.Count == 0) {
             result = CannotExecute(ProtocolRetrievalStopReason.NoCandidate);
             return false;
@@ -222,14 +213,14 @@ public static class ProtocolRetrievalService {
             return false;
         }
 
-        if (!TrySpendStrategyCurrency(request.Mode, out int spentFragments, out int spentMemorySourcePoints,
+        if (!TrySpendStrategyCurrency(request.Mode, out int spentFragments,
                 out ProtocolRetrievalStopReason stopReason)) {
             result = CannotExecute(stopReason);
             return false;
         }
 
         if (!AnalysisService.TryConsumeOpportunity(request.StageKey)) {
-            RefundStrategyCurrency(spentFragments, spentMemorySourcePoints);
+            RefundStrategyCurrency(spentFragments);
             result = CannotExecute(ProtocolRetrievalStopReason.NoOpportunity);
             return false;
         }
@@ -237,24 +228,25 @@ public static class ProtocolRetrievalService {
         if (deepAnalysis) {
             DeepAnalysisService.SubmitOpportunity(out bool awardedPoint);
             result = new(ProtocolRetrievalOutcome.DeepAnalysis, default, 0, 0, awardedPoint,
-                spentFragments, spentMemorySourcePoints, 0);
+                spentFragments, 0);
             return true;
         }
 
         ProtocolProgressStore.StageRetrievalProgress stageProgress = ProtocolProgressStore.GetStageProgress(request.StageKey);
         bool guaranteedEffective = request.Mode == ProtocolRetrievalMode.Anchored
+                                   || stageComplete
                                    || stageProgress.FailureStreak >= 4;
         if (!guaranteedEffective && random.NextDouble() < 0.20d) {
             stageProgress.FailureStreak++;
             stageProgress.DiscoveryStreak++;
             AddItemToModData(IFE残片, FailedRetrievalFragmentReward);
             result = new(ProtocolRetrievalOutcome.Failed, default, 0, 0, false,
-                spentFragments, spentMemorySourcePoints, FailedRetrievalFragmentReward);
+                spentFragments, FailedRetrievalFragmentReward);
             return true;
         }
 
         stageProgress.FailureStreak = 0;
-        result = ResolveEffectiveRetrieval(candidates, stageProgress, spentFragments, spentMemorySourcePoints);
+        result = ResolveEffectiveRetrieval(candidates, stageProgress, spentFragments);
         CivilizationRuntimeSync.Refresh();
         return true;
     }
@@ -265,7 +257,7 @@ public static class ProtocolRetrievalService {
     public static ProtocolRetrievalBatchResult RetrieveBatch(ProtocolRetrievalRequest request, int requestedCount) {
         int limit = Math.Max(0, requestedCount);
         if (limit > 0 && NebulaMultiplayerModAPI.RequestProtocolRetrieval(request, limit)) {
-            return new(0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            return new(0, 0, 0, 0, 0, 0, 0, 0, 0,
                 ProtocolRetrievalStopReason.AwaitingHost);
         }
 
@@ -277,7 +269,6 @@ public static class ProtocolRetrievalService {
         int deepAnalysis = 0;
         int techPoints = 0;
         int spentFragments = 0;
-        int spentMemorySourcePoints = 0;
         int awardedFragments = 0;
         ProtocolRetrievalStopReason stopReason = ProtocolRetrievalStopReason.None;
 
@@ -289,7 +280,6 @@ public static class ProtocolRetrievalService {
 
             executed++;
             spentFragments += result.SpentFragments;
-            spentMemorySourcePoints += result.SpentMemorySourcePoints;
             awardedFragments += result.AwardedFragments;
             if (result.AwardedTechPoint) {
                 techPoints++;
@@ -317,11 +307,11 @@ public static class ProtocolRetrievalService {
             NebulaMultiplayerModAPI.BroadcastCivilizationState();
         }
         return new(executed, failed, discovered, progressed, completed, deepAnalysis, techPoints,
-            spentFragments, spentMemorySourcePoints, awardedFragments, stopReason);
+            spentFragments, awardedFragments, stopReason);
     }
 
     /// <summary>
-    /// 构建页面所需的阶段、协议和两种策略货币余额快照。
+    /// 构建页面所需的阶段、协议和残片余额快照。
     /// </summary>
     public static ProtocolRetrievalStageSnapshot GetStageSnapshot(string stageKey) {
         AnalysisProgressStore.StageProgress analysis = AnalysisService.GetProgress(stageKey);
@@ -342,8 +332,7 @@ public static class ProtocolRetrievalService {
 
         return new(analysis.AvailableOpportunities, analysis.PendingData, AnalysisService.GetNextOpportunityCost(stageKey),
             retrieval.FailureStreak, retrieval.DiscoveryStreak, ProtocolCatalog.IsStageComplete(stageKey),
-            ProtocolCatalog.HasRequiredProtocols(stageKey), hasPriorityCandidate, GetModDataItemCount(IFE残片),
-            GetModDataItemCount(IFE记忆源点), protocols);
+            ProtocolCatalog.HasRequiredProtocols(stageKey), hasPriorityCandidate, GetModDataItemCount(IFE残片), protocols);
     }
 
     /// <summary>
@@ -382,7 +371,6 @@ public static class ProtocolRetrievalService {
         }
         List<ProtocolDefinition> candidates = GetCandidates(request);
         bool deepAnalysis = request.Mode == ProtocolRetrievalMode.Broad
-                            && candidates.Count == 0
                             && ProtocolCatalog.IsStageComplete(request.StageKey);
         if (!deepAnalysis && candidates.Count == 0) {
             stopReason = ProtocolRetrievalStopReason.NoCandidate;
@@ -436,7 +424,7 @@ public static class ProtocolRetrievalService {
     }
 
     private static ProtocolRetrievalResult ResolveEffectiveRetrieval(List<ProtocolDefinition> candidates,
-        ProtocolProgressStore.StageRetrievalProgress stageProgress, int spentFragments, int spentMemorySourcePoints) {
+        ProtocolProgressStore.StageRetrievalProgress stageProgress, int spentFragments) {
         List<ProtocolDefinition> undiscovered = [];
         List<ProtocolDefinition> discoveredIncomplete = [];
         foreach (ProtocolDefinition candidate in candidates) {
@@ -460,7 +448,7 @@ public static class ProtocolRetrievalService {
             progress.Completeness = Math.Min(100, random.Next(20, 41));
             stageProgress.DiscoveryStreak = 0;
             return new(progress.Completeness >= 100 ? ProtocolRetrievalOutcome.Completed : ProtocolRetrievalOutcome.Discovered,
-                definition.RecipeKey, previous, progress.Completeness, false, spentFragments, spentMemorySourcePoints, 0);
+                definition.RecipeKey, previous, progress.Completeness, false, spentFragments, 0);
         }
 
         ProtocolDefinition target = SelectProgressTarget(discoveredIncomplete, stageProgress);
@@ -472,7 +460,7 @@ public static class ProtocolRetrievalService {
             ? ProtocolRetrievalOutcome.Completed
             : ProtocolRetrievalOutcome.Progressed;
         return new(outcome, target.RecipeKey, oldCompleteness, targetProgress.Completeness, false,
-            spentFragments, spentMemorySourcePoints, 0);
+            spentFragments, 0);
     }
 
     private static List<ProtocolDefinition> GetCandidates(ProtocolRetrievalRequest request) {
@@ -499,60 +487,49 @@ public static class ProtocolRetrievalService {
     }
 
     private static ProtocolRetrievalResult CannotExecute(ProtocolRetrievalStopReason stopReason) =>
-        new(ProtocolRetrievalOutcome.None, default, 0, 0, false, 0, 0, 0, stopReason);
+        new(ProtocolRetrievalOutcome.None, default, 0, 0, false, 0, 0, stopReason);
 
-    private static ProtocolRetrievalStopReason GetCurrencyStopReason(ProtocolRetrievalMode mode) {
+    private static int GetStrategyFragmentCost(ProtocolRetrievalMode mode) {
         return mode switch {
-            ProtocolRetrievalMode.Directional when GetModDataItemCount(IFE残片) < DirectionalFragmentCost =>
-                ProtocolRetrievalStopReason.InsufficientFragments,
-            ProtocolRetrievalMode.Anchored when GetModDataItemCount(IFE记忆源点) < AnchoredMemorySourcePointCost =>
-                ProtocolRetrievalStopReason.InsufficientMemorySourcePoints,
-            _ => ProtocolRetrievalStopReason.None,
+            ProtocolRetrievalMode.Directional => DirectionalFragmentCost,
+            ProtocolRetrievalMode.Anchored => AnchoredFragmentCost,
+            _ => 0,
         };
     }
 
+    private static ProtocolRetrievalStopReason GetCurrencyStopReason(ProtocolRetrievalMode mode) {
+        int cost = GetStrategyFragmentCost(mode);
+        return cost > 0 && GetModDataItemCount(IFE残片) < cost
+            ? ProtocolRetrievalStopReason.InsufficientFragments
+            : ProtocolRetrievalStopReason.None;
+    }
+
     private static bool TrySpendStrategyCurrency(ProtocolRetrievalMode mode, out int spentFragments,
-        out int spentMemorySourcePoints, out ProtocolRetrievalStopReason stopReason) {
+        out ProtocolRetrievalStopReason stopReason) {
         spentFragments = 0;
-        spentMemorySourcePoints = 0;
+        int cost = GetStrategyFragmentCost(mode);
         stopReason = GetCurrencyStopReason(mode);
         if (stopReason != ProtocolRetrievalStopReason.None) {
             return false;
         }
-
-        switch (mode) {
-            case ProtocolRetrievalMode.Directional:
-                lock (centerItemCount) {
-                    if (GetModDataItemCount(IFE残片) < DirectionalFragmentCost
-                        || TakeItemFromModData(IFE残片, DirectionalFragmentCost, out _) != DirectionalFragmentCost) {
-                        stopReason = ProtocolRetrievalStopReason.InsufficientFragments;
-                        return false;
-                    }
-                }
-                spentFragments = DirectionalFragmentCost;
-                return true;
-            case ProtocolRetrievalMode.Anchored:
-                lock (centerItemCount) {
-                    if (GetModDataItemCount(IFE记忆源点) < AnchoredMemorySourcePointCost
-                        || TakeItemFromModData(IFE记忆源点, AnchoredMemorySourcePointCost, out _)
-                        != AnchoredMemorySourcePointCost) {
-                        stopReason = ProtocolRetrievalStopReason.InsufficientMemorySourcePoints;
-                        return false;
-                    }
-                }
-                spentMemorySourcePoints = AnchoredMemorySourcePointCost;
-                return true;
-            default:
-                return true;
+        if (cost == 0) {
+            return true;
         }
+
+        lock (centerItemCount) {
+            if (GetModDataItemCount(IFE残片) < cost
+                || TakeItemFromModData(IFE残片, cost, out _) != cost) {
+                stopReason = ProtocolRetrievalStopReason.InsufficientFragments;
+                return false;
+            }
+        }
+        spentFragments = cost;
+        return true;
     }
 
-    private static void RefundStrategyCurrency(int spentFragments, int spentMemorySourcePoints) {
+    private static void RefundStrategyCurrency(int spentFragments) {
         if (spentFragments > 0) {
             AddItemToModData(IFE残片, spentFragments);
-        }
-        if (spentMemorySourcePoints > 0) {
-            AddItemToModData(IFE记忆源点, spentMemorySourcePoints);
         }
     }
 

@@ -17,13 +17,8 @@ public static class ItemManager {
     public static void AddTranslations() {
         Register("残片", "Archive Fragment", "残片");
         Register("I残片",
-            "Common archive currency recovered from damaged or invalid protocol data. It can narrow retrieval direction.",
-            "从损坏或无效协议数据中整理出的普通档案货币，可用于收窄检索方向。");
-        Register("记忆源点", "Memory Anchor", "记忆源点");
-        Register("I记忆源点",
-            "A high-integrity archive anchor used to locate and advance one eligible protocol precisely.",
-            "高完整度的文明档案锚点，可用于精确定位并推进一项符合阶段条件的协议。");
-
+            "Archive currency recovered from invalid protocol data. It pays for directional and anchored retrieval.",
+            "从无效协议数据中整理出的档案货币，用于支付方向检索和锚定检索。");
         RegisterAnalysisDataTranslations("电磁解析数据", "Electromagnetic Analysis Data", "电磁");
         RegisterAnalysisDataTranslations("能量解析数据", "Energy Analysis Data", "能量");
         RegisterAnalysisDataTranslations("结构解析数据", "Structure Analysis Data", "结构");
@@ -97,9 +92,6 @@ public static class ItemManager {
             new Color(0.76f, 0.82f, 1f), new Color(0.10f, 0.10f, 0.30f), "gravityanalysis");
         RegisterCivilizationItem(IFE宇宙解析数据, "宇宙解析数据", "I宇宙解析数据", 107,
             new Color(1f, 0.92f, 0.42f), new Color(0.28f, 0.20f, 0.04f), "universeanalysis");
-        RegisterCivilizationItem(IFE记忆源点, "记忆源点", "I记忆源点", 109,
-            new Color(0.45f, 0.75f, 1f), new Color(0.1f, 0.2f, 0.4f), "memory");
-
         RegisterTowerProto(IFE交互塔原胚, "交互塔原胚", "I交互塔原胚", 201,
             "Assets/fe/frac-proto-normal", InteractionTower.color, "interaction-proto");
         RegisterTowerProto(IFE解析塔原胚, "解析塔原胚", "I解析塔原胚", 202,
@@ -473,10 +465,6 @@ public static class ItemManager {
         return itemId == IFE残片 || IsAnalysisDataItem(itemId);
     }
 
-    public static bool IsMemoryAnchorItem(int itemId) {
-        return itemId == IFE记忆源点;
-    }
-
     public static int GetAnalysisDataLevel(int itemId) {
         return IsAnalysisDataItem(itemId) ? itemId - IFE电磁解析数据 : -1;
     }
@@ -627,7 +615,6 @@ public static class ItemManager {
         itemValue[IFE信息解析数据] = 16.0f;
         itemValue[IFE引力解析数据] = 32.0f;
         itemValue[IFE宇宙解析数据] = 64.0f;
-        itemValue[IFE记忆源点] = 256.0f;
     }
 
     private static void SetCivilizationResourceMatrixStages() {
@@ -638,7 +625,6 @@ public static class ItemManager {
         itemToMatrix[IFE信息解析数据] = I信息矩阵;
         itemToMatrix[IFE引力解析数据] = I引力矩阵;
         itemToMatrix[IFE宇宙解析数据] = I宇宙矩阵;
-        itemToMatrix[IFE记忆源点] = I引力矩阵;
     }
 
     public static int GetTechTopMatrixID(TechProto tech) {

@@ -55,7 +55,6 @@ public static class ProtocolRecoveryPage {
         Register("方向检索", "Directional Retrieval");
         Register("锚定检索", "Anchored Retrieval");
         Register("残片不足", "Insufficient fragments");
-        Register("记忆源点不足", "Insufficient memory source points");
         Register("没有可检索协议", "No retrievable protocol");
         Register("没有可用检索机会", "No retrieval opportunity");
         Register("检索请求无效", "Invalid retrieval request");
@@ -156,7 +155,7 @@ public static class ProtocolRecoveryPage {
         stageSummaryText.text =
             $"{stage.DisplayNameKey.Translate().WithColor(Orange)}  可用检索：{snapshot.AvailableOpportunities}  "
             + $"下次机会：{snapshot.PendingData}/{snapshot.NextOpportunityCost}\n"
-            + $"残片：{snapshot.Fragments}  记忆源点：{snapshot.MemorySourcePoints}  "
+            + $"残片：{snapshot.Fragments}  "
             + GetModeCostText()
             + (snapshot.HasRequiredProtocols
                 ? $"  失败保底：{snapshot.FailureStreak}/4  新发现保底：{snapshot.DiscoveryStreak}/5  "
@@ -333,7 +332,7 @@ public static class ProtocolRecoveryPage {
     private static string GetModeCostText() {
         return selectedMode switch {
             ProtocolRetrievalMode.Directional => $"方向成本：{ProtocolRetrievalService.DirectionalFragmentCost} 残片",
-            ProtocolRetrievalMode.Anchored => $"锚定成本：{ProtocolRetrievalService.AnchoredMemorySourcePointCost} 记忆源点",
+            ProtocolRetrievalMode.Anchored => $"锚定成本：{ProtocolRetrievalService.AnchoredFragmentCost} 残片",
             _ => "广域不额外消耗策略货币",
         };
     }
@@ -360,7 +359,8 @@ public static class ProtocolRecoveryPage {
                 : "深层解析进度增加。";
         }
         if (result.Outcome == ProtocolRetrievalOutcome.Failed) {
-            return $"检索未获得有效响应，返还 {result.AwardedFragments} 残片，保底进度已增加。";
+            return $"检索未获得有效响应，获得 {result.AwardedFragments} 残片，保底进度已增加。"
+                   + "残片可用于方向检索；积累更多残片后可使用成本更高的锚定检索。";
         }
         ProtocolRetrievalStageSnapshot snapshot = ProtocolRetrievalService.GetStageSnapshot(GetSelectedStage().StageKey);
         foreach (ProtocolRetrievalProtocolSnapshot protocol in snapshot.Protocols) {
@@ -377,8 +377,8 @@ public static class ProtocolRecoveryPage {
         if (result.AwardedTechPoints > 0) {
             summary += $"，科技点 +{result.AwardedTechPoints}";
         }
-        if (result.SpentFragments > 0 || result.SpentMemorySourcePoints > 0 || result.AwardedFragments > 0) {
-            summary += $"；残片 -{result.SpentFragments} +{result.AwardedFragments}，记忆源点 -{result.SpentMemorySourcePoints}";
+        if (result.SpentFragments > 0 || result.AwardedFragments > 0) {
+            summary += $"；残片 -{result.SpentFragments} +{result.AwardedFragments}";
         }
         return result.StopReason == ProtocolRetrievalStopReason.None
             ? summary + "。"
@@ -390,7 +390,6 @@ public static class ProtocolRecoveryPage {
             ProtocolRetrievalStopReason.NoOpportunity => "没有可用检索机会".Translate(),
             ProtocolRetrievalStopReason.NoCandidate => "没有可检索协议".Translate(),
             ProtocolRetrievalStopReason.InsufficientFragments => "残片不足".Translate(),
-            ProtocolRetrievalStopReason.InsufficientMemorySourcePoints => "记忆源点不足".Translate(),
             ProtocolRetrievalStopReason.AwaitingHost => "请求已发送，等待主机结算。",
             _ => "检索请求无效".Translate(),
         };
