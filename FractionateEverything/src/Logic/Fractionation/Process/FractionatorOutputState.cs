@@ -59,10 +59,18 @@ public static class FractionatorOutputState {
                 return cachedRecipe;
             }
 
+            // 先观察 ready 的发布屏障；在此之前查到的 null 只是初始化时序结果，不能持久缓存。
+            bool recipesReady = RecipeManager.AreFracRecipesReady;
+            BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(recipeType, fluidId);
+            if (recipe == null && !recipesReady) {
+                cachedRecipeValid = false;
+                return null;
+            }
+
             cachedRecipeValid = true;
             cachedFluidId = fluidId;
             cachedRecipeType = recipeType;
-            cachedRecipe = RecipeManager.GetRecipe<BaseRecipe>(recipeType, fluidId);
+            cachedRecipe = recipe;
             return cachedRecipe;
         }
 

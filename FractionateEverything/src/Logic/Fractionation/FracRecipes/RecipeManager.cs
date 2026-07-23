@@ -35,7 +35,8 @@ public static class RecipeManager {
     /// 按物品科技层级分类配方，Key：(int)MatrixID
     /// </summary>
     private static readonly Dictionary<int, List<BaseRecipe>> RecipeMatrixDic = [];
-    private static bool fracRecipesReady;
+    // 作为配方索引的发布屏障，确保工厂线程观察到 ready 后能读取完整目录。
+    private static volatile bool fracRecipesReady;
 
 #if DEBUG
     private const string SPRITE_CSV_DIR = @"D:\project\dsp\MLJ_DSPmods\gamedata";
