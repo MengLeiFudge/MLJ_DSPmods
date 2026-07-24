@@ -1,6 +1,5 @@
 ﻿using BepInEx.Configuration;
-using CommonAPI.Systems;
-using FE.Logic.Civilization.Achievements;
+using FE.Logic.Achievements;
 using FE.Logic.Fractionation.FracRecipes;
 using FE.UI.Foundation.Window;
 using FE.UI.Layout;
@@ -9,22 +8,22 @@ using UnityEngine;
 using UnityEngine.UI;
 using static FE.UI.Layout.GridDsl;
 using static FE.Utils.Utils;
-using CivilizationAchievementState = FE.Logic.Civilization.Achievements.AchievementState;
+using FEAchievementState = FE.Logic.Achievements.AchievementState;
 
-namespace FE.UI.MainPanel.Civilization;
+namespace FE.UI.MainPanel.ProgressTask;
 
 /// <summary>
-/// 展示单存档自动完成的文明成就及其固定效果。
+/// 展示单存档自动完成的成就及其固定效果。
 /// </summary>
-public static class CivilizationAchievementPage {
+public static class AchievementPage {
     private static RectTransform tab;
     private static PageLayout.HeaderRefs header;
     private static readonly Text[] achievementTexts = new Text[4];
     private static Text footerText;
 
     public static void AddTranslations() {
-        Register("文明成就", "Civilization Achievements");
-        Register("文明成就摘要", "Achievements are fixed single-save milestones and do not consume technology points.",
+        Register("成就", "Achievements");
+        Register("成就摘要", "Achievements are fixed single-save milestones and do not consume technology points.",
             "成就是单存档固定里程碑，不消耗科技点，完成后自动生效。");
     }
 
@@ -35,14 +34,14 @@ public static class CivilizationAchievementPage {
         BuildLayout(wnd, tab,
             Grid(rows: [Px(PageLayout.HeaderHeight), 1, Px(PageLayout.FooterHeight)], rowGap: PageLayout.Gap,
                 children: [
-                    Header("文明成就", "文明成就摘要", pos: (0, 0), objectName: "civilization-achievement-header",
+                    Header("成就", "成就摘要", pos: (0, 0), objectName: "achievement-header",
                         onBuilt: refs => header = refs),
-                    ContentCard(pos: (1, 0), objectName: "civilization-achievement-card", strong: true,
+                    ContentCard(pos: (1, 0), objectName: "achievement-card", strong: true,
                         rows: [1, 1, 1, 1], rowGap: 8f, children: BuildAchievementNodes()),
-                    FooterCard(pos: (2, 0), objectName: "civilization-achievement-footer", children: [
+                    FooterCard(pos: (2, 0), objectName: "achievement-footer", children: [
                         TextNode("", 12, Gray, wrap: true, pos: (0, 0),
                             onBuilt: text => footerText = text,
-                            objectName: "civilization-achievement-footer-text"),
+                            objectName: "achievement-footer-text"),
                     ]),
                 ]));
         UpdateUI();
@@ -52,12 +51,12 @@ public static class CivilizationAchievementPage {
         if (tab == null || !tab.gameObject.activeSelf) {
             return;
         }
-        header.Title.text = "文明成就".Translate().WithColor(Orange);
-        header.Summary.text = "文明成就摘要".Translate().WithColor(White);
+        header.Title.text = "成就".Translate().WithColor(Orange);
+        header.Summary.text = "成就摘要".Translate().WithColor(White);
         int completeCount = 0;
         for (int i = 0; i < achievementTexts.Length && i < AchievementCatalog.All.Count; i++) {
             AchievementDefinition definition = AchievementCatalog.All[i];
-            bool completed = CivilizationAchievementState.IsCompleted(definition.AchievementKey);
+            bool completed = FEAchievementState.IsCompleted(definition.AchievementKey);
             if (completed) completeCount++;
             long current = AchievementService.GetCurrentValue(definition);
             string reward = definition.RewardType == AchievementRewardType.AllRecipeSuccessRate
@@ -78,7 +77,7 @@ public static class CivilizationAchievementPage {
                 onBuilt: text => {
                     achievementTexts[index] = text;
                     text.supportRichText = true;
-                }, objectName: $"civilization-achievement-{i}");
+                }, objectName: $"achievement-{i}");
         }
         return nodes;
     }

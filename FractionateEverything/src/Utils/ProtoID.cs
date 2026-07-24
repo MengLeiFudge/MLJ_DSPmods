@@ -439,14 +439,14 @@ public static partial class Utils {
     internal const int IOR量子计算机550MAGI = 7805;
     internal const int IGB超越X1型光学主机 = 7806;
     internal const int IOR光学计算机 = 7806;
-    internal const int IFE交互塔原胚 = 8111;
+    internal const int IFE培养塔原胚 = 8111;
     internal const int IFE解析塔原胚 = 8112;
-    internal const int IFE资源塔原胚 = 8113;
+    internal const int IFE复制塔原胚 = 8113;
     internal const int IFE转化塔原胚 = 8114;
     internal const int IFE通用原胚 = 8115;
-    internal const int IFE交互塔 = 8121;
+    internal const int IFE培养塔 = 8121;
     internal const int IFE解析塔 = 8122;
-    internal const int IFE资源塔 = 8123;
+    internal const int IFE复制塔 = 8123;
     internal const int IFE转化塔 = 8124;
     internal const int IFE行星内物流交互站 = 8131;
     internal const int IFE星际物流交互站 = 8132;
@@ -604,9 +604,9 @@ public static partial class Utils {
     internal const int M水 = 494;
     //不要使用>500且<520的id，这是创世旧版本所用的ModelID，为了与创世新版兼容会修改至+300
     //ID过大会导致OnAfterDeserialize越界，解决方法参考ModelLoadingPatch.cs
-    internal const int MFE交互塔 = 651;
+    internal const int MFE培养塔 = 651;
     internal const int MFE解析塔 = 652;
-    internal const int MFE资源塔 = 653;
+    internal const int MFE复制塔 = 653;
     internal const int MFE转化塔 = 654;
     internal const int MFE行星内物流交互站 = 661;
     internal const int MFE星际物流交互站 = 662;
@@ -1016,10 +1016,10 @@ public static partial class Utils {
     internal const int TGB高精度加工 = 1203;
     internal const int TFE分馏数据中心 = 2051;
     internal const int TFE分馏塔原胚 = 2052;
-    internal const int TFE物品交互 = 2053;
-    internal const int TFE文明解析 = 2054;
-    internal const int TFE资源复制 = 2055;
-    internal const int TFE物品转化 = 2056;
+    internal const int TFE培养塔 = 2053;
+    internal const int TFE解析塔 = 2054;
+    internal const int TFE复制塔 = 2055;
+    internal const int TFE转化塔 = 2056;
     internal const int TFE行星内物流交互 = 2061;
     internal const int TFE星际物流交互 = 2062;
     internal const int TFE阶段补给1 = 2071;

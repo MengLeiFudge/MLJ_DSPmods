@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using FE.Logic.Buildings.Migration;
 using FE.Logic.Fractionation.Process;
 using static FE.Utils.Utils;
 
@@ -31,8 +33,9 @@ public abstract class BaseRecipe(
     public abstract ERecipe RecipeType { get; }
 
     /// <summary>
-    /// 保存热路径为当前塔实例选择的通用主产物目标。
+    /// 保存当前工厂线程为塔实例选择的通用主产物目标。
     /// </summary>
+    [ThreadStatic]
     public static int CurrentMainOutputTargetId;
 
     /// <summary>
@@ -44,7 +47,7 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 判断该配方是否需要文明协议完整度达到 100 后才能运行。
     /// </summary>
-    public virtual bool RequiresProtocolRecovery => RecipeType is ERecipe.MineralCopy or ERecipe.Conversion;
+    public virtual bool RequiresProtocolRecovery => RecipeType is ERecipe.Replication or ERecipe.Conversion;
 
     /// <summary>
     /// 判断该协议是否计入所属文明阶段的主线完成度。
@@ -64,14 +67,16 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 获取该配方累计成功结算次数，用于实例控制能力的配方校准。
     /// </summary>
-    public long TotalSuccessCount { get; private set; }
+    public long TotalSuccessCount => Interlocked.Read(ref totalSuccessCount);
+
+    private long totalSuccessCount;
 
     /// <summary>
-    /// 获取主路锁定校准基线；建筑培养配方采用低频设备下限，其余按矩阵阶段翻倍。
+    /// 获取主路锁定校准基线；培养配方采用低频设备下限，其余按矩阵阶段翻倍。
     /// </summary>
     public int MainOutputLockCalibrationThreshold {
         get {
-            if (RecipeType == ERecipe.BuildingTrain) {
+            if (RecipeType == ERecipe.Cultivation) {
                 return 20;
             }
             int stage = FE.Logic.Items.ItemManager.GetMatrixStageIndex(MatrixID);
@@ -98,11 +103,16 @@ public abstract class BaseRecipe(
     /// 累计该配方的成功结算次数。
     /// </summary>
     public void RecordSuccesses(int count) {
-        if (count > 0) {
-            TotalSuccessCount = TotalSuccessCount > long.MaxValue - count
-                ? long.MaxValue
-                : TotalSuccessCount + count;
+        if (count <= 0) {
+            return;
         }
+
+        long current;
+        long updated;
+        do {
+            current = Interlocked.Read(ref totalSuccessCount);
+            updated = current > long.MaxValue - count ? long.MaxValue : current + count;
+        } while (Interlocked.CompareExchange(ref totalSuccessCount, updated, current) != current);
     }
 
     /// <summary>
@@ -139,8 +149,7 @@ public abstract class BaseRecipe(
     public List<OutputInfo> OutputAppend => outputAppend;
 
     /// <summary>
-    /// 获取某次输出的执行结果。
-    /// 可能的情况有：损毁、产出产物、无变化（直通）。
+    /// 执行单次完整分馏结算，返回损毁、产出或直通结果，并写回输入与产物变化。
     /// </summary>
     /// <param name="seed">随机数种子</param>
     /// <param name="pointsBonus">增产剂加成（比例，例如0.25）</param>
@@ -149,9 +158,6 @@ public abstract class BaseRecipe(
     /// <param name="fluidInputInc">该分馏塔当前的全部增产点数，将在该方法中被修改</param>
     /// <param name="inputChange">原材料会变成几个（-1表示消耗，0表示保留）</param>
     /// <param name="outputs">损毁返回null，直通返回空List，成功返回输出产物</param>
-    /// <summary>
-    /// 执行单次完整分馏结算并写回主产物、副产物和输入保留结果。
-    /// </summary>
     public virtual void GetOutputs(ref uint seed, float pointsBonus, float successBoost,
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, out List<ProductOutputInfo> outputs) {
         // 1. 损毁判定
@@ -170,7 +176,7 @@ public abstract class BaseRecipe(
                 int countReal = RollOutputCount(ref seed, mainOutput.OutputCount);
                 if (countReal > 0) {
                     list.Add(new(true, mainOutput.OutputID, countReal));
-                    mainOutput.OutputTotalCount += countReal;
+                    mainOutput.AddOutputCount(countReal);
                 }
             }
             // 附加输出判定，每一项依次判定，互不影响
@@ -184,7 +190,7 @@ public abstract class BaseRecipe(
                     }
                     if (countReal > 0) {
                         list.Add(new(false, outputInfo.OutputID, countReal));
-                        outputInfo.OutputTotalCount += countReal;
+                        outputInfo.AddOutputCount(countReal);
                     }
                 }
             }
@@ -230,7 +236,7 @@ public abstract class BaseRecipe(
                 int countReal = RollOutputCount(ref seed, mainOutput.OutputCount);
                 if (countReal > 0) {
                     outputs.Add(true, mainOutput.OutputID, countReal);
-                    mainOutput.OutputTotalCount += countReal;
+                    mainOutput.AddOutputCount(countReal);
                 }
             }
 
@@ -239,7 +245,7 @@ public abstract class BaseRecipe(
                     int countReal = RollOutputCount(ref seed, outputInfo.OutputCount);
                     if (countReal > 0) {
                         outputs.Add(false, outputInfo.OutputID, countReal);
-                        outputInfo.OutputTotalCount += countReal;
+                        outputInfo.AddOutputCount(countReal);
                     }
                 }
             }
@@ -342,7 +348,7 @@ public abstract class BaseRecipe(
         }
 
         outputs.Add(isMainOutput, outputInfo.OutputID, totalCount);
-        outputInfo.OutputTotalCount += totalCount;
+        outputInfo.AddOutputCount(totalCount);
         return baseCount > 0 ? outputHits : totalCount;
     }
 
@@ -429,11 +435,11 @@ public abstract class BaseRecipe(
     /// </summary>
     public virtual void Import(BinaryReader r) {
         r.ReadBlocks(
-            ("TotalSuccessCount", br => TotalSuccessCount = Math.Max(0, br.ReadInt64())),
+            ("TotalSuccessCount", br => Interlocked.Exchange(ref totalSuccessCount, Math.Max(0, br.ReadInt64()))),
             ("OutputMain", br => {
                 int count = br.ReadInt32();
                 for (int i = 0; i < count; i++) {
-                    int id = br.ReadInt32();
+                    int id = LegacyProtoMigration.MapItemId(br.ReadInt32());
                     int total = br.ReadInt32();
                     var info = OutputMain.Find(x => x.OutputID == id);
                     if (info != null) info.OutputTotalCount = total;
@@ -443,7 +449,7 @@ public abstract class BaseRecipe(
             ("OutputAppend", br => {
                 int count = br.ReadInt32();
                 for (int i = 0; i < count; i++) {
-                    int id = br.ReadInt32();
+                    int id = LegacyProtoMigration.MapItemId(br.ReadInt32());
                     int total = br.ReadInt32();
                     var info = OutputAppend.Find(x => x.OutputID == id);
                     if (info != null) info.OutputTotalCount = total;
@@ -480,7 +486,7 @@ public abstract class BaseRecipe(
     /// 切换或进入其他存档时重置该分馏域状态。
     /// </summary>
     public virtual void IntoOtherSave() {
-        TotalSuccessCount = 0;
+        Interlocked.Exchange(ref totalSuccessCount, 0);
         foreach (OutputInfo info in OutputMain) {
             info.OutputTotalCount = 0;
         }

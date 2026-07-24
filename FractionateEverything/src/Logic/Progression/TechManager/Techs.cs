@@ -34,7 +34,7 @@ public static partial class TechManager {
             [],
             GetTechPos(0, 1)
         );
-        tech阶段补给1.PreTechsImplicit = [TFE物品交互];
+        tech阶段补给1.PreTechsImplicit = [TFE培养塔];
         tech阶段补给1.AddItems = [IFE残片];
         tech阶段补给1.AddItemCounts = [300];
         tech阶段补给1.PropertyOverrideItems = [I电磁矩阵];
@@ -118,59 +118,59 @@ public static partial class TechManager {
             [],
             GetTechPos(1, 1)
         );
-        tech分馏塔原胚.AddItems = [IFE交互塔, IFE通用原胚];
+        tech分馏塔原胚.AddItems = [IFE培养塔, IFE通用原胚];
         tech分馏塔原胚.AddItemCounts = [1, 80];
         tech分馏塔原胚.PropertyOverrideItems = [I电磁矩阵];
         tech分馏塔原胚.PropertyItemCounts = [100];
         tech分馏塔原胚.IconTag = "tfltyp";
 
-        var tech物品交互 = ProtoRegistry.RegisterTech(
-            TFE物品交互, "T物品交互", "物品交互描述", "物品交互结果", "Assets/fe/tech物品交互",
+        var tech培养塔 = ProtoRegistry.RegisterTech(
+            TFE培养塔, "T培养塔", "培养塔描述", "培养塔结果", "Assets/fe/tech物品交互",
             [],
             [], [], 3600000,
             [],
             GetTechPos(1, 2)
         );
-        tech物品交互.PreTechsImplicit = [TFE分馏塔原胚];
-        tech物品交互.PropertyOverrideItems = [I电磁矩阵];
-        tech物品交互.PropertyItemCounts = [200];
-        tech物品交互.IconTag = "twpjh";
+        tech培养塔.PreTechsImplicit = [TFE分馏塔原胚];
+        tech培养塔.PropertyOverrideItems = [I电磁矩阵];
+        tech培养塔.PropertyItemCounts = [200];
+        tech培养塔.IconTag = "twpjh";
 
-        var tech资源复制 = ProtoRegistry.RegisterTech(
-            TFE资源复制, "T资源复制", "资源复制描述", "资源复制结果", "Assets/fe/tech资源复制",
+        var tech解析塔 = ProtoRegistry.RegisterTech(
+            TFE解析塔, "T解析塔", "解析塔描述", "解析塔结果", "Assets/fe/tech物品分解",
             [],
             [], [], 3600000,
             [],
             GetTechPos(1, 3)
         );
-        tech资源复制.PreTechsImplicit = [TFE分馏塔原胚];
-        tech资源复制.PropertyOverrideItems = [I电磁矩阵];
-        tech资源复制.PropertyItemCounts = [200];
-        tech资源复制.IconTag = "tkwfz";
+        tech解析塔.PreTechsImplicit = [TFE分馏塔原胚];
+        tech解析塔.PropertyOverrideItems = [I电磁矩阵];
+        tech解析塔.PropertyItemCounts = [200];
+        tech解析塔.IconTag = "twpjl";
 
-        var tech物品转化 = ProtoRegistry.RegisterTech(
-            TFE物品转化, "T物品转化", "物品转化描述", "物品转化结果", "Assets/fe/tech物品转化",
+        var tech复制塔 = ProtoRegistry.RegisterTech(
+            TFE复制塔, "T复制塔", "复制塔描述", "复制塔结果", "Assets/fe/tech资源复制",
+            [],
+            [], [], 3600000,
+            [],
+            GetTechPos(1, 4)
+        );
+        tech复制塔.PreTechsImplicit = [TFE分馏塔原胚];
+        tech复制塔.PropertyOverrideItems = [I电磁矩阵];
+        tech复制塔.PropertyItemCounts = [200];
+        tech复制塔.IconTag = "tkwfz";
+
+        var tech转化塔 = ProtoRegistry.RegisterTech(
+            TFE转化塔, "T转化塔", "转化塔描述", "转化塔结果", "Assets/fe/tech物品转化",
             [],
             [], [], 3600000,
             [],
             GetTechPos(1, 5)
         );
-        tech物品转化.PreTechsImplicit = [TFE分馏塔原胚];
-        tech物品转化.PropertyOverrideItems = [I电磁矩阵];
-        tech物品转化.PropertyItemCounts = [200];
-        tech物品转化.IconTag = "twpzh";
-
-        var tech文明解析 = ProtoRegistry.RegisterTech(
-            TFE文明解析, "T文明解析", "文明解析描述", "文明解析结果", "Assets/fe/tech物品分解",
-            [],
-            [], [], 3600000,
-            [],
-            GetTechPos(1, 6)
-        );
-        tech文明解析.PreTechsImplicit = [TFE分馏塔原胚];
-        tech文明解析.PropertyOverrideItems = [I电磁矩阵];
-        tech文明解析.PropertyItemCounts = [200];
-        tech文明解析.IconTag = "twpjl";
+        tech转化塔.PreTechsImplicit = [TFE分馏塔原胚];
+        tech转化塔.PropertyOverrideItems = [I电磁矩阵];
+        tech转化塔.PropertyItemCounts = [200];
+        tech转化塔.IconTag = "twpzh";
 
         var tech行星物流系统 = LDB.techs.Select(T行星物流系统);
         var tech行星内物流交互 = ProtoRegistry.RegisterTech(
@@ -178,9 +178,9 @@ public static partial class TechManager {
             [],
             [..tech行星物流系统.Items], [..tech行星物流系统.ItemPoints], tech行星物流系统.HashNeeded,
             [RFE行星内物流交互站],
-            GetTechPos(1, 7)
+            GetTechPos(1, 6)
         );
-        tech行星内物流交互.PreTechsImplicit = [TFE分馏塔原胚, TFE物品交互, tech行星物流系统.ID];
+        tech行星内物流交互.PreTechsImplicit = [TFE分馏塔原胚, TFE培养塔, tech行星物流系统.ID];
         tech行星内物流交互.PropertyOverrideItems = [..tech行星物流系统.PropertyOverrideItems];
         tech行星内物流交互.PropertyItemCounts = [..tech行星物流系统.PropertyItemCounts];
         tech行星内物流交互.IconTag = "txxnjh";
@@ -191,9 +191,9 @@ public static partial class TechManager {
             [],
             [..tech星际物流系统.Items], [..tech星际物流系统.ItemPoints], tech星际物流系统.HashNeeded,
             [RFE星际物流交互站],
-            GetTechPos(1, 8)
+            GetTechPos(1, 7)
         );
-        tech星际物流交互.PreTechsImplicit = [TFE分馏塔原胚, TFE物品交互, tech星际物流系统.ID];
+        tech星际物流交互.PreTechsImplicit = [TFE分馏塔原胚, TFE培养塔, tech星际物流系统.ID];
         tech星际物流交互.PropertyOverrideItems = [..tech星际物流系统.PropertyOverrideItems];
         tech星际物流交互.PropertyItemCounts = [..tech星际物流系统.PropertyItemCounts];
         tech星际物流交互.IconTag = "txjjh";
@@ -214,9 +214,4 @@ public static partial class TechManager {
         }
         return new(13 + column * 4, -67 - row * 4);
     }
-
-    /// <summary>
-    /// 判断某一主线矩阵层的有限科技是否已全部研究完成。
-    /// 隐藏科技与无限科技不参与该判定。
-    /// </summary>
 }

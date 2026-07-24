@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Reflection.Emit;
-using FE.Logic.Progression;
+using FE.Logic.Progression.Stacking;
 using HarmonyLib;
 using static FE.Utils.Utils;
 

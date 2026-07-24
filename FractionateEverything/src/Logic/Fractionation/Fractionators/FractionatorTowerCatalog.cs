@@ -4,20 +4,20 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Fractionation.Fractionators;
 
 /// <summary>
-/// 当前版本有效的 FE 分馏塔目录。历史 ID 仍保留在 ProtoID 中，但不再视为可用塔型。
+/// 当前版本四类 FE 分馏塔及其原胚、配方类型映射目录。
 /// </summary>
 public static class FractionatorTowerCatalog {
     public static readonly int[] ActiveFractionatorBuildingIds = [
-        IFE交互塔,
+        IFE培养塔,
         IFE解析塔,
-        IFE资源塔,
+        IFE复制塔,
         IFE转化塔,
     ];
 
     public static readonly int[] ActiveFractionatorProtoIds = [
-        IFE交互塔原胚,
+        IFE培养塔原胚,
         IFE解析塔原胚,
-        IFE资源塔原胚,
+        IFE复制塔原胚,
         IFE转化塔原胚,
     ];
 
@@ -33,9 +33,9 @@ public static class FractionatorTowerCatalog {
 
     public static int GetActiveFractionatorIndex(int itemId) {
         return itemId switch {
-            IFE交互塔 => 0,
+            IFE培养塔 => 0,
             IFE解析塔 => 1,
-            IFE资源塔 => 2,
+            IFE复制塔 => 2,
             IFE转化塔 => 3,
             _ => -1,
         };
@@ -46,9 +46,9 @@ public static class FractionatorTowerCatalog {
     /// </summary>
     public static ERecipe GetRecipeType(int buildingId) {
         return buildingId switch {
-            IFE交互塔 => ERecipe.BuildingTrain,
-            IFE解析塔 => ERecipe.Rectification,
-            IFE资源塔 => ERecipe.MineralCopy,
+            IFE培养塔 => ERecipe.Cultivation,
+            IFE解析塔 => ERecipe.Analysis,
+            IFE复制塔 => ERecipe.Replication,
             IFE转化塔 => ERecipe.Conversion,
             _ => (ERecipe)0,
         };
@@ -56,9 +56,9 @@ public static class FractionatorTowerCatalog {
 
     public static int GetActiveFractionatorProtoIndex(int itemId) {
         return itemId switch {
-            IFE交互塔原胚 => 0,
+            IFE培养塔原胚 => 0,
             IFE解析塔原胚 => 1,
-            IFE资源塔原胚 => 2,
+            IFE复制塔原胚 => 2,
             IFE转化塔原胚 => 3,
             _ => -1,
         };

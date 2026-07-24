@@ -11,13 +11,26 @@ namespace FE.Logic.Fractionation.Process;
 /// <summary>
 /// 分馏塔耗电计算的运行时补丁。
 /// </summary>
-public static partial class ProcessManager {[HarmonyTranspiler]
+public static partial class ProcessManager {
     /// <summary>
     /// 将原版分馏器能耗更新调用替换为 FE 分馏塔能耗适配入口。
     /// </summary>
+    [HarmonyTranspiler]
     [HarmonyPatch(typeof(FactorySystem), nameof(FactorySystem.GameTick))]
+    public static IEnumerable<CodeInstruction> FactorySystem_GameTick_Transpiler(
+        IEnumerable<CodeInstruction> instructions, MethodBase original) =>
+        TranspileFractionatorUpdate(instructions, original);
+
+    /// <summary>
+    /// 将并行工厂更新中的原版分馏调用替换为 FE 分馏塔适配入口。
+    /// </summary>
+    [HarmonyTranspiler]
     [HarmonyPatch(typeof(GameLogic), nameof(GameLogic._fractionator_parallel))]
-    public static IEnumerable<CodeInstruction> FactorySystem_SetPCState_Transpiler(
+    public static IEnumerable<CodeInstruction> GameLogic_FractionatorParallel_Transpiler(
+        IEnumerable<CodeInstruction> instructions, MethodBase original) =>
+        TranspileFractionatorUpdate(instructions, original);
+
+    private static IEnumerable<CodeInstruction> TranspileFractionatorUpdate(
         IEnumerable<CodeInstruction> instructions, MethodBase original) {
         MethodInfo targetUpdateMethod =
             AccessTools.Method(typeof(FractionatorComponent), nameof(FractionatorComponent.InternalUpdate));
@@ -108,30 +121,30 @@ public static partial class ProcessManager {[HarmonyTranspiler]
 
     private static long GetFractionatorWorkEnergyPerTick(int buildingID) {
         return buildingID switch {
-            IFE交互塔 => InteractionTower.workEnergyPerTick,
-            IFE资源塔 => MineralReplicationTower.workEnergyPerTick,
+            IFE培养塔 => CultivationTower.workEnergyPerTick,
+            IFE解析塔 => AnalysisTower.workEnergyPerTick,
+            IFE复制塔 => ReplicationTower.workEnergyPerTick,
             IFE转化塔 => ConversionTower.workEnergyPerTick,
-            IFE解析塔 => RectificationTower.workEnergyPerTick,
             _ => 0
         };
     }
 
     private static long GetFractionatorIdleEnergyPerTick(int buildingID) {
         return buildingID switch {
-            IFE交互塔 => InteractionTower.idleEnergyPerTick,
-            IFE资源塔 => MineralReplicationTower.idleEnergyPerTick,
+            IFE培养塔 => CultivationTower.idleEnergyPerTick,
+            IFE解析塔 => AnalysisTower.idleEnergyPerTick,
+            IFE复制塔 => ReplicationTower.idleEnergyPerTick,
             IFE转化塔 => ConversionTower.idleEnergyPerTick,
-            IFE解析塔 => RectificationTower.idleEnergyPerTick,
             _ => 0
         };
     }
 
     private static float GetFractionatorEnergyRatio(int buildingID) {
         return buildingID switch {
-            IFE交互塔 => InteractionTower.EnergyRatio,
-            IFE资源塔 => MineralReplicationTower.EnergyRatio,
+            IFE培养塔 => CultivationTower.EnergyRatio,
+            IFE解析塔 => AnalysisTower.EnergyRatio,
+            IFE复制塔 => ReplicationTower.EnergyRatio,
             IFE转化塔 => ConversionTower.EnergyRatio,
-            IFE解析塔 => RectificationTower.EnergyRatio,
             _ => 1.0f
         };
     }

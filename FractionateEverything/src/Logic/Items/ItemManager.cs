@@ -28,12 +28,12 @@ public static class ItemManager {
 
         Register("通用原胚", "Common Tower Proto", "通用原胚");
         Register("I通用原胚",
-            "An active proto whose lineage is not fixed. An Interaction Tower can incubate it into any tower type.",
-            "尚未固定谱系的活性原胚，可在交互塔中随机培养为任意一种分馏塔。");
-        RegisterTowerProtoTranslations("交互塔原胚", "Interaction Tower Proto", "交互塔");
-        RegisterTowerProtoTranslations("解析塔原胚", "Analysis Tower Proto", "解析塔");
-        RegisterTowerProtoTranslations("资源塔原胚", "Resource Tower Proto", "资源塔");
-        RegisterTowerProtoTranslations("转化塔原胚", "Conversion Tower Proto", "转化塔");
+            "An active proto whose lineage is not fixed. Cultivating it in a Cultivation Tower produces a random tower type.",
+            "尚未固定谱系的活性原胚，可在培养塔中随机培养为任意一种分馏塔。");
+        RegisterTowerProtoTranslations("培养塔原胚", "Cultivation Tower Proto", "a Cultivation Tower", "培养塔");
+        RegisterTowerProtoTranslations("解析塔原胚", "Analysis Tower Proto", "an Analysis Tower", "解析塔");
+        RegisterTowerProtoTranslations("复制塔原胚", "Replication Tower Proto", "a Replication Tower", "复制塔");
+        RegisterTowerProtoTranslations("转化塔原胚", "Conversion Tower Proto", "a Conversion Tower", "转化塔");
     }
 
     private static void RegisterAnalysisDataTranslations(string name, string englishName, string stageName) {
@@ -43,11 +43,12 @@ public static class ItemManager {
             $"从{stageName}矩阵中解析出的实体数据；上传后会积累{stageName}阶段的协议检索机会。");
     }
 
-    private static void RegisterTowerProtoTranslations(string name, string englishName, string towerName) {
+    private static void RegisterTowerProtoTranslations(string name, string englishName, string englishTowerName,
+        string towerName) {
         Register(name, englishName, name);
         Register($"I{name}",
-            $"A lineage-fixed proto. Cultivating it in an Interaction Tower produces a {towerName}.",
-            $"已经固定为{towerName}谱系的原胚，在交互塔中培养后会稳定产出{towerName}。");
+            $"A lineage-fixed proto. Cultivating it in a Cultivation Tower produces {englishTowerName}.",
+            $"已经固定为{towerName}谱系的原胚，在培养塔中培养后会稳定产出{towerName}。");
     }
 
     #region 添加新物品
@@ -92,12 +93,12 @@ public static class ItemManager {
             new Color(0.76f, 0.82f, 1f), new Color(0.10f, 0.10f, 0.30f), "gravityanalysis");
         RegisterCivilizationItem(IFE宇宙解析数据, "宇宙解析数据", "I宇宙解析数据", 107,
             new Color(1f, 0.92f, 0.42f), new Color(0.28f, 0.20f, 0.04f), "universeanalysis");
-        RegisterTowerProto(IFE交互塔原胚, "交互塔原胚", "I交互塔原胚", 201,
-            "Assets/fe/frac-proto-normal", InteractionTower.color, "interaction-proto");
+        RegisterTowerProto(IFE培养塔原胚, "培养塔原胚", "I培养塔原胚", 201,
+            "Assets/fe/frac-proto-normal", CultivationTower.color, "cultivation-proto");
         RegisterTowerProto(IFE解析塔原胚, "解析塔原胚", "I解析塔原胚", 202,
-            "Assets/fe/frac-proto-legendary", RectificationTower.color, "analysis-proto");
-        RegisterTowerProto(IFE资源塔原胚, "资源塔原胚", "I资源塔原胚", 203,
-            "Assets/fe/frac-proto-uncommon", MineralReplicationTower.color, "resource-proto");
+            "Assets/fe/frac-proto-legendary", AnalysisTower.color, "analysis-proto");
+        RegisterTowerProto(IFE复制塔原胚, "复制塔原胚", "I复制塔原胚", 203,
+            "Assets/fe/frac-proto-uncommon", ReplicationTower.color, "replication-proto");
         RegisterTowerProto(IFE转化塔原胚, "转化塔原胚", "I转化塔原胚", 204,
             "Assets/fe/frac-proto-epic", ConversionTower.color, "conversion-proto");
         RegisterTowerProto(IFE通用原胚, "通用原胚", "I通用原胚", 205,
@@ -130,7 +131,7 @@ public static class ItemManager {
 
     #endregion
 
-    #region 计算物品价值，以及交互塔可接受物品范围
+    #region 计算物品价值，以及培养塔可接受物品范围
 
     public const float maxValue = float.MaxValue;
     /// <summary>
@@ -138,7 +139,7 @@ public static class ItemManager {
     /// </summary>
     public static readonly float[] itemValue = new float[12000];
     /// <summary>
-    /// 交互塔可接收的所有物品id
+    /// 培养塔可接收的所有物品 ID。
     /// </summary>
     public static int[] needs = [];
 
@@ -202,15 +203,15 @@ public static class ItemManager {
         //设置分馏塔、分馏塔原胚价值
         float modFractionatorValue = 400.0f;
         float commonProtoValue = 2000.0f;
-        itemValue[IFE资源塔] = modFractionatorValue;
-        itemValue[IFE交互塔] = modFractionatorValue;
-        itemValue[IFE转化塔] = modFractionatorValue;
+        itemValue[IFE培养塔] = modFractionatorValue;
         itemValue[IFE解析塔] = modFractionatorValue;
+        itemValue[IFE复制塔] = modFractionatorValue;
+        itemValue[IFE转化塔] = modFractionatorValue;
         itemValue[IFE通用原胚] = commonProtoValue;
-        itemValue[IFE交互塔原胚] = 0.96f * modFractionatorValue + 0.04f * commonProtoValue;
-        itemValue[IFE资源塔原胚] = 0.96f * modFractionatorValue + 0.04f * commonProtoValue;
-        itemValue[IFE转化塔原胚] = 0.96f * modFractionatorValue + 0.04f * commonProtoValue;
+        itemValue[IFE培养塔原胚] = 0.96f * modFractionatorValue + 0.04f * commonProtoValue;
         itemValue[IFE解析塔原胚] = 0.96f * modFractionatorValue + 0.04f * commonProtoValue;
+        itemValue[IFE复制塔原胚] = 0.96f * modFractionatorValue + 0.04f * commonProtoValue;
+        itemValue[IFE转化塔原胚] = 0.96f * modFractionatorValue + 0.04f * commonProtoValue;
         SetCivilizationResourceValues();
         //不存在的物品价值都设为特定值，这样也会将上面某些物品重置为maxValue（某些Mod未开启的情况下会有）
         for (int i = 0; i < itemValue.Length; i++) {
@@ -426,7 +427,7 @@ public static class ItemManager {
             itemValue[IMS多功能集成组件] = maxCalculatedValue;
         }
 
-        //根据物品价值构建交互塔可接受物品列表
+        // 根据物品价值构建培养塔可接受物品列表。
         needs = LDB.items.dataArray
             .Where(item => itemValue[item.ID] < maxValue)
             .Select(item => item.ID)
@@ -487,18 +488,31 @@ public static class ItemManager {
     /// 获取主线矩阵阶段索引。黑雾矩阵不是主线矩阵，返回 -1 供调用方显式分支处理。
     /// </summary>
     public static int GetMatrixStageIndex(int matrixId) {
-        return matrixId switch {
-            I电磁矩阵 => 0,
-            I能量矩阵 => 1,
-            I结构矩阵 => 2,
-            I信息矩阵 => 3,
-            I引力矩阵 => 4,
-            I宇宙矩阵 => 5,
-            I黑雾矩阵 => -1,
-            _ => matrixId > 0 && matrixId < itemToMatrix.Length
-                ? GetMatrixStageIndex(itemToMatrix[matrixId])
-                : 0,
-        };
+        int currentId = matrixId;
+        for (int depth = 0; depth < 16; depth++) {
+            int stage = currentId switch {
+                I电磁矩阵 => 0,
+                I能量矩阵 => 1,
+                I结构矩阵 => 2,
+                I信息矩阵 => 3,
+                I引力矩阵 => 4,
+                I宇宙矩阵 => 5,
+                I黑雾矩阵 => -1,
+                _ => int.MinValue,
+            };
+            if (stage != int.MinValue) {
+                return stage;
+            }
+            if (currentId <= 0 || currentId >= itemToMatrix.Length) {
+                return 0;
+            }
+            int nextId = itemToMatrix[currentId];
+            if (nextId <= 0 || nextId == currentId) {
+                return 0;
+            }
+            currentId = nextId;
+        }
+        return 0;
     }
 
     public static int GetCurrentProgressMatrixId() {
@@ -534,7 +548,7 @@ public static class ItemManager {
         };
     }
 
-    public static int GetRectificationBaseFragmentYield(int matrixId) {
+    public static int GetAnalysisBaseFragmentYield(int matrixId) {
         return matrixId switch {
             I电磁矩阵 => 2,
             I能量矩阵 => 4,
@@ -546,8 +560,8 @@ public static class ItemManager {
         };
     }
 
-    public static int GetRectificationFragmentYield(int matrixId, float ratio = 1f) {
-        float value = GetRectificationBaseFragmentYield(matrixId) * ratio;
+    public static int GetAnalysisFragmentYield(int matrixId, float ratio = 1f) {
+        float value = GetAnalysisBaseFragmentYield(matrixId) * ratio;
         return Mathf.Max(1, Mathf.RoundToInt(value));
     }
 
@@ -557,6 +571,9 @@ public static class ItemManager {
         //黑雾特有材料（UnlockKey=-2），或资源        false        null
         // 找不到主制作配方的对应科技                 true         null
         foreach (var item in LDB.items.dataArray) {
+            if (item == null || item.ID <= 0 || item.ID >= itemToMatrix.Length) {
+                continue;
+            }
             int topMatrixID;
             if (item.Type == EItemType.Matrix) {
                 //矩阵归到自己的层级，而非上一层级

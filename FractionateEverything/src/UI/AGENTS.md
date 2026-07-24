@@ -14,7 +14,8 @@ UI/
     ├── Theme/               # 主面板页面视觉骨架
     ├── MainWindow.cs          # 双面板总控（打开/关闭/切换/导航/保存）
     ├── MainWindowPageRegistry.cs # 页面注册中心（分类与过滤）
-    └── Civilization/          # 文明总览、协议恢复、远古科技树、文明成就
+    ├── Civilization/          # 文明总览、协议恢复、远古科技树
+    └── ProgressTask/          # 恢复手册和单存档成就
 └── Patches/      # 只保留 Common 通用控件 patch
 ```
 

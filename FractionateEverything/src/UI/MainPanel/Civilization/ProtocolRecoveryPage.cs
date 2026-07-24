@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using BepInEx.Configuration;
-using CommonAPI.Systems;
 using FE.Logic.Civilization.Configuration;
 using FE.Logic.Civilization.Protocols;
 using FE.Logic.Fractionation.FracRecipes;
 using FE.UI.Foundation;
 using FE.UI.Foundation.Window;
-using FE.UI.Layout;
 using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.UI;

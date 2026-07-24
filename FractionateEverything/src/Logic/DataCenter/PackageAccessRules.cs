@@ -17,5 +17,5 @@ public static class PackageAccessRules {
     /// <summary>
     /// 指示物品交互科技是否已解锁。
     /// </summary>
-    public static bool TechItemInteractionUnlocked => GameMain.history.TechUnlocked(TFE物品交互);
+    public static bool TechItemInteractionUnlocked => GameMain.history.TechUnlocked(TFE培养塔);
 }

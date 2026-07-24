@@ -1,9 +1,11 @@
-﻿using FE.Logic.Buildings;
+﻿using FE.Logic.Achievements;
+using FE.Logic.Buildings;
 using FE.Logic.Civilization;
 using FE.Logic.Fractionation.Process;
 using FE.Logic.Fractionation.FracRecipes;
 using FE.Logic.Items;
 using FE.Logic.Progression;
+using FE.Logic.Progression.Stacking;
 using FE.Logic.Station;
 using FE.Logic.VanillaRecipes;
 using FE.UI.MainPanel;
@@ -21,7 +23,6 @@ public static class FeatureBootstrap {
     public static void AddTranslations() {
         Register("分馏页面", "Fractionate", "分馏");
         ERecipeExtension.AddTranslations();
-        OutputInfo.AddTranslations();
         FeUtils.AddTranslations();
         BuildingManager.AddTranslations();
         ItemManager.AddTranslations();
@@ -30,6 +31,7 @@ public static class FeatureBootstrap {
         TechManager.AddTranslations();
         TutorialManager.AddTranslations();
         CivilizationModule.AddTranslations();
+        AchievementModule.AddTranslations();
         MainWindow.AddTranslations();
     }
 
@@ -73,6 +75,7 @@ public static class FeatureBootstrap {
         // AddFracRecipes 用到了 Init 生成的数据
         RecipeManager.AddFracRecipes();
         CivilizationModule.Initialize();
+        AchievementModule.Initialize();
         VanillaRecipeManager.AddVanillaRecipes();
         // CalculateItemModSaveCount 用到了 CalculateItemValues 生成的数据
         StationManager.CalculateItemModSaveCount();

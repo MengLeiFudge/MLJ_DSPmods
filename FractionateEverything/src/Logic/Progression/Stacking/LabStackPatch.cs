@@ -4,18 +4,18 @@ using System.Reflection.Emit;
 using HarmonyLib;
 using static FE.Utils.Utils;
 
-namespace FE.Logic.Manager;
+namespace FE.Logic.Progression.Stacking;
 
 /// <summary>
 /// 研究站堆叠适配。
 /// </summary>
-public static class LabManager {
+public static class LabStackPatch {
     private const int VanillaLabMaxStack = 4;
     private const int VanillaLabTransferLimit = 5;
     private const int LongRecipeTimeSpendThreshold = 5400000;
 
     public static int GetLabStackTransferLimit() {
-        int maxStack = MonitorManager.GetMonitorMaxStack();
+        int maxStack = StackingManager.GetCompatibleMaxStack(VanillaLabMaxStack);
         return Math.Max(VanillaLabTransferLimit,
             (VanillaLabTransferLimit * maxStack + VanillaLabMaxStack - 1) / VanillaLabMaxStack);
     }
@@ -36,7 +36,7 @@ public static class LabManager {
         IEnumerable<CodeInstruction> instructions) {
         var result = new List<CodeInstruction>(instructions);
         int inserted = 0;
-        var helper = AccessTools.Method(typeof(LabManager), nameof(GetAdjustedAssembleNeedThreshold));
+        var helper = AccessTools.Method(typeof(LabStackPatch), nameof(GetAdjustedAssembleNeedThreshold));
 
         for (int i = 0; i < result.Count; i++) {
             if (!IsStoreLocal(result[i], 1)) {
@@ -65,7 +65,7 @@ public static class LabManager {
         IEnumerable<CodeInstruction> instructions) {
         var result = new List<CodeInstruction>(instructions);
         int replaced = 0;
-        var helper = AccessTools.Method(typeof(LabManager), nameof(GetLabStackTransferLimit));
+        var helper = AccessTools.Method(typeof(LabStackPatch), nameof(GetLabStackTransferLimit));
 
         for (int i = 0; i < result.Count - 4; i++) {
             if (!IsLoadLocal(result[i])

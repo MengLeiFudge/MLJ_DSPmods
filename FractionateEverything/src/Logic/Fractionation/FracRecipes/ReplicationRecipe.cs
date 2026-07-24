@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using FE.Compatibility.Mods;
-using FE.Logic.Fractionation.Fractionators;
 using static FE.Logic.Items.ItemManager;
 using static FE.Logic.Fractionation.FracRecipes.RecipeManager;
 using static FE.Utils.Utils;
@@ -9,11 +8,11 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Fractionation.FracRecipes;
 
 /// <summary>
-/// 定义资源塔复制同种资源并保留既定自然伴生副产物的配方。
+/// 定义复制塔复制同种资源并保留既定自然伴生副产物的配方。
 /// </summary>
-public class MineralCopyRecipe : BaseRecipe {
+public class ReplicationRecipe : BaseRecipe {
     /// <summary>
-    /// 添加所有矿物复制配方
+    /// 添加当前目录中的全部复制配方。
     /// </summary>
     public static void CreateAll() {
         Create(I木材, 0.05f);
@@ -65,20 +64,20 @@ public class MineralCopyRecipe : BaseRecipe {
         Create(I核心素, 0.05f);
         Create(I能量碎片, 0.05f);
 
-        //添加其他矿物的复制配方
+        // 自动补充其他模组或游戏版本注册的资源复制配方。
         foreach (VeinProto vein in LDB.veins.dataArray) {
-            if (GetRecipe<MineralCopyRecipe>(ERecipe.MineralCopy, vein.MiningItem) == null) {
+            if (GetRecipe<ReplicationRecipe>(ERecipe.Replication, vein.MiningItem) == null) {
                 Create(vein.MiningItem, 0.05f);
-                LogWarning($"自动添加其他矿物复制配方，物品{LDB.items.Select(vein.MiningItem).name}");
+                LogWarning($"自动添加复制配方，物品{LDB.items.Select(vein.MiningItem).name}");
             }
         }
         foreach (ItemProto item in LDB.items.dataArray) {
             if (item.Type == EItemType.Resource
-                && GetRecipe<MineralCopyRecipe>(ERecipe.MineralCopy, item.ID) == null
+                && GetRecipe<ReplicationRecipe>(ERecipe.Replication, item.ID) == null
                 && LDB.recipes.dataArray.Any(recipe =>
                     recipe.Items.Contains(item.ID) || recipe.Results.Contains(item.ID))) {
                 Create(item.ID, 0.05f);
-                LogWarning($"自动添加其他矿物复制配方，物品{item.name}");
+                LogWarning($"自动添加复制配方，物品{item.name}");
             }
         }
     }
@@ -93,7 +92,7 @@ public class MineralCopyRecipe : BaseRecipe {
             return;
         }
         outputAppend.RemoveAll(info => itemValue[info.OutputID] >= maxValue);
-        AddRecipe(new MineralCopyRecipe(inputID, baseSuccessRatio,
+        AddRecipe(new ReplicationRecipe(inputID, baseSuccessRatio,
             [
                 new(1.000f, inputID, 2),
             ],
@@ -103,19 +102,16 @@ public class MineralCopyRecipe : BaseRecipe {
     /// <summary>
     /// 配方类型
     /// </summary>
-    public override ERecipe RecipeType => ERecipe.MineralCopy;
+    public override ERecipe RecipeType => ERecipe.Replication;
 
     /// <summary>
-    /// 创建矿物复制塔配方实例
+    /// 初始化一项复制配方。
     /// </summary>
     /// <param name="inputID">输入物品ID</param>
     /// <param name="baseSuccessRatio">最大成功率</param>
     /// <param name="outputMain">主输出物品</param>
     /// <param name="outputAppend">附加输出物品</param>
-    /// <summary>
-    /// 初始化 MineralCopyRecipe 的新实例。
-    /// </summary>
-    public MineralCopyRecipe(int inputID, float baseSuccessRatio, List<OutputInfo> outputMain,
+    public ReplicationRecipe(int inputID, float baseSuccessRatio, List<OutputInfo> outputMain,
         List<OutputInfo> outputAppend)
         : base(inputID, baseSuccessRatio, outputMain, outputAppend) { }
 }

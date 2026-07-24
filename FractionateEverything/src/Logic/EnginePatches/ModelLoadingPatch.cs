@@ -10,11 +10,28 @@ namespace FE.Logic.EnginePatches;
 /// 模型加载阶段的原型数组容量修正补丁。
 /// </summary>
 public static class ModelLoadingPatch {
-    [HarmonyPatch(typeof(SpaceSector), nameof(SpaceSector.InitPrefabDescArray))]
-    [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.InitPrefabDescArray))]
-    [HarmonyPatch(typeof(ModelProtoSet), nameof(ModelProtoSet.OnAfterDeserialize))]
     [HarmonyTranspiler]
+    [HarmonyPatch(typeof(SpaceSector), nameof(SpaceSector.InitPrefabDescArray))]
+    public static IEnumerable<CodeInstruction> SpaceSector_InitPrefabDescArray_Transpiler(
+        IEnumerable<CodeInstruction> instructions) {
+        return ResizePrefabDescArray(instructions);
+    }
+
+    [HarmonyTranspiler]
+    [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.InitPrefabDescArray))]
+    public static IEnumerable<CodeInstruction> PlanetFactory_InitPrefabDescArray_Transpiler(
+        IEnumerable<CodeInstruction> instructions) {
+        return ResizePrefabDescArray(instructions);
+    }
+
+    [HarmonyTranspiler]
+    [HarmonyPatch(typeof(ModelProtoSet), nameof(ModelProtoSet.OnAfterDeserialize))]
     public static IEnumerable<CodeInstruction> ModelProtoSet_OnAfterDeserialize_Transpiler(
+        IEnumerable<CodeInstruction> instructions) {
+        return ResizePrefabDescArray(instructions);
+    }
+
+    private static IEnumerable<CodeInstruction> ResizePrefabDescArray(
         IEnumerable<CodeInstruction> instructions) {
         if (GenesisBook.Enable || TheyComeFromVoid.Enable) {
             return instructions;

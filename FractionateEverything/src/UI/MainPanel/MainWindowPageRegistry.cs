@@ -38,11 +38,10 @@ public static class MainWindowPageRegistry {
             CivilizationOverviewPage.UpdateUI),
         new(CivilizationCategoryName, "文明协议恢复", ProtocolRecoveryPage.CreateUI, ProtocolRecoveryPage.UpdateUI),
         new(CivilizationCategoryName, "远古科技树", AncientTechTreePage.CreateUI, AncientTechTreePage.UpdateUI),
-        new(CivilizationCategoryName, "文明成就", CivilizationAchievementPage.CreateUI,
-            CivilizationAchievementPage.UpdateUI),
 
         new(ResourceInteractionCategoryName, "物品交互", ItemInteraction.CreateUI, ItemInteraction.UpdateUI),
         new(ProgressTaskCategoryName, "恢复手册", RecoveryGuide.CreateUI, RecoveryGuide.UpdateUI),
+        new(ProgressTaskCategoryName, "成就", AchievementPage.CreateUI, AchievementPage.UpdateUI),
 
         new(ArchiveCategoryName, "配方图鉴", RecipeGallery.CreateUI, RecipeGallery.UpdateUI),
         new(ArchiveCategoryName, "开发日记", DevelopmentDiary.CreateUI, DevelopmentDiary.UpdateUI),

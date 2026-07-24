@@ -1,18 +1,23 @@
 ﻿using System.Collections.Generic;
+using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
 using static FE.Utils.Utils;
 
-namespace FE.Logic.Progression;
+namespace FE.Logic.Progression.Stacking;
 
 /// <summary>
 /// 集装分拣器堆叠上限补丁。保持原版行为，只替换硬编码的 4 层假设。
 /// </summary>
 public static class InserterStackPatch {
+    [HarmonyTargetMethods]
+    public static IEnumerable<MethodBase> TargetMethods() {
+        yield return AccessTools.Method(typeof(InserterComponent), nameof(InserterComponent.InternalUpdate));
+        yield return AccessTools.Method(typeof(InserterComponent), nameof(InserterComponent.InternalUpdate_Bidirectional));
+        yield return AccessTools.Method(typeof(InserterComponent), nameof(InserterComponent.InternalUpdateNoAnim));
+    }
+
     [HarmonyTranspiler]
-    [HarmonyPatch(typeof(InserterComponent), nameof(InserterComponent.InternalUpdate))]
-    [HarmonyPatch(typeof(InserterComponent), nameof(InserterComponent.InternalUpdate_Bidirectional))]
-    [HarmonyPatch(typeof(InserterComponent), nameof(InserterComponent.InternalUpdateNoAnim))]
     public static IEnumerable<CodeInstruction> InserterComponent_InternalUpdate_Transpiler(
         IEnumerable<CodeInstruction> instructions) {
         var result = new List<CodeInstruction>(instructions);

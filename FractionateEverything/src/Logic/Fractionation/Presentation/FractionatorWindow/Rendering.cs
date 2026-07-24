@@ -151,7 +151,7 @@ public static partial class FractionatorWindow {
         List<ProductOutputInfo> products = fractionator.products(src.factory);
 
         if (fractionator.isWorking) {
-            if (buildingID == IFE交互塔
+            if (buildingID == IFE培养塔
                 && fractionator.belt0 > 0
                 && fractionator.belt1 <= 0
                 && fractionator.belt2 <= 0) {
@@ -222,10 +222,10 @@ public static partial class FractionatorWindow {
 
     private static BaseRecipe GetRecipeForBuilding(int buildingID, int fluidId) {
         return buildingID switch {
-            IFE交互塔 => GetRecipe<BuildingTrainRecipe>(ERecipe.BuildingTrain, fluidId),
-            IFE资源塔 => GetRecipe<MineralCopyRecipe>(ERecipe.MineralCopy, fluidId),
+            IFE培养塔 => GetRecipe<CultivationRecipe>(ERecipe.Cultivation, fluidId),
+            IFE解析塔 => GetRecipe<AnalysisRecipe>(ERecipe.Analysis, fluidId),
+            IFE复制塔 => GetRecipe<ReplicationRecipe>(ERecipe.Replication, fluidId),
             IFE转化塔 => GetRecipe<ConversionRecipe>(ERecipe.Conversion, fluidId),
-            IFE解析塔 => GetRecipe<RectificationRecipe>(ERecipe.Rectification, fluidId),
             _ => null
         };
     }

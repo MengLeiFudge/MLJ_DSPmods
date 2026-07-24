@@ -24,6 +24,7 @@ Fractionation/
 ## Process Rules
 
 - `Process/ProcessManager.cs` 保持核心 `InternalUpdate<T>` 集中可读。
+- 四塔运行分发必须按建筑 ID 显式映射到对应 handler 和 `ERecipe`；不得用目录下标索引另一份平行 handler 数组。
 - 完整处理流程内部的传送带输入输出 helper 留在 `Process/ProcessManager.cs`。
 - 能耗 IL patch 放 `Process/PowerPatch.cs`。
 - 性能探针和日志桶放 `Process/Perf.cs`。
@@ -32,6 +33,7 @@ Fractionation/
 ## Fractionator Rules
 
 - 分馏塔定义、科技运行投影和单塔实例状态放 `Fractionators`。
+- 四塔 active 列表、UI、注册和文档统一按培养、解析、复制、转化排列；对应 `ERecipe` 为 `Cultivation/Analysis/Replication/Conversion`，连续取值 `1/2/3/4`，不得保留旧类型 alias 或开发期数值兼容。
 - `TowerRuntimeModifierCache` 是科技树投影结果，不保存、不自行计算科技条件。
 - 五项能力彼此保持独立；对每一项能力，四塔必须接入同一份控制代码、状态字段和 UI。每塔布尔值可以不同，但不得按塔型或配方属性省略整项能力。
 - 主路锁定和副产物弃置采用“塔型科技许可 + 配方累计成功校准 + 单塔实例设置”三层约束。

@@ -8,8 +8,11 @@
 Progression/
 ├── TechManager/          # 隐藏科技注册、矩阵进度、恢复状态和运行解锁 patch
 ├── Tutorials/            # G 键教程翻译、注册和窗口 patch
-├── StackingManager.cs    # 原版堆叠科技到 FE 建筑运行上限的投影
-└── InserterStackPatch.cs # 分拣器堆叠兼容 patch
+└── Stacking/             # 堆叠状态及分拣器、实验室、流速监控兼容 patch
+    ├── StackingManager.cs
+    ├── InserterStackPatch.cs
+    ├── LabStackPatch.cs
+    └── MonitorStackPatch.cs
 ```
 
 ## Rules
@@ -21,3 +24,4 @@ Progression/
 - 教程正文翻译放 `Tutorials/TutorialTexts.cs`。
 - 教程窗口 patch 放 `Tutorials/TutorialWindowPatch.cs`。
 - 建筑堆叠能力只读取原版堆叠科技，不恢复 FE 旧建筑等级。
+- 所有由 `StackingManager.CurrentMaxStack` 驱动的游戏组件兼容补丁统一放 `Stacking/`；不要重新建立无领域归属的 `Logic/Manager`。

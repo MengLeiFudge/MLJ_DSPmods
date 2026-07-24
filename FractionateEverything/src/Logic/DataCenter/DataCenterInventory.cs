@@ -75,6 +75,9 @@ public static class DataCenterInventory {
     /// 从数据中心取出指定物品，再将其放入玩家背包/物流背包/手上。
     /// </summary>
     public static void ClickToMoveModDataItem(int itemId, bool leftClick) {
+        if (!PackageAccessRules.TechItemInteractionUnlocked) {
+            return;
+        }
         ItemProto item = LDB.items.Select(itemId);
         if (item == null) {
             return;
@@ -86,9 +89,10 @@ public static class DataCenterInventory {
         lock (centerItemCount) {
             count = TakeItemFromModData(itemId, count, out inc, true);
         }
-        if (count > 0) {
-            ManualExtractCount++;
+        if (count <= 0) {
+            return;
         }
+        ManualExtractCount++;
         if (itemId == I沙土) {
             if (GameMain.mainPlayer.inhandItemId != I沙土) {
                 GameMain.mainPlayer.ThrowHandItems();

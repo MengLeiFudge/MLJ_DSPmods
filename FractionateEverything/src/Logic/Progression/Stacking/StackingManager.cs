@@ -4,7 +4,7 @@ using FE.Logic.Buildings;
 using FE.Logic.Fractionation.Process;
 using static FE.Utils.Utils;
 
-namespace FE.Logic.Progression;
+namespace FE.Logic.Progression.Stacking;
 
 /// <summary>
 /// 统一堆叠系统。T1607 前维持 1，T1607 后由 FE 面板成长线统一控制所有相关系统。
@@ -70,6 +70,8 @@ public static class StackingManager {
     public static int GetFractionatorMaxStack() => CurrentMaxStack;
 
     public static int GetLogisticStationMaxStack() => CurrentMaxStack;
+
+    public static int GetCompatibleMaxStack(int vanillaMaxStack) => Math.Max(vanillaMaxStack, CurrentMaxStack);
 
     public static int ClampStack(int stack) => Math.Max(LockedMaxStack, Math.Min(AbsoluteMaxStack, stack));
 

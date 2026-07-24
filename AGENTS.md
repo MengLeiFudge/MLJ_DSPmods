@@ -18,6 +18,8 @@ Multiple DSP mods in one solution:
 
 **Output path rule:** Debug build output is fixed to `bin\Debug`. Do not introduce OS-specific output folders, and do not allow target-framework suffixes in the output path.
 
+**Intermediate output rule:** Windows MSBuild/NuGet must keep project intermediates under `obj\`, while Linux `dotnet` and `csharp-ls` use `obj/linux/`. Do not point both operating systems at the same `project.assets.json`; their restore graphs contain platform-specific paths and targets and will invalidate the other toolchain.
+
 **Assembly metadata rule:** `Directory.Build.props` must keep `IncludeSourceRevisionInInformationalVersion=false`. Do not embed the current Git revision into `AssemblyInformationalVersion`, because full-solution Debug builds recompile every packaged project and would otherwise make unrelated DLLs change whenever `HEAD` changes.
 
 **External mod reference rule:** `FractionateEverything` compile-time references for external R2 mods should resolve from `ExternalModReferences.generated.props` when possible. Generate it by running `AfterBuildEvent.exe 6` in the main Windows-mounted checkout after changing R2 mod versions. The generator reads `ProfileDir\mods.yml` for the selected package versions, then resolves DLLs from `R2CacheDir\<package>\<version>\...` so disabled profile files such as `.dll.old` do not become the primary compile reference. `ExternalModReferences.generated.props` is local/generated and must not be committed. `FractionateEverything.csproj` may keep profile plugin `.dll/.dll.old` lookup only as a fallback.
@@ -114,35 +116,38 @@ cd "/mnt/d/project/dsp/MLJ_DSPmods/AfterBuildEvent/bin/Debug"
 ```
 FractionateEverything/src/
 ├── FractionateEverything.cs    # BepInEx plugin entry point (Awake, config, Harmony)
-├── Bootstrap/                  # FeatureBootstrap lifecycle orchestration
-├── Persistence/                # FeatureSaveRegistry save/load dispatch
+├── Lifecycle/                  # Feature bootstrap and save/load dispatch
 ├── Compatibility/              # Per-mod detection + integration → Compatibility/AGENTS.md
 │   ├── Mods/                   # General external mod integrations
-│   ├── Nebula/                 # Multiplayer packets and sync hooks
-│   └── DarkFog/                # They Come From Void compatibility
+│   └── Nebula/                 # Multiplayer packets and sync hooks
 ├── Logic/                      # → Logic/AGENTS.md
-│   ├── Buildings/              # Building definitions + building growth → Buildings/AGENTS.md
-│   ├── Fractionation/          # Recipes, runtime process/state, fractionator window presentation
-│   ├── Station/                # Data-centre station interaction, station UI patches, proliferator pool
+│   ├── Achievements/           # Single-save milestones, state, rewards, runtime projection
+│   ├── Buildings/              # Building registration and FE 2.x Proto migration
+│   ├── Civilization/           # Ancient stages, analysis, protocols, recovery, tech tree
 │   ├── DataCenter/             # Data centre inventory + package access patches
-│   ├── Items/                  # Item prototypes/value/matrix helpers + item presentation patches
-│   ├── Civilization/           # Ancient stages, analysis, protocols, tech tree, achievements, migration
-│   ├── Progression/            # Tech and tutorial systems
 │   ├── DarkFog/                # FE dark-fog branch and combat progression
 │   ├── EnginePatches/          # Standalone engine/data loading transpilers
-│   └── Manager/                # Transitional/shared managers only; do not add new feature managers
+│   ├── Fractionation/          # Recipes, process/state, tower definitions and presentation
+│   ├── Items/                  # Item prototypes/value/matrix helpers + item presentation patches
+│   ├── Progression/            # Hidden tech, stacking compatibility, starter flow and tutorials
+│   ├── Station/                # Data-centre station interaction and station UI patches
+│   └── VanillaRecipes/         # Vanilla recipe adjustment state and runtime sync
 ├── UI/                         # → UI/AGENTS.md
-│   ├── Components/             # Reusable widgets (MyWindow, MyImageButton, …) → Components/AGENTS.md
+│   ├── Controls/               # Reusable widgets → Controls/AGENTS.md
+│   ├── Foundation/             # Window lifecycle and RectTransform helpers
+│   ├── Layout/                 # Grid DSL and layout runtime
 │   ├── Patches/Common/         # UI-specific common control patches
 │   └── MainPanel/              # FE main panel pages → MainPanel/AGENTS.md
 │       ├── MainWindow.cs       # Dual-panel lifecycle hub (MessageBox + Analysis)
 │       ├── MainWindowPageRegistry.cs # Page registry + category filtering
-│       ├── Archive/            # Stats, recipe gallery, dev diary
-│       ├── Civilization/       # Overview, protocol recovery, ancient tech tree, achievements
-│       ├── CoreOperate/        # Recipe/building operate panels
-│       ├── ProgressTask/       # Quests, achievements, main tasks
-│       ├── ResourceInteraction/ # DataCentre item interaction
-│       └── Setting/            # VIP, sandbox, misc config
+│       ├── Archive/            # Recipe gallery and development diary
+│       ├── Civilization/       # Overview, protocol recovery and ancient tech tree
+│       ├── CoreOperate/        # Fractionation and vanilla recipe operations
+│       ├── ProgressTask/       # Recovery guide and achievements
+│       ├── ResourceInteraction/ # Data-centre item interaction
+│       ├── Setting/            # Miscellaneous settings
+│       ├── Shell/              # MessageBox and Analysis panel shells
+│       └── Theme/              # Shared page framing and visual assets
 └── Utils/                      # Shared low-level utilities and proto IDs → Utils/AGENTS.md
     ├── ProtoID.cs              # ALL proto ID constants (I/R/M/T prefix + IFE/RFE/MFE/TFE for mod)
     └── PackageUtils.cs         # Package/data-centre shared flags and translations

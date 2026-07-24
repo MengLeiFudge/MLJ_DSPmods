@@ -2,21 +2,20 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using FE.Logic.Progression;
 using HarmonyLib;
 using static FE.Utils.Utils;
 
-namespace FE.Logic.Manager;
+namespace FE.Logic.Progression.Stacking;
 
 /// <summary>
 /// 流速监测器上限和货物容量扩展逻辑。
 /// </summary>
-public static class MonitorManager {
+public static class MonitorStackPatch {
     private const int VanillaMonitorMaxStack = 4;
     private const int VanillaMonitorMaxCargoPerSecond = 120;
     private const int VanillaMonitorMaxTargetCargoBytes = 72000;
 
-    public static int GetMonitorMaxStack() => Math.Max(VanillaMonitorMaxStack, StackingManager.CurrentMaxStack);
+    public static int GetMonitorMaxStack() => StackingManager.GetCompatibleMaxStack(VanillaMonitorMaxStack);
 
     public static int GetMonitorMaxCargoPerSecond() => VanillaMonitorMaxCargoPerSecond
                                                        / VanillaMonitorMaxStack
@@ -58,7 +57,7 @@ public static class MonitorManager {
         return ReplaceIntConstantWithCall(
             instructions,
             VanillaMonitorMaxStack,
-            AccessTools.Method(typeof(MonitorManager), nameof(GetMonitorMaxStack)),
+            AccessTools.Method(typeof(MonitorStackPatch), nameof(GetMonitorMaxStack)),
             3,
             "MonitorComponent.InternalUpdate max stack");
     }
@@ -70,25 +69,55 @@ public static class MonitorManager {
         return ReplaceIntConstantWithCall(
             instructions,
             VanillaMonitorMaxTargetCargoBytes,
-            AccessTools.Method(typeof(MonitorManager), nameof(GetMonitorMaxTargetCargoBytes)),
+            AccessTools.Method(typeof(MonitorStackPatch), nameof(GetMonitorMaxTargetCargoBytes)),
             2,
             "MonitorComponent.SetTargetCargoBytes max target");
     }
 
     [HarmonyTranspiler]
     [HarmonyPatch(typeof(UIMonitorWindow), nameof(UIMonitorWindow.RefreshMonitorWindow))]
-    [HarmonyPatch(typeof(UIMonitorWindow), nameof(UIMonitorWindow.OnPeriodValueChange))]
-    [HarmonyPatch(typeof(UIMonitorWindow), nameof(UIMonitorWindow.OnCargoFlowValueChange))]
-    [HarmonyPatch(typeof(UIMonitorWindow), nameof(UIMonitorWindow.OnCargoFlowInputFieldChange))]
-    [HarmonyPatch(typeof(UIMonitorWindow), nameof(UIMonitorWindow.OnCargoFlowInputFieldEndEdit))]
-    public static IEnumerable<CodeInstruction> UIMonitorWindow_CargoFlow_Transpiler(
+    public static IEnumerable<CodeInstruction> UIMonitorWindow_RefreshMonitorWindow_Transpiler(
         IEnumerable<CodeInstruction> instructions) {
+        return ReplaceCargoFlowConstant(instructions, nameof(UIMonitorWindow.RefreshMonitorWindow));
+    }
+
+    [HarmonyTranspiler]
+    [HarmonyPatch(typeof(UIMonitorWindow), nameof(UIMonitorWindow.OnPeriodValueChange))]
+    public static IEnumerable<CodeInstruction> UIMonitorWindow_OnPeriodValueChange_Transpiler(
+        IEnumerable<CodeInstruction> instructions) {
+        return ReplaceCargoFlowConstant(instructions, nameof(UIMonitorWindow.OnPeriodValueChange));
+    }
+
+    [HarmonyTranspiler]
+    [HarmonyPatch(typeof(UIMonitorWindow), nameof(UIMonitorWindow.OnCargoFlowValueChange))]
+    public static IEnumerable<CodeInstruction> UIMonitorWindow_OnCargoFlowValueChange_Transpiler(
+        IEnumerable<CodeInstruction> instructions) {
+        return ReplaceCargoFlowConstant(instructions, nameof(UIMonitorWindow.OnCargoFlowValueChange));
+    }
+
+    [HarmonyTranspiler]
+    [HarmonyPatch(typeof(UIMonitorWindow), nameof(UIMonitorWindow.OnCargoFlowInputFieldChange))]
+    public static IEnumerable<CodeInstruction> UIMonitorWindow_OnCargoFlowInputFieldChange_Transpiler(
+        IEnumerable<CodeInstruction> instructions) {
+        return ReplaceCargoFlowConstant(instructions, nameof(UIMonitorWindow.OnCargoFlowInputFieldChange));
+    }
+
+    [HarmonyTranspiler]
+    [HarmonyPatch(typeof(UIMonitorWindow), nameof(UIMonitorWindow.OnCargoFlowInputFieldEndEdit))]
+    public static IEnumerable<CodeInstruction> UIMonitorWindow_OnCargoFlowInputFieldEndEdit_Transpiler(
+        IEnumerable<CodeInstruction> instructions) {
+        return ReplaceCargoFlowConstant(instructions, nameof(UIMonitorWindow.OnCargoFlowInputFieldEndEdit));
+    }
+
+    private static IEnumerable<CodeInstruction> ReplaceCargoFlowConstant(
+        IEnumerable<CodeInstruction> instructions,
+        string methodName) {
         return ReplaceFloatConstantWithCall(
             instructions,
             VanillaMonitorMaxCargoPerSecond,
-            AccessTools.Method(typeof(MonitorManager), nameof(GetMonitorMaxCargoPerSecondFloat)),
+            AccessTools.Method(typeof(MonitorStackPatch), nameof(GetMonitorMaxCargoPerSecondFloat)),
             1,
-            "UIMonitorWindow cargo flow max");
+            $"UIMonitorWindow.{methodName} cargo flow max");
     }
 
     [HarmonyTranspiler]
@@ -98,7 +127,7 @@ public static class MonitorManager {
         return ReplaceIntConstantWithCall(
             instructions,
             VanillaMonitorMaxStack,
-            AccessTools.Method(typeof(MonitorManager), nameof(GetMonitorMaxStack)),
+            AccessTools.Method(typeof(MonitorStackPatch), nameof(GetMonitorMaxStack)),
             2,
             "UIMonitorWindow graph max stack");
     }

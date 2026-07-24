@@ -85,7 +85,10 @@ public static class PlayerInventoryAccess {
     /// 获取所有背包中指定物品的总数。
     /// </summary>
     public static long GetItemTotalCount(int itemId) {
-        return GetModDataItemCount(itemId, out _)
+        long dataCenterCount = PackageAccessRules.TechItemInteractionUnlocked
+            ? GetModDataItemCount(itemId, out _)
+            : 0;
+        return dataCenterCount
                + GetPackageItemCount(itemId, out _)
                + GetDeliveryPackageItemCount(itemId, out _);
     }
@@ -94,7 +97,12 @@ public static class PlayerInventoryAccess {
     /// 获取所有背包中指定物品的总数。
     /// </summary>
     public static long GetItemTotalCountAndInc(int itemId, out long inc) {
-        long ret = GetModDataItemCount(itemId, out long inc1)
+        long dataCenterCount = 0;
+        long inc1 = 0;
+        if (PackageAccessRules.TechItemInteractionUnlocked) {
+            dataCenterCount = GetModDataItemCount(itemId, out inc1);
+        }
+        long ret = dataCenterCount
                    + GetPackageItemCount(itemId, out int inc2)
                    + GetDeliveryPackageItemCount(itemId, out int inc3);
         inc = inc1 + inc2 + inc3;
@@ -149,7 +157,10 @@ public static class PlayerInventoryAccess {
                 //物流背包
                 GameMain.mainPlayer.deliveryPackage.TakeItems(ref itemIdTmp, ref realCountTemp, out incTemp);
             } else {
-                //Mod背包
+                // 数据中心物品交互需要先恢复培养塔协议。
+                if (!PackageAccessRules.TechItemInteractionUnlocked) {
+                    continue;
+                }
                 realCountTemp = TakeItemFromModData(itemIdTmp, realCountTemp, out incTemp, true);
             }
             needCount -= realCountTemp;

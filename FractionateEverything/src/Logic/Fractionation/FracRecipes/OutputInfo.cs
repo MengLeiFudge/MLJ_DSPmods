@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using FE.UI.MainPanel.Setting;
 using static FE.Logic.Items.ItemManager;
 
@@ -9,13 +10,6 @@ namespace FE.Logic.Fractionation.FracRecipes;
 /// 注意，只有<see cref="FE.Logic.Fractionation.FracRecipes.OutputInfo.OutputTotalCount"/>值是可变的，其余均在游戏初始化时固定。
 /// </summary>
 public class OutputInfo(float successRatio, int outputID, float outputCount) {
-    /// <summary>
-    /// 注册该分馏域对象需要的本地化文本。
-    /// </summary>
-    public static void AddTranslations() {
-        // "总计" translation removed - no longer displayed in product list
-    }
-
     /// <summary>
     /// 输出物品的概率
     /// </summary>
@@ -34,7 +28,28 @@ public class OutputInfo(float successRatio, int outputID, float outputCount) {
     /// <summary>
     /// 输出物品的总数，用于控制配方信息的隐藏显示
     /// </summary>
-    public int OutputTotalCount { get; set; } = 0;
+    public int OutputTotalCount {
+        get => Volatile.Read(ref outputTotalCount);
+        set => Volatile.Write(ref outputTotalCount, Math.Max(0, value));
+    }
+
+    private int outputTotalCount;
+
+    /// <summary>
+    /// 以线程安全方式累计产物数量，并在达到 int 上限后保持饱和。
+    /// </summary>
+    public void AddOutputCount(int count) {
+        if (count <= 0) {
+            return;
+        }
+
+        int current;
+        int updated;
+        do {
+            current = Volatile.Read(ref outputTotalCount);
+            updated = current > int.MaxValue - count ? int.MaxValue : current + count;
+        } while (Interlocked.CompareExchange(ref outputTotalCount, updated, current) != current);
+    }
 
     /// <summary>
     /// 判断 UI 是否展示该输出的概率。

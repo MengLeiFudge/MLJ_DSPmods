@@ -16,7 +16,7 @@ DataCenter/
 ## Rules
 
 - 数据中心库存状态只放 `DataCenterInventory`。
-- 玩家、交互塔、物流站和兼容模组发起的实体上传统一调用 `DataCenterUploadRouter`；内部奖励和联机库存同步仍直接写库存。
+- 玩家、培养塔、物流站和兼容模组发起的实体上传统一调用 `DataCenterUploadRouter`；内部奖励和联机库存同步仍直接写库存。
 - 玩家包裹和物流包裹访问只放 `PlayerInventoryAccess`。
 - `Patches` 只放让原版/外部系统从数据中心读取、写入或统计物品的 patch。
 - 纯 UI 防御、战斗显示修复、引擎安全兜底不放 `DataCenter/Patches`，应归属到对应功能域或 `EnginePatches`。

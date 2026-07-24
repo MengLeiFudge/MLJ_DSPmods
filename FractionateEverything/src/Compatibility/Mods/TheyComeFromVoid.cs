@@ -224,9 +224,10 @@ public static class TheyComeFromVoid {
         UIMessageBox.Show("重置技能点确认标题".Translate(), string.Format("重置技能点确认警告".Translate(), (object)need),
             "否".Translate(), "是".Translate(), 1, () => { }, () => {
                 int itemId = 6006;
-                int inc = 0;
-                //GameMain.mainPlayer.package.TakeTailItems(ref itemId, ref need, out inc);
-                PlayerInventoryAccess.TakeItemWithTip(itemId, need, out inc, false);
+                if (!PlayerInventoryAccess.TakeItemWithTip(itemId, need, out _)) {
+                    UISkillPointsWindow.RefreshResetButton();
+                    return;
+                }
                 SkillPoints.ResetAll();
                 UISkillPointsWindow.RefreshResetButton();
             });

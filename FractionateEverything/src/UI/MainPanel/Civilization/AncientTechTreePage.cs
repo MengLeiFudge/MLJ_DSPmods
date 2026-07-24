@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using BepInEx.Configuration;
-using CommonAPI.Systems;
 using FE.Logic.Civilization.Protocols;
 using FE.Logic.Civilization.Technology;
 using FE.UI.Foundation;
@@ -28,7 +27,7 @@ public static class AncientTechTreePage {
         public Image IncomingLine;
     }
 
-    private static readonly string[] TowerNames = ["交互塔", "资源塔", "转化塔", "解析塔"];
+    private static readonly string[] TowerNames = ["培养塔", "解析塔", "复制塔", "转化塔"];
     private static readonly NodeRefs[] nodeRefs = CreateNodeRefs();
     private static RectTransform tab;
     private static PageLayout.HeaderRefs header;
@@ -38,14 +37,10 @@ public static class AncientTechTreePage {
         Register("远古科技树", "Ancient Technology Tree");
         Register("远古科技树摘要", "Spend one shared point type; branch choice determines which tower improves first.",
             "只使用一种科技点；分支选择决定哪一种塔优先获得产线结构能力。");
-        Register("交互塔", "Interaction Tower");
-        Register("资源塔", "Resource Tower");
-        Register("转化塔", "Conversion Tower");
-        Register("解析塔", "Analysis Tower");
-        AddTowerTranslations("交互塔", "Interaction Tower");
-        AddTowerTranslations("资源塔", "Resource Tower");
-        AddTowerTranslations("转化塔", "Conversion Tower");
+        AddTowerTranslations("培养塔", "Cultivation Tower");
         AddTowerTranslations("解析塔", "Analysis Tower");
+        AddTowerTranslations("复制塔", "Replication Tower");
+        AddTowerTranslations("转化塔", "Conversion Tower");
         Register("购买节点", "Purchase");
         Register("节点已解锁", "Unlocked");
         Register("科技点不足", "Insufficient points");

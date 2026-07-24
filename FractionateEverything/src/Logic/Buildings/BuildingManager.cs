@@ -1,8 +1,7 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Fractionation.Process;
-using FE.Logic.Progression;
+using FE.Logic.Progression.Stacking;
 using FE.Logic.Station.Definitions;
 using HarmonyLib;
 using UnityEngine;
@@ -16,10 +15,10 @@ namespace FE.Logic.Buildings;
 /// </summary>
 public static partial class BuildingManager {
     public static void AddTranslations() {
-        InteractionTower.AddTranslations();
-        MineralReplicationTower.AddTranslations();
+        CultivationTower.AddTranslations();
+        AnalysisTower.AddTranslations();
+        ReplicationTower.AddTranslations();
         ConversionTower.AddTranslations();
-        RectificationTower.AddTranslations();
 
         PlanetaryInteractionStation.AddTranslations();
         InterstellarInteractionStation.AddTranslations();
@@ -32,30 +31,30 @@ public static partial class BuildingManager {
         //new(0.3726f, 0.8f, 1.0f)
         //new(0.549f, 0.5922f, 0.6235f)
 
-        InteractionTower.Create();
-        MineralReplicationTower.Create();
+        CultivationTower.Create();
+        AnalysisTower.Create();
+        ReplicationTower.Create();
         ConversionTower.Create();
-        RectificationTower.Create();
 
         PlanetaryInteractionStation.Create();
         InterstellarInteractionStation.Create();
     }
 
     public static void SetFractionatorMaterial() {
-        InteractionTower.SetMaterial();
-        MineralReplicationTower.SetMaterial();
+        CultivationTower.SetMaterial();
+        AnalysisTower.SetMaterial();
+        ReplicationTower.SetMaterial();
         ConversionTower.SetMaterial();
-        RectificationTower.SetMaterial();
 
         PlanetaryInteractionStation.SetMaterial();
         InterstellarInteractionStation.SetMaterial();
     }
 
     public static void UpdateHpAndEnergy() {
-        InteractionTower.UpdateHpAndEnergy();
-        MineralReplicationTower.UpdateHpAndEnergy();
+        CultivationTower.UpdateHpAndEnergy();
+        AnalysisTower.UpdateHpAndEnergy();
+        ReplicationTower.UpdateHpAndEnergy();
         ConversionTower.UpdateHpAndEnergy();
-        RectificationTower.UpdateHpAndEnergy();
 
         PlanetaryInteractionStation.UpdateHpAndEnergy();
         InterstellarInteractionStation.UpdateHpAndEnergy();
@@ -97,10 +96,10 @@ public static partial class BuildingManager {
     /// </summary>
     public static int ProductOutputMax(this ItemProto fractionator) {
         return fractionator.ID switch {
-            IFE交互塔 => BaseFracProductOutputMax * InteractionTower.MaxStack,
-            IFE资源塔 => BaseFracProductOutputMax * MineralReplicationTower.MaxStack,
+            IFE培养塔 => BaseFracProductOutputMax * CultivationTower.MaxStack,
+            IFE解析塔 => BaseFracProductOutputMax * AnalysisTower.MaxStack,
+            IFE复制塔 => BaseFracProductOutputMax * ReplicationTower.MaxStack,
             IFE转化塔 => BaseFracProductOutputMax * ConversionTower.MaxStack,
-            IFE解析塔 => BaseFracProductOutputMax * RectificationTower.MaxStack,
             _ => BaseFracProductOutputMax * StackingManager.CurrentMaxStack / 4
         };
     }
@@ -110,10 +109,10 @@ public static partial class BuildingManager {
     /// </summary>
     public static int FluidOutputMax(this ItemProto fractionator) {
         return fractionator.ID switch {
-            IFE交互塔 => BaseFracFluidOutputMax * Mathf.Max(1, InteractionTower.MaxStack / 4),
-            IFE资源塔 => BaseFracFluidOutputMax * Mathf.Max(1, MineralReplicationTower.MaxStack / 4),
+            IFE培养塔 => BaseFracFluidOutputMax * Mathf.Max(1, CultivationTower.MaxStack / 4),
+            IFE解析塔 => BaseFracFluidOutputMax * Mathf.Max(1, AnalysisTower.MaxStack / 4),
+            IFE复制塔 => BaseFracFluidOutputMax * Mathf.Max(1, ReplicationTower.MaxStack / 4),
             IFE转化塔 => BaseFracFluidOutputMax * Mathf.Max(1, ConversionTower.MaxStack / 4),
-            IFE解析塔 => BaseFracFluidOutputMax * Mathf.Max(1, RectificationTower.MaxStack / 4),
             _ => BaseFracFluidOutputMax * StackingManager.CurrentMaxStack / 4
         };
     }
@@ -123,10 +122,10 @@ public static partial class BuildingManager {
     /// </summary>
     public static int MaxStack(this ItemProto building) {
         return building.ID switch {
-            IFE交互塔 => InteractionTower.MaxStack,
-            IFE资源塔 => MineralReplicationTower.MaxStack,
+            IFE培养塔 => CultivationTower.MaxStack,
+            IFE解析塔 => AnalysisTower.MaxStack,
+            IFE复制塔 => ReplicationTower.MaxStack,
             IFE转化塔 => ConversionTower.MaxStack,
-            IFE解析塔 => RectificationTower.MaxStack,
             IFE行星内物流交互站 => PlanetaryInteractionStation.MaxStack,
             IFE星际物流交互站 => InterstellarInteractionStation.MaxStack,
             _ => 1
@@ -149,10 +148,10 @@ public static partial class BuildingManager {
     /// </summary>
     public static float PlrRatio(this ItemProto building) {
         return building.ID switch {
-            IFE交互塔 => InteractionTower.PlrRatio,
-            IFE资源塔 => MineralReplicationTower.PlrRatio,
+            IFE培养塔 => CultivationTower.PlrRatio,
+            IFE解析塔 => AnalysisTower.PlrRatio,
+            IFE复制塔 => ReplicationTower.PlrRatio,
             IFE转化塔 => ConversionTower.PlrRatio,
-            IFE解析塔 => RectificationTower.PlrRatio,
             _ => 1.0f
         };
     }
@@ -162,9 +161,7 @@ public static partial class BuildingManager {
     public static void Import(BinaryReader r) {
         r.ReadBlocks(
             ("OutputExtend", FractionatorOutputState.OutputExtendImport),
-            ("LockedOutput", FractionatorSingleLock.LockedOutputImport),
-            ("RectificationTuningTarget", AnalysisLineageTarget.LineageTargetImport),
-            ("AnalysisLineageTarget", AnalysisLineageTarget.LineageTargetImport),
+            ("LockedOutput", FractionatorMainOutputLock.LockedOutputImport),
             ("FractionatorByproductDiscard", FractionatorByproductDiscard.Import)
         );
     }
@@ -172,14 +169,14 @@ public static partial class BuildingManager {
     public static void Export(BinaryWriter w) {
         w.WriteBlocks(
             ("OutputExtend", FractionatorOutputState.OutputExtendExport),
-            ("LockedOutput", FractionatorSingleLock.LockedOutputExport),
+            ("LockedOutput", FractionatorMainOutputLock.LockedOutputExport),
             ("FractionatorByproductDiscard", FractionatorByproductDiscard.Export)
         );
     }
 
     public static void IntoOtherSave() {
         FractionatorOutputState.OutputExtendIntoOtherSave();
-        FractionatorSingleLock.LockedOutputIntoOtherSave();
+        FractionatorMainOutputLock.LockedOutputIntoOtherSave();
         FractionatorByproductDiscard.IntoOtherSave();
     }
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -149,8 +149,14 @@ static partial class AfterBuildEvent {
         builder.AppendLine("<Project>");
         builder.AppendLine(@"    <PropertyGroup Label=""ExternalModReferences"">");
         foreach (ExternalModReferenceResult result in results) {
+            string windowsHintPath = EscapeXml(result.HintPath);
+            string wslHintPath = EscapeXml(ConvertWindowsPathToWsl(result.HintPath));
             builder.AppendLine(
-                $"        <{result.PropertyName}>{EscapeXml(result.HintPath)}</{result.PropertyName}>");
+                $"        <{result.PropertyName} Condition=\"'$(OS)' == 'Windows_NT'\">{windowsHintPath}</{result.PropertyName}>");
+            if (!string.IsNullOrEmpty(wslHintPath)) {
+                builder.AppendLine(
+                    $"        <{result.PropertyName} Condition=\"'$(OS)' != 'Windows_NT' and Exists('{wslHintPath}')\">{wslHintPath}</{result.PropertyName}>");
+            }
             builder.AppendLine(
                 $"        <{result.PropertyName}Package>{EscapeXml(result.PackageName)}</{result.PropertyName}Package>");
             builder.AppendLine(
@@ -160,6 +166,16 @@ static partial class AfterBuildEvent {
         builder.AppendLine("</Project>");
 
         File.WriteAllText(ExternalModReferencesGeneratedPropsPath, builder.ToString(), new UTF8Encoding(false));
+    }
+
+    private static string ConvertWindowsPathToWsl(string path) {
+        if (path.Length < 3 || !char.IsLetter(path[0]) || path[1] != ':' ||
+            path[2] is not ('\\' or '/')) {
+            return "";
+        }
+
+        string relativePath = path.Substring(3).Replace('\\', '/');
+        return $"/mnt/{char.ToLowerInvariant(path[0])}/{relativePath}";
     }
 
     private static string EscapeXml(string value) {

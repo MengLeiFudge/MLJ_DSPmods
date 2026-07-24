@@ -2,14 +2,15 @@
 using System.IO;
 using System.Reflection;
 using BepInEx.Bootstrap;
-using FE.Logic.Buildings;
+using FE.Logic.Achievements;
 using FE.Logic.Civilization;
 using FE.Logic.Civilization.Analysis;
 using FE.Logic.Civilization.Protocols;
 using FE.Logic.Civilization.Technology;
 using FE.Logic.Fractionation.FracRecipes;
-using FE.Logic.Fractionation.Process;
 using FE.Logic.Fractionation.Fractionators;
+using FE.Logic.Progression;
+using FE.Logic.Progression.Stacking;
 using HarmonyLib;
 using NebulaAPI;
 using NebulaAPI.Interfaces;
@@ -45,7 +46,6 @@ public static class NebulaMultiplayerModAPI {
         assembly = pluginInfo.Instance.GetType().Assembly;
         var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.NebulaMultiplayerModAPI");
         harmony.PatchAll(typeof(NebulaMultiplayerModAPI));
-        NebulaModAPI.RegisterPackets(Assembly.GetExecutingAssembly());
         NebulaModAPI.OnMultiplayerGameStarted += OnMultiplayerGameStarted;
         NebulaModAPI.OnMultiplayerGameEnded += OnMultiplayerGameEnded;
         NebulaModAPI.OnPlayerJoinedGame += _ => {
@@ -74,7 +74,7 @@ public static class NebulaMultiplayerModAPI {
     }
 
     /// <summary>
-    /// 广播文明进度、配方校准和残片余额的当前权威快照。
+    /// 广播文明进度、成就、配方校准和残片余额的当前权威快照。
     /// </summary>
     public static void BroadcastCivilizationState() {
         if (!NebulaModAPI.IsMultiplayerActive
@@ -88,6 +88,7 @@ public static class NebulaMultiplayerModAPI {
             BinaryWriter writer = provider.BinaryWriter;
             writer.WriteBlocks(
                 ("Civilization", CivilizationModule.Export),
+                ("Achievements", AchievementModule.Export),
                 ("Recipes", RecipeManager.Export)
             );
             stateData = provider.CloseAndGetBytes();
@@ -100,7 +101,7 @@ public static class NebulaMultiplayerModAPI {
             fragmentInc = centerItemInc[IFE残片];
         }
         NebulaModAPI.MultiplayerSession.Network.SendPacket(new CivilizationStatePacket(stateData,
-            fragments, fragmentInc));
+            fragments, fragmentInc, StackingManager.ConfiguredMaxStack));
     }
 
     /// <summary>
@@ -203,6 +204,9 @@ public class CenterItemChangePacketProcessor : BasePacketProcessor<CenterItemCha
         int count = r.ReadInt32();
         int inc = r.ReadInt32();
         AddItemToModData(itemId, count, inc);
+        if (IsHost && count > 0 && FractionatorTowerCatalog.IsActiveFractionator(itemId)) {
+            TechManager.CheckTechUnlockCondition(itemId);
+        }
         if (NebulaModAPI.IsMultiplayerActive && IsHost) {
             NebulaModAPI.MultiplayerSession.Network.SendPacketExclude(packet, conn);
         }
@@ -221,6 +225,9 @@ public class CenterItemChangeLongPacketProcessor : BasePacketProcessor<CenterIte
         long count = r.ReadInt64();
         long inc = r.ReadInt64();
         AddItemToModData(itemId, count, inc);
+        if (IsHost && count > 0 && FractionatorTowerCatalog.IsActiveFractionator(itemId)) {
+            TechManager.CheckTechUnlockCondition(itemId);
+        }
         if (NebulaModAPI.IsMultiplayerActive && IsHost) {
             NebulaModAPI.MultiplayerSession.Network.SendPacketExclude(packet, conn);
         }
@@ -228,19 +235,21 @@ public class CenterItemChangeLongPacketProcessor : BasePacketProcessor<CenterIte
 }
 
 /// <summary>
-/// 文明进度、配方校准和检索货币的联机同步快照。
+/// 文明进度、成就、配方校准和检索货币的联机同步快照。
 /// </summary>
 public class CivilizationStatePacket {
     public byte[] data { get; set; }
     public long fragments { get; set; }
     public long fragmentInc { get; set; }
+    public int configuredMaxStack { get; set; }
 
     public CivilizationStatePacket() { }
 
-    public CivilizationStatePacket(byte[] data, long fragments, long fragmentInc) {
+    public CivilizationStatePacket(byte[] data, long fragments, long fragmentInc, int configuredMaxStack) {
         this.data = data;
         this.fragments = fragments;
         this.fragmentInc = fragmentInc;
+        this.configuredMaxStack = configuredMaxStack;
     }
 }
 
@@ -258,9 +267,12 @@ public class CivilizationStatePacketProcessor : BasePacketProcessor<Civilization
             BinaryReader reader = provider.BinaryReader;
             reader.ReadBlocks(
                 ("Civilization", CivilizationModule.Import),
+                ("Achievements", AchievementModule.Import),
                 ("Recipes", RecipeManager.Import)
             );
         }
+        StackingManager.ConfiguredMaxStack = packet.configuredMaxStack;
+        StackingManager.SyncRuntimeState();
         lock (centerItemCount) {
             long fragmentCount = Math.Max(0L, packet.fragments);
             long fragmentMaxInc = fragmentCount > long.MaxValue / 10L ? long.MaxValue : fragmentCount * 10L;
@@ -268,6 +280,7 @@ public class CivilizationStatePacketProcessor : BasePacketProcessor<Civilization
             centerItemInc[IFE残片] = Math.Max(0L, Math.Min(packet.fragmentInc, fragmentMaxInc));
         }
         CivilizationModule.AfterImport();
+        AchievementModule.AfterImport();
     }
 }
 
@@ -380,11 +393,6 @@ public class BuildingChangePacket {
 
     public BuildingChangePacket() { }
 
-    public BuildingChangePacket(int buildingId, int packetType) {
-        this.buildingId = buildingId;
-        this.packetType = packetType;
-    }
-
     public BuildingChangePacket(int buildingId, int packetType, int planetId, int entityId, int itemId) {
         this.buildingId = buildingId;
         this.packetType = packetType;
@@ -395,22 +403,23 @@ public class BuildingChangePacket {
 }
 
 /// <summary>
-/// 在多人游戏中同步分馏塔实例级主产物目标。
+/// 在多人游戏中同步分馏塔实例级主产物目标和副产物弃置状态。
 /// </summary>
 [RegisterPacketProcessor]
 public class BuildingChangePacketProcessor : BasePacketProcessor<BuildingChangePacket> {
     public override void ProcessPacket(BuildingChangePacket packet, INebulaConnection conn) {
+        if (packet == null || !FractionatorTowerCatalog.IsActiveFractionator(packet.buildingId)) {
+            return;
+        }
         switch (packet.packetType) {
             case 2:
-                FractionatorSingleLock.ApplyLockedOutputPacket(packet.planetId, packet.entityId, packet.itemId);
-                break;
-            case 3:
-                // 兼容旧版解析谱系目标包；新版四塔统一使用主路目标包类型 2。
-                FractionatorSingleLock.ApplyLockedOutputPacket(packet.planetId, packet.entityId, packet.itemId);
+                FractionatorMainOutputLock.ApplyLockedOutputPacket(packet.planetId, packet.entityId, packet.itemId);
                 break;
             case 4:
                 FractionatorByproductDiscard.ApplyPacket(packet.planetId, packet.entityId, packet.itemId != 0);
                 break;
+            default:
+                return;
         }
         if (NebulaModAPI.IsMultiplayerActive && IsHost) {
             NebulaModAPI.MultiplayerSession.Network.SendPacketExclude(packet, conn);

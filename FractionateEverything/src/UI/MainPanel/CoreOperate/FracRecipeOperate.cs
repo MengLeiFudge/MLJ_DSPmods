@@ -9,10 +9,8 @@ using FE.Logic.Civilization.Protocols;
 using FE.Logic.Fractionation.FracRecipes;
 using FE.Logic.Fractionation.FracRecipes.Runtime;
 using FE.Logic.Fractionation.Fractionators;
-using FE.Logic.Fractionation.Process;
 using FE.UI.Controls;
 using FE.UI.Foundation.Window;
-using FE.UI.Layout;
 using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.UI;
@@ -64,8 +62,6 @@ public static class FracRecipeOperate {
         Register("当前可运行", "Available");
         Register("协议未完整恢复，产物结构将在完整度达到100%后显示。",
             "The output structure becomes visible after protocol completeness reaches 100%.");
-        Register("主产物", "Main Outputs");
-        Register("副产物", "Byproducts");
         Register("无", "None");
         Register("输入", "Input");
         Register("基础成功率", "Base Success Rate");

@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
-using FE.Compatibility.Nebula;
 using FE.Logic.Civilization.Protocols;
 using FE.Logic.Civilization.Technology;
 using FE.Logic.Fractionation.Process;
 
-namespace FE.Logic.Civilization.Achievements;
+namespace FE.Logic.Achievements;
 
 /// <summary>
 /// 低频评估类型化条件，完成后立即让固定奖励生效。
@@ -12,14 +11,10 @@ namespace FE.Logic.Civilization.Achievements;
 public static class AchievementService {
     private static long lastEvaluationTick = long.MinValue;
 
-    public static void Tick() {
-        if (NebulaMultiplayerModAPI.IsMultiplayerActive && NebulaMultiplayerModAPI.IsClient) {
-            return;
-        }
-
+    public static bool Tick() {
         long tick = GameMain.gameTick;
         if (tick >= 0 && lastEvaluationTick >= 0 && tick - lastEvaluationTick < 60) {
-            return;
+            return false;
         }
         lastEvaluationTick = tick;
 
@@ -29,10 +24,7 @@ public static class AchievementService {
                 changed |= AchievementState.Complete(definition.AchievementKey);
             }
         }
-        if (changed) {
-            CivilizationRuntimeSync.Refresh();
-            NebulaMultiplayerModAPI.BroadcastCivilizationState();
-        }
+        return changed;
     }
 
     public static IReadOnlyList<AchievementDefinition> GetCompletedDefinitions() {

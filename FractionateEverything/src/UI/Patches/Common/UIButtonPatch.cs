@@ -3,6 +3,7 @@ using System.Reflection.Emit;
 using FE.Compatibility.Mods;
 using HarmonyLib;
 using UnityEngine;
+using static FE.Utils.Utils;
 
 namespace FE.UI.Patches.Common;
 
@@ -29,6 +30,10 @@ public static class UIButtonPatch {
             new CodeMatch(OpCodes.Callvirt,
                 AccessTools.PropertyGetter(typeof(GameObject), nameof(GameObject.activeSelf)))
         );
+        if (!matcher.IsValid) {
+            LogWarning("UIButtonPatch: 未找到 LateUpdate 提示层级调整锚点，保留原方法。");
+            return instructions;
+        }
         var ldLocOpr = matcher.Operand;
         var labels = matcher.Labels;
         matcher.Labels = null;

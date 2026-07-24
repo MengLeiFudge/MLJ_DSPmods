@@ -1,7 +1,7 @@
 ﻿using BuildBarTool;
 using CommonAPI.Systems;
 using FE.Compatibility.Mods;
-using FE.Logic.Progression;
+using FE.Logic.Progression.Stacking;
 using UnityEngine;
 using static FE.FractionateEverything;
 using static FE.Utils.Utils;
@@ -9,9 +9,9 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Fractionation.Fractionators;
 
 /// <summary>
-/// 交互塔
+/// 培养塔
 /// </summary>
-public static class InteractionTower {
+public static class CultivationTower {
     private static ItemProto item;
     private static ModelProto model;
     /// <summary>
@@ -49,22 +49,22 @@ public static class InteractionTower {
     /// 注册该分馏域对象需要的本地化文本。
     /// </summary>
     public static void AddTranslations() {
-        Register("交互塔", "Interaction Tower");
-        Register("I交互塔",
-            "The fractionator prototype may be cultivated into various fractionators. Furthermore, when the interaction tower receives a direct input and neither side is connected, the input item shall be transmitted to the fractionation data centre.",
-            "可以将分馏塔原胚培养为不同的分馏塔。除此之外，当交互塔的正面输入并且两侧无连接时，输入的物品会上传至分馏数据中心。");
+        Register("培养塔", "Cultivation Tower");
+        Register("I培养塔",
+            "Cultivates tower protos into different fractionators. When a direct input enters the front port while neither side is connected, the input item is uploaded to the Fractionation Data Centre.",
+            "将分馏塔原胚培养为不同的分馏塔。当前方输入物品且两侧均未连接时，输入物品会上传至分馏数据中心。");
     }
 
     /// <summary>
     /// 创建并注册该分馏塔的物品、配方和模型原型。
     /// </summary>
     public static void Create() {
-        item = ProtoRegistry.RegisterItem(IFE交互塔, "交互塔", "I交互塔",
+        item = ProtoRegistry.RegisterItem(IFE培养塔, "培养塔", "I培养塔",
             "Assets/fe/interaction-tower", tab分馏 * 1000 + 301, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         item.UnlockKey = -1;
-        item.IconTag = "jht";
-        model = ProtoRegistry.RegisterModel(MFE交互塔, item,
+        item.IconTag = "pyt";
+        model = ProtoRegistry.RegisterModel(MFE培养塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(OrbitalRing.Enable ? 6 : 5, item.GridIndex % 10, true);
     }

@@ -189,7 +189,7 @@ public static partial class FractionatorWindow {
             fluidRightText.fontSize = 14;
             frGo.SetActive(false);
 
-            lockStateText = CreateLabel(window, fluidRightText, "单锁".Translate(),
+            lockStateText = CreateLabel(window, fluidRightText, "主路锁定".Translate(),
                 new Vector3(_itemBoxLocalPos.x + 80f + _layoutOffsetX, FluidY - 38f, _itemBoxLocalPos.z));
             if (lockStateText != null) {
                 lockStateText.fontSize = 14;
@@ -197,7 +197,7 @@ public static partial class FractionatorWindow {
                 lockStateText.supportRichText = true;
             }
 
-            lockHintText = CreateLabel(window, fluidRightText, "右键设为单锁".Translate(),
+            lockHintText = CreateLabel(window, fluidRightText, "右键设为主路目标".Translate(),
                 new Vector3(_itemBoxLocalPos.x + 80f + _layoutOffsetX, FluidY - 56f, _itemBoxLocalPos.z));
             if (lockHintText != null) {
                 lockHintText.fontSize = 12;

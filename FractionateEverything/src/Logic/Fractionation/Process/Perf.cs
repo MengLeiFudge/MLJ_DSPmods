@@ -57,12 +57,12 @@ public static partial class ProcessManager {
         fractionatorPerfTicks[bucket] += elapsedTicks;
         UpdateFractionatorPerfMax(fractionatorPerfMaxTicks, bucket, elapsedTicks);
 
-        int handlerIndex = FractionatorTowerCatalog.GetActiveFractionatorIndex(buildingID);
+        int towerIndex = FractionatorTowerCatalog.GetActiveFractionatorIndex(buildingID);
         if (bucket == FractionatorPerfUpdateFe
-            && handlerIndex >= 0
-            && handlerIndex < fractionatorPerfFeUpdateCallsByType.Length) {
-            fractionatorPerfFeUpdateCallsByType[handlerIndex]++;
-            fractionatorPerfFeUpdateTicksByType[handlerIndex] += elapsedTicks;
+            && towerIndex >= 0
+            && towerIndex < fractionatorPerfFeUpdateCallsByType.Length) {
+            fractionatorPerfFeUpdateCallsByType[towerIndex]++;
+            fractionatorPerfFeUpdateTicksByType[towerIndex] += elapsedTicks;
         }
 
         MaybeLogFractionatorPerf();
@@ -202,13 +202,13 @@ public static partial class ProcessManager {
 
     private static string FormatFeTypePerf(long[] calls, long[] ticks) {
         return "feTypes="
-               + FormatFeType(IFE交互塔, calls, ticks)
+               + FormatFeType(IFE培养塔, calls, ticks)
                + ";"
-               + FormatFeType(IFE资源塔, calls, ticks)
+               + FormatFeType(IFE解析塔, calls, ticks)
                + ";"
-               + FormatFeType(IFE转化塔, calls, ticks)
+               + FormatFeType(IFE复制塔, calls, ticks)
                + ";"
-               + FormatFeType(IFE解析塔, calls, ticks);
+               + FormatFeType(IFE转化塔, calls, ticks);
     }
 
     private static string FormatStagePerf(long[] calls, long[] ticks, long[] maxTicks) {

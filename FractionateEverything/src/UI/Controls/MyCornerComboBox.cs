@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using BepInEx.Configuration;
@@ -89,7 +89,7 @@ public class MyCornerComboBox : MonoBehaviour {
 
     public void SetConfigEntry(ConfigEntry<int> config) {
         if (_selChanged != null) OnSelChanged -= _selChanged;
-        if (_configChanged != null) config.SettingChanged -= _configChanged;
+        if (_configChanged != null && _config != null) _config.SettingChanged -= _configChanged;
 
         _comboBox.itemIndex = config.Value;
         _config = config;

@@ -141,8 +141,6 @@ public static class IconSetPatch {
         __instance.recipeIconIndexBuffer.SetData(__instance.recipeIconIndex);
         TechProto[] dataArray4 = LDB.techs.dataArray;
         int length4 = dataArray4.Length;
-        int lastTechId = 0;
-        uint lastTechIconIndex = 0;
         Dictionary<string, uint> techIconIndexByPath = [];
         for (int index = length4 - 1; index >= 0; --index) {
             uint num17 = 0;
@@ -152,16 +150,10 @@ public static class IconSetPatch {
                 if (__instance.spriteIndexMap.ContainsKey(iconSprite)) {
                     num17 = __instance.spriteIndexMap[iconSprite];
                 } else {
-                    if (techProto.ID > 2000 && techProto.ID == lastTechId - 1) {
-                        num17 = lastTechIconIndex;
-                        lastTechId = techProto.ID;
-                    } else if (!string.IsNullOrEmpty(techProto.IconPath)
-                               && techIconIndexByPath.TryGetValue(techProto.IconPath, out uint reusedTechIconIndex)) {
+                    if (!string.IsNullOrEmpty(techProto.IconPath)
+                        && techIconIndexByPath.TryGetValue(techProto.IconPath, out uint reusedTechIconIndex)) {
                         num17 = reusedTechIconIndex;
-                        lastTechId = techProto.ID;
-                        lastTechIconIndex = num17;
                     } else {
-                        lastTechId = techProto.ID;
                         num17 = ++num1;
                         if (num17 >= 625U) {
                             num17 = 0U;
@@ -176,7 +168,6 @@ public static class IconSetPatch {
                         if (!string.IsNullOrEmpty(techProto.IconPath)) {
                             techIconIndexByPath[techProto.IconPath] = num17;
                         }
-                        lastTechIconIndex = num17;
                     }
                 }
                 if (!string.IsNullOrEmpty(techProto.IconTag)) {

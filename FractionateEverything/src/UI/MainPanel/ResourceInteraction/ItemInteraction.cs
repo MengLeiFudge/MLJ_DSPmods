@@ -39,10 +39,10 @@ public static class ItemInteraction {
         (EItemType.Matrix, "科学矩阵"),
     ];
     private static readonly int[][] FractionateGroupItemIdGroups = [
-        [IFE交互塔原胚, IFE资源塔原胚, IFE转化塔原胚, IFE解析塔原胚, IFE通用原胚],
+        [IFE培养塔原胚, IFE解析塔原胚, IFE复制塔原胚, IFE转化塔原胚, IFE通用原胚],
         [IFE残片],
-        [IFE交互塔, IFE行星内物流交互站, IFE星际物流交互站],
-        [IFE资源塔, IFE转化塔, IFE解析塔],
+        [IFE培养塔, IFE行星内物流交互站, IFE星际物流交互站],
+        [IFE解析塔, IFE复制塔, IFE转化塔],
         [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵],
         [I能量碎片, I黑雾矩阵, I物质重组器, I硅基神经元, I负熵奇点, I核心素],
     ];

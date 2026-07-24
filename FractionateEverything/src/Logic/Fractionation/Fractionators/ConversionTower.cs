@@ -1,7 +1,7 @@
 ﻿using BuildBarTool;
 using CommonAPI.Systems;
 using FE.Compatibility.Mods;
-using FE.Logic.Progression;
+using FE.Logic.Progression.Stacking;
 using UnityEngine;
 using static FE.FractionateEverything;
 using static FE.Utils.Utils;

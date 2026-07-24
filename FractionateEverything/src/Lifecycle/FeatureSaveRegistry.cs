@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using FE.Logic.Achievements;
 using FE.Logic.Buildings;
 using FE.Logic.Civilization;
 using FE.Logic.DarkFog;
@@ -6,6 +7,7 @@ using FE.Logic.Fractionation.Process;
 using FE.Logic.Fractionation.FracRecipes;
 using FE.Logic.DataCenter;
 using FE.Logic.Progression;
+using FE.Logic.Progression.Stacking;
 using FE.Logic.Station;
 using FE.Logic.VanillaRecipes;
 using FE.UI.MainPanel;
@@ -26,11 +28,13 @@ public static class FeatureSaveRegistry {
             ("Item", DataCenterInventory.Import),
             ("Process", ProcessManager.Import),
             ("AncientCivilization", CivilizationModule.Import),
+            ("Achievements", AchievementModule.Import),
             ("UI", MainWindow.Import),
             ("Station", StationManager.Import)
         );
         VanillaRecipeManager.SyncRuntimeStateAfterImport();
         CivilizationModule.AfterImport();
+        AchievementModule.AfterImport();
     }
 
     public static void Export(BinaryWriter w) {
@@ -42,6 +46,7 @@ public static class FeatureSaveRegistry {
             ("Item", DataCenterInventory.Export),
             ("Process", ProcessManager.Export),
             ("AncientCivilization", CivilizationModule.Export),
+            ("Achievements", AchievementModule.Export),
             ("UI", MainWindow.Export),
             ("Station", StationManager.Export)
         );
@@ -56,6 +61,7 @@ public static class FeatureSaveRegistry {
         ProcessManager.IntoOtherSave();
         DarkFogCombatManager.IntoOtherSave();
         CivilizationModule.IntoOtherSave();
+        AchievementModule.IntoOtherSave();
         MainWindow.IntoOtherSave();
         StationManager.IntoOtherSave();
 

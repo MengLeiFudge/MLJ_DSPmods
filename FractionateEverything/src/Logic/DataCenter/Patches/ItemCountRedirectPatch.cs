@@ -21,26 +21,42 @@ public static class ItemCountRedirectPatch {
     /// <summary>
     /// 获取玩家持有的物品数目时，返回 背包+物流背包+Mod背包 的物品总数
     /// </summary>
-    [HarmonyTranspiler]
-    [HarmonyPriority(Priority.High)]
-    [HarmonyAfter(BuildToolOpt.GUID)]
-    [HarmonyPatch(typeof(BuildTool_Reform), nameof(BuildTool_Reform.ReformAction))]
-    [HarmonyPatch(typeof(BuildTool_Reform), nameof(BuildTool_Reform.RemoveBasePit))]
-    [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.EntityAutoReplenishIfNeeded))]
-    [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.StationAutoReplenishIfNeeded))]
-    [HarmonyPatch(typeof(PlayerAction_Inspect), nameof(PlayerAction_Inspect.GameTick))]
-    [HarmonyPatch(typeof(UIBlueprintInspector), nameof(UIBlueprintInspector.SetComponentItem))]
-    [HarmonyPatch(typeof(UIBlueprintInspector), nameof(UIBlueprintInspector._OnUpdate))]
-    [HarmonyPatch(typeof(UIBuildMenu), nameof(UIBuildMenu.OnChildButtonClick))]
-    [HarmonyPatch(typeof(UIBuildMenu), nameof(UIBuildMenu.SetCurrentCategory))]
-    [HarmonyPatch(typeof(UIBuildMenu), nameof(UIBuildMenu._OnUpdate))]
-    [HarmonyPatch(typeof(UIControlPanelObjectEntry), nameof(UIControlPanelObjectEntry.ReplenishItems))]
-    [HarmonyPatch(typeof(UIHandTip), nameof(UIHandTip._OnUpdate))]
-    [HarmonyPatch(typeof(UIItemup), nameof(UIItemup.Up))]
-    [HarmonyPatch(typeof(UIRemoveBasePitButton), nameof(UIRemoveBasePitButton._OnUpdate))]
-    [HarmonyPatch(typeof(UIReplicatorWindow), nameof(UIReplicatorWindow._OnUpdate))]
-    [HarmonyPatch(typeof(UISandboxMenu), nameof(UISandboxMenu.OnChildButtonClick))]
-    [HarmonyPatch(typeof(UITurretWindow), nameof(UITurretWindow.OnHandFillAmmoButtonClick))]
+    [HarmonyPatch]
+    private static class GetItemCountPatch {
+        [HarmonyTargetMethods]
+        private static IEnumerable<MethodBase> TargetMethods() {
+            yield return AccessTools.Method(typeof(BuildTool_Reform), nameof(BuildTool_Reform.ReformAction));
+            yield return AccessTools.Method(typeof(BuildTool_Reform), nameof(BuildTool_Reform.RemoveBasePit));
+            yield return AccessTools.Method(typeof(PlanetFactory),
+                nameof(PlanetFactory.EntityAutoReplenishIfNeeded));
+            yield return AccessTools.Method(typeof(PlanetFactory),
+                nameof(PlanetFactory.StationAutoReplenishIfNeeded));
+            yield return AccessTools.Method(typeof(PlayerAction_Inspect), nameof(PlayerAction_Inspect.GameTick));
+            yield return AccessTools.Method(typeof(UIBlueprintInspector),
+                nameof(UIBlueprintInspector.SetComponentItem));
+            yield return AccessTools.Method(typeof(UIBlueprintInspector), nameof(UIBlueprintInspector._OnUpdate));
+            yield return AccessTools.Method(typeof(UIBuildMenu), nameof(UIBuildMenu.OnChildButtonClick));
+            yield return AccessTools.Method(typeof(UIBuildMenu), nameof(UIBuildMenu.SetCurrentCategory));
+            yield return AccessTools.Method(typeof(UIBuildMenu), nameof(UIBuildMenu._OnUpdate));
+            yield return AccessTools.Method(typeof(UIControlPanelObjectEntry),
+                nameof(UIControlPanelObjectEntry.ReplenishItems));
+            yield return AccessTools.Method(typeof(UIHandTip), nameof(UIHandTip._OnUpdate));
+            yield return AccessTools.Method(typeof(UIItemup), nameof(UIItemup.Up));
+            yield return AccessTools.Method(typeof(UIRemoveBasePitButton),
+                nameof(UIRemoveBasePitButton._OnUpdate));
+            yield return AccessTools.Method(typeof(UIReplicatorWindow), nameof(UIReplicatorWindow._OnUpdate));
+            yield return AccessTools.Method(typeof(UISandboxMenu), nameof(UISandboxMenu.OnChildButtonClick));
+            yield return AccessTools.Method(typeof(UITurretWindow),
+                nameof(UITurretWindow.OnHandFillAmmoButtonClick));
+        }
+
+        [HarmonyTranspiler]
+        [HarmonyPriority(Priority.High)]
+        [HarmonyAfter(BuildToolOpt.GUID)]
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) =>
+            GetItemCount_Transpiler(instructions);
+    }
+
     public static IEnumerable<CodeInstruction> GetItemCount_Transpiler(IEnumerable<CodeInstruction> instructions) {
         try {
             // Replace player.package.GetItemCount(int itemId)
@@ -81,12 +97,26 @@ public static class ItemCountRedirectPatch {
     /// <summary>
     /// 背包物品总数、快捷建造栏的相关修改也兼容BuildBarTool
     /// </summary>
-    [HarmonyTranspiler]
-    [HarmonyPriority(Priority.High)]
-    [HarmonyPatch(typeof(BuildBarToolPlugin), nameof(BuildBarToolPlugin.UIBuildMenuSetCurrentCategoryPostPatch))]
-    [HarmonyPatch(typeof(BuildBarToolPlugin), nameof(BuildBarToolPlugin.UIBuildMenuOnUpdatePostPatch),
-        [typeof(UIBuildMenu)], [ArgumentType.Ref])]
-    [HarmonyPatch(typeof(BuildBarToolPlugin), nameof(BuildBarToolPlugin.OnChildButtonClick))]
+    [HarmonyPatch]
+    private static class BuildBarToolPatch {
+        [HarmonyTargetMethods]
+        private static IEnumerable<MethodBase> TargetMethods() {
+            yield return AccessTools.Method(typeof(BuildBarToolPlugin),
+                nameof(BuildBarToolPlugin.UIBuildMenuSetCurrentCategoryPostPatch));
+            yield return AccessTools.Method(typeof(BuildBarToolPlugin),
+                nameof(BuildBarToolPlugin.UIBuildMenuOnUpdatePostPatch),
+                [typeof(UIBuildMenu).MakeByRefType()]);
+            yield return AccessTools.Method(typeof(BuildBarToolPlugin),
+                nameof(BuildBarToolPlugin.OnChildButtonClick));
+        }
+
+        [HarmonyTranspiler]
+        [HarmonyPriority(Priority.High)]
+        private static IEnumerable<CodeInstruction> Transpiler(
+            IEnumerable<CodeInstruction> instructions, MethodBase original) =>
+            BuildBarTool_Transpiler(instructions, original);
+    }
+
     private static IEnumerable<CodeInstruction> BuildBarTool_Transpiler(
         IEnumerable<CodeInstruction> instructions, MethodBase original) {
         try {
@@ -139,14 +169,25 @@ public static class ItemCountRedirectPatch {
     /// <summary>
     /// 某个建筑在所有背包的物品总数大于0时，无论是否已解锁，都在快捷建造栏、物品选择界面显示。
     /// </summary>
-    [HarmonyTranspiler]
-    [HarmonyPriority(Priority.High)]
-    [HarmonyPatch(typeof(UIBuildMenu), nameof(UIBuildMenu.OnChildButtonClick))]
-    [HarmonyPatch(typeof(UIBuildMenu), nameof(UIBuildMenu.SetCurrentCategory))]
-    [HarmonyPatch(typeof(UIBuildMenu), nameof(UIBuildMenu._OnUpdate))]
-    [HarmonyPatch(typeof(UIItemPicker_Patch), nameof(UIItemPicker_Patch.CheckItem))]
-    [HarmonyPatch(typeof(BuildBarToolPlugin), nameof(BuildBarToolPlugin.UIBuildMenuOnUpdatePostPatch),
-        [typeof(UIFunctionPanel)], [ArgumentType.Ref])]
+    [HarmonyPatch]
+    private static class ItemUnlockedPatch {
+        [HarmonyTargetMethods]
+        private static IEnumerable<MethodBase> TargetMethods() {
+            yield return AccessTools.Method(typeof(UIBuildMenu), nameof(UIBuildMenu.OnChildButtonClick));
+            yield return AccessTools.Method(typeof(UIBuildMenu), nameof(UIBuildMenu.SetCurrentCategory));
+            yield return AccessTools.Method(typeof(UIBuildMenu), nameof(UIBuildMenu._OnUpdate));
+            yield return AccessTools.Method(typeof(UIItemPicker_Patch), nameof(UIItemPicker_Patch.CheckItem));
+            yield return AccessTools.Method(typeof(BuildBarToolPlugin),
+                nameof(BuildBarToolPlugin.UIBuildMenuOnUpdatePostPatch),
+                [typeof(UIFunctionPanel).MakeByRefType()]);
+        }
+
+        [HarmonyTranspiler]
+        [HarmonyPriority(Priority.High)]
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) =>
+            ItemUnlocked_Transpiler(instructions);
+    }
+
     private static IEnumerable<CodeInstruction> ItemUnlocked_Transpiler(IEnumerable<CodeInstruction> instructions) {
         try {
             // Replace history.ItemUnlocked(int itemId)

@@ -1,7 +1,7 @@
 ﻿using BuildBarTool;
 using CommonAPI.Systems;
 using FE.Compatibility.Mods;
-using FE.Logic.Progression;
+using FE.Logic.Progression.Stacking;
 using UnityEngine;
 using static FE.FractionateEverything;
 using static FE.Utils.Utils;
@@ -9,9 +9,9 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Fractionation.Fractionators;
 
 /// <summary>
-/// 精馏塔
+/// 解析塔
 /// </summary>
-public static class RectificationTower {
+public static class AnalysisTower {
     private static ItemProto item;
     private static ModelProto model;
     /// <summary>
@@ -49,8 +49,8 @@ public static class RectificationTower {
     /// 注册该分馏域对象需要的本地化文本。
     /// </summary>
     public static void AddTranslations() {
-        Register("精馏塔", "Analysis Tower", "解析塔");
-        Register("I精馏塔",
+        Register("解析塔", "Analysis Tower", "解析塔");
+        Register("I解析塔",
             "Converts matrices into physical analysis data used to recover ancient-civilization protocols.",
             "将矩阵转化为实体解析数据，用于恢复远古文明协议。");
     }
@@ -59,7 +59,7 @@ public static class RectificationTower {
     /// 创建并注册该分馏塔的物品、配方和模型原型。
     /// </summary>
     public static void Create() {
-        item = ProtoRegistry.RegisterItem(IFE解析塔, "精馏塔", "I精馏塔",
+        item = ProtoRegistry.RegisterItem(IFE解析塔, "解析塔", "I解析塔",
             "Assets/fe/deconstruction-tower", tab分馏 * 1000 + 305, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         item.UnlockKey = -1;

@@ -10,7 +10,7 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Fractionation.FracRecipes;
 
 /// <summary>
-/// 转化塔配方类（1A -> XA + YB + ZC）
+/// 转化配方类（1A -> XA + YB + ZC）
 /// </summary>
 public class ConversionRecipe : BaseRecipe {
     /// <summary>
@@ -241,15 +241,12 @@ public class ConversionRecipe : BaseRecipe {
     public override ERecipe RecipeType => ERecipe.Conversion;
 
     /// <summary>
-    /// 创建转化塔配方实例
+    /// 初始化一项转化配方。
     /// </summary>
     /// <param name="inputID">输入物品ID</param>
     /// <param name="baseSuccessRatio">最大成功率</param>
     /// <param name="outputMain">主输出物品</param>
     /// <param name="outputAppend">附加输出物品</param>
-    /// <summary>
-    /// 执行 ConversionRecipe 对应的分馏域操作。
-    /// </summary>
     public ConversionRecipe(int inputID, float baseSuccessRatio, List<OutputInfo> outputMain,
         List<OutputInfo> outputAppend)
         : base(inputID, baseSuccessRatio, outputMain, outputAppend) {
@@ -318,7 +315,7 @@ public class ConversionRecipe : BaseRecipe {
     }
 
     /// <summary>
-    /// 尝试取得指定物品对应的转化塔锁定输出方案。
+    /// 尝试取得指定物品对应的转化配方锁定输出方案。
     /// </summary>
     public bool TryGetLockedOutputPlan(int itemId, out LockedOutputPlan lockedPlan) =>
         lockedOutputPlansByItemId.TryGetValue(itemId, out lockedPlan);
@@ -340,7 +337,7 @@ public class ConversionRecipe : BaseRecipe {
             int countReal = RollOutputCount(ref seed, lockedPlan.OutputCount);
 
             if (countReal > 0) {
-                lockedPlan.SourceOutput.OutputTotalCount += countReal;
+                lockedPlan.SourceOutput.AddOutputCount(countReal);
                 inputChange = -1;
                 fluidInputInc -= fluidInputIncAvg;
 
@@ -379,7 +376,7 @@ public class ConversionRecipe : BaseRecipe {
             int countReal = RollOutputCount(ref seed, lockedPlan.OutputCount);
 
             if (countReal > 0) {
-                lockedPlan.SourceOutput.OutputTotalCount += countReal;
+                lockedPlan.SourceOutput.AddOutputCount(countReal);
                 inputChange = -1;
                 fluidInputInc -= fluidInputIncAvg;
 
@@ -441,7 +438,7 @@ public class ConversionRecipe : BaseRecipe {
             return 0;
         }
 
-        lockedPlan.SourceOutput.OutputTotalCount += totalCount;
+        lockedPlan.SourceOutput.AddOutputCount(totalCount);
         outputs.Add(lockedPlan.IsMainOutput, lockedPlan.OutputID, totalCount);
         return baseCount > 0 ? outputHits : totalCount;
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
 using static FE.Utils.Utils;
@@ -23,14 +24,24 @@ public static class PlayerInventoryItemAccessPatches {
     /// <summary>
     /// 从玩家背包获取物品时，可以从 背包/物流背包/Mod背包 中获取
     /// </summary>
-    [HarmonyTranspiler]
-    [HarmonyPriority(Priority.High)]
-    [HarmonyPatch(typeof(Mecha), nameof(Mecha.AutoReplenishAmmo))]
-    [HarmonyPatch(typeof(Mecha), nameof(Mecha.AutoReplenishBomb))]
-    [HarmonyPatch(typeof(Mecha), nameof(Mecha.AutoReplenishFuel))]
-    [HarmonyPatch(typeof(Mecha), nameof(Mecha.AutoReplenishFuelAll))]
-    [HarmonyPatch(typeof(Mecha), nameof(Mecha.AutoReplenishWarper))]
-    [HarmonyPatch(typeof(MechaForge), nameof(MechaForge.AddTaskIterate))]
+    [HarmonyPatch]
+    private static class TakeItemPatch {
+        [HarmonyTargetMethods]
+        private static IEnumerable<MethodBase> TargetMethods() {
+            yield return AccessTools.Method(typeof(Mecha), nameof(Mecha.AutoReplenishAmmo));
+            yield return AccessTools.Method(typeof(Mecha), nameof(Mecha.AutoReplenishBomb));
+            yield return AccessTools.Method(typeof(Mecha), nameof(Mecha.AutoReplenishFuel));
+            yield return AccessTools.Method(typeof(Mecha), nameof(Mecha.AutoReplenishFuelAll));
+            yield return AccessTools.Method(typeof(Mecha), nameof(Mecha.AutoReplenishWarper));
+            yield return AccessTools.Method(typeof(MechaForge), nameof(MechaForge.AddTaskIterate));
+        }
+
+        [HarmonyTranspiler]
+        [HarmonyPriority(Priority.High)]
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) =>
+            TakeItem_Transpiler(instructions);
+    }
+
     private static IEnumerable<CodeInstruction> TakeItem_Transpiler(IEnumerable<CodeInstruction> instructions) {
         try {
             // Replace player.package.TakeItem(int itemId, int count, out int inc)
@@ -65,27 +76,46 @@ public static class PlayerInventoryItemAccessPatches {
     /// <summary>
     /// 从玩家背包获取物品时，可以从 背包/物流背包/Mod背包 中获取
     /// </summary>
-    [HarmonyTranspiler]
-    [HarmonyPriority(Priority.High)]
-    [HarmonyPatch(typeof(BuildTool_Addon), nameof(BuildTool_Addon.CreatePrebuilds))]
-    [HarmonyPatch(typeof(BuildTool_BlueprintPaste), nameof(BuildTool_BlueprintPaste.CreatePrebuilds))]
-    [HarmonyPatch(typeof(BuildTool_BlueprintPaste), nameof(BuildTool_BlueprintPaste.DetermineReforms))]
-    [HarmonyPatch(typeof(BuildTool_Click), nameof(BuildTool_Click.CreatePrebuilds))]
-    [HarmonyPatch(typeof(BuildTool_Inserter), nameof(BuildTool_Inserter.CreatePrebuilds))]
-    [HarmonyPatch(typeof(BuildTool_Path), nameof(BuildTool_Path.CreatePrebuilds))]
-    [HarmonyPatch(typeof(BuildTool_Reform), nameof(BuildTool_Reform.ReformAction))]
-    [HarmonyPatch(typeof(BuildTool_Reform), nameof(BuildTool_Reform.RemoveBasePit))]
-    [HarmonyPatch(typeof(ConstructionModuleComponent), nameof(ConstructionModuleComponent.PlaceItems))]
-    [HarmonyPatch(typeof(MechaLab), nameof(MechaLab.ManageSupply))]
-    [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.EntityAutoReplenishIfNeeded))]
-    [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.StationAutoReplenishIfNeeded))]
-    [HarmonyPatch(typeof(Player), nameof(Player.TakeItemFromPlayer))]
-    [HarmonyPatch(typeof(PlayerAction_Build), nameof(PlayerAction_Build.DoUpgradeObject))]
-    [HarmonyPatch(typeof(PlayerAction_Inspect), nameof(PlayerAction_Inspect.GameTick))]
-    [HarmonyPatch(typeof(PlayerPackageUtility), nameof(PlayerPackageUtility.TakeItemFromAllPackages))]
-    [HarmonyPatch(typeof(PlayerPackageUtility), nameof(PlayerPackageUtility.TryTakeItemFromAllPackages))]
-    [HarmonyPatch(typeof(UIControlPanelObjectEntry), nameof(UIControlPanelObjectEntry.ReplenishItems))]
-    [HarmonyPatch(typeof(UITurretWindow), nameof(UITurretWindow.OnHandFillAmmoButtonClick))]
+    [HarmonyPatch]
+    private static class TakeTailItemsPatch {
+        [HarmonyTargetMethods]
+        private static IEnumerable<MethodBase> TargetMethods() {
+            yield return AccessTools.Method(typeof(BuildTool_Addon), nameof(BuildTool_Addon.CreatePrebuilds));
+            yield return AccessTools.Method(typeof(BuildTool_BlueprintPaste),
+                nameof(BuildTool_BlueprintPaste.CreatePrebuilds));
+            yield return AccessTools.Method(typeof(BuildTool_BlueprintPaste),
+                nameof(BuildTool_BlueprintPaste.DetermineReforms));
+            yield return AccessTools.Method(typeof(BuildTool_Click), nameof(BuildTool_Click.CreatePrebuilds));
+            yield return AccessTools.Method(typeof(BuildTool_Inserter), nameof(BuildTool_Inserter.CreatePrebuilds));
+            yield return AccessTools.Method(typeof(BuildTool_Path), nameof(BuildTool_Path.CreatePrebuilds));
+            yield return AccessTools.Method(typeof(BuildTool_Reform), nameof(BuildTool_Reform.ReformAction));
+            yield return AccessTools.Method(typeof(BuildTool_Reform), nameof(BuildTool_Reform.RemoveBasePit));
+            yield return AccessTools.Method(typeof(ConstructionModuleComponent),
+                nameof(ConstructionModuleComponent.PlaceItems));
+            yield return AccessTools.Method(typeof(MechaLab), nameof(MechaLab.ManageSupply));
+            yield return AccessTools.Method(typeof(PlanetFactory),
+                nameof(PlanetFactory.EntityAutoReplenishIfNeeded));
+            yield return AccessTools.Method(typeof(PlanetFactory),
+                nameof(PlanetFactory.StationAutoReplenishIfNeeded));
+            yield return AccessTools.Method(typeof(Player), nameof(Player.TakeItemFromPlayer));
+            yield return AccessTools.Method(typeof(PlayerAction_Build), nameof(PlayerAction_Build.DoUpgradeObject));
+            yield return AccessTools.Method(typeof(PlayerAction_Inspect), nameof(PlayerAction_Inspect.GameTick));
+            yield return AccessTools.Method(typeof(PlayerPackageUtility),
+                nameof(PlayerPackageUtility.TakeItemFromAllPackages));
+            yield return AccessTools.Method(typeof(PlayerPackageUtility),
+                nameof(PlayerPackageUtility.TryTakeItemFromAllPackages));
+            yield return AccessTools.Method(typeof(UIControlPanelObjectEntry),
+                nameof(UIControlPanelObjectEntry.ReplenishItems));
+            yield return AccessTools.Method(typeof(UITurretWindow),
+                nameof(UITurretWindow.OnHandFillAmmoButtonClick));
+        }
+
+        [HarmonyTranspiler]
+        [HarmonyPriority(Priority.High)]
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) =>
+            TakeTailItems_Transpiler(instructions);
+    }
+
     public static IEnumerable<CodeInstruction> TakeTailItems_Transpiler(IEnumerable<CodeInstruction> instructions) {
         try {
             // Replace player.package.TakeTailItems(ref int itemId, ref int count, out int inc, bool useBan = false)
@@ -165,8 +195,8 @@ public static class PlayerInventoryItemAccessPatches {
         count = realCount;
         for (int i = incTable.Length - 1; i >= 0; i--) {
             if (realCount >= incTable[i]) {
-                incTable[i] = 0;
                 realCount -= incTable[i];
+                incTable[i] = 0;
             } else {
                 incTable[i] -= realCount;
                 return false;

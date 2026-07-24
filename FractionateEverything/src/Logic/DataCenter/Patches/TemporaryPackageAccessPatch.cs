@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
 using static FE.Utils.Utils;
@@ -15,14 +16,32 @@ public static class TemporaryPackageAccessPatch {
     /// </summary>
     private static readonly int[] testPackageUsedCounts = new int[12000];
 
+    /// <summary>
+    /// 建筑师模式下建筑物品在临时背包检查中视为无限可用。
+    /// </summary>
+    private static bool IsArchitectModeBuilding(int itemId) {
+        ItemProto item = LDB.items.Select(itemId);
+        return PackageAccessRules.ArchitectMode && item != null && item.BuildMode != 0;
+    }
+
     #region MechaForge._test_storage
 
     /// <summary>
     /// 初始化临时背包已经消耗的物品数目
     /// </summary>
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(MechaForge), nameof(MechaForge.TryAddTask))]
-    [HarmonyPatch(typeof(MechaForge), nameof(MechaForge.TryTaskWithTestPackage))]
+    [HarmonyPatch]
+    private static class MechaForgeClearTestPackageUsedCountsPatch {
+        [HarmonyTargetMethods]
+        private static IEnumerable<MethodBase> TargetMethods() {
+            yield return AccessTools.Method(typeof(MechaForge), nameof(MechaForge.TryAddTask));
+            yield return AccessTools.Method(typeof(MechaForge), nameof(MechaForge.TryTaskWithTestPackage));
+        }
+
+        [HarmonyPrefix]
+        private static bool Prefix(MechaForge __instance) =>
+            MechaForge_ClearTestPackageUsedCounts(__instance);
+    }
+
     private static bool MechaForge_ClearTestPackageUsedCounts(MechaForge __instance) {
         Array.Clear(testPackageUsedCounts, 0, 12000);
         return true;
@@ -62,6 +81,9 @@ public static class TemporaryPackageAccessPatch {
         if (itemId <= 0 || itemId >= 12000) {
             return 0;
         }
+        if (IsArchitectModeBuilding(itemId)) {
+            return count;
+        }
         count = (int)Math.Min(count, PlayerInventoryAccess.GetItemTotalCount(itemId) - testPackageUsedCounts[itemId]);
         testPackageUsedCounts[itemId] += count;
         return count;
@@ -87,9 +109,20 @@ public static class TemporaryPackageAccessPatch {
     /// <summary>
     /// 初始化临时背包已经消耗的物品数目
     /// </summary>
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(BuildTool_BlueprintPaste), nameof(BuildTool_BlueprintPaste.CalculateReformData))]
-    [HarmonyPatch(typeof(BuildTool_BlueprintPaste), nameof(BuildTool_BlueprintPaste.DetermineReforms))]
+    [HarmonyPatch]
+    private static class BuildToolBlueprintPasteClearTestPackageUsedCountsPatch {
+        [HarmonyTargetMethods]
+        private static IEnumerable<MethodBase> TargetMethods() {
+            yield return AccessTools.Method(typeof(BuildTool_BlueprintPaste),
+                nameof(BuildTool_BlueprintPaste.CalculateReformData));
+            yield return AccessTools.Method(typeof(BuildTool_BlueprintPaste),
+                nameof(BuildTool_BlueprintPaste.DetermineReforms));
+        }
+
+        [HarmonyPostfix]
+        private static void Postfix() => BuildTool_BlueprintPaste_ClearTestPackageUsedCounts();
+    }
+
     private static void BuildTool_BlueprintPaste_ClearTestPackageUsedCounts() {
         Array.Clear(testPackageUsedCounts, 0, 12000);
     }
@@ -109,14 +142,27 @@ public static class TemporaryPackageAccessPatch {
     /// <summary>
     /// 从临时玩家背包获取物品时，返回正确的可用物品总数
     /// </summary>
-    [HarmonyTranspiler]
-    [HarmonyPriority(Priority.High)]
-    [HarmonyPatch(typeof(BuildTool_Addon), nameof(BuildTool_Addon.CheckBuildConditions))]
-    [HarmonyPatch(typeof(BuildTool_BlueprintPaste), nameof(BuildTool_BlueprintPaste.CalculateReformData))]
-    [HarmonyPatch(typeof(BuildTool_Click), nameof(BuildTool_Click.CheckBuildConditions))]
-    [HarmonyPatch(typeof(BuildTool_Inserter), nameof(BuildTool_Inserter.CheckBuildConditions))]
-    [HarmonyPatch(typeof(BuildTool_Path), nameof(BuildTool_Path.CheckBuildConditions))]
-    [HarmonyPatch(typeof(BuildTool_Reform), nameof(BuildTool_Reform.GetNeedSandCountByInc))]
+    [HarmonyPatch]
+    private static class TryTakeTailItemsPatch {
+        [HarmonyTargetMethods]
+        private static IEnumerable<MethodBase> TargetMethods() {
+            yield return AccessTools.Method(typeof(BuildTool_Addon), nameof(BuildTool_Addon.CheckBuildConditions));
+            yield return AccessTools.Method(typeof(BuildTool_BlueprintPaste),
+                nameof(BuildTool_BlueprintPaste.CalculateReformData));
+            yield return AccessTools.Method(typeof(BuildTool_Click), nameof(BuildTool_Click.CheckBuildConditions));
+            yield return AccessTools.Method(typeof(BuildTool_Inserter),
+                nameof(BuildTool_Inserter.CheckBuildConditions));
+            yield return AccessTools.Method(typeof(BuildTool_Path), nameof(BuildTool_Path.CheckBuildConditions));
+            yield return AccessTools.Method(typeof(BuildTool_Reform),
+                nameof(BuildTool_Reform.GetNeedSandCountByInc));
+        }
+
+        [HarmonyTranspiler]
+        [HarmonyPriority(Priority.High)]
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) =>
+            TryTakeTailItems_Transpiler(instructions);
+    }
+
     private static IEnumerable<CodeInstruction> TryTakeTailItems_Transpiler(IEnumerable<CodeInstruction> instructions) {
         try {
             // Replace BuildTool.tmpPackage.TakeTailItems(ref int itemId, ref int count, out int inc, bool useBan = false)
@@ -145,6 +191,9 @@ public static class TemporaryPackageAccessPatch {
         inc = 0;
         if (itemId <= 0 || itemId >= 12000) {
             count = 0;
+            return;
+        }
+        if (IsArchitectModeBuilding(itemId)) {
             return;
         }
         count = (int)Math.Min(count, PlayerInventoryAccess.GetItemTotalCount(itemId) - testPackageUsedCounts[itemId]);
@@ -199,6 +248,10 @@ public static class TemporaryPackageAccessPatch {
             incTable = new int[11];
         } else {
             Array.Clear(incTable, 0, incTable.Length);
+        }
+        if (IsArchitectModeBuilding(itemId)) {
+            incTable[0] = count;
+            return;
         }
         count = (int)Math.Min(count, PlayerInventoryAccess.GetItemTotalCount(itemId) - testPackageUsedCounts[itemId]);
         if (count <= 0) {

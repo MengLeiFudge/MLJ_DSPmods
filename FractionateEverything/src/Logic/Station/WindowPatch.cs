@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using FE.Logic.Buildings;
-using FE.Logic.Fractionation.Fractionators;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
@@ -41,6 +40,8 @@ public static partial class StationManager {
                         GameObject.Instantiate(storage.localSdButton.gameObject,
                             storage.localSdButton.transform.parent, false);
                     go.name = tName;
+                    Button transferBtn = go.GetComponent<Button>();
+                    transferBtn?.onClick.RemoveAllListeners();
                     transferGameObjects.TryAdd(storage, go);
                 }
 
@@ -53,6 +54,8 @@ public static partial class StationManager {
                         GameObject.Instantiate(storage.localSdButton.gameObject,
                             storage.localSdButton.transform.parent, false);
                     go.name = cName;
+                    Button capacityBtn = go.GetComponent<Button>();
+                    capacityBtn?.onClick.RemoveAllListeners();
                     capacityGameObjects.TryAdd(storage, go);
                 }
 
@@ -78,13 +81,14 @@ public static partial class StationManager {
         storagePopupOriginalX.Clear();
         transferGameObjects.Clear();
         capacityGameObjects.Clear();
+        stationPilerLabelOriginalState.Clear();
         slotIsMyPopup.Clear();
         slotIsTransfer.Clear();
         slotPopupBoxRect.Clear();
     }
 
-    /// <summary>在总控窗口创建时为所有存储槽注入模式按钮</summary>
-    /// <param name="__instance">当前的 UIControlPanelWindow 实例</param>
+    /// <summary>打开独立物流站存储槽时初始化自定义按钮并绑定点击事件</summary>
+    /// <param name="__instance">当前的 UIStationStorage 实例</param>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage._OnOpen))]
     public static void UIStationStorage__OnOpen_Postfix(UIStationStorage __instance) {
@@ -93,6 +97,7 @@ public static partial class StationManager {
         if (tTrans != null) {
             // 给自定义传输按钮绑定弹窗展示，替代原选项逻辑
             Button transferBtn = tTrans.GetComponent<Button>();
+            transferBtn.onClick.RemoveAllListeners();
             transferBtn.onClick.AddListener(() => ShowTransferPopup(__instance));
         }
 
@@ -101,6 +106,7 @@ public static partial class StationManager {
         if (cTrans != null) {
             // 同步为容量按钮绑定弹窗入口
             Button capBtn = cTrans.GetComponent<Button>();
+            capBtn.onClick.RemoveAllListeners();
             capBtn.onClick.AddListener(() => ShowCapacityPopup(__instance));
         }
     }
@@ -140,7 +146,7 @@ public static partial class StationManager {
 
         // 栏位本身
         RectTransform rectTransform = storage.transform.GetComponent<RectTransform>();
-        // 如果不是我们的交互塔，则恢复原版布局和按钮状态
+        // 如果不是物流交互站，则恢复原版布局和按钮状态
         if (!IsInteractionStation(buildingID)) {
             SetStoragePopupShift(storage, false);
             // 还原栏位宽度、沙盒锁位置
@@ -283,7 +289,7 @@ public static partial class StationManager {
     /// <param name="__instance">当前的 UIStationWindow 实例</param>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UIStationWindow), nameof(UIStationWindow._OnUpdate))]
-    public static void UIStationWindow_OnUpdate_Prefix(UIStationWindow __instance) {
+    public static void UIStationWindow_OnUpdate_Postfix(UIStationWindow __instance) {
         // 重命名
         UIStationWindow stationWindow = __instance;
         StationComponent station = stationWindow.transport.stationPool[stationWindow.stationId];
@@ -474,13 +480,23 @@ public static partial class StationManager {
         SetStoragePopupShift(storage, true);
     }
 
-    /// <summary>拦截原始存储按钮点击并复位弹窗</summary>
+    /// <summary>拦截原始本地物流按钮点击并复位弹窗</summary>
     /// <param name="__instance">当前的 UIStationStorage 实例</param>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage.OnLocalSdButtonClick))]
+    public static void UIStationStorage_OnLocalSdButtonClick_Prefix(UIStationStorage __instance) {
+        HandleStationStorageSdButtonClick(__instance);
+    }
+
+    /// <summary>拦截原始远程物流按钮点击并复位弹窗</summary>
+    /// <param name="__instance">当前的 UIStationStorage 实例</param>
+    [HarmonyPrefix]
     [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage.OnRemoteSdButtonClick))]
-    public static void UIStationStorage_OnSdButtonClick_Prefix(UIStationStorage __instance) {
-        UIStationStorage storage = __instance;
+    public static void UIStationStorage_OnRemoteSdButtonClick_Prefix(UIStationStorage __instance) {
+        HandleStationStorageSdButtonClick(__instance);
+    }
+
+    private static void HandleStationStorageSdButtonClick(UIStationStorage storage) {
         (long stationEntityId, int slotIndex) popupStateKey = GetPopupStateKey(storage);
         // 点击原版物流按钮时，先清理 FE 弹窗状态，再把弹窗复位。
         ClearPopupState(popupStateKey);

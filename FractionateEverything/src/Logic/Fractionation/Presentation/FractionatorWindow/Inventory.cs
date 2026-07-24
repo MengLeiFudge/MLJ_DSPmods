@@ -1,10 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Fractionation.FracRecipes;
 using FE.Logic.Fractionation.Process;
 using HarmonyLib;
-using static FE.Logic.DataCenter.PlayerInventoryAccess;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Presentation;
@@ -107,7 +106,7 @@ public static partial class FractionatorWindow {
         return IsFluidSlot(fractionator, slot, itemId) ? fractionator.fluidOutputMax : fractionator.productOutputMax;
     }
 
-    private static bool BlockSingleLockManualInsert(UIFractionatorWindow window,
+    private static bool BlockMainOutputLockManualInsert(UIFractionatorWindow window,
         FractionatorComponent fractionator) {
         if (window?.factory == null) {
             return false;
@@ -141,7 +140,7 @@ public static partial class FractionatorWindow {
 
         // 额外主产物/副产物复用了原版回调；如果不在这里完全接管，
         // 原版会把“非第一主产物”错误走到流体输出分支，导致错取和无限取。
-        // 自定义槽位需要额外带上槽位身份，避免单锁产物只靠 itemId 反查到错误缓存。
+        // 自定义槽位需要额外带上槽位身份，避免主路目标只靠 itemId 反查到错误缓存。
         Player player = __instance.player;
         List<ProductOutputInfo> products = fractionator.products(__instance.factory);
         int currentCount = GetModSlotCount(fractionator, products, itemId, slot);
@@ -153,8 +152,8 @@ public static partial class FractionatorWindow {
         }
 
         if (player.inhandItemId > 0 && player.inhandItemCount > 0) {
-            // 单锁后的输出槽只允许取出/清空，不再作为手动塞回缓存入口。
-            if (BlockSingleLockManualInsert(__instance, fractionator)) {
+            // 主路锁定后的输出槽只允许取出/清空，不再作为手动塞回缓存入口。
+            if (BlockMainOutputLockManualInsert(__instance, fractionator)) {
                 return false;
             }
             if (player.inhandItemId != itemId) {

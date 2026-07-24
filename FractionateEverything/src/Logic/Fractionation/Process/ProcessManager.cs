@@ -20,13 +20,6 @@ public static partial class ProcessManager {
         PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister,
         ref uint result);
 
-    private static readonly FractionatorUpdateHandler[] updateHandlersByBuildingOffset = [
-        UpdateInteractionTower,
-        UpdateMineralReplicationTower,
-        UpdateConversionTower,
-        UpdateRectificationTower,
-    ];
-
     /// <summary>
     /// 注册该分馏域对象需要的本地化文本。
     /// </summary>
@@ -34,34 +27,23 @@ public static partial class ProcessManager {
         Register("交互模式", "Interaction mode");
         Register("原料堆积", "Fluid overflow");
         Register("搬运模式", "Transport mode");
-        Register("缺少残片", "Lack of fragments");
-        Register("分馏永动", "Frac forever");
-        Register("无配方", "No recipe");
-        Register("主产物", "Main product");
-        Register("副产物", "Append product");
-        Register("流动", "Flow");
-        Register("损毁", "Destroy");
+        Register("分馏永动", "Continuous fractionation");
+        Register("主产物", "Main Outputs");
+        Register("副产物", "Byproducts");
         Register("流动输入", "Flow input");
         Register("流动输出", "Flow output");
         Register("配方不存在", "Recipe does not exist");
-        Register("配方强化", "Recipe enhancement");
-        Register("单锁", "Main Route Lock", "主路锁定");
+        Register("主路锁定", "Main Output Lock");
         Register("未锁定", "Not locked");
         Register("未校准", "Not calibrated");
         Register("等待配方", "Waiting for recipe");
         Register("当前无可选主产物", "No selectable main product for the current recipe");
         Register("当前无副产物", "No byproducts for the current recipe");
-        Register("主路目标", "Main route target");
-        Register("右键设为单锁", "Right-click to set main route target", "右键设为主路目标");
-        Register("右键清除单锁", "Right-click to clear main route target", "右键清除主路目标");
-        Register("已锁定单路产物：{0}", "Main route target: {0}", "已设定主路目标：{0}");
-        Register("已清除单路锁定", "Main route target cleared", "已清除主路目标");
-        Register("锁定产物无效，已清除", "Main route target invalid, cleared", "主路目标无效，已清除");
-        Register("谱系方向", "Lineage target");
-        Register("右键设为谱系方向", "Right-click to set lineage target");
-        Register("右键清除谱系方向", "Right-click to clear lineage target");
-        Register("已设定谱系方向：{0}", "Lineage target: {0}");
-        Register("已清除谱系方向", "Lineage target cleared");
+        Register("主路目标", "Main output target");
+        Register("右键设为主路目标", "Right-click to set main output target");
+        Register("右键清除主路目标", "Right-click to clear main output target");
+        Register("已设定主路目标：{0}", "Main output target: {0}");
+        Register("已清除主路目标", "Main output target cleared");
         Register("弃置", "Discard");
         Register("保留", "Keep");
         Register("右键切换副产物弃置", "Right-click a byproduct to toggle discard");
@@ -97,6 +79,7 @@ public static partial class ProcessManager {
     public static long totalFractionSuccesses;
     private const int FractionRateWindowSeconds = 60;
     private static readonly long[] fractionSuccessBuckets = new long[FractionRateWindowSeconds];
+    private static readonly object fractionRateWindowLock = new();
     private static long currentFractionRateSecond = -1;
     private static long currentFractionSuccessesPerMinute;
     /// <summary>
@@ -147,31 +130,27 @@ public static partial class ProcessManager {
     }
 
     /// <summary>
-    /// 修改分馏塔的运行逻辑。
-    /// </summary>
-    /// <remarks>
-    /// <para>注意：新增分馏塔产物输出使用Mod拓展存储。数据结构如下：</para>
-    /// <ul>
-    /// <li>int __instance.productId: 第一个主输出的ID，无用</li>
-    /// <li>int __instance.productOutputCount: 第一个主输出的数目，无用</li>
-    /// <li>int __instance.productOutputTotal: 第一个主输出的统计数目</li>
-    /// <li>List&lt;ProductOutputInfo&gt; __instance.productOutputs(factory): 存储所有产物输出</li>
-    /// </ul>
-    /// <para>除此之外，分馏判定结果由<see cref="FE.Logic.Fractionation.FracRecipes.BaseRecipe.GetOutputs"/>得到。</para>
-    /// </remarks>
-    /// <summary>
     /// 在原版分馏器更新前分发到 FE 分馏塔热路径。
     /// </summary>
+    /// <remarks>
+    /// <para>FE 分馏塔使用扩展状态保存全部主产物和副产物；原版字段只保留首个主产物兼容数据。</para>
+    /// <para>具体分馏结果由 <see cref="BaseRecipe.GetOutputs"/> 及其批量实现结算。</para>
+    /// </remarks>
     public static uint InternalUpdateWithModDispatch(ref FractionatorComponent fractionator,
         PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister) {
         long perfStart = GetFractionatorPerfTimestamp();
         int buildingID = factory.entityPool[fractionator.entityId].protoId;
-        int handlerIndex = FractionatorTowerCatalog.GetActiveFractionatorIndex(buildingID);
-        if (handlerIndex >= 0 && handlerIndex < updateHandlersByBuildingOffset.Length) {
+        FractionatorUpdateHandler handler = buildingID switch {
+            IFE培养塔 => UpdateCultivationTower,
+            IFE解析塔 => UpdateAnalysisTower,
+            IFE复制塔 => UpdateReplicationTower,
+            IFE转化塔 => UpdateConversionTower,
+            _ => null,
+        };
+        if (handler != null) {
             try {
                 uint result = 0;
-                updateHandlersByBuildingOffset[handlerIndex](ref fractionator, factory, power, signPool,
-                    productRegister, consumeRegister, ref result);
+                handler(ref fractionator, factory, power, signPool, productRegister, consumeRegister, ref result);
                 return result;
             }
             finally {
@@ -188,18 +167,25 @@ public static partial class ProcessManager {
         }
     }
 
-    private static void UpdateInteractionTower(ref FractionatorComponent fractionator,
+    private static void UpdateCultivationTower(ref FractionatorComponent fractionator,
         PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister,
         ref uint result) {
-        InternalUpdate<BuildingTrainRecipe>(ref fractionator, factory, power, signPool, productRegister,
-            consumeRegister, ref result, ERecipe.BuildingTrain);
+        InternalUpdate<CultivationRecipe>(ref fractionator, factory, power, signPool, productRegister,
+            consumeRegister, ref result, ERecipe.Cultivation);
     }
 
-    private static void UpdateMineralReplicationTower(ref FractionatorComponent fractionator,
+    private static void UpdateAnalysisTower(ref FractionatorComponent fractionator,
         PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister,
         ref uint result) {
-        InternalUpdate<MineralCopyRecipe>(ref fractionator, factory, power, signPool, productRegister,
-            consumeRegister, ref result, ERecipe.MineralCopy);
+        InternalUpdate<AnalysisRecipe>(ref fractionator, factory, power, signPool, productRegister,
+            consumeRegister, ref result, ERecipe.Analysis);
+    }
+
+    private static void UpdateReplicationTower(ref FractionatorComponent fractionator,
+        PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister,
+        ref uint result) {
+        InternalUpdate<ReplicationRecipe>(ref fractionator, factory, power, signPool, productRegister,
+            consumeRegister, ref result, ERecipe.Replication);
     }
 
     private static void UpdateConversionTower(ref FractionatorComponent fractionator,
@@ -208,14 +194,6 @@ public static partial class ProcessManager {
         InternalUpdate<ConversionRecipe>(ref fractionator, factory, power, signPool, productRegister,
             consumeRegister, ref result, ERecipe.Conversion);
     }
-
-    private static void UpdateRectificationTower(ref FractionatorComponent fractionator,
-        PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister,
-        ref uint result) {
-        InternalUpdate<RectificationRecipe>(ref fractionator, factory, power, signPool, productRegister,
-            consumeRegister, ref result, ERecipe.Rectification);
-    }
-
 
     /// <summary>
     /// InternalUpdate的默认实现。
@@ -227,7 +205,7 @@ public static partial class ProcessManager {
         long perfDetailStart = perfStageStart;
         int entityId = __instance.entityId;
         int buildingID = factory.entityPool[entityId].protoId;
-        bool isInteractionTower = buildingID == IFE交互塔;
+        bool isCultivationTower = buildingID == IFE培养塔;
         //所有产物输出
         FractionatorOutputState.FractionatorExtraState extraState = __instance.GetExtraState(factory);
         List<ProductOutputInfo> products = extraState.Products;
@@ -548,9 +526,10 @@ public static partial class ProcessManager {
                 TryOutputFluidToBelt(ref __instance, enableFluidOutputStacking && !moveDirectly, maxStack,
                     cargoTraffic, __instance.belt2, fluidInputCountPerCargo, forceSingleStack: moveDirectly);
             } else if (!__instance.isOutput2 && __instance.fluidInputCargoCount < fluidInputCargoMax) {
-                if (fluidId > 0) {
+                if (__instance.fluidId > 0) {
                     for (int i = 0; i < MaxOutputTimes && __instance.fluidInputCargoCount < fluidInputCargoMax; i++) {
-                        if (cargoTraffic.TryPickItemAtRear(__instance.belt2, fluidId, null, out stack, out inc) > 0) {
+                        if (cargoTraffic.TryPickItemAtRear(__instance.belt2, __instance.fluidId, null,
+                                out stack, out inc) > 0) {
                             __instance.fluidInputCount += stack;
                             __instance.fluidInputInc += inc;
                             __instance.fluidInputCargoCount++;
@@ -629,7 +608,7 @@ public static partial class ProcessManager {
                                 }
                             }
                         } else if (product.count > 0 && (flushNonLockedProduct || __instance.fluidInputCount == 0)) {
-                            // 单锁后非锁定产物要尽快清空；普通产物仍等输入停下后再吐出尾料。
+                            // 主路锁定后非目标产物要尽快清空；普通产物仍等输入停下后再吐出尾料。
                             if (cargoTraffic.TryInsertItemAtHead(__instance.belt0, product.itemId, (byte)product.count,
                                     (byte)(product.count * (recipe?.GetOutputInc(product.itemId) ?? 0)))) {
                                 product.count = 0;
@@ -642,7 +621,7 @@ public static partial class ProcessManager {
                         }
                     }
                 }
-            } else if (isInteractionTower
+            } else if (isCultivationTower
                        && __instance.belt1 <= 0
                        && __instance.belt2 <= 0
                        && AreAllProductsEmpty(products)) {
@@ -725,15 +704,17 @@ public static partial class ProcessManager {
     }
 
     private static void RecordFractionSuccess(int count) {
-        totalFractionSuccesses += count;
+        Interlocked.Add(ref totalFractionSuccesses, count);
         long second = GameMain.gameTick >= 0 ? GameMain.gameTick / 60L : 0L;
-        AdvanceFractionRateWindow(second);
+        lock (fractionRateWindowLock) {
+            AdvanceFractionRateWindow(second);
 
-        int bucketIndex = (int)(second % FractionRateWindowSeconds);
-        fractionSuccessBuckets[bucketIndex] += count;
-        currentFractionSuccessesPerMinute += count;
-        if (currentFractionSuccessesPerMinute > peakFractionSuccessesPerMinute) {
-            peakFractionSuccessesPerMinute = currentFractionSuccessesPerMinute;
+            int bucketIndex = (int)(second % FractionRateWindowSeconds);
+            fractionSuccessBuckets[bucketIndex] += count;
+            currentFractionSuccessesPerMinute += count;
+            if (currentFractionSuccessesPerMinute > peakFractionSuccessesPerMinute) {
+                peakFractionSuccessesPerMinute = currentFractionSuccessesPerMinute;
+            }
         }
     }
 
@@ -767,9 +748,11 @@ public static partial class ProcessManager {
     }
 
     private static void ResetFractionRateWindow() {
-        Array.Clear(fractionSuccessBuckets, 0, fractionSuccessBuckets.Length);
-        currentFractionRateSecond = -1;
-        currentFractionSuccessesPerMinute = 0;
+        lock (fractionRateWindowLock) {
+            Array.Clear(fractionSuccessBuckets, 0, fractionSuccessBuckets.Length);
+            currentFractionRateSecond = -1;
+            currentFractionSuccessesPerMinute = 0;
+        }
     }
 
     private static ProductOutputInfo FindProduct(List<ProductOutputInfo> products, int itemId, bool mainOnly = false) {
@@ -979,8 +962,8 @@ public static partial class ProcessManager {
     /// </summary>
     public static void Export(BinaryWriter w) {
         w.WriteBlocks(
-            ("TotalFractionSuccesses", bw => bw.Write(totalFractionSuccesses)),
-            ("PeakFractionSuccessesPerMinute", bw => bw.Write(peakFractionSuccessesPerMinute))
+            ("TotalFractionSuccesses", bw => bw.Write(Interlocked.Read(ref totalFractionSuccesses))),
+            ("PeakFractionSuccessesPerMinute", bw => bw.Write(Interlocked.Read(ref peakFractionSuccessesPerMinute)))
         );
     }
 
@@ -990,8 +973,10 @@ public static partial class ProcessManager {
     public static void Import(BinaryReader r) {
         ResetFractionRateWindow();
         r.ReadBlocks(
-            ("TotalFractionSuccesses", br => totalFractionSuccesses = Math.Max(0, br.ReadInt64())),
-            ("PeakFractionSuccessesPerMinute", br => peakFractionSuccessesPerMinute = Math.Max(0, br.ReadInt64()))
+            ("TotalFractionSuccesses", br =>
+                Interlocked.Exchange(ref totalFractionSuccesses, Math.Max(0, br.ReadInt64()))),
+            ("PeakFractionSuccessesPerMinute", br =>
+                Interlocked.Exchange(ref peakFractionSuccessesPerMinute, Math.Max(0, br.ReadInt64())))
         );
     }
 
@@ -999,8 +984,8 @@ public static partial class ProcessManager {
     /// 切换或进入其他存档时重置该分馏域状态。
     /// </summary>
     public static void IntoOtherSave() {
-        totalFractionSuccesses = 0;
-        peakFractionSuccessesPerMinute = 0;
+        Interlocked.Exchange(ref totalFractionSuccesses, 0);
+        Interlocked.Exchange(ref peakFractionSuccessesPerMinute, 0);
         ResetFractionRateWindow();
     }
 

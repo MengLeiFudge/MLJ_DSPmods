@@ -1,7 +1,7 @@
 ﻿using BuildBarTool;
 using CommonAPI.Systems;
 using FE.Compatibility.Mods;
-using FE.Logic.Progression;
+using FE.Logic.Progression.Stacking;
 using UnityEngine;
 using static FE.FractionateEverything;
 using static FE.Utils.Utils;
@@ -41,7 +41,7 @@ public static class PlanetaryInteractionStation {
             "Assets/fe/interaction-station", tab分馏 * 1000 + 306, 10, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE行星内物流交互站,
-            ERecipeType.Assemble, 1200, [I行星内物流运输站, IFE交互塔], [1, 12], [IFE行星内物流交互站], [1],
+            ERecipeType.Assemble, 1200, [I行星内物流运输站, IFE培养塔], [1, 12], [IFE行星内物流交互站], [1],
             "I行星内物流交互站", TFE行星内物流交互, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;

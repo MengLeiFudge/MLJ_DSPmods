@@ -23,20 +23,20 @@ ancient-civilization protocols.
 
 万物分馏添加了全新的建筑，它们的效果非常强大！
 
-* 交互塔：将通用原胚随机培养为四类塔，将专属原胚稳定培养为对应塔型，并在返祖协议恢复后把实体塔还原为专属原胚；正面输入且两侧无连接时，将物品上传至分馏数据中心。
+* 培养塔：将通用原胚随机培养为四类塔，将专属原胚稳定培养为对应塔型，并在返祖协议恢复后把实体塔还原为专属原胚；正面输入且两侧无连接时，将物品上传至分馏数据中心。
 * 解析塔：将矩阵处理为实体解析数据，上传后为对应文明阶段生成协议检索机会；也负责把通用原胚分化为专属谱系。
-* 资源塔：复制可持续消耗的原矿资源，并保留硅石、石矿、煤矿、氢等配方既定的自然伴生副产物；临界光子和反物质不进入复制配方，对应协议完整度达到 100 后才可运行。
+* 复制塔：复制可持续消耗的原矿资源，并保留硅石、石矿、煤矿、氢等配方既定的自然伴生副产物；临界光子和反物质不进入复制配方，对应协议完整度达到 100 后才可运行。
 * 转化塔：在已确认的建筑、设备、燃料、防御、弹药、消耗品和黑雾物品链内转换；可以投入大量低层建筑取得下一层建筑，对应协议完整度达到 100 后才可运行。
 * 物流交互站：可以与分馏数据中心进行物品交互的行星内物流运输站。
 
 Fractionate Everything has added brand new buildings which are very powerful in their effects!
 
-* Interaction Tower: Randomly cultivates common protos into one of four tower types, stably cultivates dedicated protos,
+* Cultivation Tower: Randomly cultivates common protos into one of four tower types, stably cultivates dedicated protos,
   and reverses towers into dedicated protos after the atavism protocol is recovered. It also uploads front-input items
   to the Data Center when neither side is connected.
 * Analysis Tower: Processes matrices into physical analysis data and differentiates common protos into dedicated
   lineages. Uploading analysis data generates retrieval opportunities for the matching civilization stage.
-* Resource Tower: Replicates consumable raw resources, including eligible dark-fog drops. A managed recipe becomes
+* Replication Tower: Replicates consumable raw resources, including eligible dark-fog drops. A managed recipe becomes
   usable only after its protocol reaches 100 completeness.
 * Conversion Tower: Converts items within the same production or use chain. A managed recipe becomes usable only after
   its protocol reaches 100 completeness.
@@ -63,14 +63,14 @@ analysis; unfinished auxiliary protocols remain available through guaranteed-eff
 
 ### 远古科技树 Ancient Technology Tree
 
-阶段内主协议全部完成后，后续广域检索转为深层解析，并稳定产出唯一一种远古文明科技点。科技树包含交互塔、资源塔、转化塔、解析塔四条并列纵向主干；每条主干按以下顺序推进：
+阶段内主协议全部完成后，后续广域检索转为深层解析，并稳定产出唯一一种远古文明科技点。科技树包含培养塔、解析塔、复制塔、转化塔四条并列纵向主干；每条主干按以下顺序推进：
 
 `流动输出堆叠 → 产物输出堆叠 → 分馏永动 → 主路锁定 → 副产物弃置`
 
 节点有真实前置关系和递增价格，同类所有实体塔共享解锁状态。五项能力彼此独立，但每一项都以相同结构覆盖四类塔；每塔可以处于不同解锁状态，当前配方没有可用效果时仍显示该能力及其无目标状态，而不会整项消失。主路锁定和副产物弃置还要求当前配方累计成功次数达到校准门槛，并由单座塔保存目标或开关；这些实例状态随存档、复制粘贴、蓝图和联机同步。四塔共用主路目标状态，解析塔谱系分化继续使用自己的候选与结算规则。主路锁定只选择主产物，副产物弃置只销毁副产物且不提供补偿。系统设置中的“始终显示完整分馏配方信息”开启后，会在所有分馏塔窗口和配方页面直接显示产物名称、数量和概率。
 
 After all required protocols in a stage are complete, later broad retrievals become deep analysis and award the single
-ancient technology point type. The tree has four parallel vertical paths for Interaction, Analysis, Resource, and Conversion
+ancient technology point type. The tree has four parallel vertical paths for Cultivation, Analysis, Replication, and Conversion
 Towers. The five abilities remain independent, but each ability uses the same structure across all four tower types.
 A tower may have a different enabled state, while recipes with no current effect still display the ability instead of
 omitting it. Main-output locking and byproduct discard additionally require recipe calibration and per-building settings.
@@ -79,11 +79,11 @@ state; analysis lineage keeps its recipe-specific candidates and settlement rule
 discard destroys side outputs without compensation. The "Always show complete fractionation recipe information" setting
 reveals product names, amounts, and probabilities in every fractionator window and recipe page.
 
-### 文明成就 Civilization Achievements
+### 成就 Achievements
 
-文明成就是当前存档内的固定里程碑，由协议恢复、阶段完成、科技投入和真实分馏次数自然推进。完成后自动提供固定加成，不消耗科技点，也不使用领取任务、每日奖励或跨存档抽取强度。
+成就是独立的单存档固定里程碑，由协议恢复、阶段完成、科技投入和真实分馏次数自然推进。完成后自动提供固定加成，不消耗科技点，也不使用领取任务、每日奖励或跨存档抽取强度。
 
-Civilization achievements are fixed milestones in the current save. Protocol recovery, stage completion, technology
+Achievements are independent fixed milestones in the current save. Protocol recovery, stage completion, technology
 spending, and real fractionation activity advance them naturally. Their fixed bonuses apply automatically and do not use
 claimable quests, daily rewards, or cross-save draw power.
 

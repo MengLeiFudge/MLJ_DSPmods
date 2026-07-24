@@ -5,7 +5,6 @@ using System.Linq;
 using FE.Logic.Buildings.Migration;
 using static FE.Logic.Items.ItemManager;
 using static FE.Utils.Utils;
-using static FE.Logic.Fractionation.FracRecipes.ERecipeExtension;
 
 namespace FE.Logic.Fractionation.FracRecipes;
 
@@ -35,8 +34,6 @@ public static class RecipeManager {
     /// 按物品科技层级分类配方，Key：(int)MatrixID
     /// </summary>
     private static readonly Dictionary<int, List<BaseRecipe>> RecipeMatrixDic = [];
-    // 作为配方索引的发布屏障，确保工厂线程观察到 ready 后能读取完整目录。
-    private static volatile bool fracRecipesReady;
 
 #if DEBUG
     private const string SPRITE_CSV_DIR = @"D:\project\dsp\MLJ_DSPmods\gamedata";
@@ -53,17 +50,15 @@ public static class RecipeManager {
         }
 #endif
         LogInfo("Add fractionate recipes...");
-        fracRecipesReady = false;
 
         for (int i = 0; i < RecipeTypeArr.Length; i++) {
             RecipeTypeArr[i] = new BaseRecipe[12000];
         }
 
-        BuildingTrainRecipe.CreateAll();
-        MineralCopyRecipe.CreateAll();
+        CultivationRecipe.CreateAll();
+        AnalysisRecipe.CreateAll();
+        ReplicationRecipe.CreateAll();
         ConversionRecipe.CreateAll();
-        RectificationRecipe.CreateAll();
-        fracRecipesReady = true;
 
         LogInfo($"Added {RecipeList.Count} fractionate recipes.");
     }
@@ -129,10 +124,6 @@ public static class RecipeManager {
     /// 获取当前已注册的全部 FE 分馏配方。
     /// </summary>
     public static IReadOnlyList<BaseRecipe> AllRecipes => RecipeList;
-    /// <summary>
-    /// 判断分馏配方注册流程是否已完成。
-    /// </summary>
-    public static bool AreFracRecipesReady => fracRecipesReady;
 
     /// <summary>
     /// 按分馏配方类型查询配方列表。

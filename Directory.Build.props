@@ -4,8 +4,11 @@
         <TargetFramework>net472</TargetFramework>
         <!-- bepinex包源 -->
         <RestoreAdditionalProjectSources>https://nuget.bepinex.dev/v3/index.json</RestoreAdditionalProjectSources>
+        <!-- Windows 保持标准 obj 目录；Linux/LSP 使用独立目录，避免两端 restore 相互覆盖 NuGet 资产图 -->
+        <BaseIntermediateOutputPath Condition="'$(OS)' == 'Windows_NT'">obj/</BaseIntermediateOutputPath>
+        <BaseIntermediateOutputPath Condition="'$(OS)' != 'Windows_NT'">obj/linux/</BaseIntermediateOutputPath>
+        <MSBuildProjectExtensionsPath Condition="'$(OS)' != 'Windows_NT'">$(MSBuildProjectDirectory)/obj/linux/</MSBuildProjectExtensionsPath>
         <!-- 输出路径不按 OS 或目标框架拆分，确保本机 Debug 产物固定在 bin\Debug -->
-        <BaseIntermediateOutputPath>obj/</BaseIntermediateOutputPath>
         <BaseOutputPath>bin/</BaseOutputPath>
         <!-- 始终排除 obj 和 bin 目录，防止构建产物进入编译输入 -->
         <DefaultItemExcludes>$(DefaultItemExcludes);obj\**;bin\**</DefaultItemExcludes>

@@ -44,9 +44,7 @@ public static class GenesisBook {
     [HarmonyPatch(typeof(FastStartOptionPatches), nameof(FastStartOptionPatches.SetForNewGame))]
     private static IEnumerable<CodeInstruction> FastStartOptionPatches_SetForNewGame_Transpiler(
         IEnumerable<CodeInstruction> instructions, ILGenerator generator) {
-        //if (!GameMain.data.history.TechUnlocked(proto.ID) && NeedFastUnlock(proto.Items))
-        //变为
-        //if (IsFracTech(proto.ID) && !GameMain.data.history.TechUnlocked(proto.ID) && NeedFastUnlock(proto.Items))
+        // 创世之书只对非 FE 科技执行快速解锁；FE 隐藏恢复科技由自身流程管理。
         var matcher = new CodeMatcher(instructions);
         //寻找: GameMain.data.history.TechUnlocked(proto.ID)
         matcher.MatchForward(false,
@@ -79,7 +77,7 @@ public static class GenesisBook {
     }
 
     private static bool IsFracTech(int id) {
-        return id is >= TFE分馏数据中心 and <= TFE物品转化
+        return id is >= TFE分馏数据中心 and <= TFE转化塔
             or >= TFE行星内物流交互 and <= TFE星际物流交互
             or >= TFE阶段补给1 and <= TFE阶段补给6;
     }

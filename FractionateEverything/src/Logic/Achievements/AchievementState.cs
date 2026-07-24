@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using FE.Utils;
 
-namespace FE.Logic.Civilization.Achievements;
+namespace FE.Logic.Achievements;
 
 /// <summary>
-/// 保存当前存档已经完成并自动生效的文明成就键。
+/// 保存当前存档已经完成并自动生效的成就键。
 /// </summary>
 public static class AchievementState {
     private static readonly HashSet<string> completed = [];

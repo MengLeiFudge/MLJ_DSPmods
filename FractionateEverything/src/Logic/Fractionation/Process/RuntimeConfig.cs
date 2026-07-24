@@ -2,7 +2,6 @@
 using System.Linq;
 using FE.Logic.Fractionation.FracRecipes;
 using FE.Logic.Fractionation.Fractionators;
-using FE.Logic.Progression;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Process;
@@ -103,11 +102,11 @@ public static partial class ProcessManager {
     /// 刷新分馏塔原型参数和远古科技节点派生出的运行参数。
     /// </summary>
     public static void RefreshFractionatorRuntimeConfig() {
-        SetRuntimeConfig(IFE交互塔, ERecipe.BuildingTrain, InteractionTower.MaxStack, InteractionTower.PlrRatio);
-        SetRuntimeConfig(IFE资源塔, ERecipe.MineralCopy, MineralReplicationTower.MaxStack,
-            MineralReplicationTower.PlrRatio);
+        SetRuntimeConfig(IFE培养塔, ERecipe.Cultivation, CultivationTower.MaxStack, CultivationTower.PlrRatio);
+        SetRuntimeConfig(IFE解析塔, ERecipe.Analysis, AnalysisTower.MaxStack, AnalysisTower.PlrRatio);
+        SetRuntimeConfig(IFE复制塔, ERecipe.Replication, ReplicationTower.MaxStack,
+            ReplicationTower.PlrRatio);
         SetRuntimeConfig(IFE转化塔, ERecipe.Conversion, ConversionTower.MaxStack, ConversionTower.PlrRatio);
-        SetRuntimeConfig(IFE解析塔, ERecipe.Rectification, RectificationTower.MaxStack, RectificationTower.PlrRatio);
     }
 
     private static void SetRuntimeConfig(int buildingID, ERecipe recipeType, int maxStack, float plrRatio) {

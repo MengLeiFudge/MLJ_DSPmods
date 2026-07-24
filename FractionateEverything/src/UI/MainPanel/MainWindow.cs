@@ -54,11 +54,11 @@ public static class MainWindow {
         CivilizationOverviewPage.AddTranslations();
         ProtocolRecoveryPage.AddTranslations();
         AncientTechTreePage.AddTranslations();
-        CivilizationAchievementPage.AddTranslations();
         Register("资源管理", "Resource Management");
         ItemInteraction.AddTranslations();
         Register("恢复指引", "Recovery Guide");
         RecoveryGuide.AddTranslations();
+        AchievementPage.AddTranslations();
         DevelopmentDiary.AddTranslations();
         Register("图鉴档案", "Gallery & Archive");
         RecipeGallery.AddTranslations();
@@ -72,10 +72,10 @@ public static class MainWindow {
         CivilizationOverviewPage.LoadConfig(configFile);
         ProtocolRecoveryPage.LoadConfig(configFile);
         AncientTechTreePage.LoadConfig(configFile);
-        CivilizationAchievementPage.LoadConfig(configFile);
 
         ItemInteraction.LoadConfig(configFile);
         RecoveryGuide.LoadConfig(configFile);
+        AchievementPage.LoadConfig(configFile);
         DevelopmentDiary.LoadConfig(configFile);
 
         RecipeGallery.LoadConfig(configFile);

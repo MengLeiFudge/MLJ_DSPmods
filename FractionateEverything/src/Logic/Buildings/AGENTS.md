@@ -13,9 +13,9 @@ Buildings/
 
 ## Definition Ownership
 
-- `Logic/Fractionation/Fractionators/InteractionTower.cs`：交互塔原型。
-- `Logic/Fractionation/Fractionators/RectificationTower.cs`：解析塔原型。
-- `Logic/Fractionation/Fractionators/MineralReplicationTower.cs`：资源塔原型。
+- `Logic/Fractionation/Fractionators/CultivationTower.cs`：培养塔原型。
+- `Logic/Fractionation/Fractionators/AnalysisTower.cs`：解析塔原型。
+- `Logic/Fractionation/Fractionators/ReplicationTower.cs`：复制塔原型。
 - `Logic/Fractionation/Fractionators/ConversionTower.cs`：转化塔原型。
 - `Logic/Station/Definitions/PlanetaryInteractionStation.cs`：行星内物流交互站原型。
 - `Logic/Station/Definitions/InterstellarInteractionStation.cs`：星际物流交互站原型。

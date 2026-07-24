@@ -1,7 +1,7 @@
 ﻿using BuildBarTool;
 using CommonAPI.Systems;
 using FE.Compatibility.Mods;
-using FE.Logic.Progression;
+using FE.Logic.Progression.Stacking;
 using UnityEngine;
 using static FE.FractionateEverything;
 using static FE.Utils.Utils;
@@ -40,7 +40,7 @@ public static class InterstellarInteractionStation {
             "Assets/fe/interstellar-interaction-station", tab分馏 * 1000 + 307, 10, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE星际物流交互站,
-            ERecipeType.Assemble, 1800, [I星际物流运输站, IFE交互塔], [1, 12], [IFE星际物流交互站], [1],
+            ERecipeType.Assemble, 1800, [I星际物流运输站, IFE培养塔], [1, 12], [IFE星际物流交互站], [1],
             "I星际物流交互站", TFE星际物流交互, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;

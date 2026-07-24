@@ -260,9 +260,9 @@ public static class Miscellaneous {
         DownloadThresholdTipsButton2.gameObject.SetActive(isMultiplayer);
         UploadThresholdSlider.slider.interactable = !isMultiplayer;
         UploadThresholdTipsButton2.gameObject.SetActive(isMultiplayer);
-        PackageSortTwiceCheckBox.enabled = PackageAccessRules.TechItemInteractionUnlocked;
+        PackageSortTwiceCheckBox.SetEnable(PackageAccessRules.TechItemInteractionUnlocked);
         if (AutoSorter.Enable) {
-            PackageAutoSortTwiceCheckBox.enabled = PackageAccessRules.TechItemInteractionUnlocked;
+            PackageAutoSortTwiceCheckBox.SetEnable(PackageAccessRules.TechItemInteractionUnlocked);
         }
         RefreshSwitchMainPanelButtonLabel();
     }

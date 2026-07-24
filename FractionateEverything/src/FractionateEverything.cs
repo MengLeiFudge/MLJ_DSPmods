@@ -12,7 +12,7 @@ using crecheng.DSPModSave;
 using FE.Lifecycle;
 using FE.Compatibility;
 using FE.Compatibility.Nebula;
-using FE.Logic.Civilization;
+using FE.Logic.Achievements;
 using FE.UI.Foundation.Window;
 using FE.UI.MainPanel;
 using HarmonyLib;
@@ -24,6 +24,9 @@ using static FE.Utils.Utils;
 
 namespace FE;
 
+/// <summary>
+/// FE 模组入口插件。
+/// </summary>
 [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
 [BepInDependency(LDBToolPlugin.MODGUID)]
 [BepInDependency(DSPModSavePlugin.MODGUID)]
@@ -33,9 +36,6 @@ namespace FE;
 [BepInDependency(CheckPlugins.GUID)]
 [CommonAPISubmoduleDependency(nameof(CustomKeyBindSystem), nameof(ProtoRegistry), nameof(TabSystem),
     nameof(LocalizationModule))]
-/// <summary>
-/// FE 模组入口插件。
-/// </summary>
 public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerModWithSettings {
     #region Fields
 
@@ -152,7 +152,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
 
     private void Update() {
         MainWindow.OnInputUpdate();
-        CivilizationModule.Tick();
+        AchievementModule.Tick();
     }
 
     #region IModCanSave & IMultiplayerModWithSettings
@@ -173,7 +173,11 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
                 "FE存档版本不兼容内容".Translate(),
                 "确定".Translate(),
                 UIMessageBox.WARNING,
-                () => AddItemToModData(IFE残片, 5000));
+                () => {
+                    if (!NebulaMultiplayerModAPI.IsClient) {
+                        AddItemToModData(IFE残片, 5000);
+                    }
+                });
             return;
         }
         FeatureSaveRegistry.Import(r);

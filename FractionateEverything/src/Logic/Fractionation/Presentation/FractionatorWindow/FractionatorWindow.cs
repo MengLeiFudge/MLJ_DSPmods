@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using FE.Logic.Fractionation.Fractionators;
 using UnityEngine;
@@ -17,11 +17,11 @@ public static partial class FractionatorWindow {
     private static GameObject modWindowGo;
 
     // ===== 布局常量 =====
-    private const int MaxMainSlots = 4;
+    private const int MaxMainSlots = 5;
     private const int MaxSideSlots = 4;
     private const float SlotSpacing = 55f;
     // AddWidth = SlotSpacing * (Mathf.Max(MaxMainSlots, MaxSideSlots) - 1);
-    private const float AddWidth = SlotSpacing * 3;
+    private const float AddWidth = SlotSpacing * 4;
     private const float AddHeight = 70f;
 
     // ===== 颜色 =====

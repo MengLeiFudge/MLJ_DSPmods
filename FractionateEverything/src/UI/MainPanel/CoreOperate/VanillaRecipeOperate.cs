@@ -2,7 +2,7 @@
 using System.IO;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
-using FE.Logic.Progression;
+using FE.Logic.Progression.Stacking;
 using FE.Logic.VanillaRecipes;
 using FE.UI.Controls;
 using FE.UI.Foundation.Window;
@@ -184,7 +184,7 @@ public static class VanillaRecipeOperate {
     }
 
     public static void UpdateUI() {
-        if (!tab.gameObject.activeSelf) {
+        if (window == null || !window.gameObject.activeInHierarchy) {
             return;
         }
         btnSelectedRecipe.Proto = SelectedRecipe;

@@ -1,9 +1,7 @@
-using FE.Logic.Fractionation.Fractionators;
+﻿using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Fractionation.FracRecipes;
-using FE.Logic.Fractionation.Process;
 using UnityEngine;
 using UnityEngine.UI;
-using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Presentation;
 
@@ -50,11 +48,11 @@ public static partial class FractionatorWindow {
         int currentLockedItemId = fractionator.GetLockedOutput(target.factory);
         if (currentLockedItemId == itemId) {
             fractionator.SetLockedOutputAndSync(target.factory, 0, manual: true);
-            UIRealtimeTip.Popup("已清除单路锁定".Translate());
+            UIRealtimeTip.Popup("已清除主路目标".Translate());
         } else {
             fractionator.SetLockedOutputAndSync(target.factory, itemId, manual: true);
             string itemName = LDB.items.Select(itemId)?.name ?? itemId.ToString();
-            UIRealtimeTip.Popup(string.Format("已锁定单路产物：{0}".Translate(), itemName));
+            UIRealtimeTip.Popup(string.Format("已设定主路目标：{0}".Translate(), itemName));
         }
 
         DoModWindowUpdate(target);
@@ -190,7 +188,7 @@ public static partial class FractionatorWindow {
             || !recipe.OutputMain.Exists(output => recipe.SupportsMainOutputLock(output.OutputID))) {
             return string.Empty;
         }
-        return lockedOutputId == 0 ? "右键设为单锁".Translate() : "右键清除单锁".Translate();
+        return lockedOutputId == 0 ? "右键设为主路目标".Translate() : "右键清除主路目标".Translate();
     }
 
     private static string BuildByproductDiscardState(BaseRecipe recipe, bool unlocked, bool enabled) {

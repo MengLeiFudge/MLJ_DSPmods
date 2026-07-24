@@ -1,5 +1,7 @@
 ﻿using System;
+using FE.Compatibility.Nebula;
 using FE.Logic.Fractionation.Fractionators;
+using FE.Logic.Progression.Stacking;
 using HarmonyLib;
 using static FE.Utils.Utils;
 
@@ -29,6 +31,12 @@ public static partial class TechManager {
     [HarmonyPostfix]
     [HarmonyPatch(typeof(Player), nameof(Player.GameTick))]
     public static void Player_GameTick_Postfix() {
+        if (NebulaMultiplayerModAPI.IsClient) {
+            ResetTechUnlockFlags();
+            StackingManager.SyncRuntimeState();
+            return;
+        }
+
         for (int i = 0; i < techUnlockFlags.Length; i++) {
             if (techUnlockFlags[i]) {
                 int techId = GetActiveFractionatorUnlockTechId(i);
@@ -52,10 +60,10 @@ public static partial class TechManager {
 
     private static int GetActiveFractionatorUnlockTechId(int index) {
         return index switch {
-            0 => TFE物品交互,
-            1 => TFE文明解析,
-            2 => TFE资源复制,
-            3 => TFE物品转化,
+            0 => TFE培养塔,
+            1 => TFE解析塔,
+            2 => TFE复制塔,
+            3 => TFE转化塔,
             _ => 0,
         };
     }
@@ -73,18 +81,18 @@ public static partial class TechManager {
             return false;
         }
         if (__instance.ID == TFE分馏塔原胚) {
-            __result = $"{"恢复全部建筑培养配方".Translate()}\r\n"
-                       + $"{"给予一个交互塔".Translate()}\r\n"
+            __result = $"{"恢复全部培养配方".Translate()}\r\n"
+                       + $"{"给予一个培养塔".Translate()}\r\n"
                        + $"{"给予一些分馏塔原胚".Translate()}";
             return false;
         }
-        if (__instance.ID == TFE物品交互) {
+        if (__instance.ID == TFE培养塔) {
             __result = $"{"自动上传被扔掉的物品".Translate()}\r\n"
                        + $"{"双击背包排序按钮，自动上传背包内物品".Translate()}";
             return false;
         }
-        if (__instance.ID == TFE资源复制) {
-            __result = $"{"注册资源塔控制接口".Translate()}";
+        if (__instance.ID == TFE复制塔) {
+            __result = $"{"注册复制塔控制接口".Translate()}";
             return false;
         }
         return true;

@@ -15,9 +15,9 @@ public static class AncientTechTreeCatalog {
     public static void Initialize() {
         nodes.Clear();
         nodesByKey.Clear();
-        AddTowerPath("interaction", "交互塔", ERecipe.BuildingTrain);
-        AddTowerPath("analysis", "解析塔", ERecipe.Rectification);
-        AddTowerPath("resource", "资源塔", ERecipe.MineralCopy);
+        AddTowerPath("cultivation", "培养塔", ERecipe.Cultivation);
+        AddTowerPath("analysis", "解析塔", ERecipe.Analysis);
+        AddTowerPath("replication", "复制塔", ERecipe.Replication);
         AddTowerPath("conversion", "转化塔", ERecipe.Conversion);
     }
 

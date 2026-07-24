@@ -2,7 +2,6 @@
 using System.IO;
 using BepInEx.Configuration;
 using FE.Logic.DataCenter;
-using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Progression;
 using FE.UI.Controls;
 using FE.UI.Foundation.Window;
@@ -26,7 +25,7 @@ public static class RecoveryGuide {
     private static readonly GuideStep[] initialProtoSteps = [
         new("恢复手册步骤-启动套件", "恢复手册步骤说明-启动套件", StepKind.Auto, HasStarterKit),
         new("恢复手册步骤-打开面板", "恢复手册步骤说明-打开面板", StepKind.Auto, HasDataCenterAccess),
-        new("恢复手册步骤-放置首塔", "恢复手册步骤说明-放置首塔", StepKind.Auto, HasFirstInteractionTowerReady),
+        new("恢复手册步骤-放置首塔", "恢复手册步骤说明-放置首塔", StepKind.Auto, HasFirstCultivationTowerReady),
         new("恢复手册步骤-左右成环", "恢复手册步骤说明-左右成环", StepKind.Manual, manualIndex: 0),
         new("恢复手册步骤-临时箱子", "恢复手册步骤说明-临时箱子", StepKind.Manual, manualIndex: 1),
         new("恢复手册步骤-输入原胚", "恢复手册步骤说明-输入原胚", StepKind.Manual, manualIndex: 2),
@@ -40,7 +39,7 @@ public static class RecoveryGuide {
         "恢复手册章节-时隧检索",
         "恢复手册章节-塔型注册",
         "恢复手册章节-物流交互",
-        "恢复手册章节-精馏"
+        "恢复手册章节-解析"
     ];
 
     private static readonly bool[] manualStepCompleted = new bool[ManualStepCount];
@@ -77,10 +76,10 @@ public static class RecoveryGuide {
     public static void AddTranslations() {
         Register("恢复手册", "Recovery Manual", "恢复手册");
         Register("恢复手册页头摘要",
-            "Checklist for old-civilization recovery, first interaction tower loop, and later system chapters.",
-            "旧文明恢复、交互塔原胚孵化和后续系统章节的操作清单。");
+            "Checklist for old-civilization recovery, first cultivation tower loop, and later system chapters.",
+            "旧文明恢复、培养塔原胚培养和后续系统章节的操作清单。");
         Register("恢复手册-当前目标", "Current Objective", "当前目标");
-        Register("恢复手册-原胚孵化", "Initial Proto Incubation", "初始原胚孵化");
+        Register("恢复手册-原胚培养", "Initial Proto Cultivation", "初始原胚培养");
         Register("恢复手册-后续章节", "Later Chapters", "后续章节");
         Register("恢复手册-自动检测", "Auto", "自动");
         Register("恢复手册-玩家确认", "Confirm", "确认");
@@ -98,40 +97,40 @@ public static class RecoveryGuide {
 
         Register("恢复手册步骤-启动套件", "Recover the starter kit", "回收启动套件");
         Register("恢复手册步骤说明-启动套件",
-            "Find the abnormal old-civilization signal and recover the communication module, Interaction Tower, and common protos.",
-            "前往异常旧文明信号点，回收通信模块、交互塔和通用原胚。");
+            "Find the abnormal old-civilization signal and recover the communication module, Cultivation Tower, and common protos.",
+            "前往异常旧文明信号点，回收通信模块、培养塔和通用原胚。");
         Register("恢复手册步骤-打开面板", "Open the data centre", "打开分馏数据中心");
         Register("恢复手册步骤说明-打开面板",
             "Use Shift+F after communication is established. This manual remains available for review.",
             "通信建立后按 Shift+F 打开数据中心；本手册可随时回看。");
-        Register("恢复手册步骤-放置首塔", "Place the first Interaction Tower", "放置第一个交互塔");
+        Register("恢复手册步骤-放置首塔", "Place the first Cultivation Tower", "放置第一个培养塔");
         Register("恢复手册步骤说明-放置首塔",
-            "Use the starter Interaction Tower. It is the first machine that can incubate tower protos.",
-            "使用启动套件中的交互塔；它是第一台能孵化塔型原胚的设备。");
+            "Use the starter Cultivation Tower. It is the first machine that can cultivate tower protos.",
+            "使用启动套件中的培养塔；它是第一台能培养塔型原胚的设备。");
         Register("恢复手册步骤-左右成环", "Connect left and right ports into a loop", "左右口连接成环");
         Register("恢复手册步骤说明-左右成环",
             "Build a belt loop on the left and right ports. The loop keeps the proto cycling through the tower.",
-            "在左右口之间接一圈传送带，让原胚持续经过交互塔。");
+            "在左右口之间接一圈传送带，让原胚持续经过培养塔。");
         Register("恢复手册步骤-临时箱子", "Send the front output to a temporary box", "正面输出先接临时箱子");
         Register("恢复手册步骤说明-临时箱子",
-            "Use a temporary box to catch the first produced Interaction Tower before the upload tower exists.",
-            "先用临时箱子接住第一台产出的交互塔，因为此时还没有第二台上传塔。");
+            "Use a temporary box to catch the first produced Cultivation Tower before the upload tower exists.",
+            "先用临时箱子接住第一台产出的培养塔，因为此时还没有第二台上传塔。");
         Register("恢复手册步骤-输入原胚", "Feed common protos into the loop", "向环输入通用原胚");
         Register("恢复手册步骤说明-输入原胚",
-            "Common protos randomly cultivate into one of four tower types. Keep each result and continue until an Interaction Tower is produced.",
-            "通用原胚会随机培养为四种塔型之一。保留每次产物并继续培养，直到获得交互塔。");
-        Register("恢复手册步骤-获得第二塔", "Produce and place the second Interaction Tower", "获得并放置第二个交互塔");
+            "Common protos randomly cultivate into one of four tower types. Keep each result and continue until a Cultivation Tower is produced.",
+            "通用原胚会随机培养为四种塔型之一。保留每次产物并继续培养，直到获得培养塔。");
+        Register("恢复手册步骤-获得第二塔", "Produce and place the second Cultivation Tower", "获得并放置第二个培养塔");
         Register("恢复手册步骤说明-获得第二塔",
-            "Place the cultivated Interaction Tower next to the line as the upload tower; other tower results remain useful for later production.",
-            "把培养得到的交互塔放到产线旁作为上传塔；其他塔型产物保留用于后续生产。");
+            "Place the cultivated Cultivation Tower next to the line as the upload tower; other tower results remain useful for later production.",
+            "把培养得到的培养塔放到产线旁作为上传塔；其他塔型产物保留用于后续生产。");
         Register("恢复手册步骤-接入上传", "Remove the box and feed the second tower front port", "拆箱并接入第二塔正面");
         Register("恢复手册步骤说明-接入上传",
             "Remove the temporary box, then send the first tower output into the second tower front port.",
             "拆掉临时箱子，把第一台塔的产物接到第二台塔的正面入口。");
-        Register("恢复手册步骤-恢复协议", "Recover the item interaction protocol", "恢复物品交互协议");
+        Register("恢复手册步骤-恢复协议", "Recover the cultivation tower protocol", "恢复培养塔协议");
         Register("恢复手册步骤说明-恢复协议",
-            "Uploading an Interaction Tower registers the protocol and enables item interaction through the data centre.",
-            "上传交互塔会注册协议，并恢复数据中心物品交互能力。");
+            "Uploading a Cultivation Tower registers the protocol and enables item interaction through the data centre.",
+            "上传培养塔会注册协议，并恢复数据中心物品交互能力。");
 
         Register("恢复手册章节-数据中心", "Data centre storage: upload, extract, and view current stock.",
             "数据中心库存：上传、提取和查看当前储量。");
@@ -141,7 +140,7 @@ public static class RecoveryGuide {
             "塔型注册：上传各类产出的分馏塔，恢复对应协议。");
         Register("恢复手册章节-物流交互", "Interaction stations: automate data-centre upload and download after the first loop.",
             "物流交互站：第一轮闭环后，自动化数据中心上传和下载。");
-        Register("恢复手册章节-精馏", "Civilization analysis: turn matrices into physical analysis data for protocol recovery.",
+        Register("恢复手册章节-解析", "Civilization analysis: turn matrices into physical analysis data for protocol recovery.",
             "文明解析：将矩阵转为实体解析数据，用于恢复配方协议。");
     }
 
@@ -304,7 +303,7 @@ public static class RecoveryGuide {
     private static LayoutNode[] BuildStepNodes() {
         var nodes = new LayoutNode[4 + initialProtoSteps.Length * 4];
         int offset = 0;
-        nodes[offset++] = CardTitleNode("恢复手册-原胚孵化", pos: (0, 0), span: (1, 4),
+        nodes[offset++] = CardTitleNode("恢复手册-原胚培养", pos: (0, 0), span: (1, 4),
             objectName: "recovery-proto-title");
         nodes[offset++] = TextNode("恢复手册-状态", 12, Gray, anchor: TextAnchor.MiddleCenter,
             pos: (1, 0), objectName: "recovery-step-header-state");
@@ -393,9 +392,9 @@ public static class RecoveryGuide {
 
     private static bool HasStarterKit() {
         return HasDataCenterAccess()
-               || GetItemTotalCount(IFE交互塔) > 0
+               || GetItemTotalCount(IFE培养塔) > 0
                || GetItemTotalCount(IFE通用原胚) > 0
-               || DataCenterInventory.centerItemCount[IFE交互塔] > 0
+               || DataCenterInventory.centerItemCount[IFE培养塔] > 0
                || DataCenterInventory.centerItemCount[IFE通用原胚] > 0;
     }
 
@@ -403,12 +402,12 @@ public static class RecoveryGuide {
         return CivilizationRecoveryManager.HasDataCenterCommunication;
     }
 
-    private static bool HasFirstInteractionTowerReady() {
-        return GetItemTotalCount(IFE交互塔) > 0
-               || DataCenterInventory.centerItemCount[IFE交互塔] > 0;
+    private static bool HasFirstCultivationTowerReady() {
+        return GetItemTotalCount(IFE培养塔) > 0
+               || DataCenterInventory.centerItemCount[IFE培养塔] > 0;
     }
 
     private static bool HasItemInteractionProtocol() {
-        return GameMain.history != null && GameMain.history.TechUnlocked(TFE物品交互);
+        return GameMain.history != null && GameMain.history.TechUnlocked(TFE培养塔);
     }
 }

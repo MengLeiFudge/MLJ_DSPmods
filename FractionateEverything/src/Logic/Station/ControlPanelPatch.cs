@@ -84,14 +84,17 @@ public static partial class StationManager {
         }
     }
 
-    /// <summary>总控窗口销毁前恢复所有 UI 缓存</summary>
+    /// <summary>总控窗口销毁前清理所有 UI 缓存</summary>
     /// <param name="__instance">当前的 UIControlPanelWindow 实例</param>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(UIControlPanelWindow), nameof(UIControlPanelWindow._OnDestroy))]
     public static void UIControlPanelWindow_OnDestroy_Prefix(UIControlPanelWindow __instance) {
         controlPanelSdButtonOriginalPosition.Clear();
+        inspectorOriginalMasterWidth.Clear();
         inspectorOriginalTopGroupWidth.Clear();
         inspectorOriginalBgWidth.Clear();
+        filterOriginalStateGroupPosition.Clear();
+        inspectorOriginalRightGroupWidth.Clear();
         controlPanelStoragePopup.Clear();
         controlPanelStoragePopupOriginalX.Clear();
         controlPanelTransferGameObjects.Clear();
@@ -400,15 +403,29 @@ public static partial class StationManager {
         }
     }
 
-    /// <summary>拦截总控面板 SD 按钮点击以清理 FE 弹窗状态</summary>
+    /// <summary>拦截总控面板本地物流按钮点击以清理 FE 弹窗状态</summary>
     /// <param name="__instance">当前的 UIControlPanelStationStorage 实例</param>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(UIControlPanelStationStorage), nameof(UIControlPanelStationStorage.OnLocalSdButtonClick))]
+    public static void UIControlPanelStationStorage_OnLocalSdButtonClick_Prefix(
+        UIControlPanelStationStorage __instance) {
+        HandleControlPanelStationStorageSdButtonClick(__instance);
+    }
+
+    /// <summary>拦截总控面板远程物流按钮点击以清理 FE 弹窗状态</summary>
+    /// <param name="__instance">当前的 UIControlPanelStationStorage 实例</param>
+    [HarmonyPrefix]
     [HarmonyPatch(typeof(UIControlPanelStationStorage), nameof(UIControlPanelStationStorage.OnRemoteSdButtonClick))]
-    public static void UIControlPanelStationStorage_OnSdButtonClick_Prefix(UIControlPanelStationStorage __instance) {
-        (long stationEntityId, int slotIndex) popupStateKey = GetPopupStateKey(__instance);
+    public static void UIControlPanelStationStorage_OnRemoteSdButtonClick_Prefix(
+        UIControlPanelStationStorage __instance) {
+        HandleControlPanelStationStorageSdButtonClick(__instance);
+    }
+
+    private static void HandleControlPanelStationStorageSdButtonClick(
+        UIControlPanelStationStorage storage) {
+        (long stationEntityId, int slotIndex) popupStateKey = GetPopupStateKey(storage);
         ClearPopupState(popupStateKey);
-        SetControlPanelStoragePopupShift(__instance, true);
+        SetControlPanelStoragePopupShift(storage, true);
     }
 
     /// <summary>处理总控面板选项按钮 0 的点击逻辑</summary>
@@ -596,9 +613,21 @@ public static partial class StationManager {
     /// <param name="__instance">当前的 UIControlPanelStationInspector 实例</param>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UIControlPanelStationInspector), nameof(UIControlPanelStationInspector.OnStationIdChange))]
-    [HarmonyPatch(typeof(UIControlPanelStationInspector), nameof(UIControlPanelStationInspector.RefreshTabPanelUI))]
     public static void UIControlPanelStationInspector_OnStationIdChange_Postfix(
         UIControlPanelStationInspector __instance) {
+        RefreshControlPanelStationPilerUI(__instance);
+    }
+
+    /// <summary>刷新总控页签时同步面板的堆叠描述和按钮</summary>
+    /// <param name="__instance">当前的 UIControlPanelStationInspector 实例</param>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UIControlPanelStationInspector), nameof(UIControlPanelStationInspector.RefreshTabPanelUI))]
+    public static void UIControlPanelStationInspector_RefreshTabPanelUI_Postfix(
+        UIControlPanelStationInspector __instance) {
+        RefreshControlPanelStationPilerUI(__instance);
+    }
+
+    private static void RefreshControlPanelStationPilerUI(UIControlPanelStationInspector __instance) {
         __instance.event_lock = true;
         StationComponent station = __instance.transport?.stationPool[__instance.stationId];
         if (station == null || station.id != __instance.stationId) {
@@ -996,9 +1025,4 @@ public static partial class StationManager {
         __instance.OnStationIdChange();
         return false;
     }
-
-    /// <summary>
-    /// 实际处理时，物流交互站的集装上限使用强化上限
-    /// </summary>
-
 }

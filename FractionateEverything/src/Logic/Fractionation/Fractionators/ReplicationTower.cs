@@ -1,7 +1,7 @@
 ﻿using BuildBarTool;
 using CommonAPI.Systems;
 using FE.Compatibility.Mods;
-using FE.Logic.Progression;
+using FE.Logic.Progression.Stacking;
 using UnityEngine;
 using static FE.FractionateEverything;
 using static FE.Utils.Utils;
@@ -9,9 +9,9 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Fractionation.Fractionators;
 
 /// <summary>
-/// 矿物复制塔
+/// 复制塔
 /// </summary>
-public static class MineralReplicationTower {
+public static class ReplicationTower {
     private static ItemProto item;
     private static ModelProto model;
     /// <summary>
@@ -49,8 +49,8 @@ public static class MineralReplicationTower {
     /// 注册该分馏域对象需要的本地化文本。
     /// </summary>
     public static void AddTranslations() {
-        Register("矿物复制塔", "Resource Tower", "资源塔");
-        Register("I矿物复制塔",
+        Register("复制塔", "Replication Tower", "复制塔");
+        Register("I复制塔",
             "Replicates raw resources, including eligible dark-fog drops. Protocols are recovered through civilization analysis.",
             "复制原矿资源以及符合条件的黑雾掉落；对应协议通过文明解析逐步恢复。");
     }
@@ -59,12 +59,12 @@ public static class MineralReplicationTower {
     /// 创建并注册该分馏塔的物品、配方和模型原型。
     /// </summary>
     public static void Create() {
-        item = ProtoRegistry.RegisterItem(IFE资源塔, "矿物复制塔", "I矿物复制塔",
+        item = ProtoRegistry.RegisterItem(IFE复制塔, "复制塔", "I复制塔",
             "Assets/fe/mineral-copy-tower", tab分馏 * 1000 + 302, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         item.UnlockKey = -1;
-        item.IconTag = "kwfzt";
-        model = ProtoRegistry.RegisterModel(MFE资源塔, item,
+        item.IconTag = "fzt";
+        model = ProtoRegistry.RegisterModel(MFE复制塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(OrbitalRing.Enable ? 6 : 5, item.GridIndex % 10, true);
     }

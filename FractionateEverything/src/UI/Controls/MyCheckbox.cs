@@ -121,7 +121,7 @@ public class MyCheckBox : MonoBehaviour {
 
     public void SetConfigEntry(ConfigEntry<bool> config) {
         if (_checkedChanged != null) OnChecked -= _checkedChanged;
-        if (_configChanged != null) config.SettingChanged -= _configChanged;
+        if (_configChanged != null && _config != null) _config.SettingChanged -= _configChanged;
 
         _config = config;
         _checkedChanged = () => config.Value = !config.Value;

@@ -1,5 +1,4 @@
-﻿using FE.Logic.Civilization.Achievements;
-using FE.Logic.Civilization.Protocols;
+﻿using FE.Logic.Civilization.Protocols;
 using FE.Logic.Civilization.Technology;
 using FE.Logic.Fractionation.FracRecipes.Runtime;
 using FE.Logic.Fractionation.Fractionators;
@@ -13,7 +12,6 @@ namespace FE.Logic.Civilization;
 public static class CivilizationRuntimeSync {
     public static void Refresh() {
         RefreshRecipeAvailability();
-        RefreshAchievementModifiers();
         RefreshTowerModifiers();
         ProcessManager.RefreshFractionatorRuntimeConfig();
     }
@@ -23,20 +21,6 @@ public static class CivilizationRuntimeSync {
         foreach (ProtocolDefinition definition in ProtocolCatalog.All) {
             RecipeAvailabilityStore.RegisterManaged(definition.RecipeKey,
                 ProtocolProgressStore.IsComplete(definition.RecipeKey));
-        }
-    }
-
-    private static void RefreshAchievementModifiers() {
-        RecipeModifierCache.Reset();
-        foreach (AchievementDefinition definition in AchievementService.GetCompletedDefinitions()) {
-            switch (definition.RewardType) {
-                case AchievementRewardType.RecipeTypeSuccessRate:
-                    RecipeModifierCache.AddSuccessRateBonus(definition.RecipeType, definition.RewardValue);
-                    break;
-                case AchievementRewardType.AllRecipeSuccessRate:
-                    RecipeModifierCache.AddAllRecipeSuccessRateBonus(definition.RewardValue);
-                    break;
-            }
         }
     }
 

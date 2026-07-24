@@ -29,7 +29,7 @@ internal static class FractionatorBlueprintParameters {
     }
 
     /// <summary>
-    /// 从任意位置读取指定状态块，允许锁定、谱系和弃置状态同时存在。
+    /// 从任意位置读取指定状态块，允许主路锁定和副产物弃置状态同时存在。
     /// </summary>
     public static bool TryRead(int[] parameters, int magic, int version, out int value) {
         int index = Find(parameters, magic, version);

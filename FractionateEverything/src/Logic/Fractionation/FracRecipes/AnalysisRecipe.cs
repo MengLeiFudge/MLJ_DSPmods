@@ -8,11 +8,11 @@ namespace FE.Logic.Fractionation.FracRecipes;
 /// <summary>
 /// 定义解析塔的矩阵解析和通用原胚谱系分化配方。
 /// </summary>
-public sealed class RectificationRecipe : BaseRecipe {
+public sealed class AnalysisRecipe : BaseRecipe {
     /// <summary>
     /// 区分矩阵解析与原胚谱系分化行为。
     /// </summary>
-    public enum RectificationRecipeKind {
+    public enum AnalysisRecipeKind {
         MatrixAnalysis,
         LineageDifferentiation,
     }
@@ -31,14 +31,14 @@ public sealed class RectificationRecipe : BaseRecipe {
     /// </summary>
     public static void CreateAll() {
         foreach (int matrixId in MatrixInputs) {
-            AddRecipe(new RectificationRecipe(matrixId, RectificationRecipeKind.MatrixAnalysis, 0.05f,
+            AddRecipe(new AnalysisRecipe(matrixId, AnalysisRecipeKind.MatrixAnalysis, 0.05f,
                 [new(1.0f, GetAnalysisDataItemId(matrixId), 1)], []));
         }
 
-        AddRecipe(new RectificationRecipe(IFE通用原胚, RectificationRecipeKind.LineageDifferentiation, 0.05f, [
-            new(0.25f, IFE交互塔原胚, 1),
+        AddRecipe(new AnalysisRecipe(IFE通用原胚, AnalysisRecipeKind.LineageDifferentiation, 0.05f, [
+            new(0.25f, IFE培养塔原胚, 1),
             new(0.25f, IFE解析塔原胚, 1),
-            new(0.25f, IFE资源塔原胚, 1),
+            new(0.25f, IFE复制塔原胚, 1),
             new(0.25f, IFE转化塔原胚, 1),
         ], []));
     }
@@ -46,27 +46,27 @@ public sealed class RectificationRecipe : BaseRecipe {
     /// <summary>
     /// 获取文明解析配方类型。
     /// </summary>
-    public override ERecipe RecipeType => ERecipe.Rectification;
+    public override ERecipe RecipeType => ERecipe.Analysis;
 
     /// <summary>
     /// 谱系分化需要先恢复文明协议，矩阵解析属于基础设施配方。
     /// </summary>
-    public override bool RequiresProtocolRecovery => Kind == RectificationRecipeKind.LineageDifferentiation;
+    public override bool RequiresProtocolRecovery => Kind == AnalysisRecipeKind.LineageDifferentiation;
 
     /// <summary>
     /// 谱系分化协议固定归入电磁阶段。
     /// </summary>
-    public override int ProtocolStageOrder => Kind == RectificationRecipeKind.LineageDifferentiation ? 0 : -1;
+    public override int ProtocolStageOrder => Kind == AnalysisRecipeKind.LineageDifferentiation ? 0 : -1;
 
     /// <summary>
     /// 获取该实例对应的解析塔行为类型。
     /// </summary>
-    public RectificationRecipeKind Kind { get; }
+    public AnalysisRecipeKind Kind { get; }
 
     /// <summary>
     /// 初始化一项矩阵解析或谱系分化配方。
     /// </summary>
-    public RectificationRecipe(int inputId, RectificationRecipeKind kind, float baseSuccessRatio,
+    public AnalysisRecipe(int inputId, AnalysisRecipeKind kind, float baseSuccessRatio,
         List<OutputInfo> outputMain, List<OutputInfo> outputAppend)
         : base(inputId, baseSuccessRatio, outputMain, outputAppend) {
         Kind = kind;
@@ -147,13 +147,13 @@ public sealed class RectificationRecipe : BaseRecipe {
         if (count <= 0) {
             return FractionationOutcome.Destroyed;
         }
-        output.OutputTotalCount += count;
+        output.AddOutputCount(count);
         product = new ProductOutputInfo(true, output.OutputID, count);
         return FractionationOutcome.Produced;
     }
 
     private OutputInfo GetDirectedOutputInfo() {
-        if (Kind != RectificationRecipeKind.LineageDifferentiation || CurrentMainOutputTargetId == 0) {
+        if (Kind != AnalysisRecipeKind.LineageDifferentiation || CurrentMainOutputTargetId == 0) {
             return null;
         }
         return OutputMain.Find(output => output.OutputID == CurrentMainOutputTargetId);

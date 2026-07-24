@@ -6,7 +6,6 @@ using FE.UI.MainPanel.Setting;
 using HarmonyLib;
 using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
-using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Compatibility.Mods;
 
@@ -26,18 +25,27 @@ public static class PackageLogistic {
         assembly = pluginInfo.Instance.GetType().Assembly;
         var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.PackageLogistic");
         harmony.PatchAll(typeof(PackageLogistic));
-        PatchMethods(harmony);
+        if (!PatchMethods(harmony)) {
+            return;
+        }
         CheckPlugins.LogInfo("PackageLogistic Compat finish.");
     }
 
-    private static void PatchMethods(Harmony harmony) {
+    private static bool PatchMethods(Harmony harmony) {
         Type type = assembly.GetType("PackageLogistic.PackageLogistic");
-        harmony.Patch(AccessTools.Method(type, "HasItem"),
-            prefix: new(typeof(PackageLogistic), nameof(HasItem)));
-        harmony.Patch(AccessTools.Method(type, "AddItem"),
-            prefix: new(typeof(PackageLogistic), nameof(AddItem)));
-        harmony.Patch(AccessTools.Method(type, "TakeItem"),
-            prefix: new(typeof(PackageLogistic), nameof(TakeItem)));
+        MethodInfo hasItem = type == null ? null : AccessTools.Method(type, "HasItem");
+        MethodInfo addItem = type == null ? null : AccessTools.Method(type, "AddItem");
+        MethodInfo takeItem = type == null ? null : AccessTools.Method(type, "TakeItem");
+        if (type == null || hasItem == null || addItem == null || takeItem == null) {
+            CheckPlugins.LogWarning(
+                $"PackageLogistic compatibility skipped: missing targets in {assembly.GetName().Version}.");
+            Enable = false;
+            return false;
+        }
+        harmony.Patch(hasItem, prefix: new(typeof(PackageLogistic), nameof(HasItem)));
+        harmony.Patch(addItem, prefix: new(typeof(PackageLogistic), nameof(AddItem)));
+        harmony.Patch(takeItem, prefix: new(typeof(PackageLogistic), nameof(TakeItem)));
+        return true;
     }
 
     private static bool HasItem(int itemId, ref bool __result) {

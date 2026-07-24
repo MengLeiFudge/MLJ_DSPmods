@@ -3,7 +3,7 @@
 namespace FE.Logic.Fractionation.FracRecipes.Runtime;
 
 /// <summary>
-/// 保存文明成就投影到分馏热路径的固定配方加成。
+/// 保存成就域投影到分馏热路径的固定配方加成。
 /// </summary>
 public static class RecipeModifierCache {
     private static readonly Dictionary<ERecipe, float> successRateBonusByType = [];

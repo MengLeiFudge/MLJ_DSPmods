@@ -25,9 +25,9 @@
 |---|---:|---|
 | `Shell/` | 6 | MessageBox / Analysis 两种主面板窗口壳 |
 | `Theme/` | 2 | 主面板页面视觉骨架与圆角素材 |
-| `Civilization/` | 4 | 文明总览、协议恢复、远古科技树、文明成就 |
+| `Civilization/` | 3 | 文明总览、协议恢复、远古科技树 |
 | `CoreOperate/` | 2 | 分馏配方与原版配方 |
-| `ProgressTask/` | 1 | 恢复手册 |
+| `ProgressTask/` | 2 | 恢复手册、成就 |
 | `Archive/` | 2 | 配方图鉴、开发日志 |
 | `ResourceInteraction/` | 1 | 物品交互 |
 | `Setting/` | 1 | 面板风格等杂项设置 |

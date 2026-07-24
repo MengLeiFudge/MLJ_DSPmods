@@ -10,7 +10,8 @@
 
 | 设计职责 | 代码域 |
 |---|---|
-| 文明阶段、协议、科技、成就 | `Logic/Civilization` |
+| 文明阶段、协议、科技和恢复状态 | `Logic/Civilization` |
+| 单存档成就与奖励投影 | `Logic/Achievements` |
 | 分馏配方和可用性投影 | `Logic/Fractionation/FracRecipes` |
 | 分馏热路径 | `Logic/Fractionation/Process` |
 | 塔型定义、能力投影和实例状态 | `Logic/Fractionation/Fractionators` |
@@ -18,16 +19,18 @@
 | 数据中心库存和上传路由 | `Logic/DataCenter` |
 | 物流自动上传 | `Logic/Station` |
 | 文明解析页面 | `UI/MainPanel/Civilization` |
+| 恢复手册与成就页面 | `UI/MainPanel/ProgressTask` |
 
 依赖方向：
 
 ```text
 DataCenterUploadRouter -> Civilization Analysis / DataCenterInventory
 Civilization state -> CivilizationRuntimeSync -> Fractionation runtime caches
+Achievement state -> AchievementModule -> RecipeModifierCache
 Fractionation hot path -> runtime caches
 ```
 
-`Logic/Fractionation` 不引用 `Logic/Civilization`。`CivilizationModule` 及其子服务只管理定义索引、状态、权限校验和运行投影调度；协议内容由已注册配方定义提供，文明服务不生成新科技或协议正文。
+`Logic/Fractionation` 不引用 `Logic/Civilization` 或 `Logic/Achievements`。`CivilizationModule` 管理文明定义索引、状态、权限校验和运行投影调度；`AchievementModule` 独立管理成就定义、完成状态、低频检查、存档和奖励投影。协议内容由已注册配方定义提供，文明服务不生成新科技或协议正文。
 
 当前稳定配置由 `ProgressionProfileRegistry` 在原型和分馏配方注册完成后构建。默认配置 ID 为 `vanilla-compatible`，版本为 `1`。
 
@@ -38,21 +41,23 @@ Fractionation hot path -> runtime caches
 ```text
 矩阵或原胚进入分馏塔
     -> 分馏热路径结算实际产物
-    -> 交互塔或其他上传入口调用 DataCenterUploadRouter.Upload
+    -> 培养塔或其他上传入口调用 DataCenterUploadRouter.Upload
     -> 解析数据进入 AnalysisService
     -> 生成阶段检索机会
     -> ProtocolRetrievalService 逐次结算检索
     -> ProtocolProgressStore 保存发现与完整度
     -> CivilizationRuntimeSync.Refresh 重建配方和科技投影
-    -> 新协议、科技能力和配方校准进入后续分馏循环
+    -> AchievementModule 按 60 tick 检查成就并重建奖励投影
+    -> 新协议、科技能力、成就奖励和配方校准进入后续分馏循环
 ```
 
 `CivilizationRuntimeSync.Refresh()` 的固定顺序：
 
 1. 重建协议管理范围和配方可用集合。
-2. 重建成就提供的配方成功率加成。
-3. 重建科技树提供的塔型能力。
-4. 刷新 `ProcessManager` 分馏塔运行配置。
+2. 重建科技树提供的塔型能力。
+3. 刷新 `ProcessManager` 分馏塔运行配置。
+
+`AchievementModule` 独立重建成就提供的配方成功率加成，再刷新 `ProcessManager` 运行配置。初始化、导入、切档和主机完成新成就时必须分别刷新对应投影。
 
 `ProcessManager` 只在实际产生至少一个产物时调用 `BaseRecipe.RecordSuccesses`。批量结算把“判定成功但实际产物数为零”按单次语义视为损毁，不推进配方校准。
 
@@ -200,9 +205,9 @@ RecipeKey = (ERecipe RecipeType, int InputId)
 
 进入协议目录的配方类型：
 
-- `ERecipe.MineralCopy`
+- `ERecipe.Replication`
 - `ERecipe.Conversion`
-- `ERecipe.BuildingTrain` 中的实体塔返祖配方
+- `ERecipe.Cultivation` 中的实体塔返祖配方
 
 不进入协议目录：
 
@@ -219,7 +224,7 @@ RecipeKey = (ERecipe RecipeType, int InputId)
 
 协议完整度达到 `100` 后，`CivilizationRuntimeSync` 将配方写入 `RecipeAvailabilityStore` 的可用集合。配方不读取旧抽取共鸣、旧配方成长输入保留或旧双倍产出加成。
 
-`MineralCopyRecipe.Create` 明确排除临界光子和反物质。每张资源复制配方的主产物固定为 `100%` 输出 `2` 个输入资源；以下自然伴生副产物各自独立按 `1%` 结算：
+`ReplicationRecipe.Create` 明确排除临界光子和反物质。每张资源复制配方的主产物固定为 `100%` 输出 `2` 个输入资源；以下自然伴生副产物各自独立按 `1%` 结算：
 
 | 输入 | 自然伴生副产物 |
 |---|---|
@@ -247,9 +252,9 @@ RecipeKey = (ERecipe RecipeType, int InputId)
 
 主要代码入口：
 
-- `Logic/Fractionation/FracRecipes/BuildingTrainRecipe.cs`
-- `Logic/Fractionation/FracRecipes/RectificationRecipe.cs`
-- `Logic/Fractionation/FracRecipes/MineralCopyRecipe.cs`
+- `Logic/Fractionation/FracRecipes/CultivationRecipe.cs`
+- `Logic/Fractionation/FracRecipes/AnalysisRecipe.cs`
+- `Logic/Fractionation/FracRecipes/ReplicationRecipe.cs`
 - `Logic/Fractionation/FracRecipes/ConversionRecipe.cs`
 - `Logic/Fractionation/Fractionators/FractionatorTowerCatalog.cs`
 
@@ -257,25 +262,25 @@ RecipeKey = (ERecipe RecipeType, int InputId)
 
 | 塔型 | `ERecipe` | 基础职责 |
 |---|---|---|
-| 交互塔 | `BuildingTrain` | 原胚培养、实体塔返祖、上传 |
-| 解析塔 | `Rectification` | 矩阵解析、原胚谱系分化 |
-| 资源塔 | `MineralCopy` | 同种原矿复制与既定自然伴生副产物 |
+| 培养塔 | `Cultivation` | 原胚培养、实体塔返祖、上传 |
+| 解析塔 | `Analysis` | 矩阵解析、原胚谱系分化 |
+| 复制塔 | `Replication` | 同种原矿复制与既定自然伴生副产物 |
 | 转化塔 | `Conversion` | 已确认物品链的层级转换 |
 
-`BuildingTrainRecipe` 生成三类规则：
+`CultivationRecipe` 生成三类规则：
 
 - 通用原胚输入：随机产出四类实体塔。
 - 专属原胚输入：稳定产出对应实体塔。
 - 实体塔输入：在返祖协议完成后产出对应专属原胚。
 
-`RectificationRecipe` 生成两类规则：
+`AnalysisRecipe` 生成两类规则：
 
 - 六色矩阵输入：产出对应阶段实体解析数据。
 - 通用原胚输入：随机分化为四类专属原胚；满足主路锁定许可和校准后可保存实例谱系目标。
 
 返祖资格按对应专属培养配方的 `TotalSuccessCount >= 20` 判断。通用培养、专属培养和谱系分化作为基础设施始终不进入随机协议目录。
 
-开局套件提供交互塔和通用原胚。具体数量必须满足第二座交互塔和首座解析塔不会因首轮随机培养结果而永久阻断；启动套件不再发放旧 I-V 原胚、点数聚集塔或旧提示物品。
+开局套件提供培养塔和通用原胚。具体数量必须满足第二座培养塔和首座解析塔不会因首轮随机培养结果而永久阻断；启动套件不再发放旧 I-V 原胚、点数聚集塔或旧提示物品。
 
 ## 7. 远古科技与运行控制
 
@@ -286,7 +291,6 @@ RecipeKey = (ERecipe RecipeType, int InputId)
 - `Logic/Civilization/Technology/AncientTechTreeService.cs`
 - `Logic/Fractionation/Fractionators/TowerRuntimeModifierCache.cs`
 - `Logic/Fractionation/Fractionators/FractionatorMainOutputLock.cs`
-- `Logic/Fractionation/Fractionators/AnalysisLineageTarget.cs`（只读旧状态兼容）
 - `Logic/Fractionation/Fractionators/FractionatorByproductDiscard.cs`
 - `Logic/Fractionation/Process/ProcessManager.cs`
 
@@ -305,9 +309,9 @@ PrerequisiteNodeKey
 
 | 顺序 | 塔型 | 稳定内部类型 |
 |---:|---|---|
-| 1 | 交互塔 | `BuildingTrain` |
-| 2 | 解析塔 | `Rectification` |
-| 3 | 资源塔 | `MineralCopy` |
+| 1 | 培养塔 | `Cultivation` |
+| 2 | 解析塔 | `Analysis` |
+| 3 | 复制塔 | `Replication` |
 | 4 | 转化塔 | `Conversion` |
 
 每条主干固定五级串行节点：
@@ -342,7 +346,7 @@ AND 当前实体塔已保存对应设置
 
 主路锁定校准门槛 `S`：
 
-- 建筑培养配方：`20`。
+- 培养配方：`20`。
 - 其他配方：电磁阶段从 `200` 开始，此后每个矩阵阶段翻倍。
 
 副产物弃置校准门槛：
@@ -351,7 +355,7 @@ AND 当前实体塔已保存对应设置
 5S
 ```
 
-四塔统一使用 `LockedOutput` 保存主路目标。交互塔通用孵化、转化塔多主产物和解析塔谱系分化仍分别提供自己的候选集合与结算算法；资源塔等当前只有单一主产物的配方保留主路锁定状态和 UI，但显示当前无可选目标。主路锁定只作用于 `OutputMain`；副产物弃置只作用于 `OutputAppend`。
+四塔统一使用 `LockedOutput` 保存主路目标。培养塔通用培养、转化塔多主产物和解析塔谱系分化仍分别提供自己的候选集合与结算算法；复制塔等当前只有单一主产物的配方保留主路锁定状态和 UI，但显示当前无可选目标。主路锁定只作用于 `OutputMain`；副产物弃置只作用于 `OutputAppend`。
 
 批量结算只按实际产出成功数调用 `RecordSuccesses`。副产物批量补救按缺失成功次数和本批次已观察副产物命中率计算：
 
@@ -361,14 +365,15 @@ RollBinomialApprox(
     producedHits / rolledSuccessCount)
 ```
 
-主路目标和副产物弃置通过 `FractionatorBlueprintParameters` 的共享 `Upsert/TryRead` 写入同一蓝图参数数组，互不覆盖；同时接入存档、复制粘贴和 Nebula packet type `2/4`。旧解析谱系蓝图参数和 packet type `3` 只作为兼容输入读取并迁入主路目标，新状态不再写出。
+主路目标和副产物弃置通过 `FractionatorBlueprintParameters` 的共享 `Upsert/TryRead` 写入同一蓝图参数数组，互不覆盖；同时接入存档、复制粘贴和 Nebula packet type `2/4`。
 
 ## 8. 成就与长期目标
 
 代码入口：
 
-- `Logic/Civilization/Achievements/AchievementCatalog.cs`
-- `Logic/Civilization/Achievements/AchievementService.cs`
+- `Logic/Achievements/AchievementModule.cs`
+- `Logic/Achievements/AchievementCatalog.cs`
+- `Logic/Achievements/AchievementService.cs`
 - `Logic/Fractionation/FracRecipes/Runtime/RecipeModifierCache.cs`
 
 成就每 `60 tick` 低频检查一次，完成状态保存在当前存档。当前定义：
@@ -380,18 +385,19 @@ RollBinomialApprox(
 | `first-tech` | 累计投入 1 科技点 | 全配方成功率 `+0.5%` |
 | `fractionation-1000` | 累计成功分馏 1000 次 | 全配方成功率 `+0.5%` |
 
-成就完成后调用 `CivilizationRuntimeSync.Refresh()`，热路径只读取 `RecipeModifierCache`。成就状态不直接替代协议完整度、科技节点或配方校准。
+成就完成后由 `AchievementModule` 重建 `RecipeModifierCache` 并刷新分馏运行配置；热路径只读取缓存。成就状态不直接替代协议完整度、科技节点或配方校准。
 
 ## 9. UI、教学与信息反馈
 
-主面板长期页面范围包括生产、文明解析、资源、恢复手册、图鉴和设置。文明解析分类的主要页面：
+主面板长期页面范围包括生产、文明解析、资源、恢复指引、图鉴和设置。文明解析与恢复指引分类的主要页面：
 
-| 页面 | 展示和操作范围 |
-|---|---|
-| 文明总览 | 六阶段数据、机会、发现数和完成数 |
-| 文明协议恢复 | 阶段、广域/方向/锚定策略、目标、批量结算、优先协议、货币和结果 |
-| 远古科技树 | 科技点、四条塔型主干、前置和购买 |
-| 文明成就 | 当前进度、完成状态和固定奖励 |
+| 分类 | 页面 | 展示和操作范围 |
+|---|---|---|
+| 文明解析 | 文明总览 | 六阶段数据、机会、发现数和完成数 |
+| 文明解析 | 文明协议恢复 | 阶段、广域/方向/锚定策略、目标、批量结算、优先协议、货币和结果 |
+| 文明解析 | 远古科技树 | 科技点、四条塔型主干、前置和购买 |
+| 恢复指引 | 恢复手册 | 长期机制说明和当前恢复步骤 |
+| 恢复指引 | 成就 | 当前进度、完成状态和固定奖励 |
 
 客户端联机 UI 提交需要主机结算的动作后，显示“等待主机”状态，不继续修改本地文明状态。
 
@@ -407,7 +413,7 @@ RollBinomialApprox(
 
 接入上传路由的入口：
 
-- 交互塔正面上传。
+- 培养塔正面上传。
 - 玩家丢弃物回收。
 - 背包二次排序上传。
 - 物流交互站上传。
@@ -419,26 +425,27 @@ RollBinomialApprox(
 
 ## 10. 存档、联机与版本迁移
 
-`FeatureSaveRegistry` 使用顶层 `AncientCivilization` 块，内部子块：
+`FeatureSaveRegistry` 使用独立顶层块：
 
 ```text
-Profile
-Analysis
-Protocols
-Technology
+AncientCivilization
+├── Profile
+├── Analysis
+├── Protocols
+├── Technology
+└── Recovery
 Achievements
-Recovery
 ```
 
-定义目录不保存，只保存当前存档状态；导入后统一重建运行投影。首版试验使用的顶层 `Civilization` 块不注册读取，由通用未知块机制跳过；其中的协议、解析、科技点和成就不折算、不迁移，新结构从 `AncientCivilization` 空状态开始。旧 `Gacha`、`Economy`、`RecipeGrowth`、旧主面板页面和旧顶层文明恢复块同样不读取或导出。
+`AncientCivilization` 由 `CivilizationModule` 管理，`Achievements` 由 `AchievementModule` 管理。定义目录不保存，只保存当前存档状态；所有顶层块导入后分别重建对应运行投影。存档总版本保持 `10`，不读取 FE 3.0 开发中间状态中的 `AncientCivilization/Achievements` 子块。FE 2.x 的 `Gacha`、`Economy`、`RecipeGrowth`、旧主面板页面和旧顶层文明恢复块不读取或导出。
 
-`BuildingManager` 保存配方累计成功和实例运行设置。四塔主路目标统一写入 `LockedOutput`。导入仍识别旧解析谱系块名 `RectificationTuningTarget` 与 `AnalysisLineageTarget`，并将其中状态合并到通用主路目标；旧蓝图的谱系参数块同样作为兼容输入读取，新存档和新蓝图不再单独写出谱系目标。
+`BuildingManager` 保存配方累计成功和实例运行设置。四塔主路目标统一写入 `LockedOutput`，存档和蓝图只读写当前通用主路目标。
 
 Nebula 文明同步采用主机权威模型：
 
 - 客户端动作请求包括手动解析数据上传、优先协议切换、单次/批量检索和科技购买。
 - 主机验证检索模式；网络批量请求上限为默认批量数 `10`。
-- 主机结算后使用 `CivilizationStatePacket` 广播阶段、协议、科技、成就、配方校准和残片余额。
+- 主机结算后复用 `CivilizationStatePacket` 传输文明、成就、配方校准和残片余额；载荷中 `Civilization` 与 `Achievements` 是独立子块，复用传输包不改变领域所有权。
 - 自动上传形成新检索机会、主机成就完成和玩家加入时，由主机广播或补发权威快照。
 - `CivilizationStatePacketProcessor` 在主机拒绝客户端全量快照。
 - 客户端请求分支返回等待主机状态，不提前修改本地文明状态。
@@ -451,7 +458,7 @@ Nebula 文明同步采用主机权威模型：
 - 旧定向原胚：`8016`。
 - 有明确现役对应物的隐藏科技和相关引用。
 
-迁移覆盖实体、预建筑、蓝图、库存与物流组件、传送带/分馏/分拣缓存、配方和科技引用。量子复制、点金、点数聚集和旧 I-V 原胚不映射。映射函数幂等。3.0 首版使用过的记忆源点 ID `8168` 在导入时直接清空，不折算为残片或其他资源。
+迁移覆盖实体、预建筑、蓝图、库存与物流组件、传送带/分馏/分拣缓存、配方和科技引用。量子复制、点金、点数聚集和旧 I-V 原胚不映射。映射函数幂等。
 
 `FractionatorOutputState.OutputExtendImport` 只保留 `LDB.items.Exist(outputId)` 的产物。数据中心旧 `LeftInc` 自动喷涂池块不再导出；导入旧存档时由未知标签长度机制完整跳过。下载物品只保留库存原有增产点。
 
@@ -464,7 +471,7 @@ Nebula 文明同步采用主机权威模型：
 - 不注册旧建筑等级、经验、突破、献祭、裂变池、共振、`SuccessBoost` 或自动喷涂池运行路径。
 - 不注册旧抽取、成长商店、市场交易、旧线性配方成长页面或存档块。
 - 不把残片和远古文明科技点加入互换入口，也不重新注册记忆源点。
-- 不让 `MineralCopy` 创建临界光子、反物质或配方未明确列出的关键稀有产物；既定自然伴生副产物不属于该禁令。
+- 不让 `Replication` 创建临界光子、反物质或配方未明确列出的关键稀有产物；既定自然伴生副产物不属于该禁令。
 - 不让普通广域或方向检索绕过随机候选，也不让锚定检索返回无关或无效结果。
 - 不让批量检索采用与逐次单次不同的近似状态结算。
 - 不从客户端发送全量文明状态覆盖主机。

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using UnityEngine;
 using static FE.Utils.Utils;
@@ -46,10 +46,10 @@ public static class CivilizationRecoveryManager {
     private static readonly int[] internalRecoveryTechIds = [
         TFE分馏数据中心,
         TFE分馏塔原胚,
-        TFE物品交互,
-        TFE文明解析,
-        TFE资源复制,
-        TFE物品转化,
+        TFE培养塔,
+        TFE解析塔,
+        TFE复制塔,
+        TFE转化塔,
         TFE行星内物流交互,
         TFE星际物流交互,
         TFE阶段补给1,
@@ -126,6 +126,9 @@ public static class CivilizationRecoveryManager {
                 }
             })
         );
+        if (starterSignalNotified) {
+            nextStarterSignalTipTick = GameMain.gameTick + StarterSignalTipIntervalTicks;
+        }
         SyncRecoveredFlagsFromHistory();
     }
 
@@ -274,7 +277,7 @@ public static class CivilizationRecoveryManager {
     }
 
     private static void RecoverLogisticsInteractionProtocols() {
-        if (!starterKitRecovered || !IsTechRecovered(TFE物品交互)) {
+        if (!starterKitRecovered || !IsTechRecovered(TFE培养塔)) {
             return;
         }
 

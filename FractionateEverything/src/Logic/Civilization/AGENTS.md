@@ -1,6 +1,6 @@
 # Logic/Civilization — 远古文明探索域
 
-本目录负责矩阵阶段、解析数据、协议发现与完整度、远古科技树和单存档成就。
+本目录负责矩阵阶段、解析数据、协议发现与完整度、远古科技树和文明恢复状态。成就是独立的 `Logic/Achievements` 功能域。
 
 ## Structure
 
@@ -10,7 +10,6 @@ Civilization/
 ├── Analysis/       # 解析数据、检索机会和深层解析
 ├── Protocols/      # 协议定义、资格、进度和随机检索
 ├── Technology/     # 单一科技点和四条塔型主干
-├── Achievements/   # 类型化条件、单存档状态和固定奖励
 ├── CivilizationModule.cs
 └── CivilizationRuntimeSync.cs
 ```
@@ -18,7 +17,7 @@ Civilization/
 ## Dependency Rules
 
 - 文明域可以读取分馏配方目录，但不得读取旧抽取、旧成长或首版试验文明状态。
-- 文明状态只能通过 `CivilizationRuntimeSync` 投影到分馏域运行缓存。
+- 文明状态只能通过 `CivilizationRuntimeSync` 投影到分馏域运行缓存；成就奖励由 `AchievementModule` 独立投影。
 - `Logic/Fractionation` 不得反向引用 `Logic/Civilization`。
 - UI 只能调用文明服务，不得直接修改状态字典。
 - 上传边界统一由 `Logic/DataCenter/DataCenterUploadRouter.cs` 进入。
@@ -26,8 +25,9 @@ Civilization/
 ## Save Rules
 
 - 定义目录不进存档。
-- `Analysis`、`Protocols`、`Technology`、`Achievements` 和 `Recovery` 使用标签化子块。
-- 新状态必须接入 `CivilizationModule`，再由 `FeatureSaveRegistry` 的顶层 `AncientCivilization` 块统一读写。
+- `Analysis`、`Protocols`、`Technology` 和 `Recovery` 使用标签化子块。
+- 文明状态必须接入 `CivilizationModule`，再由 `FeatureSaveRegistry` 的顶层 `AncientCivilization` 块统一读写。
+- 成就状态不得写入 `AncientCivilization`；它由顶层 `Achievements` 块和 `AchievementModule` 管理。
 - 不为首版试验 `Civilization` 块保留读取、折算或迁移入口。
 - 导入后必须重建运行缓存；禁止保存派生缓存。
 
