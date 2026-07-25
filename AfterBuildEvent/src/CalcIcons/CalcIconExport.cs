@@ -3,12 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Xml;
 using ICSharpCode.SharpZipLib.Zip;
 using Newtonsoft.Json.Linq;
 using static AfterBuildEvent.Utils;
@@ -18,6 +15,108 @@ namespace AfterBuildEvent;
 
 static partial class AfterBuildEvent {
     #region 提取计算器图标资源
+
+    /// <summary>
+    /// One calculator icon source group: offline AssetStudio/embedded paths plus in-game export mod set.
+    /// </summary>
+    private sealed class CalcIconExportTarget {
+        /// <summary>
+        /// Output subdirectory under the full-icon pool and calculator asset tree.
+        /// </summary>
+        public string TargetMod { get; set; } = "";
+
+        /// <summary>
+        /// Prefix stripped from embedded resource file names before icon matching.
+        /// </summary>
+        public string SourcePrefix { get; set; } = "";
+
+        /// <summary>
+        /// R2 plugin package that contains AssetStudio-readable icon bundles.
+        /// </summary>
+        public string AssetStudioPackageName { get; set; } = "";
+
+        /// <summary>
+        /// Bundle paths relative to the R2 plugin package root.
+        /// </summary>
+        public List<string> AssetStudioRelativePaths { get; set; } = [];
+
+        /// <summary>
+        /// Bundle paths relative to the DSP game install directory.
+        /// </summary>
+        public List<string> AssetStudioGameDataRelativePaths { get; set; } = [];
+
+        /// <summary>
+        /// R2 plugin package that embeds PNG resources inside a managed DLL.
+        /// </summary>
+        public string EmbeddedDllPackageName { get; set; } = "";
+
+        /// <summary>
+        /// DLL path relative to the embedded package root.
+        /// </summary>
+        public string EmbeddedDllRelativePath { get; set; } = "";
+
+        /// <summary>
+        /// R2 mods that must be enabled for in-game export of this target.
+        /// </summary>
+        public List<string> EnabledMods { get; set; } = [];
+
+        /// <summary>
+        /// Lower-priority full-icon directories already searched before writing a new export request.
+        /// </summary>
+        public List<string> LowerPriorityMods { get; set; } = [];
+    }
+
+    /// <summary>
+    /// One required calculator icon still missing from the full-icon pool.
+    /// </summary>
+    private sealed class MissingCalcIcon {
+        /// <summary>
+        /// Canonical IconName string from calculator raw JSON.
+        /// </summary>
+        public string IconName { get; set; } = "";
+
+        /// <summary>
+        /// TargetMod values that may own this missing icon based on enabled raw-file mods.
+        /// </summary>
+        public HashSet<string> CandidateTargets { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Raw JSON file names that still require this icon.
+        /// </summary>
+        public HashSet<string> DataFiles { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Short diagnostic samples pairing data files with item display names.
+        /// </summary>
+        public List<string> Examples { get; set; } = [];
+    }
+
+    /// <summary>
+    /// Combines the already-built icon index and alias tables used by one icon-resolution pass; property references stay fixed after construction.
+    /// </summary>
+    private sealed class CalcIconLookupIndex {
+        /// <summary>
+        /// Stores the provided icon index and alias table references for later lookups.
+        /// </summary>
+        /// <param name="fullIconIndex">Per-TargetMod map of sanitized icon file stem to absolute PNG path.</param>
+        /// <param name="iconAliases">Item IDs to all IconName aliases observed across the calculator raw JSON set.</param>
+        public CalcIconLookupIndex(
+            IReadOnlyDictionary<string, Dictionary<string, string>> fullIconIndex,
+            IReadOnlyDictionary<int, HashSet<string>> iconAliases) {
+            FullIconIndex = fullIconIndex;
+            IconAliases = iconAliases;
+        }
+
+        /// <summary>
+        /// Per-TargetMod map of sanitized icon file stem to absolute PNG path.
+        /// </summary>
+        public IReadOnlyDictionary<string, Dictionary<string, string>> FullIconIndex { get; }
+
+        /// <summary>
+        /// Item IDs to all IconName aliases observed across the calculator raw JSON set.
+        /// </summary>
+        public IReadOnlyDictionary<int, HashSet<string>> IconAliases { get; }
+    }
 
     private static void ExportCalcIcons() {
         string dataDir = GetCalcIconDataDir(allowLocalFallback: true);
@@ -782,8 +881,7 @@ static partial class AfterBuildEvent {
     }
 
     private static Dictionary<string, Dictionary<string, string>> BuildRequiredCalcIconAssetCopies(string dataDir) {
-        Dictionary<string, Dictionary<string, string>> fullIconIndex = BuildIconFileIndex(DspCalcFullIconDir);
-        Dictionary<int, HashSet<string>> iconAliases = BuildCalcIconAliases(dataDir);
+        CalcIconLookupIndex lookupIndex = BuildCalcIconLookupIndex(dataDir);
         Dictionary<string, Dictionary<string, string>> result = new(StringComparer.OrdinalIgnoreCase);
         if (!Directory.Exists(dataDir)) {
             return result;
@@ -799,9 +897,8 @@ static partial class AfterBuildEvent {
                 }
 
                 if (!TryFindIconFile(
-                        fullIconIndex,
+                        lookupIndex,
                         lookupOrder,
-                        iconAliases,
                         itemId,
                         iconName,
                         out string sourceMod,
@@ -826,8 +923,7 @@ static partial class AfterBuildEvent {
     }
 
     private static Dictionary<string, MissingCalcIcon> CollectMissingRequiredIconsFromFull(string dataDir) {
-        Dictionary<string, Dictionary<string, string>> fullIconIndex = BuildIconFileIndex(DspCalcFullIconDir);
-        Dictionary<int, HashSet<string>> iconAliases = BuildCalcIconAliases(dataDir);
+        CalcIconLookupIndex lookupIndex = BuildCalcIconLookupIndex(dataDir);
         Dictionary<string, MissingCalcIcon> result = new(StringComparer.OrdinalIgnoreCase);
         if (!Directory.Exists(dataDir)) {
             return result;
@@ -852,9 +948,8 @@ static partial class AfterBuildEvent {
                 }
 
                 if (TryFindIconFile(
-                        fullIconIndex,
+                        lookupIndex,
                         lookupOrder,
-                        iconAliases,
                         itemId,
                         iconName,
                         out _,
@@ -877,6 +972,17 @@ static partial class AfterBuildEvent {
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Builds the icon index and alias tables used by one calculator data-directory resolution pass.
+    /// </summary>
+    /// <param name="dataDir">Directory containing calculator raw JSON files.</param>
+    /// <returns>Lookup index shared by required-copy and missing-icon scans.</returns>
+    private static CalcIconLookupIndex BuildCalcIconLookupIndex(string dataDir) {
+        return new(
+            BuildIconFileIndex(DspCalcFullIconDir),
+            BuildCalcIconAliases(dataDir));
     }
 
     private static Dictionary<string, Dictionary<string, string>> BuildIconFileIndex(string sourceDir) {
@@ -928,16 +1034,25 @@ static partial class AfterBuildEvent {
         return result;
     }
 
+    /// <summary>
+    /// Resolves one required icon from the shared index, preferring the current raw-file mod order.
+    /// </summary>
+    /// <param name="lookupIndex">Icon index and alias tables for the current data directory resolution pass.</param>
+    /// <param name="lookupOrder">Enabled-mod priority order for the current raw JSON file.</param>
+    /// <param name="itemId">Item ID whose IconName aliases may be tried.</param>
+    /// <param name="iconName">Primary IconName from calculator raw JSON.</param>
+    /// <param name="sourceMod">Receives the TargetMod directory that owned the matched PNG.</param>
+    /// <param name="sourceFile">Receives the absolute path of the matched PNG.</param>
+    /// <returns>True when a matching PNG exists in the preferred order or full-pool fallback.</returns>
     private static bool TryFindIconFile(
-        IReadOnlyDictionary<string, Dictionary<string, string>> fullIconIndex,
+        CalcIconLookupIndex lookupIndex,
         IReadOnlyList<string> lookupOrder,
-        IReadOnlyDictionary<int, HashSet<string>> iconAliases,
         int itemId,
         string iconName,
         out string sourceMod,
         out string sourceFile) {
         List<string> candidateIconNames = [iconName];
-        if (iconAliases.TryGetValue(itemId, out HashSet<string> aliases)) {
+        if (lookupIndex.IconAliases.TryGetValue(itemId, out HashSet<string> aliases)) {
             foreach (string alias in aliases) {
                 if (!candidateIconNames.Contains(alias, StringComparer.OrdinalIgnoreCase)) {
                     candidateIconNames.Add(alias);
@@ -947,7 +1062,12 @@ static partial class AfterBuildEvent {
 
         // 先按当前 JSON 的启用模组优先级查，避免跨模组同名图误覆盖。
         foreach (string candidateIconName in candidateIconNames) {
-            if (TryFindIconFileInMods(fullIconIndex, lookupOrder, candidateIconName, out sourceMod, out sourceFile)) {
+            if (TryFindIconFileInMods(
+                    lookupIndex.FullIconIndex,
+                    lookupOrder,
+                    candidateIconName,
+                    out sourceMod,
+                    out sourceFile)) {
                 return true;
             }
         }
@@ -957,7 +1077,12 @@ static partial class AfterBuildEvent {
             .Select(target => target.TargetMod)
             .ToArray();
         foreach (string candidateIconName in candidateIconNames) {
-            if (TryFindIconFileInMods(fullIconIndex, allMods, candidateIconName, out sourceMod, out sourceFile)) {
+            if (TryFindIconFileInMods(
+                    lookupIndex.FullIconIndex,
+                    allMods,
+                    candidateIconName,
+                    out sourceMod,
+                    out sourceFile)) {
                 return true;
             }
         }

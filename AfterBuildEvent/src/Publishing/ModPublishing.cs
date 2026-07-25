@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
 using ICSharpCode.SharpZipLib.Zip;
@@ -19,13 +18,155 @@ namespace AfterBuildEvent;
 static partial class AfterBuildEvent {
     #region 更新mod、打包、启动游戏
 
+    /// <summary>
+    /// Timeout for the localhost qqbot publish-local HTTP request, in milliseconds.
+    /// </summary>
+    private const int QqbotArtifactUploadTimeoutMs = 60000;
+
+    /// <summary>
+    /// qqbot project_id used by automated zip delivery.
+    /// </summary>
+    private const string AutoUploadProjectId = "mlj_dspmods";
+
+    /// <summary>
+    /// Default QQ group that receives configured publish packages.
+    /// </summary>
+    private const int AutoUploadGroupId = 319567534;
+
+    /// <summary>
+    /// Localhost-only qqbot admin endpoint that accepts already-built zip paths.
+    /// </summary>
+    private const string QqbotArtifactUploadUrl = "http://127.0.0.1:8080/admin/api/artifacts/publish-local";
+
+    /// <summary>
+    /// One packaged project zip produced during mode 1, including integrity and content hashes.
+    /// </summary>
+    private sealed class GeneratedPackageInfo {
+        /// <summary>
+        /// Local project/package id used to match PublishTargets and CLI filters.
+        /// </summary>
+        public string ProjectName { get; set; } = "";
+
+        /// <summary>
+        /// Absolute path of the generated zip file.
+        /// </summary>
+        public string Path { get; set; } = "";
+
+        /// <summary>
+        /// Zip file name sent to qqbot as the upload display name.
+        /// </summary>
+        public string Name { get; set; } = "";
+
+        /// <summary>
+        /// Zip byte length at package time.
+        /// </summary>
+        public long SizeBytes { get; set; }
+
+        /// <summary>
+        /// UTC last-write timestamp of the zip, ISO-8601.
+        /// </summary>
+        public string LastWriteTimeUtc { get; set; } = "";
+
+        /// <summary>
+        /// SHA-256 of the zip file bytes; used as transfer integrity checksum.
+        /// </summary>
+        public string Sha256 { get; set; } = "";
+
+        /// <summary>
+        /// Stable hash of sorted zip entry names, sizes, and bytes; used by the local content guard.
+        /// </summary>
+        public string ContentSha256 { get; set; } = "";
+    }
+
+    /// <summary>
+    /// Declares which packaged project may be offered to qqbot and which QQ groups receive it.
+    /// </summary>
+    private sealed class PublishTarget {
+        /// <summary>
+        /// Local project name that must match GeneratedPackageInfo.ProjectName.
+        /// </summary>
+        public string ProjectName { get; set; } = "";
+
+        /// <summary>
+        /// QQ group ids included in the publish-local file entry targets array.
+        /// </summary>
+        public int[] GroupIds { get; set; } = [];
+    }
+
+    /// <summary>
+    /// Parsed qqbot publish-local response counters when the body contains uploaded/deleted/skipped arrays.
+    /// </summary>
+    private sealed class QqbotPublishSummary {
+        /// <summary>
+        /// True when uploaded/deleted/skipped arrays were all present and parsed.
+        /// </summary>
+        public bool HasCounts { get; set; }
+
+        /// <summary>
+        /// Number of zip entries qqbot reported as uploaded.
+        /// </summary>
+        public int UploadedCount { get; set; }
+
+        /// <summary>
+        /// Number of old artifacts qqbot reported as deleted.
+        /// </summary>
+        public int DeletedCount { get; set; }
+
+        /// <summary>
+        /// Number of zip entries qqbot reported as unchanged skips.
+        /// </summary>
+        public int SkippedCount { get; set; }
+    }
+
+    /// <summary>
+    /// Configured packages that mode 1 may offer to qqbot after local packaging.
+    /// </summary>
+    private static readonly PublishTarget[] PublishTargets = [
+        new() {
+            ProjectName = "BlueprintPlanet",
+            GroupIds = [AutoUploadGroupId],
+        },
+        new() {
+            ProjectName = "FractionateEverything",
+            GroupIds = [AutoUploadGroupId],
+        },
+        new() {
+            ProjectName = "SaveDataExporter",
+            GroupIds = [AutoUploadGroupId],
+        },
+        new() {
+            ProjectName = "UXAEnhance",
+            GroupIds = [AutoUploadGroupId],
+        },
+    ];
+
+    /// <summary>
+    /// Outcome of one mode-1 qqbot publish attempt, including whether a request was sent.
+    /// </summary>
     private sealed class QqbotPublishOutcome {
+        /// <summary>
+        /// True when packaging can treat the publish step as successful or intentionally skipped.
+        /// </summary>
         public bool Succeeded { get; set; }
+
+        /// <summary>
+        /// True when an HTTP publish-local request was actually posted to qqbot.
+        /// </summary>
         public bool SentRequest { get; set; }
     }
 
+    /// <summary>
+    /// Local publish-content-sha256 cache entry used to skip unchanged package uploads.
+    /// </summary>
     private sealed class LocalPublishState {
+        /// <summary>
+        /// Cached zip file name.
+        /// </summary>
         public string Name { get; set; } = "";
+
+        /// <summary>
+        /// Cached package content hash from the last successful qqbot request.
+        /// </summary>
         public string ContentSha256 { get; set; } = "";
     }
 

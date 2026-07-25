@@ -1,16 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Xml;
-using ICSharpCode.SharpZipLib.Zip;
-using Newtonsoft.Json.Linq;
 using static AfterBuildEvent.Utils;
 using static AfterBuildEvent.PathConfig;
 
@@ -18,6 +12,51 @@ namespace AfterBuildEvent;
 
 static partial class AfterBuildEvent {
     #region 更新类库需要的部分DLL
+
+    /// <summary>
+    /// Matches soft-dependency attributes in CheckPlugins.cs for mode-2 mod decompile targets.
+    /// </summary>
+    private static readonly Regex SoftDependencyRegex =
+        new(@"\[BepInDependency\(([^,\)]+),\s*BepInDependency\.DependencyFlags\.SoftDependency\)\]",
+            RegexOptions.Compiled);
+
+    /// <summary>
+    /// Extracts a GUID string literal from FE compatibility source files for keyword matching.
+    /// </summary>
+    private static readonly Regex GuidLiteralRegex =
+        new(@"public\s+const\s+string\s+GUID\s*=\s*""([^""]+)""", RegexOptions.Compiled);
+
+    /// <summary>
+    /// Assembly name prefixes that are companion libraries, never primary mod decompile targets.
+    /// </summary>
+    private static readonly string[] IgnoredModDllPrefixes =
+        ["System.", "Newtonsoft.Json", "0Harmony", "BepInEx.", "Mono.", "MonoMod.", "K4os.", "Unity."];
+
+    /// <summary>
+    /// Exact assembly base names that are companion libraries, never primary mod decompile targets.
+    /// </summary>
+    private static readonly string[] IgnoredModDllNames =
+        ["websocket-sharp", "discord_game_sdk", "discord_game_sdk_dotnet", "Open.Nat", "HarmonyXInterop"];
+
+    /// <summary>
+    /// One soft-dependency decompile candidate resolved from CheckPlugins and optional GUID keywords.
+    /// </summary>
+    private sealed class ModDecompileTarget {
+        /// <summary>
+        /// Original dependency expression text from the BepInDependency attribute.
+        /// </summary>
+        public string DependencyExpression { get; set; } = "";
+
+        /// <summary>
+        /// Leading identifier used as the primary keyword and compatibility file stem.
+        /// </summary>
+        public string SourceName { get; set; } = "";
+
+        /// <summary>
+        /// Normalized match keywords used against mods.yml package and display names.
+        /// </summary>
+        public List<string> Keywords { get; set; } = [];
+    }
 
     private static void UpdateLibDll() {
         using CmdProcess cmd = new();

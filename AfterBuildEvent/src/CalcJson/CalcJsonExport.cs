@@ -1,15 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Xml;
-using ICSharpCode.SharpZipLib.Zip;
 using Newtonsoft.Json.Linq;
 using static AfterBuildEvent.Utils;
 using static AfterBuildEvent.PathConfig;
@@ -18,6 +13,16 @@ namespace AfterBuildEvent;
 
 static partial class AfterBuildEvent {
     #region 生成戴森球量化计算器所需文件，并将其复制到计算器项目目录下
+
+    /// <summary>
+    /// Local solution projects whose Debug/Release DLL fingerprints enter the calc JSON cache signature.
+    /// </summary>
+    private static readonly string[] CalcJsonLocalProjectNames = ["FractionateEverything", "GetDspData"];
+
+    /// <summary>
+    /// Bumped when the calc JSON cache signature schema changes and old meta files must be ignored.
+    /// </summary>
+    private const int CalcJsonCacheVersion = 2;
 
     private static void GetAllCalcJson() {
         using CmdProcess cmd = new();
