@@ -8,8 +8,6 @@ using BepInEx.Bootstrap;
 using BepInEx.Logging;
 using CommonAPI;
 using crecheng.DSPModSave;
-using FE.Logic.Buildings;
-using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Fractionation.Process;
 using FE.Logic.Fractionation.FracRecipes;
 using FE.Logic.Items;
@@ -149,6 +147,9 @@ public class GetDspData : BaseUnityPlugin {
         );
     }
 
+    /// <summary>
+    /// 在全部依赖模组加载完成后导出开发与计算器所需数据文件。
+    /// </summary>
     private static void WriteDataToFile() {
         if (Localization.CurrentLanguageLCID != Localization.LCID_ZHCN) {
             Localization.CurrentLanguageLCID = Localization.LCID_ZHCN;
@@ -181,573 +182,691 @@ public class GetDspData : BaseUnityPlugin {
         InitMiningData();
 
         try {
-            string modFullStr = "";
-            string modShortStr = "";
-            (bool enabled, string fullName, string shortName)[] calcMods = [
-                (MoreMegaStructureEnable, "MoreMegaStructure", "MS"),
-                (TheyComeFromVoidEnable, "TheyComeFromVoid", "VD"),
-                (GenesisBookEnable, "GenesisBook", "GB"),
-                (OrbitalRingEnable, "OrbitalRing", "OR"),
-                (FractionateEverythingEnable, "FractionateEverything", "FE"),
-            ];
-            foreach (var calcMod in calcMods) {
-                if (calcMod.enabled) {
-                    LogInfo($"已启用{calcMod.fullName}");
-                    modFullStr += "_" + calcMod.fullName;
-                    modShortStr += "_" + calcMod.shortName;
-                }
-            }
-            modShortStr = modShortStr == "" ? "Vanilla" : modShortStr.Substring(1);
-            modFullStr = modFullStr == "" ? "Vanilla" : modFullStr.Substring(1);
-            string baseDir = $@"{dir}\{modShortStr}";
-            if (!Directory.Exists(baseDir)) {
-                Directory.CreateDirectory(baseDir);
-            }
-
-            #region 代码中使用
-
-            string filePath = $@"{baseDir}\protoID.txt";
-            if (!File.Exists(filePath)) {
-                File.Create(filePath).Close();
-            }
-            using (var sw = new StreamWriter(filePath, false, Encoding.UTF8)) {
-                List<ItemProto> itemList = [..LDB.items.dataArray];
-                itemList.Sort((p1, p2) => p1.ID - p2.ID);
-                List<(string, int)> modelNameIdList = new();
-                foreach (var item in itemList) {
-                    int id = item.ID;
-                    string name = item.FName();
-                    sw.WriteLine($"    internal const int I{name} = {id};");
-                    int modelID = item.ModelIndex;
-                    if (modelID > 0) {
-                        modelNameIdList.Add((name, modelID));
-                    }
-                }
-                sw.WriteLine();
-
-                modelNameIdList.Sort((p1, p2) => p1.Item2 - p2.Item2);
-                foreach (var p in modelNameIdList) {
-                    sw.WriteLine($"    internal const int M{p.Item1} = {p.Item2};");
-                }
-                sw.WriteLine();
-
-                List<RecipeProto> recipeList = [..LDB.recipes.dataArray];
-                recipeList.Sort((p1, p2) => p1.ID - p2.ID);
-                foreach (var recipe in recipeList) {
-                    int id = recipe.ID;
-                    string name = recipe.FName();
-                    sw.WriteLine($"    internal const int R{name} = {id};");
-                }
-                sw.WriteLine();
-
-                List<TechProto> techList = [..LDB.techs.dataArray];
-                techList.Sort((p1, p2) => p1.ID - p2.ID);
-                string lastTechName = "";
-                foreach (var tech in techList) {
-                    int id = tech.ID;
-                    string name = tech.FName();
-                    if (name == lastTechName) {
-                        continue;
-                    }
-                    lastTechName = name;
-                    sw.WriteLine($"    internal const int T{name} = {id};");
-                }
-            }
-
-            #endregion
-
-            #region csv数据
-
+            var (fullName, shortName) = ResolveAndLogEnabledModCombination();
+            string baseDir = EnsureExportDirectory(shortName);
+            WriteProtoIdFile(baseDir);
             if (FractionateEverythingEnable) {
                 SaveFEItemValue(baseDir);
             }
-
-            filePath = $@"{baseDir}\gameData.csv";
-            if (!File.Exists(filePath)) {
-                File.Create(filePath).Close();
-            }
-            using (var sw = new StreamWriter(filePath, false, Encoding.UTF8)) {
-                sw.WriteLine("物品ID,GridIndex,name,IconPath,EItemType,BuildMode,BuildIndex,MainCraft,UnlockKey,PreTech");
-                //先处理有配方的物品
-                List<ItemProto> itemProtoList1 = [..LDB.items.dataArray];
-                itemProtoList1.RemoveAll(item => !LDB.recipes.dataArray
-                    .Any(recipe => recipe.Items.Contains(item.ID) || recipe.Results.Contains(item.ID)));
-                //再处理无配方的物品
-                List<ItemProto> itemProtoList2 = [..LDB.items.dataArray];
-                itemProtoList2.RemoveAll(item => itemProtoList1.Contains(item));
-                //拼起来，处理
-                List<ItemProto> itemProtoList = itemProtoList1.Concat(itemProtoList2).ToList();
-                foreach (var item in itemProtoList) {
-                    sw.Write($"I{item.ID},");
-                    sw.Write($"{item.GridIndex},");
-                    sw.Write($"{item.FName()},");
-                    sw.Write($"{item.IconPath},");
-                    sw.Write($"{Enum.GetName(typeof(EItemType), (int)item.Type)},");
-                    sw.Write($"{item.BuildMode},");
-                    sw.Write($"{item.BuildIndex},");
-                    sw.Write($"{(item.maincraft == null ? "null" : ("R" + item.maincraft.ID))},");
-                    sw.Write($"{item.UnlockKey},");
-                    sw.Write($"{(item.preTech == null ? "null" : ("T" + item.preTech.ID))},");
-                    sw.WriteLine();
-                }
-                sw.WriteLine();
-                sw.WriteLine();
-
-                sw.WriteLine(
-                    "配方ID,GridIndex,name,IconPath,ERecipeType,Items,Results,TimeSpend,Handcraft,Productive,PreTech");
-                foreach (var recipe in LDB.recipes.dataArray) {
-                    sw.Write($"R{recipe.ID},");
-                    sw.Write($"{recipe.GridIndex},");
-                    sw.Write($"{recipe.FName()},");
-                    sw.Write($"{recipe.IconPath},");
-                    if (GenesisBookEnable) {
-                        sw.Write($"{Enum.GetName(typeof(ERecipeType_GB), (int)recipe.Type)},");
-                    } else if (OrbitalRingEnable) {
-                        sw.Write($"{Enum.GetName(typeof(ERecipeType_OR), (int)recipe.Type)},");
-                    } else {
-                        sw.Write($"{Enum.GetName(typeof(ERecipeType_DSP), (int)recipe.Type)},");
-                    }
-                    StringBuilder sb = new();
-                    bool first = true;
-                    for (int i = 0; i < recipe.Items.Length; i++) {
-                        if (!first) {
-                            sb.Append(" + ");
-                        }
-                        first = false;
-                        sb.Append(
-                            $"{LDB.items.Select(recipe.Items[i]).FName()}(I{recipe.Items[i]})*{recipe.ItemCounts[i]}");
-                    }
-                    sw.Write($"{sb},");
-                    sb = new();
-                    first = true;
-                    for (int i = 0; i < recipe.Results.Length; i++) {
-                        if (!first) {
-                            sb.Append(" + ");
-                        }
-                        first = false;
-                        sb.Append(
-                            $"{LDB.items.Select(recipe.Results[i]).FName()}(I{recipe.Results[i]})*{recipe.ResultCounts[i]}");
-                    }
-                    sw.Write($"{sb},");
-                    sw.Write($"{recipe.TimeSpend}({(recipe.TimeSpend / 60.0f):F1}s),");
-                    sw.Write($"{recipe.Handcraft},");
-                    sw.Write($"{recipe.productive},");
-                    sw.Write($"{(recipe.preTech == null ? "null" : ("T" + recipe.preTech.ID))},");
-                    sw.WriteLine();
-                }
-                sw.WriteLine();
-                sw.WriteLine();
-
-                sw.WriteLine(
-                    "科技ID,name,IconPath,PreTechs,PreTechsImplicit,IsHiddenTech,PreItem,Items,HashNeeded,UnlockRecipes");
-                foreach (var tech in LDB.techs.dataArray) {
-                    sw.Write($"T{tech.ID},");
-                    sw.Write($"{tech.FName()},");
-                    sw.Write($"{tech.IconPath},");
-                    if (tech.PreTechs != null && tech.PreTechs.Length > 0) {
-                        StringBuilder sb = new();
-                        bool first = true;
-                        for (int i = 0; i < tech.PreTechs.Length; i++) {
-                            if (!first) {
-                                sb.Append("_");
-                            }
-                            first = false;
-                            sb.Append($"{LDB.techs.Select(tech.PreTechs[i]).FName()}(T{tech.PreTechs[i]})");
-                        }
-                        sw.Write($"{sb},");
-                    } else {
-                        sw.Write("empty,");
-                    }
-                    if (tech.PreTechsImplicit != null && tech.PreTechsImplicit.Length > 0) {
-                        StringBuilder sb = new();
-                        bool first = true;
-                        for (int i = 0; i < tech.PreTechsImplicit.Length; i++) {
-                            if (!first) {
-                                sb.Append("_");
-                            }
-                            first = false;
-                            sb.Append(
-                                $"{LDB.techs.Select(tech.PreTechsImplicit[i]).FName()}(T{tech.PreTechsImplicit[i]})");
-                        }
-                        sw.Write($"{sb},");
-                    } else {
-                        sw.Write("empty,");
-                    }
-                    sw.Write($"{tech.IsHiddenTech},");
-                    if (tech.PreItem != null && tech.PreItem.Length > 0) {
-                        StringBuilder sb = new();
-                        bool first = true;
-                        for (int i = 0; i < tech.PreItem.Length; i++) {
-                            if (!first) {
-                                sb.Append("_");
-                            }
-                            first = false;
-                            sb.Append($"{LDB.items.Select(tech.PreItem[i]).FName()}(I{tech.PreItem[i]})");
-                        }
-                        sw.Write($"{sb},");
-                    } else {
-                        sw.Write("empty,");
-                    }
-                    float countMultiple = tech.HashNeeded / 3600f;
-                    if (tech.Items != null && tech.Items.Length > 0) {
-                        StringBuilder sb = new();
-                        bool first = true;
-                        for (int i = 0; i < tech.Items.Length; i++) {
-                            if (!first) {
-                                sb.Append(" + ");
-                            }
-                            first = false;
-                            sb.Append(
-                                $"{LDB.items.Select(tech.Items[i]).FName()}(I{tech.Items[i]})*{tech.ItemPoints[i] * countMultiple:F0}");
-                        }
-                        sw.Write($"{sb},");
-                    } else {
-                        sw.Write("empty,");
-                    }
-                    sw.Write($"{tech.HashNeeded},");
-                    if (tech.UnlockRecipes != null && tech.UnlockRecipes.Length > 0) {
-                        StringBuilder sb = new();
-                        bool first = true;
-                        for (int i = 0; i < tech.UnlockRecipes.Length; i++) {
-                            if (!first) {
-                                sb.Append("_");
-                            }
-                            first = false;
-                            sb.Append($"{LDB.recipes.Select(tech.UnlockRecipes[i]).FName()}(I{tech.UnlockRecipes[i]})");
-                        }
-                        sw.Write($"{sb},");
-                    } else {
-                        sw.Write("empty,");
-                    }
-                    sw.WriteLine();
-                }
-                sw.WriteLine();
-                sw.WriteLine();
-
-                sw.WriteLine("模型ID,name,displayName,PrefabPath");
-                foreach (var model in LDB.models.dataArray) {
-                    sw.WriteLine(model.ID
-                                 + ","
-                                 + model.FName()
-                                 + ","
-                                 + model.displayName
-                                 + ","
-                                 + model.PrefabPath);
-                }
-            }
-
-            #endregion
-
-            #region 计算器所需数据
-
-            string dirCalc = $@"{dir}\calc json";
-            if (!Directory.Exists(dirCalc)) {
-                Directory.CreateDirectory(dirCalc);
-            }
-
-            var dataObj = new JObject();
-            //配方
-            var recipes = new JArray();
-            dataObj.Add("recipes", recipes);
-            foreach (var recipe in LDB.recipes.dataArray) {
-                addRecipe(recipe, recipes);
-            }
-            //物品
-            var items = new JArray();
-            dataObj.Add("items", items);
-            foreach (var item in LDB.items.dataArray) {
-                //添加与这个物品相关的特殊配方（游戏中不存在，但是计算器需要它们来计算）
-                //0.可直接采集的物品（黑雾不算）对应开采配方需要插入到最前，以尽量规避线性规划无解
-                int firstIdx = recipes.Count;
-                if (item.canMiningFromVein()
-                    || item.canMiningFromSea()
-                    || item.canMiningFromOilWell()
-                    || item.canMiningFromGasGiant()
-                    || (GenesisBookEnable && item.canMiningFromAtmosphere())
-                    || item.canMiningByRayReceiver()) {
-                    foreach (var recipe in recipes) {
-                        var resultsArr = ((JArray)((JObject)recipe)["Results"]).Values<int>();
-                        bool contains = false;
-                        foreach (var id in resultsArr) {
-                            if (id == item.ID) {
-                                contains = true;
-                            }
-                        }
-                        if (contains) {
-                            firstIdx = recipes.IndexOf(recipe);
-                            break;
-                        }
-                    }
-                }
-                //1.可直接采集
-                List<int> factorySpecial = [];
-                if (item.canMiningFromVein()) {
-                    factorySpecial = [..factorySpecial, I采矿机, I大型采矿机];
-                }
-                if (item.canMiningFromSea()) {
-                    if (GenesisBookEnable) {
-                        factorySpecial = [..factorySpecial, I抽水站, IGB聚束液体汲取设施];
-                    } else if (OrbitalRingEnable) {
-                        factorySpecial = [..factorySpecial, IOR流体抽取平台];
-                    } else {
-                        factorySpecial = [..factorySpecial, I抽水站];
-                    }
-                }
-                if (item.canMiningFromOilWell()) {
-                    if (OrbitalRingEnable) {
-                        factorySpecial = [..factorySpecial, IOR激光钻井平台];
-                    } else {
-                        factorySpecial = [..factorySpecial, I原油萃取站];
-                    }
-                }
-                if (item.canMiningFromGasGiant()) {
-                    factorySpecial = [..factorySpecial, I轨道采集器];
-                }
-                if (GenesisBookEnable && item.canMiningFromAtmosphere()) {
-                    factorySpecial = [..factorySpecial, IGB大气采集站];
-                }
-                if (factorySpecial.Count == 0) {
-                    bool noNormalRecipe = item.recipes == null || item.recipes.Count == 0;
-                    if (item.canMiningByIcarus() || (item.GridIndexValid() && noNormalRecipe)) {
-                        factorySpecial = [..factorySpecial, I伊卡洛斯];
-                    }
-                }
-                if (item.canMiningByMS()) {
-                    factorySpecial = [..factorySpecial, I巨构星际组装厂];
-                }
-                if (item.GridIndexValid() && item.canDropFromEnemy()) {
-                    factorySpecial = [..factorySpecial, I行星基地];
-                }
-                if (factorySpecial.Count > 0) {
-                    recipes.Insert(firstIdx, new JObject {
-                        { "Type", -1 },
-                        { "Factories", new JArray(factorySpecial) },
-                        { "Name", $"[无中生有]{item.name}" },
-                        { "Items", new JArray(Array.Empty<int>()) },
-                        { "ItemCounts", new JArray(Array.Empty<int>()) },
-                        { "Results", new JArray(new[] { item.ID }) },
-                        { "ResultCounts", new JArray(new[] { 1 }) },
-                        { "TimeSpend", 60 },
-                        { "Proliferator", 0 },
-                        { "IconName", ResolveIconName(item) },
-                    });
-                    firstIdx++;
-                }
-                //2.射线接受站，以及巨构的射线重构站
-                if (item.canMiningByRayReceiver()) {
-                    int buildingID = MoreMegaStructureEnable ? IMS射线重构站 : I射线接收站;
-                    //不带透镜的公式
-                    //此公式比较特殊，有明确速率0.1/s，此处不使用大部分“无中生有”的1/s速率
-                    recipes.Insert(firstIdx, new JObject {
-                        { "Type", -1 },
-                        { "Factories", new JArray(new[] { buildingID }) },
-                        { "Name", $"[无中生有]{item.name}" },
-                        { "Items", new JArray(Array.Empty<int>()) },
-                        { "ItemCounts", new JArray(Array.Empty<int>()) },
-                        { "Results", new JArray(new[] { item.ID }) },
-                        { "ResultCounts", new JArray(new[] { 1 }) },
-                        { "TimeSpend", 600 },
-                        { "Proliferator", 0 },
-                        { "IconName", ResolveIconName(item) },
-                    });
-                    firstIdx++;
-                    //带透镜的公式
-                    //此公式比较特殊，有明确的速率0.2/s
-                    recipes.Insert(firstIdx, new JObject {
-                        { "Type", -1 },
-                        { "Factories", new JArray(new[] { buildingID }) },
-                        { "Name", $"[射线接收带透镜]{item.name}" },
-                        { "Items", new JArray(new[] { I引力透镜 }) },
-                        { "ItemCounts", new JArray(new[] { 1.0 / 120.0 }) },
-                        { "Results", new JArray(new[] { item.ID }) },
-                        { "ResultCounts", new JArray(new[] { 1 }) },
-                        { "TimeSpend", 300 },
-                        { "Proliferator", 4 },
-                        { "IconName", ResolveIconName(item) },
-                    });
-                    firstIdx++;
-                }
-                //3.蓄电器空与蓄电器满的相互转化
-                //蓄电器->蓄电器满，两个公式，一个放下充电，一个通过能量枢纽充电
-                if (OrbitalRingEnable) {
-                    //todo: 更新充电速率
-                    if (item.ID == IOR蓄电器满) {
-                        recipes.Add(new JObject {
-                            { "Type", -1 },
-                            { "Factories", new JArray(new[] { IOR蓄电器满 }) },
-                            { "Name", $"[充电]{item.name}-放置充电" },
-                            { "Items", new JArray(new[] { IOR蓄电器 }) },
-                            { "ItemCounts", new JArray(new[] { 1 }) },
-                            { "Results", new JArray(new[] { IOR蓄电器满 }) },
-                            { "ResultCounts", new JArray(new[] { 1 }) },
-                            { "TimeSpend", 21600 },
-                            { "Proliferator", 0 },
-                            { "IconName", ResolveIconName(item) },
-                        });
-                        recipes.Add(new JObject {
-                            { "Type", -1 },
-                            { "Factories", new JArray(new[] { I能量枢纽 }) },
-                            { "Name", $"[充电]{item.name}-能量枢纽充电" },
-                            { "Items", new JArray(new[] { IOR蓄电器 }) },
-                            { "ItemCounts", new JArray(new[] { 1 }) },
-                            { "Results", new JArray(new[] { IOR蓄电器满 }) },
-                            { "ResultCounts", new JArray(new[] { 1 }) },
-                            { "TimeSpend", 600 },
-                            { "Proliferator", 1 },
-                            { "IconName", ResolveIconName(item) },
-                        });
-                    } else if (item.ID == IOR蓄电器mk2满) {
-                        recipes.Add(new JObject {
-                            { "Type", -1 },
-                            { "Factories", new JArray(new[] { IOR蓄电器mk2满 }) },
-                            { "Name", $"[充电]{item.name}-放置充电" },
-                            { "Items", new JArray(new[] { IOR蓄电器mk2 }) },
-                            { "ItemCounts", new JArray(new[] { 1 }) },
-                            { "Results", new JArray(new[] { IOR蓄电器mk2满 }) },
-                            { "ResultCounts", new JArray(new[] { 1 }) },
-                            { "TimeSpend", 21600 },
-                            { "Proliferator", 0 },
-                            { "IconName", ResolveIconName(item) },
-                        });
-                        recipes.Add(new JObject {
-                            { "Type", -1 },
-                            { "Factories", new JArray(new[] { I能量枢纽 }) },
-                            { "Name", $"[充电]{item.name}-能量枢纽充电" },
-                            { "Items", new JArray(new[] { IOR蓄电器mk2 }) },
-                            { "ItemCounts", new JArray(new[] { 1 }) },
-                            { "Results", new JArray(new[] { IOR蓄电器mk2满 }) },
-                            { "ResultCounts", new JArray(new[] { 1 }) },
-                            { "TimeSpend", 600 },
-                            { "Proliferator", 1 },
-                            { "IconName", ResolveIconName(item) },
-                        });
-                    }
-                } else {
-                    if (item.ID == I蓄电器满) {
-                        recipes.Add(new JObject {
-                            { "Type", -1 },
-                            { "Factories", new JArray(new[] { I蓄电器满 }) },
-                            { "Name", $"[充电]{item.name}-放置充电" },
-                            { "Items", new JArray(new[] { I蓄电器 }) },
-                            { "ItemCounts", new JArray(new[] { 1 }) },
-                            { "Results", new JArray(new[] { I蓄电器满 }) },
-                            { "ResultCounts", new JArray(new[] { 1 }) },
-                            { "TimeSpend", 21600 },
-                            { "Proliferator", 0 },
-                            { "IconName", ResolveIconName(item) },
-                        });
-                        recipes.Add(new JObject {
-                            { "Type", -1 },
-                            { "Factories", new JArray(new[] { I能量枢纽 }) },
-                            { "Name", $"[充电]{item.name}-能量枢纽充电" },
-                            { "Items", new JArray(new[] { I蓄电器 }) },
-                            { "ItemCounts", new JArray(new[] { 1 }) },
-                            { "Results", new JArray(new[] { I蓄电器满 }) },
-                            { "ResultCounts", new JArray(new[] { 1 }) },
-                            { "TimeSpend", 600 },
-                            { "Proliferator", 1 },
-                            { "IconName", ResolveIconName(item) },
-                        });
-                    }
-                }
-                //4.创世满燃料棒烧完变空燃料棒
-                if (GenesisBookEnable) {
-                    int[] factoryID = [
-                        IGB燃料电池发电厂, IGB燃料电池发电厂, IGB燃料电池发电厂,
-                        IGB裂变能源发电站, IGB裂变能源发电站, IGB裂变能源发电站,
-                        IGB朱曦K型人造恒星, IGB朱曦K型人造恒星, IGB朱曦K型人造恒星,
-                        IGB湛曦O型人造恒星, IGB湛曦O型人造恒星,
-                    ];
-                    int[] itemID = [
-                        I液氢燃料棒, IGB焦油燃料棒, IGB四氢双环戊二烯燃料棒,
-                        IGB铀燃料棒, IGB钚燃料棒, IGBMOX燃料棒,
-                        I氘核燃料棒, IGB氦三燃料棒, IGB氘氦混合燃料棒,
-                        I反物质燃料棒, I奇异湮灭燃料棒,
-                    ];
-                    if (itemID.Contains(item.ID)) {
-                        int index = itemID.ToList().IndexOf(item.ID);
-                        recipes.Add(new JObject {
-                            { "Type", -1 },
-                            { "Factories", new JArray(new[] { factoryID[index] }) },
-                            { "Name", $"[燃料棒耗尽]{item.name}" },
-                            { "Items", new JArray(new[] { item.ID }) },
-                            { "ItemCounts", new JArray(new[] { 1 }) },
-                            { "Results", new JArray(new[] { IGB空燃料棒 }) },
-                            { "ResultCounts", new JArray(new[] { 1 }) },
-                            { "TimeSpend", 60 * 60 },//暂时设为60s
-                            { "Proliferator", 1 },//暂时先设为1，以便正确计算增产剂使用数目
-                            { "IconName", ResolveIconName(item) },
-                        });
-                    }
-                }
-                //5.所有万物分馏的配方
-                if (FractionateEverythingEnable) {
-                    AddFracRecipes(recipes, item);
-                }
-            }
-            AddReferencedItems(items, recipes);
-            //科技
-            var techs = new JArray();
-            dataObj.Add("techs", techs);
-            foreach (var tech in LDB.techs.dataArray) {
-                addTech(tech, techs);
-            }
-            //特殊物品（无实体的工厂）
-            items.Add(new JObject {
-                { "ID", I伊卡洛斯 },
-                { "Type", -1 },
-                { "Name", "伊卡洛斯" },
-                { "GridIndex", -1 },
-                { "IconName", "伊卡洛斯" },
-                { "WorkEnergyPerTick", 0.08 / 0.00006 },
-                { "Speed", 1.0 / 0.0001 },
-                { "MultipleOutput", 1 },
-                { "Space", 0 },
-            });
-            items.Add(new JObject {
-                { "ID", I行星基地 },
-                { "Type", -1 },
-                { "Name", "行星基地" },
-                { "GridIndex", -1 },
-                { "IconName", "行星基地" },
-                { "WorkEnergyPerTick", 0.0 / 0.00006 },
-                { "Speed", 1.0 / 0.0001 },
-                { "MultipleOutput", 1 },
-                { "Space", 0 },
-            });
-            if (MoreMegaStructureEnable) {
-                items.Add(new JObject {
-                    { "ID", I巨构星际组装厂 },
-                    { "Type", -1 },
-                    { "Name", "巨构星际组装厂" },
-                    { "GridIndex", -1 },
-                    { "IconName", "巨构星际组装厂" },
-                    { "WorkEnergyPerTick", 0.0 / 0.00006 },
-                    { "Speed", 1.0 / 0.0001 },
-                    { "MultipleOutput", 1 },
-                    { "Space", 0 },
-                });
-            }
-
-            //保存json到本项目内。文件不复制到戴森球计算器，而是在AfterBuildEvent复制
-            filePath = $@"{dirCalc}\{modFullStr}.json";
-            if (!File.Exists(filePath)) {
-                File.Create(filePath).Close();
-            }
-            using (var sw = new StreamWriter(filePath, false, Encoding.UTF8)) {
-                sw.WriteLine(dataObj.ToString(Formatting.Indented));
-            }
-            LogInfo($"已生成{filePath}");
+            WriteGameDataCsv(baseDir);
+            string dirCalc = EnsureCalculatorJsonDirectory();
+            JObject dataObj = BuildCalculatorData();
+            WriteCalculatorJson(dirCalc, fullName, dataObj);
             ExportRequestedIcons();
-
-            #endregion
-
         }
         catch (Exception ex) {
             LogError(ex.ToString());
         }
     }
 
+    /// <summary>
+    /// 根据当前启用的计算器相关模组拼接导出命名，并记录启用日志。
+    /// </summary>
+    /// <returns>fullName 为完整模组名下划线组合；shortName 为短名组合或 Vanilla。</returns>
+    private static (string fullName, string shortName) ResolveAndLogEnabledModCombination() {
+        string modFullStr = "";
+        string modShortStr = "";
+        (bool enabled, string fullName, string shortName)[] calcMods = [
+            (MoreMegaStructureEnable, "MoreMegaStructure", "MS"),
+            (TheyComeFromVoidEnable, "TheyComeFromVoid", "VD"),
+            (GenesisBookEnable, "GenesisBook", "GB"),
+            (OrbitalRingEnable, "OrbitalRing", "OR"),
+            (FractionateEverythingEnable, "FractionateEverything", "FE"),
+        ];
+        foreach (var calcMod in calcMods) {
+            if (calcMod.enabled) {
+                LogInfo($"已启用{calcMod.fullName}");
+                modFullStr += "_" + calcMod.fullName;
+                modShortStr += "_" + calcMod.shortName;
+            }
+        }
+        modShortStr = modShortStr == "" ? "Vanilla" : modShortStr.Substring(1);
+        modFullStr = modFullStr == "" ? "Vanilla" : modFullStr.Substring(1);
+        return (modFullStr, modShortStr);
+    }
+
+    /// <summary>
+    /// 确保当前模组组合的导出根目录存在。
+    /// </summary>
+    /// <param name="modShortStr">短名组合目录名。</param>
+    /// <returns>导出根目录绝对路径。</returns>
+    private static string EnsureExportDirectory(string modShortStr) {
+        string baseDir = $@"{dir}\{modShortStr}";
+        if (!Directory.Exists(baseDir)) {
+            Directory.CreateDirectory(baseDir);
+        }
+        return baseDir;
+    }
+
+    /// <summary>
+    /// 写出代码中使用的 protoID 常量快照到 protoID.txt。
+    /// </summary>
+    /// <param name="baseDir">当前模组组合导出目录。</param>
+    private static void WriteProtoIdFile(string baseDir) {
+        string filePath = $@"{baseDir}\protoID.txt";
+        if (!File.Exists(filePath)) {
+            File.Create(filePath).Close();
+        }
+        using (var sw = new StreamWriter(filePath, false, Encoding.UTF8)) {
+            List<ItemProto> itemList = [..LDB.items.dataArray];
+            itemList.Sort((p1, p2) => p1.ID - p2.ID);
+            List<(string, int)> modelNameIdList = new();
+            foreach (var item in itemList) {
+                int id = item.ID;
+                string name = item.FName();
+                sw.WriteLine($"    internal const int I{name} = {id};");
+                int modelID = item.ModelIndex;
+                if (modelID > 0) {
+                    modelNameIdList.Add((name, modelID));
+                }
+            }
+            sw.WriteLine();
+
+            modelNameIdList.Sort((p1, p2) => p1.Item2 - p2.Item2);
+            foreach (var p in modelNameIdList) {
+                sw.WriteLine($"    internal const int M{p.Item1} = {p.Item2};");
+            }
+            sw.WriteLine();
+
+            List<RecipeProto> recipeList = [..LDB.recipes.dataArray];
+            recipeList.Sort((p1, p2) => p1.ID - p2.ID);
+            foreach (var recipe in recipeList) {
+                int id = recipe.ID;
+                string name = recipe.FName();
+                sw.WriteLine($"    internal const int R{name} = {id};");
+            }
+            sw.WriteLine();
+
+            List<TechProto> techList = [..LDB.techs.dataArray];
+            techList.Sort((p1, p2) => p1.ID - p2.ID);
+            string lastTechName = "";
+            foreach (var tech in techList) {
+                int id = tech.ID;
+                string name = tech.FName();
+                if (name == lastTechName) {
+                    continue;
+                }
+                lastTechName = name;
+                sw.WriteLine($"    internal const int T{name} = {id};");
+            }
+        }
+    }
+
+    /// <summary>
+    /// 写出物品、配方、科技与模型的 gameData.csv 文本快照。
+    /// </summary>
+    /// <param name="baseDir">当前模组组合导出目录。</param>
+    private static void WriteGameDataCsv(string baseDir) {
+        string filePath = $@"{baseDir}\gameData.csv";
+        if (!File.Exists(filePath)) {
+            File.Create(filePath).Close();
+        }
+        using (var sw = new StreamWriter(filePath, false, Encoding.UTF8)) {
+            sw.WriteLine("物品ID,GridIndex,name,IconPath,EItemType,BuildMode,BuildIndex,MainCraft,UnlockKey,PreTech");
+            //先处理有配方的物品
+            List<ItemProto> itemProtoList1 = [..LDB.items.dataArray];
+            itemProtoList1.RemoveAll(item => !LDB.recipes.dataArray
+                .Any(recipe => recipe.Items.Contains(item.ID) || recipe.Results.Contains(item.ID)));
+            //再处理无配方的物品
+            List<ItemProto> itemProtoList2 = [..LDB.items.dataArray];
+            itemProtoList2.RemoveAll(item => itemProtoList1.Contains(item));
+            //拼起来，处理
+            List<ItemProto> itemProtoList = itemProtoList1.Concat(itemProtoList2).ToList();
+            foreach (var item in itemProtoList) {
+                sw.Write($"I{item.ID},");
+                sw.Write($"{item.GridIndex},");
+                sw.Write($"{item.FName()},");
+                sw.Write($"{item.IconPath},");
+                sw.Write($"{Enum.GetName(typeof(EItemType), (int)item.Type)},");
+                sw.Write($"{item.BuildMode},");
+                sw.Write($"{item.BuildIndex},");
+                sw.Write($"{(item.maincraft == null ? "null" : ("R" + item.maincraft.ID))},");
+                sw.Write($"{item.UnlockKey},");
+                sw.Write($"{(item.preTech == null ? "null" : ("T" + item.preTech.ID))},");
+                sw.WriteLine();
+            }
+            sw.WriteLine();
+            sw.WriteLine();
+
+            sw.WriteLine(
+                "配方ID,GridIndex,name,IconPath,ERecipeType,Items,Results,TimeSpend,Handcraft,Productive,PreTech");
+            foreach (var recipe in LDB.recipes.dataArray) {
+                sw.Write($"R{recipe.ID},");
+                sw.Write($"{recipe.GridIndex},");
+                sw.Write($"{recipe.FName()},");
+                sw.Write($"{recipe.IconPath},");
+                if (GenesisBookEnable) {
+                    sw.Write($"{Enum.GetName(typeof(ERecipeType_GB), (int)recipe.Type)},");
+                } else if (OrbitalRingEnable) {
+                    sw.Write($"{Enum.GetName(typeof(ERecipeType_OR), (int)recipe.Type)},");
+                } else {
+                    sw.Write($"{Enum.GetName(typeof(ERecipeType_DSP), (int)recipe.Type)},");
+                }
+                StringBuilder sb = new();
+                bool first = true;
+                for (int i = 0; i < recipe.Items.Length; i++) {
+                    if (!first) {
+                        sb.Append(" + ");
+                    }
+                    first = false;
+                    sb.Append(
+                        $"{LDB.items.Select(recipe.Items[i]).FName()}(I{recipe.Items[i]})*{recipe.ItemCounts[i]}");
+                }
+                sw.Write($"{sb},");
+                sb = new();
+                first = true;
+                for (int i = 0; i < recipe.Results.Length; i++) {
+                    if (!first) {
+                        sb.Append(" + ");
+                    }
+                    first = false;
+                    sb.Append(
+                        $"{LDB.items.Select(recipe.Results[i]).FName()}(I{recipe.Results[i]})*{recipe.ResultCounts[i]}");
+                }
+                sw.Write($"{sb},");
+                sw.Write($"{recipe.TimeSpend}({(recipe.TimeSpend / 60.0f):F1}s),");
+                sw.Write($"{recipe.Handcraft},");
+                sw.Write($"{recipe.productive},");
+                sw.Write($"{(recipe.preTech == null ? "null" : ("T" + recipe.preTech.ID))},");
+                sw.WriteLine();
+            }
+            sw.WriteLine();
+            sw.WriteLine();
+
+            sw.WriteLine(
+                "科技ID,name,IconPath,PreTechs,PreTechsImplicit,IsHiddenTech,PreItem,Items,HashNeeded,UnlockRecipes");
+            foreach (var tech in LDB.techs.dataArray) {
+                sw.Write($"T{tech.ID},");
+                sw.Write($"{tech.FName()},");
+                sw.Write($"{tech.IconPath},");
+                if (tech.PreTechs != null && tech.PreTechs.Length > 0) {
+                    StringBuilder sb = new();
+                    bool first = true;
+                    for (int i = 0; i < tech.PreTechs.Length; i++) {
+                        if (!first) {
+                            sb.Append("_");
+                        }
+                        first = false;
+                        sb.Append($"{LDB.techs.Select(tech.PreTechs[i]).FName()}(T{tech.PreTechs[i]})");
+                    }
+                    sw.Write($"{sb},");
+                } else {
+                    sw.Write("empty,");
+                }
+                if (tech.PreTechsImplicit != null && tech.PreTechsImplicit.Length > 0) {
+                    StringBuilder sb = new();
+                    bool first = true;
+                    for (int i = 0; i < tech.PreTechsImplicit.Length; i++) {
+                        if (!first) {
+                            sb.Append("_");
+                        }
+                        first = false;
+                        sb.Append(
+                            $"{LDB.techs.Select(tech.PreTechsImplicit[i]).FName()}(T{tech.PreTechsImplicit[i]})");
+                    }
+                    sw.Write($"{sb},");
+                } else {
+                    sw.Write("empty,");
+                }
+                sw.Write($"{tech.IsHiddenTech},");
+                if (tech.PreItem != null && tech.PreItem.Length > 0) {
+                    StringBuilder sb = new();
+                    bool first = true;
+                    for (int i = 0; i < tech.PreItem.Length; i++) {
+                        if (!first) {
+                            sb.Append("_");
+                        }
+                        first = false;
+                        sb.Append($"{LDB.items.Select(tech.PreItem[i]).FName()}(I{tech.PreItem[i]})");
+                    }
+                    sw.Write($"{sb},");
+                } else {
+                    sw.Write("empty,");
+                }
+                float countMultiple = tech.HashNeeded / 3600f;
+                if (tech.Items != null && tech.Items.Length > 0) {
+                    StringBuilder sb = new();
+                    bool first = true;
+                    for (int i = 0; i < tech.Items.Length; i++) {
+                        if (!first) {
+                            sb.Append(" + ");
+                        }
+                        first = false;
+                        sb.Append(
+                            $"{LDB.items.Select(tech.Items[i]).FName()}(I{tech.Items[i]})*{tech.ItemPoints[i] * countMultiple:F0}");
+                    }
+                    sw.Write($"{sb},");
+                } else {
+                    sw.Write("empty,");
+                }
+                sw.Write($"{tech.HashNeeded},");
+                if (tech.UnlockRecipes != null && tech.UnlockRecipes.Length > 0) {
+                    StringBuilder sb = new();
+                    bool first = true;
+                    for (int i = 0; i < tech.UnlockRecipes.Length; i++) {
+                        if (!first) {
+                            sb.Append("_");
+                        }
+                        first = false;
+                        sb.Append($"{LDB.recipes.Select(tech.UnlockRecipes[i]).FName()}(I{tech.UnlockRecipes[i]})");
+                    }
+                    sw.Write($"{sb},");
+                } else {
+                    sw.Write("empty,");
+                }
+                sw.WriteLine();
+            }
+            sw.WriteLine();
+            sw.WriteLine();
+
+            sw.WriteLine("模型ID,name,displayName,PrefabPath");
+            foreach (var model in LDB.models.dataArray) {
+                sw.WriteLine(model.ID
+                             + ","
+                             + model.FName()
+                             + ","
+                             + model.displayName
+                             + ","
+                             + model.PrefabPath);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 确保计算器 JSON 输出目录存在。
+    /// </summary>
+    /// <returns>calc json 目录绝对路径。</returns>
+    private static string EnsureCalculatorJsonDirectory() {
+        string dirCalc = $@"{dir}\calc json";
+        if (!Directory.Exists(dirCalc)) {
+            Directory.CreateDirectory(dirCalc);
+        }
+        return dirCalc;
+    }
+
+    /// <summary>
+    /// 组装计算器 JSON 根对象，顺序固定为 recipes、items、techs。
+    /// </summary>
+    /// <returns>含 recipes/items/techs 的计算器数据对象。</returns>
+    private static JObject BuildCalculatorData() {
+        var dataObj = new JObject();
+        //配方
+        var recipes = new JArray();
+        dataObj.Add("recipes", recipes);
+        foreach (var recipe in LDB.recipes.dataArray) {
+            AddRecipe(recipe, recipes);
+        }
+        //物品
+        var items = new JArray();
+        dataObj.Add("items", items);
+        foreach (var item in LDB.items.dataArray) {
+            //添加与这个物品相关的特殊配方（游戏中不存在，但是计算器需要它们来计算）
+            AddSpecialRecipesForItem(recipes, item);
+        }
+        AddReferencedItems(items, recipes);
+        //科技
+        var techs = new JArray();
+        dataObj.Add("techs", techs);
+        foreach (var tech in LDB.techs.dataArray) {
+            AddTech(tech, techs);
+        }
+        //特殊物品（无实体的工厂）
+        AddVirtualFactoryItems(items);
+        return dataObj;
+    }
+
+    /// <summary>
+    /// 按注释 0..5 的固定顺序为单个物品追加计算器特殊配方。
+    /// </summary>
+    /// <param name="recipes">计算器配方数组，允许 Insert/Add 修改。</param>
+    /// <param name="item">当前遍历到的物品原型。</param>
+    private static void AddSpecialRecipesForItem(JArray recipes, ItemProto item) {
+        //0.可直接采集的物品（黑雾不算）对应开采配方需要插入到最前，以尽量规避线性规划无解
+        int firstIdx = ResolveSpecialRecipeInsertIndex(recipes, item);
+        //1.可直接采集
+        firstIdx = AddAcquisitionRecipe(recipes, item, firstIdx);
+        //2.射线接受站，以及巨构的射线重构站
+        firstIdx = AddRayReceiverSpecialRecipes(recipes, item, firstIdx);
+        //3.蓄电器空与蓄电器满的相互转化
+        AddAccumulatorChargeSpecialRecipes(recipes, item);
+        //4.创世满燃料棒烧完变空燃料棒
+        AddFuelExhaustRecipe(recipes, item);
+        //5.所有万物分馏的配方
+        if (FractionateEverythingEnable) {
+            AddFracRecipes(recipes, item);
+        }
+    }
+
+    /// <summary>
+    /// 解析可采集物品特殊配方应插入的 recipes 下标。
+    /// </summary>
+    /// <param name="recipes">当前已生成的计算器配方数组。</param>
+    /// <param name="item">目标输出物品。</param>
+    /// <returns>插入位置；默认 recipes.Count。</returns>
+    private static int ResolveSpecialRecipeInsertIndex(JArray recipes, ItemProto item) {
+        int firstIdx = recipes.Count;
+        if (item.canMiningFromVein()
+            || item.canMiningFromSea()
+            || item.canMiningFromOilWell()
+            || item.canMiningFromGasGiant()
+            || (GenesisBookEnable && item.canMiningFromAtmosphere())
+            || item.canMiningByRayReceiver()) {
+            foreach (var recipe in recipes) {
+                var resultsArr = ((JArray)((JObject)recipe)["Results"]).Values<int>();
+                bool contains = false;
+                foreach (var id in resultsArr) {
+                    if (id == item.ID) {
+                        contains = true;
+                    }
+                }
+                if (contains) {
+                    firstIdx = recipes.IndexOf(recipe);
+                    break;
+                }
+            }
+        }
+        return firstIdx;
+    }
+
+    /// <summary>
+    /// 追加至多一条聚合获取来源配方，覆盖矿脉、海洋、油井、气态、大气、伊卡洛斯、巨构传递与敌人掉落。
+    /// </summary>
+    /// <param name="recipes">计算器配方数组。</param>
+    /// <param name="item">目标输出物品。</param>
+    /// <param name="firstIdx">当前插入下标。</param>
+    /// <returns>更新后的插入下标。</returns>
+    private static int AddAcquisitionRecipe(JArray recipes, ItemProto item, int firstIdx) {
+        List<int> factorySpecial = [];
+        if (item.canMiningFromVein()) {
+            factorySpecial = [..factorySpecial, I采矿机, I大型采矿机];
+        }
+        if (item.canMiningFromSea()) {
+            if (GenesisBookEnable) {
+                factorySpecial = [..factorySpecial, I抽水站, IGB聚束液体汲取设施];
+            } else if (OrbitalRingEnable) {
+                factorySpecial = [..factorySpecial, IOR流体抽取平台];
+            } else {
+                factorySpecial = [..factorySpecial, I抽水站];
+            }
+        }
+        if (item.canMiningFromOilWell()) {
+            if (OrbitalRingEnable) {
+                factorySpecial = [..factorySpecial, IOR激光钻井平台];
+            } else {
+                factorySpecial = [..factorySpecial, I原油萃取站];
+            }
+        }
+        if (item.canMiningFromGasGiant()) {
+            factorySpecial = [..factorySpecial, I轨道采集器];
+        }
+        if (GenesisBookEnable && item.canMiningFromAtmosphere()) {
+            factorySpecial = [..factorySpecial, IGB大气采集站];
+        }
+        if (factorySpecial.Count == 0) {
+            bool noNormalRecipe = item.recipes == null || item.recipes.Count == 0;
+            if (item.canMiningByIcarus() || (item.GridIndexValid() && noNormalRecipe)) {
+                factorySpecial = [..factorySpecial, I伊卡洛斯];
+            }
+        }
+        if (item.canMiningByMS()) {
+            factorySpecial = [..factorySpecial, I巨构星际组装厂];
+        }
+        if (item.GridIndexValid() && item.canDropFromEnemy()) {
+            factorySpecial = [..factorySpecial, I行星基地];
+        }
+        if (factorySpecial.Count > 0) {
+            recipes.Insert(firstIdx, new JObject {
+                { "Type", -1 },
+                { "Factories", new JArray(factorySpecial) },
+                { "Name", $"[无中生有]{item.name}" },
+                { "Items", new JArray(Array.Empty<int>()) },
+                { "ItemCounts", new JArray(Array.Empty<int>()) },
+                { "Results", new JArray(new[] { item.ID }) },
+                { "ResultCounts", new JArray(new[] { 1 }) },
+                { "TimeSpend", 60 },
+                { "Proliferator", 0 },
+                { "IconName", ResolveIconName(item) },
+            });
+            firstIdx++;
+        }
+        return firstIdx;
+    }
+
+    /// <summary>
+    /// 追加射线接收站/射线重构站相关特殊配方。
+    /// </summary>
+    /// <param name="recipes">计算器配方数组。</param>
+    /// <param name="item">目标输出物品。</param>
+    /// <param name="firstIdx">当前插入下标。</param>
+    /// <returns>更新后的插入下标。</returns>
+    private static int AddRayReceiverSpecialRecipes(JArray recipes, ItemProto item, int firstIdx) {
+        if (item.canMiningByRayReceiver()) {
+            int buildingID = MoreMegaStructureEnable ? IMS射线重构站 : I射线接收站;
+            //不带透镜的公式
+            //此公式比较特殊，有明确速率0.1/s，此处不使用大部分“无中生有”的1/s速率
+            recipes.Insert(firstIdx, new JObject {
+                { "Type", -1 },
+                { "Factories", new JArray(new[] { buildingID }) },
+                { "Name", $"[无中生有]{item.name}" },
+                { "Items", new JArray(Array.Empty<int>()) },
+                { "ItemCounts", new JArray(Array.Empty<int>()) },
+                { "Results", new JArray(new[] { item.ID }) },
+                { "ResultCounts", new JArray(new[] { 1 }) },
+                { "TimeSpend", 600 },
+                { "Proliferator", 0 },
+                { "IconName", ResolveIconName(item) },
+            });
+            firstIdx++;
+            //带透镜的公式
+            //此公式比较特殊，有明确的速率0.2/s
+            recipes.Insert(firstIdx, new JObject {
+                { "Type", -1 },
+                { "Factories", new JArray(new[] { buildingID }) },
+                { "Name", $"[射线接收带透镜]{item.name}" },
+                { "Items", new JArray(new[] { I引力透镜 }) },
+                { "ItemCounts", new JArray(new[] { 1.0 / 120.0 }) },
+                { "Results", new JArray(new[] { item.ID }) },
+                { "ResultCounts", new JArray(new[] { 1 }) },
+                { "TimeSpend", 300 },
+                { "Proliferator", 4 },
+                { "IconName", ResolveIconName(item) },
+            });
+            firstIdx++;
+        }
+        return firstIdx;
+    }
+
+    /// <summary>
+    /// 追加蓄电器空/满相互转化的充电特殊配方。
+    /// </summary>
+    /// <param name="recipes">计算器配方数组。</param>
+    /// <param name="item">当前物品；仅满蓄电器命中时写入。</param>
+    private static void AddAccumulatorChargeSpecialRecipes(JArray recipes, ItemProto item) {
+        //蓄电器->蓄电器满，两个公式，一个放下充电，一个通过能量枢纽充电
+        if (OrbitalRingEnable) {
+            //todo: 更新充电速率
+            if (item.ID == IOR蓄电器满) {
+                recipes.Add(new JObject {
+                    { "Type", -1 },
+                    { "Factories", new JArray(new[] { IOR蓄电器满 }) },
+                    { "Name", $"[充电]{item.name}-放置充电" },
+                    { "Items", new JArray(new[] { IOR蓄电器 }) },
+                    { "ItemCounts", new JArray(new[] { 1 }) },
+                    { "Results", new JArray(new[] { IOR蓄电器满 }) },
+                    { "ResultCounts", new JArray(new[] { 1 }) },
+                    { "TimeSpend", 21600 },
+                    { "Proliferator", 0 },
+                    { "IconName", ResolveIconName(item) },
+                });
+                recipes.Add(new JObject {
+                    { "Type", -1 },
+                    { "Factories", new JArray(new[] { I能量枢纽 }) },
+                    { "Name", $"[充电]{item.name}-能量枢纽充电" },
+                    { "Items", new JArray(new[] { IOR蓄电器 }) },
+                    { "ItemCounts", new JArray(new[] { 1 }) },
+                    { "Results", new JArray(new[] { IOR蓄电器满 }) },
+                    { "ResultCounts", new JArray(new[] { 1 }) },
+                    { "TimeSpend", 600 },
+                    { "Proliferator", 1 },
+                    { "IconName", ResolveIconName(item) },
+                });
+            } else if (item.ID == IOR蓄电器mk2满) {
+                recipes.Add(new JObject {
+                    { "Type", -1 },
+                    { "Factories", new JArray(new[] { IOR蓄电器mk2满 }) },
+                    { "Name", $"[充电]{item.name}-放置充电" },
+                    { "Items", new JArray(new[] { IOR蓄电器mk2 }) },
+                    { "ItemCounts", new JArray(new[] { 1 }) },
+                    { "Results", new JArray(new[] { IOR蓄电器mk2满 }) },
+                    { "ResultCounts", new JArray(new[] { 1 }) },
+                    { "TimeSpend", 21600 },
+                    { "Proliferator", 0 },
+                    { "IconName", ResolveIconName(item) },
+                });
+                recipes.Add(new JObject {
+                    { "Type", -1 },
+                    { "Factories", new JArray(new[] { I能量枢纽 }) },
+                    { "Name", $"[充电]{item.name}-能量枢纽充电" },
+                    { "Items", new JArray(new[] { IOR蓄电器mk2 }) },
+                    { "ItemCounts", new JArray(new[] { 1 }) },
+                    { "Results", new JArray(new[] { IOR蓄电器mk2满 }) },
+                    { "ResultCounts", new JArray(new[] { 1 }) },
+                    { "TimeSpend", 600 },
+                    { "Proliferator", 1 },
+                    { "IconName", ResolveIconName(item) },
+                });
+            }
+        } else {
+            if (item.ID == I蓄电器满) {
+                recipes.Add(new JObject {
+                    { "Type", -1 },
+                    { "Factories", new JArray(new[] { I蓄电器满 }) },
+                    { "Name", $"[充电]{item.name}-放置充电" },
+                    { "Items", new JArray(new[] { I蓄电器 }) },
+                    { "ItemCounts", new JArray(new[] { 1 }) },
+                    { "Results", new JArray(new[] { I蓄电器满 }) },
+                    { "ResultCounts", new JArray(new[] { 1 }) },
+                    { "TimeSpend", 21600 },
+                    { "Proliferator", 0 },
+                    { "IconName", ResolveIconName(item) },
+                });
+                recipes.Add(new JObject {
+                    { "Type", -1 },
+                    { "Factories", new JArray(new[] { I能量枢纽 }) },
+                    { "Name", $"[充电]{item.name}-能量枢纽充电" },
+                    { "Items", new JArray(new[] { I蓄电器 }) },
+                    { "ItemCounts", new JArray(new[] { 1 }) },
+                    { "Results", new JArray(new[] { I蓄电器满 }) },
+                    { "ResultCounts", new JArray(new[] { 1 }) },
+                    { "TimeSpend", 600 },
+                    { "Proliferator", 1 },
+                    { "IconName", ResolveIconName(item) },
+                });
+            }
+        }
+    }
+
+    /// <summary>
+    /// 在创世启用时追加燃料棒耗尽变为空燃料棒的特殊配方。
+    /// </summary>
+    /// <param name="recipes">计算器配方数组。</param>
+    /// <param name="item">当前物品；命中燃料棒表时写入。</param>
+    private static void AddFuelExhaustRecipe(JArray recipes, ItemProto item) {
+        if (GenesisBookEnable) {
+            int[] factoryIds = [
+                IGB燃料电池发电厂, IGB燃料电池发电厂, IGB燃料电池发电厂,
+                IGB裂变能源发电站, IGB裂变能源发电站, IGB裂变能源发电站,
+                IGB朱曦K型人造恒星, IGB朱曦K型人造恒星, IGB朱曦K型人造恒星,
+                IGB湛曦O型人造恒星, IGB湛曦O型人造恒星,
+            ];
+            int[] itemIds = [
+                I液氢燃料棒, IGB焦油燃料棒, IGB四氢双环戊二烯燃料棒,
+                IGB铀燃料棒, IGB钚燃料棒, IGBMOX燃料棒,
+                I氘核燃料棒, IGB氦三燃料棒, IGB氘氦混合燃料棒,
+                I反物质燃料棒, I奇异湮灭燃料棒,
+            ];
+            if (itemIds.Contains(item.ID)) {
+                int index = itemIds.ToList().IndexOf(item.ID);
+                recipes.Add(new JObject {
+                    { "Type", -1 },
+                    { "Factories", new JArray(new[] { factoryIds[index] }) },
+                    { "Name", $"[燃料棒耗尽]{item.name}" },
+                    { "Items", new JArray(new[] { item.ID }) },
+                    { "ItemCounts", new JArray(new[] { 1 }) },
+                    { "Results", new JArray(new[] { IGB空燃料棒 }) },
+                    { "ResultCounts", new JArray(new[] { 1 }) },
+                    { "TimeSpend", 60 * 60 },//暂时设为60s
+                    { "Proliferator", 1 },//暂时先设为1，以便正确计算增产剂使用数目
+                    { "IconName", ResolveIconName(item) },
+                });
+            }
+        }
+    }
+
+    /// <summary>
+    /// 追加计算器使用的虚拟工厂物品（伊卡洛斯、行星基地、巨构星际组装厂）。
+    /// </summary>
+    /// <param name="items">计算器物品数组。</param>
+    private static void AddVirtualFactoryItems(JArray items) {
+        items.Add(new JObject {
+            { "ID", I伊卡洛斯 },
+            { "Type", -1 },
+            { "Name", "伊卡洛斯" },
+            { "GridIndex", -1 },
+            { "IconName", "伊卡洛斯" },
+            { "WorkEnergyPerTick", 0.08 / 0.00006 },
+            { "Speed", 1.0 / 0.0001 },
+            { "MultipleOutput", 1 },
+            { "Space", 0 },
+        });
+        items.Add(new JObject {
+            { "ID", I行星基地 },
+            { "Type", -1 },
+            { "Name", "行星基地" },
+            { "GridIndex", -1 },
+            { "IconName", "行星基地" },
+            { "WorkEnergyPerTick", 0.0 / 0.00006 },
+            { "Speed", 1.0 / 0.0001 },
+            { "MultipleOutput", 1 },
+            { "Space", 0 },
+        });
+        if (MoreMegaStructureEnable) {
+            items.Add(new JObject {
+                { "ID", I巨构星际组装厂 },
+                { "Type", -1 },
+                { "Name", "巨构星际组装厂" },
+                { "GridIndex", -1 },
+                { "IconName", "巨构星际组装厂" },
+                { "WorkEnergyPerTick", 0.0 / 0.00006 },
+                { "Speed", 1.0 / 0.0001 },
+                { "MultipleOutput", 1 },
+                { "Space", 0 },
+            });
+        }
+    }
+
+    /// <summary>
+    /// 将计算器数据对象写成 UTF-8 JSON 文件。
+    /// </summary>
+    /// <param name="dirCalc">calc json 目录。</param>
+    /// <param name="modFullStr">完整模组名组合文件名主体。</param>
+    /// <param name="dataObj">待写出的 JSON 根对象。</param>
+    private static void WriteCalculatorJson(string dirCalc, string modFullStr, JObject dataObj) {
+        //保存json到本项目内。文件不复制到戴森球计算器，而是在AfterBuildEvent复制
+        string filePath = $@"{dirCalc}\{modFullStr}.json";
+        if (!File.Exists(filePath)) {
+            File.Create(filePath).Close();
+        }
+        using (var sw = new StreamWriter(filePath, false, Encoding.UTF8)) {
+            sw.WriteLine(dataObj.ToString(Formatting.Indented));
+        }
+        LogInfo($"已生成{filePath}");
+    }
+
+    /// <summary>
+    /// 导出 FE 物品价值表，按价值升序写入 itemValue.csv。
+    /// </summary>
+    /// <param name="baseDir">当前启用模组组合对应的导出目录。</param>
     private static void SaveFEItemValue(string baseDir) {
         //按照从小到大的顺序输出所有物品的价值
         string filePath = $@"{baseDir}\itemValue.csv";
@@ -769,6 +888,12 @@ public class GetDspData : BaseUnityPlugin {
         }
     }
 
+    /// <summary>
+    /// 为指定物品追加 FE 四塔分馏配方到计算器 recipes 数组。
+    /// 遍历顺序固定为 ERecipe.Cultivation/Analysis/Replication/Conversion（1/2/3/4）。
+    /// </summary>
+    /// <param name="recipes">计算器配方数组。</param>
+    /// <param name="item">输入物品原型。</param>
     private static void AddFracRecipes(JArray recipes, ItemProto item) {
         if (!item.GridIndexValid()) {
             return;
@@ -816,6 +941,11 @@ public class GetDspData : BaseUnityPlugin {
         }
     }
 
+    /// <summary>
+    /// 汇总全部计算器配方引用的输入、输出和工厂物品，并按物品 ID 顺序写入 items 数组。
+    /// </summary>
+    /// <param name="items">待补齐的计算器物品数组。</param>
+    /// <param name="recipes">已完成普通与特殊配方组装的计算器配方数组。</param>
     private static void AddReferencedItems(JArray items, JArray recipes) {
         HashSet<int> requiredItemIds = [];
         foreach (JObject recipe in recipes.OfType<JObject>()) {
@@ -826,11 +956,16 @@ public class GetDspData : BaseUnityPlugin {
 
         foreach (ItemProto item in LDB.items.dataArray.OrderBy(item => item.ID)) {
             if (requiredItemIds.Contains(item.ID)) {
-                addItem(item, items);
+                AddItem(item, items);
             }
         }
     }
 
+    /// <summary>
+    /// 把 JSON 整数数组中的有效 ID 合并到去重集合；非数组或空 token 不产生结果。
+    /// </summary>
+    /// <param name="target">接收 ID 的去重集合。</param>
+    /// <param name="token">可能为配方 Items、Results 或 Factories 的 JSON token。</param>
     private static void AddIds(HashSet<int> target, JToken token) {
         if (token is not JArray array) {
             return;
@@ -844,6 +979,11 @@ public class GetDspData : BaseUnityPlugin {
         }
     }
 
+    /// <summary>
+    /// 将 FE 输出配置投影为计算器 JSON 使用的 OutputID、OutputCount、SuccessRatio 数组。
+    /// </summary>
+    /// <param name="outputs">保持原顺序的 FE 输出配置列表。</param>
+    /// <returns>与输入列表逐项对应的计算器输出描述数组。</returns>
     private static JArray BuildOutputInfoArray(List<OutputInfo> outputs) {
         var arr = new JArray();
         foreach (var output in outputs) {
@@ -856,13 +996,28 @@ public class GetDspData : BaseUnityPlugin {
         return arr;
     }
 
-    // 动态图标资源使用 Assets/texpack/<name>，计算器侧需要的名称键就是最终图片名。
+    /// <summary>
+    /// 解析物品计算器图标名；动态 Assets/texpack 路径优先，否则使用 Sprite 名。
+    /// </summary>
+    /// <param name="proto">物品原型。</param>
+    /// <returns>不含扩展名的图标键；无可用名称时为空字符串。</returns>
     private static string ResolveIconName(ItemProto proto) =>
         ResolveIconName(proto?.IconPath, proto?.iconSprite?.name);
 
+    /// <summary>
+    /// 解析配方计算器图标名；动态 Assets/texpack 路径优先，否则使用 Sprite 名。
+    /// </summary>
+    /// <param name="proto">配方原型。</param>
+    /// <returns>不含扩展名的图标键；无可用名称时为空字符串。</returns>
     private static string ResolveIconName(RecipeProto proto) =>
         ResolveIconName(proto?.IconPath, proto?.iconSprite?.name);
 
+    /// <summary>
+    /// 从动态图标路径提取最终文件名；路径不匹配时回退到已加载 Sprite 名。
+    /// </summary>
+    /// <param name="iconPath">原型 IconPath；动态资源以 Assets/texpack/ 开头。</param>
+    /// <param name="fallbackIconName">非动态资源使用的 Sprite 名。</param>
+    /// <returns>计算器所需图标键；两个来源均不可用时为空字符串。</returns>
     private static string ResolveIconName(string iconPath, string fallbackIconName) {
         if (!string.IsNullOrEmpty(iconPath)
             && iconPath.StartsWith(DynamicIconPathPrefix, StringComparison.OrdinalIgnoreCase)) {
@@ -874,6 +1029,10 @@ public class GetDspData : BaseUnityPlugin {
         return fallbackIconName ?? "";
     }
 
+    /// <summary>
+    /// 处理 AfterBuildEvent 写入的单次图标请求，将当前 LDB 图标渲染为 PNG 并写出成功/失败 marker。
+    /// 请求文件不存在时保持无副作用返回。
+    /// </summary>
     private static void ExportRequestedIcons() {
         if (!File.Exists(IconExportRequestPath)) {
             return;
@@ -955,6 +1114,11 @@ public class GetDspData : BaseUnityPlugin {
         }
     }
 
+    /// <summary>
+    /// 收集低优先级目录中已存在的 PNG 文件名，用于避免当前模组重复导出。
+    /// </summary>
+    /// <param name="lowerPriorityDirs">目录路径 JSON 数组；缺失目录会被忽略。</param>
+    /// <returns>按大小写不敏感去重的无扩展名图标集合。</returns>
     private static HashSet<string> CollectLowerPriorityIcons(JArray lowerPriorityDirs) {
         HashSet<string> result = new(StringComparer.OrdinalIgnoreCase);
         if (lowerPriorityDirs == null) {
@@ -974,6 +1138,11 @@ public class GetDspData : BaseUnityPlugin {
         return result;
     }
 
+    /// <summary>
+    /// 从请求 JSON 中读取需要导出的图标键，并按大小写不敏感去重。
+    /// </summary>
+    /// <param name="iconNames">图标名 JSON 数组；为 null 时返回空集合。</param>
+    /// <returns>非空图标键集合。</returns>
     private static HashSet<string> CollectRequestedIcons(JArray iconNames) {
         HashSet<string> result = new(StringComparer.OrdinalIgnoreCase);
         if (iconNames == null) {
@@ -989,6 +1158,10 @@ public class GetDspData : BaseUnityPlugin {
         return result;
     }
 
+    /// <summary>
+    /// 按物品、配方、科技的 LDB 顺序枚举当前组合可见的图标键与 Sprite。
+    /// </summary>
+    /// <returns>允许名称或 Sprite 为空的图标候选序列，由调用方过滤。</returns>
     private static IEnumerable<(string iconName, Sprite sprite)> EnumerateCurrentIconSprites() {
         foreach (ItemProto item in LDB.items.dataArray) {
             yield return (ResolveIconName(item), item.iconSprite);
@@ -1001,6 +1174,12 @@ public class GetDspData : BaseUnityPlugin {
         }
     }
 
+    /// <summary>
+    /// 将 Sprite 的纹理子矩形渲染到 80x80 透明画布并编码为 PNG；始终恢复 RenderTexture 并释放临时资源。
+    /// </summary>
+    /// <param name="sprite">待导出的游戏图标 Sprite。</param>
+    /// <param name="outputPath">PNG 目标路径；父目录不存在时创建。</param>
+    /// <returns>成功写出非空 PNG 时为 <c>true</c>；渲染或写文件失败时记录警告并返回 <c>false</c>。</returns>
     private static bool TryWriteSpritePng(Sprite sprite, string outputPath) {
         Texture2D texture = null;
         Material material = null;
@@ -1050,6 +1229,11 @@ public class GetDspData : BaseUnityPlugin {
         }
     }
 
+    /// <summary>
+    /// 将平台非法文件名字符替换为下划线并移除首尾空白，供 PNG 文件名使用。
+    /// </summary>
+    /// <param name="fileName">原始图标键。</param>
+    /// <returns>可作为单个文件名片段的清理结果。</returns>
     private static string SanitizeFileName(string fileName) {
         foreach (char invalidChar in Path.GetInvalidFileNameChars()) {
             fileName = fileName.Replace(invalidChar, '_');
@@ -1057,7 +1241,12 @@ public class GetDspData : BaseUnityPlugin {
         return fileName.Trim();
     }
 
-    static void addItem(ItemProto proto, JArray add) {
+    /// <summary>
+    /// 将物品原型序列化为计算器 items 数组元素。
+    /// </summary>
+    /// <param name="proto">物品原型。</param>
+    /// <param name="add">目标 items 数组。</param>
+    static void AddItem(ItemProto proto, JArray add) {
         var obj = new JObject {
             { "ID", proto.ID },
             { "Type", (int)proto.Type },
@@ -1124,7 +1313,12 @@ public class GetDspData : BaseUnityPlugin {
         return 1;
     }
 
-    static void addTech(TechProto proto, JArray add) {
+    /// <summary>
+    /// 将科技原型序列化为计算器 techs 数组元素。
+    /// </summary>
+    /// <param name="proto">科技原型。</param>
+    /// <param name="add">目标 techs 数组。</param>
+    static void AddTech(TechProto proto, JArray add) {
         if (proto == null) {
             return;
         }
@@ -1146,9 +1340,11 @@ public class GetDspData : BaseUnityPlugin {
     }
 
     /// <summary>
-    /// TimeSpend：帧数，一秒对应60帧。也就是说TimeSpend为60时，表示1秒内可以完成制造。
+    /// 将游戏配方序列化为计算器 recipes 元素；TimeSpend 字段单位为帧，60 帧对应 1 秒。
     /// </summary>
-    static void addRecipe(RecipeProto proto, JArray add) {
+    /// <param name="proto">配方原型。</param>
+    /// <param name="add">目标 recipes 数组。</param>
+    static void AddRecipe(RecipeProto proto, JArray add) {
         if (!proto.GridIndexValid()) {
             LogWarning(
                 $"proto.GridIndex is not valid, proto: {proto.FName()}({proto.ID}), GridIndex: {proto.GridIndex}");
@@ -1185,20 +1381,27 @@ public class GetDspData : BaseUnityPlugin {
             add.Add(obj);
             return;
         }
-        int[] Factories;
+        int[] factories;
         try {
-            Factories = proto.getAcceptFactories();
+            factories = proto.getAcceptFactories();
         }
         catch (Exception ex) {
             //创世+巨构情况下，多功能集成组件被专门设计为抛出异常，因为canMiningByMS已添加对应配方
             LogWarning(ex.ToString());
             return;
         }
-        addRecipe(proto, add, Factories);
+        AddRecipe(proto, add, factories);
     }
 
-    static void addRecipe(RecipeProto proto, JArray add, int[] Factories, float TimeSpend = 0.0f) {
-        if (Factories == null || Factories.Length == 0) {
+    /// <summary>
+    /// 使用指定工厂列表写出计算器配方；timeSpend 为 0 时沿用原型 TimeSpend。
+    /// </summary>
+    /// <param name="proto">配方原型。</param>
+    /// <param name="add">目标 recipes 数组。</param>
+    /// <param name="factories">可接受该配方的工厂物品 ID 列表。</param>
+    /// <param name="timeSpend">覆盖用制造时间（帧）；0 表示使用原型值。</param>
+    static void AddRecipe(RecipeProto proto, JArray add, int[] factories, float timeSpend = 0.0f) {
+        if (factories == null || factories.Length == 0) {
             return;
         }
         if (proto.iconSprite == null) {
@@ -1220,11 +1423,11 @@ public class GetDspData : BaseUnityPlugin {
         //Proliferator=4：无，使用引力透镜
         bool flag2 = proto.productive;
         bool flag4 = proto.Type == ERecipeType.Fractionate;
-        if (TimeSpend == 0.0f) {
+        if (timeSpend == 0.0f) {
             var obj = new JObject {
                 { "ID", proto.ID },
                 { "Type", (int)proto.Type },
-                { "Factories", new JArray(Factories) },
+                { "Factories", new JArray(factories) },
                 { "Name", proto.name },
                 { "Items", new JArray(proto.Items) },
                 { "ItemCounts", new JArray(proto.ItemCounts) },
@@ -1239,13 +1442,13 @@ public class GetDspData : BaseUnityPlugin {
             var obj = new JObject {
                 { "ID", proto.ID },
                 { "Type", (int)proto.Type },
-                { "Factories", new JArray(Factories) },
+                { "Factories", new JArray(factories) },
                 { "Name", proto.name },
                 { "Items", new JArray(proto.Items) },
                 { "ItemCounts", new JArray(proto.ItemCounts) },
                 { "Results", new JArray(proto.Results) },
                 { "ResultCounts", new JArray(proto.ResultCounts) },
-                { "TimeSpend", TimeSpend },
+                { "TimeSpend", timeSpend },
                 { "Proliferator", flag4 || !flag2 ? 1 : 3 },
                 { "IconName", ResolveIconName(proto) },
             };
@@ -1253,134 +1456,4 @@ public class GetDspData : BaseUnityPlugin {
         }
     }
 
-    static RecipeProto CopyRecipeProto(RecipeProto ori) {
-        return new() {
-            ID = ori.ID,
-            Type = ori.Type,
-            name = ori.name,
-            Items = new List<int>(ori.Items).ToArray(),
-            ItemCounts = new List<int>(ori.ItemCounts).ToArray(),
-            Results = new List<int>(ori.Results).ToArray(),
-            ResultCounts = new List<int>(ori.ResultCounts).ToArray(),
-            TimeSpend = ori.TimeSpend,
-            productive = ori.productive,
-            _iconSprite = ori.iconSprite,
-        };
-    }
-
-    // private void test() {
-    //     string jsonText =
-    //         "[{\"a\": \"aaa\",\"b\": \"bbb\",\"c\": \"ccc\"},{\"a\": \"aa\",\"b\": \"bb\",\"c\": \"cc\"}]";
-    //     var arr = JArray.Parse(jsonText);
-    //     //需求，删除列表里的a节点的值为\"aa\"的项
-    //     IList<JToken> _ILIST = new List<JToken>();//存储需要删除的项
-    //     foreach (var item in arr)//查找某个字段与值
-    //     {
-    //         if (((JObject)item)["a"].Value<string>() == "aa") {
-    //             _ILIST.Add(item);
-    //         }
-    //     }
-    //     foreach (var item in _ILIST)//移除mJObj  有效
-    //     {
-    //         arr.Remove(item);
-    //     }
-    // }
-
-    // [HarmonyTranspiler]
-    // [HarmonyPatch(typeof(ItemComboBox), nameof(ItemComboBox.OnItemIndexChange))]
-    // static IEnumerable<CodeInstruction> ItemComboBox_OnItemIndexChange_Transpiler(
-    //     IEnumerable<CodeInstruction> instructions) {
-    //     var matcher = new CodeMatcher(instructions);
-    //     matcher.MatchForward(false, new CodeMatch(OpCodes.Ldarg_0));
-    //     //第1行ldarg.0不变
-    //     matcher.Advance(1);
-    //     //第2行改成call
-    //     matcher.SetAndAdvance(OpCodes.Call,
-    //         AccessTools.Method(typeof(GenesisBook), nameof(ItemComboBox_OnItemIndexChange_InsertMethod)));
-    //     //3-5行改成nop
-    //     while (matcher.Opcode != OpCodes.Stloc_0) {
-    //         matcher.SetAndAdvance(OpCodes.Nop, null);
-    //     }
-    //     //第6行stloc.0不变
-    //     return matcher.InstructionEnumeration();
-    // }
-    //
-    // public static ItemProto ItemComboBox_OnItemIndexChange_InsertMethod(ItemComboBox __instance) {
-    //     return __instance.selectIndex == -1
-    //         ? LDB.items.Select(IFE量子复制塔)
-    //         : __instance._items[__instance.selectIndex];
-    // }
-
-    // [HarmonyTranspiler]
-    // [HarmonyPatch(typeof(BuildTool_Path), nameof(BuildTool_Path.DeterminePreviews))]
-    // private static IEnumerable<CodeInstruction> test1(IEnumerable<CodeInstruction> instructions) {
-    //     var matcher = new CodeMatcher(instructions);
-    //     // matcher.MatchForward(false, new CodeMatch(OpCodes.Ldarg_0));
-    //     // //第1行ldarg.0不变
-    //     // matcher.Advance(1);
-    //     // //第2行改成call
-    //     // matcher.SetAndAdvance(OpCodes.Call,
-    //     //     AccessTools.Method(typeof(GenesisBook), nameof(ItemComboBox_OnItemIndexChange_InsertMethod)));
-    //     // //3-5行改成nop
-    //     // while (matcher.Opcode != OpCodes.Stloc_0) {
-    //     //     matcher.SetAndAdvance(OpCodes.Nop, null);
-    //     // }
-    //     // //第6行stloc.0不变
-    //     // return matcher.InstructionEnumeration();
-    //     matcher.MatchForward(false,
-    //         new CodeMatch(OpCodes.Call,
-    //             AccessTools.PropertyGetter(typeof(VFInput), nameof(VFInput._switchBeltsPath)))
-    //     );
-    //     int endPos = matcher.Clone().MatchForward(true,
-    //         new CodeMatch(OpCodes.Ldarg_0),
-    //         new CodeMatch(OpCodes.Ldc_I4_0),
-    //         new CodeMatch(OpCodes.Stfld,
-    //             AccessTools.Field(typeof(BuildTool_Path), nameof(BuildTool_Path.geodesic)))
-    //     ).Pos;
-    //     matcher.RemoveInstructionsInRange(matcher.Pos + 2, endPos);
-    //     matcher.SetAndAdvance(OpCodes.Ldarg_0, null);
-    //     matcher.SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(FractionatorLogic), nameof(test2)));
-    //     // matcher.RemoveInstructionsInRange(matcher.Pos, endPos);
-    //     // matcher.InsertAndAdvance(new CodeInstruction[] {
-    //     //     new CodeInstruction(OpCodes.Ldarg_0),
-    //     //     new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(FractionatorLogic), nameof(test2))),
-    //     // });
-    //     matcher.Advance(-5);
-    //
-    //     LogError($"len={matcher.Length}");
-    //     for (int i = 1840; i < 1860; i++) {
-    //         LogError($"{matcher.Opcode} {matcher.Operand}");
-    //         matcher.Advance(1);
-    //     }
-    //
-    //     return matcher.InstructionEnumeration();
-    // }
-    //
-    // public static void test2(BuildTool_Path path) {
-    //     LogError("test2 ok");
-    //     if (VFInput._switchBeltsPath) {
-    //         if (!path.geodesic) {
-    //             if (path.pathSuggest > 0) {
-    //                 path.geodesic = true;
-    //             }
-    //             if (path.pathAlternative == 1) {
-    //                 path.pathAlternative = 2;
-    //             }
-    //             else if (path.pathAlternative == 2) {
-    //                 path.pathAlternative = 1;
-    //                 path.geodesic = true;
-    //             }
-    //         }
-    //         else {
-    //             if (path.pathSuggest > 0)
-    //                 path.geodesic = false;
-    //             if (path.pathAlternative == 1)
-    //                 path.pathAlternative = 2;
-    //             else {
-    //                 path.pathAlternative = 1;
-    //                 path.geodesic = false;
-    //             }
-    //         }
-    //     }
-    // }
 }
