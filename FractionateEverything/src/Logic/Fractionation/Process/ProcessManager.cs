@@ -16,10 +16,6 @@ namespace FE.Logic.Fractionation.Process;
 /// 修改所有分馏塔的处理逻辑，以及对应的显示。
 /// </summary>
 public static partial class ProcessManager {
-    private delegate void FractionatorUpdateHandler(ref FractionatorComponent fractionator,
-        PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister,
-        ref uint result);
-
     /// <summary>
     /// 注册该分馏域对象需要的本地化文本。
     /// </summary>
@@ -130,8 +126,15 @@ public static partial class ProcessManager {
     }
 
     /// <summary>
-    /// 在原版分馏器更新前分发到 FE 分馏塔热路径。
+    /// 在原版分馏器更新前按建筑 ID 分发到 FE 四塔热路径，非 FE 塔回落原版更新。
     /// </summary>
+    /// <param name="fractionator">当前分馏器组件。</param>
+    /// <param name="factory">所属行星工厂。</param>
+    /// <param name="power">当前供电比例。</param>
+    /// <param name="signPool">实体图标/标记池。</param>
+    /// <param name="productRegister">产物统计寄存器。</param>
+    /// <param name="consumeRegister">消耗统计寄存器。</param>
+    /// <returns>分馏器工作状态码；FE 塔由热路径写入，原版塔透传 InternalUpdate。</returns>
     /// <remarks>
     /// <para>FE 分馏塔使用扩展状态保存全部主产物和副产物；原版字段只保留首个主产物兼容数据。</para>
     /// <para>具体分馏结果由 <see cref="BaseRecipe.GetOutputs"/> 及其批量实现结算。</para>
@@ -140,17 +143,28 @@ public static partial class ProcessManager {
         PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister) {
         long perfStart = GetFractionatorPerfTimestamp();
         int buildingID = factory.entityPool[fractionator.entityId].protoId;
-        FractionatorUpdateHandler handler = buildingID switch {
-            IFE培养塔 => UpdateCultivationTower,
-            IFE解析塔 => UpdateAnalysisTower,
-            IFE复制塔 => UpdateReplicationTower,
-            IFE转化塔 => UpdateConversionTower,
-            _ => null,
-        };
-        if (handler != null) {
+        // 四塔按建筑 ID 显式分发到对应泛型热路径；不经额外 handler 包装，也不用下标平行数组。
+        if (buildingID is IFE培养塔 or IFE解析塔 or IFE复制塔 or IFE转化塔) {
             try {
                 uint result = 0;
-                handler(ref fractionator, factory, power, signPool, productRegister, consumeRegister, ref result);
+                switch (buildingID) {
+                    case IFE培养塔:
+                        InternalUpdate<CultivationRecipe>(ref fractionator, factory, power, signPool,
+                            productRegister, consumeRegister, ref result, ERecipe.Cultivation);
+                        break;
+                    case IFE解析塔:
+                        InternalUpdate<AnalysisRecipe>(ref fractionator, factory, power, signPool,
+                            productRegister, consumeRegister, ref result, ERecipe.Analysis);
+                        break;
+                    case IFE复制塔:
+                        InternalUpdate<ReplicationRecipe>(ref fractionator, factory, power, signPool,
+                            productRegister, consumeRegister, ref result, ERecipe.Replication);
+                        break;
+                    case IFE转化塔:
+                        InternalUpdate<ConversionRecipe>(ref fractionator, factory, power, signPool,
+                            productRegister, consumeRegister, ref result, ERecipe.Conversion);
+                        break;
+                }
                 return result;
             }
             finally {
@@ -158,41 +172,13 @@ public static partial class ProcessManager {
             }
         }
 
-        //原版分馏塔不做处理
+        // 原版分馏塔不做处理。
         try {
             return fractionator.InternalUpdate(factory, power, signPool, productRegister, consumeRegister);
         }
         finally {
             RecordFractionatorPerf(FractionatorPerfUpdateVanilla, buildingID, GetFractionatorPerfElapsed(perfStart));
         }
-    }
-
-    private static void UpdateCultivationTower(ref FractionatorComponent fractionator,
-        PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister,
-        ref uint result) {
-        InternalUpdate<CultivationRecipe>(ref fractionator, factory, power, signPool, productRegister,
-            consumeRegister, ref result, ERecipe.Cultivation);
-    }
-
-    private static void UpdateAnalysisTower(ref FractionatorComponent fractionator,
-        PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister,
-        ref uint result) {
-        InternalUpdate<AnalysisRecipe>(ref fractionator, factory, power, signPool, productRegister,
-            consumeRegister, ref result, ERecipe.Analysis);
-    }
-
-    private static void UpdateReplicationTower(ref FractionatorComponent fractionator,
-        PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister,
-        ref uint result) {
-        InternalUpdate<ReplicationRecipe>(ref fractionator, factory, power, signPool, productRegister,
-            consumeRegister, ref result, ERecipe.Replication);
-    }
-
-    private static void UpdateConversionTower(ref FractionatorComponent fractionator,
-        PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister,
-        ref uint result) {
-        InternalUpdate<ConversionRecipe>(ref fractionator, factory, power, signPool, productRegister,
-            consumeRegister, ref result, ERecipe.Conversion);
     }
 
     /// <summary>

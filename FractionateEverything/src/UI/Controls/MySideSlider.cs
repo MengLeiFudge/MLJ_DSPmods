@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.UI.Foundation.RectTransformUtils;
@@ -59,17 +59,6 @@ public class MySideSlider : MonoBehaviour {
                 rectTrans2.localPosition.z);
         }
         sl.labelFormat = "G";
-
-        // var bg = sl.slider.transform.Find("Background")?.GetComponent<Image>();
-        // if (bg != null)
-        // {
-        //     bg.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
-        // }
-        // var fill = sl.slider.fillRect.GetComponent<Image>();
-        // if (fill != null)
-        // {
-        //     fill.color = new Color(1f, 1f, 1f, 0.28f);
-        // }
 
         sl.UpdateLabel();
 

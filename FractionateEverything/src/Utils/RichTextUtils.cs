@@ -6,23 +6,7 @@ namespace FE.Utils;
 /// 富文本颜色、字号与数值显示辅助方法。
 /// </summary>
 public static partial class Utils {
-    // /// <summary>
-    // /// 启用此patch后，可以得知红色是FF5D4CB7，蓝色是61D8FFB8
-    // /// </summary>
-    // [HarmonyPatch(typeof(UIItemTip), nameof(UIItemTip.SetTip))]
-    // [HarmonyPostfix]
-    // public static void LogColorGameUsed(ref UIItemTip __instance) {
-    //     var text = __instance.valuesText.text;
-    //     var color = __instance.valuesText.color;
-    //     LogError($"text={text} argb={Math.Round(color.r * 255.0)},{Math.Round(color.b * 255.0)},{Math.Round(color.g * 255.0)},{Math.Round(color.a * 255.0)}");
-    //     //log结果：
-    //     //text=<color=#FF5D4Cb7>不能手动制造</color> rgba=150,150,150,255
-    //     //text=310<color=#61D8FFB8> + 62</color> hp rgba=150,150,150,255
-    //     //可以看出，这是用富文本控制的（text.supportRichText=true）
-    //     //且text.color为浅灰色（rgba=150,150,150,255），富文本的红色是FF5D4CB7，蓝色是61D8FFB8
-    //     //同样原理，橙色是FD965ECC
-    // }
-
+    // Blue/Red/Orange 等值取自 DSP UIItemTip 富文本色码，不是 Text.color 本体。
     public static Color Gray = new(150 / 255f, 150 / 255f, 150 / 255f, 255 / 255f);
     public static Color Gray2 = new(255 / 255f, 255 / 255f, 255 / 255f, 102 / 255f);//UX使用的颜色
     public static Color Gray3 = new(178 / 255f, 178 / 255f, 178 / 255f, 168 / 255f);//UX使用的颜色

@@ -16,6 +16,9 @@ public class ConversionRecipe : BaseRecipe {
     /// <summary>
     /// 单路锁定时使用的固定目标方案。构造期预计算，运行期只查表。
     /// </summary>
+    /// <param name="sourceOutput">锁定目标对应的原始输出配置与统计所有者。</param>
+    /// <param name="isMainOutput">目标是否来自主产物列表。</param>
+    /// <param name="outputCount">按输入/输出价值换算的每次成功基础数量。</param>
     public readonly struct LockedOutputPlan(OutputInfo sourceOutput, bool isMainOutput, float outputCount) {
         /// <summary>
         /// 获取锁定输出对应的原始输出配置。
@@ -253,27 +256,37 @@ public class ConversionRecipe : BaseRecipe {
         lockedOutputPlansByItemId = BuildLockedOutputPlans(inputID, outputMain);
     }
 
+    /// <summary>
+    /// 按输出物品 ID 索引的构造期预计算单路锁定方案；唯一可锁候选不足两项时为空。
+    /// </summary>
     private readonly Dictionary<int, LockedOutputPlan> lockedOutputPlansByItemId;
     /// <summary>
     /// 判断该转化配方是否支持单路锁定输出。
     /// </summary>
     public bool SupportsLockedOutput => lockedOutputPlansByItemId.Count > 0;
 
+    /// <inheritdoc/>
     /// <summary>
     /// 判断指定主产物是否可作为当前转化配方的主路目标。
     /// </summary>
     public override bool SupportsMainOutputLock(int itemId) => TryGetLockedOutputPlan(itemId, out _);
 
+    /// <inheritdoc/>
     /// <summary>
     /// 执行单次完整分馏结算并写回主产物、副产物和输入保留结果。
     /// </summary>
     public override void GetOutputs(ref uint seed, float pointsBonus, float successBoost,
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, out List<ProductOutputInfo> outputs) {
-        if (TowerRuntimeModifierCache.IsMainOutputLockEnabled(ERecipe.Conversion)
-            && CurrentMainOutputTargetId != 0
-            && TryGetLockedOutputPlan(CurrentMainOutputTargetId, out LockedOutputPlan lockedPlan)) {
-            GetLockedOutput(ref seed, pointsBonus, successBoost, fluidInputIncAvg, ref fluidInputInc,
-                lockedPlan, out inputChange, out outputs);
+        if (TryGetActiveLockedSettlement(pointsBonus, successBoost, fluidInputIncAvg, out LockedSettlementArgs args)) {
+            FractionationOutcome outcome = SettleLockedOnce(ref seed, in args, ref fluidInputInc,
+                out inputChange, out int producedCount);
+            outputs = outcome switch {
+                FractionationOutcome.Destroyed => null,
+                FractionationOutcome.Produced => [
+                    new ProductOutputInfo(args.Plan.IsMainOutput, args.Plan.OutputID, producedCount)
+                ],
+                _ => ProcessManager.emptyOutputs,
+            };
             return;
         }
 
@@ -282,32 +295,35 @@ public class ConversionRecipe : BaseRecipe {
             fluidInputIncAvg, ref fluidInputInc, out inputChange, out outputs);
     }
 
+    /// <inheritdoc/>
     /// <summary>
     /// 执行单次轻量分馏结算，供运行热路径减少分配使用。
     /// </summary>
     public override FractionationOutcome GetOutputsFast(ref uint seed, float pointsBonus, float successBoost,
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, ProductOutputBuffer outputs) {
-        if (TowerRuntimeModifierCache.IsMainOutputLockEnabled(ERecipe.Conversion)
-            && CurrentMainOutputTargetId != 0
-            && TryGetLockedOutputPlan(CurrentMainOutputTargetId, out LockedOutputPlan lockedPlan)) {
-            return GetLockedOutputFast(ref seed, pointsBonus, successBoost, fluidInputIncAvg,
-                ref fluidInputInc, lockedPlan, out inputChange, outputs);
+        if (TryGetActiveLockedSettlement(pointsBonus, successBoost, fluidInputIncAvg, out LockedSettlementArgs args)) {
+            // 与 HEAD GetLockedOutputFast 一致：仅确认走锁定路径后才清空调用方缓冲。
+            outputs.Clear();
+            FractionationOutcome outcome = SettleLockedOnce(ref seed, in args, ref fluidInputInc,
+                out inputChange, out int producedCount);
+            if (outcome == FractionationOutcome.Produced) {
+                outputs.Add(args.Plan.IsMainOutput, args.Plan.OutputID, producedCount);
+            }
+            return outcome;
         }
 
         return base.GetOutputsFast(ref seed, pointsBonus, successBoost,
             fluidInputIncAvg, ref fluidInputInc, out inputChange, outputs);
     }
 
+    /// <inheritdoc/>
     /// <summary>
     /// 执行批量轻量分馏结算，供运行热路径合并多次处理。
     /// </summary>
     public override FractionationBatchResult GetOutputsBatchFast(ref uint seed, float pointsBonus, float successBoost,
         int batchCount, int fluidInputIncAvg, ref int fluidInputInc, ProductOutputBuffer outputs) {
-        if (TowerRuntimeModifierCache.IsMainOutputLockEnabled(ERecipe.Conversion)
-            && CurrentMainOutputTargetId != 0
-            && TryGetLockedOutputPlan(CurrentMainOutputTargetId, out LockedOutputPlan lockedPlan)) {
-            return GetLockedOutputBatchFast(ref seed, pointsBonus, successBoost, batchCount,
-                fluidInputIncAvg, ref fluidInputInc, lockedPlan, outputs);
+        if (TryGetActiveLockedSettlement(pointsBonus, successBoost, fluidInputIncAvg, out LockedSettlementArgs args)) {
+            return SettleLockedBatch(ref seed, in args, batchCount, ref fluidInputInc, outputs);
         }
 
         return base.GetOutputsBatchFast(ref seed, pointsBonus, successBoost, batchCount,
@@ -317,114 +333,144 @@ public class ConversionRecipe : BaseRecipe {
     /// <summary>
     /// 尝试取得指定物品对应的转化配方锁定输出方案。
     /// </summary>
+    /// <param name="itemId">候选主产物物品 ID。</param>
+    /// <param name="lockedPlan">命中时返回构造期预计算的锁定方案。</param>
+    /// <returns>该物品存在可用锁定方案时为 <c>true</c>。</returns>
     public bool TryGetLockedOutputPlan(int itemId, out LockedOutputPlan lockedPlan) =>
         lockedOutputPlansByItemId.TryGetValue(itemId, out lockedPlan);
 
-    private void GetLockedOutput(ref uint seed, float pointsBonus, float successBoost,
-        int fluidInputIncAvg, ref int fluidInputInc, LockedOutputPlan lockedPlan,
-        out int inputChange, out List<ProductOutputInfo> outputs) {
-        // 1. 损毁判定
-        if (GetRandDouble(ref seed) < DestroyRatio) {
-            inputChange = -1;
-            fluidInputInc -= fluidInputIncAvg;
-            outputs = null;
-            return;
-        }
+    /// <summary>
+    /// 锁定主路单次/批量结算共享的运行参数。
+    /// </summary>
+    /// <param name="plan">预计算的固定目标方案。</param>
+    /// <param name="pointsBonus">增产剂比例加成。</param>
+    /// <param name="successBoost">配方成功率加成。</param>
+    /// <param name="fluidInputIncAvg">单次输入对应的平均增产点。</param>
+    private readonly struct LockedSettlementArgs(
+        LockedOutputPlan plan,
+        float pointsBonus,
+        float successBoost,
+        int fluidInputIncAvg) {
+        /// <summary>固定目标方案。</summary>
+        public LockedOutputPlan Plan => plan;
+        /// <summary>单次输入对应的平均增产点。</summary>
+        public int FluidInputIncAvg => fluidInputIncAvg;
 
-        // 2. 成功判定：单路锁定将成功后的随机路径替换为固定目标方案。
-        float lockedSuccessRatio = SuccessRatio * (1 + pointsBonus) * (1 + successBoost);
-        if (GetRandDouble(ref seed) < lockedSuccessRatio) {
-            int countReal = RollOutputCount(ref seed, lockedPlan.OutputCount);
-
-            if (countReal > 0) {
-                lockedPlan.SourceOutput.AddOutputCount(countReal);
-                inputChange = -1;
-                fluidInputInc -= fluidInputIncAvg;
-
-                outputs = [new ProductOutputInfo(lockedPlan.IsMainOutput, lockedPlan.OutputID, countReal)];
-                return;
-            }
-
-            // 与 BaseRecipe 保持一致：成功但产出数为 0，视为损毁。
-            inputChange = -1;
-            fluidInputInc -= fluidInputIncAvg;
-            outputs = null;
-            return;
-        }
-
-        // 3. 无变化 -> 直通输出
-        inputChange = -1;
-        fluidInputInc -= fluidInputIncAvg;
-        outputs = ProcessManager.emptyOutputs;
+        /// <summary>
+        /// 计算锁定主路成功概率。
+        /// </summary>
+        /// <param name="successRatio">配方基础成功率。</param>
+        /// <returns>含增产与成功率加成后的锁定成功概率。</returns>
+        public float GetLockedSuccessRatio(float successRatio) =>
+            successRatio * (1 + pointsBonus) * (1 + successBoost);
     }
 
-    private FractionationOutcome GetLockedOutputFast(ref uint seed, float pointsBonus, float successBoost,
-        int fluidInputIncAvg, ref int fluidInputInc, LockedOutputPlan lockedPlan,
-        out int inputChange, ProductOutputBuffer outputs) {
-        outputs.Clear();
+    /// <summary>
+    /// 判断当前是否启用有效主路锁定，并组装结算参数。
+    /// </summary>
+    /// <param name="pointsBonus">增产剂比例加成。</param>
+    /// <param name="successBoost">配方成功率加成。</param>
+    /// <param name="fluidInputIncAvg">单次输入对应的平均增产点。</param>
+    /// <param name="args">组装后的锁定结算参数。</param>
+    /// <returns>可走锁定路径时为 true。</returns>
+    private bool TryGetActiveLockedSettlement(float pointsBonus, float successBoost, int fluidInputIncAvg,
+        out LockedSettlementArgs args) {
+        if (TowerRuntimeModifierCache.IsMainOutputLockEnabled(ERecipe.Conversion)
+            && CurrentMainOutputTargetId != 0
+            && TryGetLockedOutputPlan(CurrentMainOutputTargetId, out LockedOutputPlan lockedPlan)) {
+            args = new LockedSettlementArgs(lockedPlan, pointsBonus, successBoost, fluidInputIncAvg);
+            return true;
+        }
+
+        args = default;
+        return false;
+    }
+
+    /// <summary>
+    /// 执行单次锁定主路结算；先完成 RNG/产出统计，再写输入变化与增产点。
+    /// </summary>
+    /// <param name="seed">随机种子。</param>
+    /// <param name="args">锁定结算共享参数。</param>
+    /// <param name="fluidInputInc">塔内剩余增产点；仅在判定与统计完成后扣减。</param>
+    /// <param name="inputChange">输入变化；锁定路径在状态写回时恒为 -1。</param>
+    /// <param name="producedCount">成功时的产出件数；其余结果为 0。</param>
+    /// <returns>损毁、产出或直通结果。</returns>
+    private FractionationOutcome SettleLockedOnce(ref uint seed, in LockedSettlementArgs args,
+        ref int fluidInputInc, out int inputChange, out int producedCount) {
+        producedCount = 0;
+        FractionationOutcome outcome;
 
         // 1. 损毁判定
         if (GetRandDouble(ref seed) < DestroyRatio) {
-            inputChange = -1;
-            fluidInputInc -= fluidInputIncAvg;
-            return FractionationOutcome.Destroyed;
+            outcome = FractionationOutcome.Destroyed;
         }
-
         // 2. 成功判定：单路锁定将成功后的随机路径替换为固定目标方案。
-        float lockedSuccessRatio = SuccessRatio * (1 + pointsBonus) * (1 + successBoost);
-        if (GetRandDouble(ref seed) < lockedSuccessRatio) {
-            int countReal = RollOutputCount(ref seed, lockedPlan.OutputCount);
-
+        else if (GetRandDouble(ref seed) < args.GetLockedSuccessRatio(SuccessRatio)) {
+            int countReal = RollOutputCount(ref seed, args.Plan.OutputCount);
             if (countReal > 0) {
-                lockedPlan.SourceOutput.AddOutputCount(countReal);
-                inputChange = -1;
-                fluidInputInc -= fluidInputIncAvg;
-
-                outputs.Add(lockedPlan.IsMainOutput, lockedPlan.OutputID, countReal);
-                return FractionationOutcome.Produced;
+                args.Plan.SourceOutput.AddOutputCount(countReal);
+                producedCount = countReal;
+                outcome = FractionationOutcome.Produced;
+            } else {
+                // 与 BaseRecipe 保持一致：成功但产出数为 0，视为损毁。
+                outcome = FractionationOutcome.Destroyed;
             }
-
-            inputChange = -1;
-            fluidInputInc -= fluidInputIncAvg;
-            return FractionationOutcome.Destroyed;
+        }
+        // 3. 无变化 -> 直通输出
+        else {
+            outcome = FractionationOutcome.PassThrough;
         }
 
-        // 3. 无变化 -> 直通输出
+        // 判定与统计写入完成后再改输入状态，保持与原 GetLockedOutput* 异常顺序一致。
         inputChange = -1;
-        fluidInputInc -= fluidInputIncAvg;
-        return FractionationOutcome.PassThrough;
+        fluidInputInc -= args.FluidInputIncAvg;
+        return outcome;
     }
 
-    private FractionationBatchResult GetLockedOutputBatchFast(ref uint seed, float pointsBonus, float successBoost,
-        int batchCount, int fluidInputIncAvg, ref int fluidInputInc, LockedOutputPlan lockedPlan,
-        ProductOutputBuffer outputs) {
+    /// <summary>
+    /// 执行批量锁定主路结算。
+    /// </summary>
+    /// <param name="seed">随机种子。</param>
+    /// <param name="args">锁定结算共享参数。</param>
+    /// <param name="batchCount">本批处理次数。</param>
+    /// <param name="fluidInputInc">塔内剩余增产点；在产出统计写入后按移除次数扣减。</param>
+    /// <param name="outputs">批量产物缓冲。</param>
+    /// <returns>批量结算结果。</returns>
+    private FractionationBatchResult SettleLockedBatch(ref uint seed, in LockedSettlementArgs args,
+        int batchCount, ref int fluidInputInc, ProductOutputBuffer outputs) {
         outputs.Clear();
 
         int destroyedCount = RollBinomialApprox(ref seed, batchCount, DestroyRatio);
         int aliveCount = batchCount - destroyedCount;
-        float lockedSuccessRatio = SuccessRatio * (1 + pointsBonus) * (1 + successBoost);
-        int rolledSuccessCount = RollBinomialApprox(ref seed, aliveCount, lockedSuccessRatio);
+        int rolledSuccessCount = RollBinomialApprox(ref seed, aliveCount, args.GetLockedSuccessRatio(SuccessRatio));
         int passThroughCount = aliveCount - rolledSuccessCount;
-        int producedSuccessCount = AddRolledLockedOutput(ref seed, outputs, lockedPlan, rolledSuccessCount);
+        int producedSuccessCount = AddRolledLockedOutput(ref seed, outputs, args.Plan, rolledSuccessCount);
 
         destroyedCount += rolledSuccessCount - producedSuccessCount;
         int inputRemoveCount = destroyedCount + passThroughCount + producedSuccessCount;
-        fluidInputInc -= fluidInputIncAvg * inputRemoveCount;
+        fluidInputInc -= args.FluidInputIncAvg * inputRemoveCount;
         if (fluidInputInc < 0) {
             fluidInputInc = 0;
         }
 
-        FractionationBatchResult result = new() {
+        return new FractionationBatchResult {
             InputRemoveCount = inputRemoveCount,
             ConsumedRegisterCount = destroyedCount + producedSuccessCount,
             SuccessCount = producedSuccessCount,
             DestroyedCount = destroyedCount,
             PassThroughCount = passThroughCount,
-            PassThroughInc = fluidInputIncAvg * passThroughCount,
+            PassThroughInc = args.FluidInputIncAvg * passThroughCount,
         };
-        return result;
     }
 
+    /// <summary>
+    /// 将批量命中的锁定输出写入缓冲，并累计配方产出统计。
+    /// </summary>
+    /// <param name="seed">随机种子。</param>
+    /// <param name="outputs">产物缓冲。</param>
+    /// <param name="lockedPlan">锁定目标方案。</param>
+    /// <param name="outputHits">批量成功命中次数。</param>
+    /// <returns>实际计入成功的次数；产出为 0 时返回 0。</returns>
     private static int AddRolledLockedOutput(ref uint seed, ProductOutputBuffer outputs,
         LockedOutputPlan lockedPlan, int outputHits) {
         if (outputHits <= 0) {
@@ -443,44 +489,43 @@ public class ConversionRecipe : BaseRecipe {
         return baseCount > 0 ? outputHits : totalCount;
     }
 
+    /// <summary>
+    /// 为可锁定主产物预计算等价值固定输出方案。
+    /// </summary>
+    /// <param name="inputId">输入物品 ID。</param>
+    /// <param name="outputMain">主产物列表。</param>
+    /// <returns>可锁定方案表；唯一可锁定候选不足两项时为空。</returns>
     private static Dictionary<int, LockedOutputPlan> BuildLockedOutputPlans(int inputId,
         List<OutputInfo> outputMain) {
-        Dictionary<int, LockedOutputPlan> plans = [];
+        // 先收集唯一可锁定 ID；不足两项时立即返回，避免无谓的等价值计算。
         HashSet<int> lockableOutputIds = [];
-        CollectLockableOutputIds(lockableOutputIds, outputMain);
-        if (lockableOutputIds.Count <= 1) {
-            return plans;
-        }
-
-        AddLockedOutputPlans(plans, inputId, outputMain, true);
-        return plans;
-    }
-
-    private static void CollectLockableOutputIds(HashSet<int> lockableOutputIds, List<OutputInfo> outputs) {
-        foreach (OutputInfo output in outputs) {
+        foreach (OutputInfo output in outputMain) {
             if (IsLockableOutputValue(output.OutputID)) {
                 lockableOutputIds.Add(output.OutputID);
             }
         }
-    }
-
-    private static void AddLockedOutputPlans(Dictionary<int, LockedOutputPlan> plans, int inputId,
-        List<OutputInfo> outputs, bool isMainOutput) {
-        foreach (OutputInfo output in outputs) {
-            if (plans.ContainsKey(output.OutputID)) {
-                continue;
-            }
-
-            if (!IsLockableOutputValue(output.OutputID)) {
-                continue;
-            }
-
-            float outputValue = itemValue[output.OutputID];
-            float lockedOutputCount = itemValue[inputId] / outputValue;
-            plans.Add(output.OutputID, new(output, isMainOutput, lockedOutputCount));
+        if (lockableOutputIds.Count <= 1) {
+            return [];
         }
+
+        Dictionary<int, LockedOutputPlan> plans = [];
+        foreach (OutputInfo output in outputMain) {
+            if (plans.ContainsKey(output.OutputID) || !lockableOutputIds.Contains(output.OutputID)) {
+                continue;
+            }
+
+            float lockedOutputCount = itemValue[inputId] / itemValue[output.OutputID];
+            // 主路锁定只处理 OutputMain，因此 isMainOutput 固定为 true。
+            plans.Add(output.OutputID, new(output, true, lockedOutputCount));
+        }
+        return plans;
     }
 
+    /// <summary>
+    /// 判断输出物品价值是否落在可锁定区间。
+    /// </summary>
+    /// <param name="outputId">输出物品 ID。</param>
+    /// <returns>价值有效且非 maxValue 占位时为 true。</returns>
     private static bool IsLockableOutputValue(int outputId) {
         float outputValue = itemValue[outputId];
         return outputValue > 0f && outputValue < maxValue;

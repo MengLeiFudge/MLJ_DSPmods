@@ -14,6 +14,9 @@ namespace FE.Logic.Items;
 /// FE 物品原型、翻译和物品价值注册入口。
 /// </summary>
 public static class ItemManager {
+    /// <summary>
+    /// 注册残片、六阶段解析数据、通用原胚与四种定向塔原胚的名称和说明本地化键。
+    /// </summary>
     public static void AddTranslations() {
         Register("残片", "Archive Fragment", "残片");
         Register("I残片",
@@ -36,6 +39,12 @@ public static class ItemManager {
         RegisterTowerProtoTranslations("转化塔原胚", "Conversion Tower Proto", "a Conversion Tower", "转化塔");
     }
 
+    /// <summary>
+    /// 注册一种矩阵阶段解析数据的名称与说明，并保持名称键和 <c>I{name}</c> 说明键成对。
+    /// </summary>
+    /// <param name="name">中文名称键，同时作为中文显示名。</param>
+    /// <param name="englishName">英文显示名。</param>
+    /// <param name="stageName">插入中英文说明模板的阶段名称文本。</param>
     private static void RegisterAnalysisDataTranslations(string name, string englishName, string stageName) {
         Register(name, englishName, name);
         Register($"I{name}",
@@ -43,6 +52,13 @@ public static class ItemManager {
             $"从{stageName}矩阵中解析出的实体数据；上传后会积累{stageName}阶段的协议检索机会。");
     }
 
+    /// <summary>
+    /// 注册一种定向塔原胚的名称与说明，并保持名称键和 <c>I{name}</c> 说明键成对。
+    /// </summary>
+    /// <param name="name">中文名称键，同时作为中文显示名。</param>
+    /// <param name="englishName">英文原胚显示名。</param>
+    /// <param name="englishTowerName">插入英文培养结果说明的塔名短语。</param>
+    /// <param name="towerName">插入中文谱系与培养结果说明的塔名。</param>
     private static void RegisterTowerProtoTranslations(string name, string englishName, string englishTowerName,
         string towerName) {
         Register(name, englishName, name);
@@ -79,19 +95,19 @@ public static class ItemManager {
         // recipe.NonProductive = true 表示增产剂仅能加速，不能增产
         // RecipeUnlocked Patch 用于调整配方解锁状态（Item直接用UnlockKey=-1，就不需要patch item的）
 
-        RegisterCivilizationItem(IFE残片, "残片", "I残片", 101,
+        RegisterInternalItem(IFE残片, "残片", "I残片", 101,
             Color.gray, Color.black, "cpfragment");
-        RegisterCivilizationItem(IFE电磁解析数据, "电磁解析数据", "I电磁解析数据", 102,
+        RegisterInternalItem(IFE电磁解析数据, "电磁解析数据", "I电磁解析数据", 102,
             new Color(0.32f, 0.72f, 1f), new Color(0.04f, 0.14f, 0.28f), "emanalysis");
-        RegisterCivilizationItem(IFE能量解析数据, "能量解析数据", "I能量解析数据", 103,
+        RegisterInternalItem(IFE能量解析数据, "能量解析数据", "I能量解析数据", 103,
             new Color(1f, 0.52f, 0.18f), new Color(0.26f, 0.08f, 0.02f), "energyanalysis");
-        RegisterCivilizationItem(IFE结构解析数据, "结构解析数据", "I结构解析数据", 104,
+        RegisterInternalItem(IFE结构解析数据, "结构解析数据", "I结构解析数据", 104,
             new Color(0.86f, 0.68f, 1f), new Color(0.16f, 0.06f, 0.28f), "structureanalysis");
-        RegisterCivilizationItem(IFE信息解析数据, "信息解析数据", "I信息解析数据", 105,
+        RegisterInternalItem(IFE信息解析数据, "信息解析数据", "I信息解析数据", 105,
             new Color(0.36f, 0.96f, 0.78f), new Color(0.02f, 0.20f, 0.12f), "infoanalysis");
-        RegisterCivilizationItem(IFE引力解析数据, "引力解析数据", "I引力解析数据", 106,
+        RegisterInternalItem(IFE引力解析数据, "引力解析数据", "I引力解析数据", 106,
             new Color(0.76f, 0.82f, 1f), new Color(0.10f, 0.10f, 0.30f), "gravityanalysis");
-        RegisterCivilizationItem(IFE宇宙解析数据, "宇宙解析数据", "I宇宙解析数据", 107,
+        RegisterInternalItem(IFE宇宙解析数据, "宇宙解析数据", "I宇宙解析数据", 107,
             new Color(1f, 0.92f, 0.42f), new Color(0.28f, 0.20f, 0.04f), "universeanalysis");
         RegisterTowerProto(IFE培养塔原胚, "培养塔原胚", "I培养塔原胚", 201,
             "Assets/fe/frac-proto-normal", CultivationTower.color, "cultivation-proto");
@@ -105,6 +121,17 @@ public static class ItemManager {
             "Assets/fe/frac-proto-directional", Color.red, "common-proto");
     }
 
+    /// <summary>
+    /// 注册分馏塔原胚物品原型。
+    /// </summary>
+    /// <param name="itemId">物品原型 ID。</param>
+    /// <param name="name">本地化名称键。</param>
+    /// <param name="description">本地化描述键。</param>
+    /// <param name="gridOffset">分馏页内网格偏移。</param>
+    /// <param name="iconPath">图标资源路径。</param>
+    /// <param name="color">默认图标主色。</param>
+    /// <param name="iconTag">图标资源标签。</param>
+    /// <returns>已注册的原胚物品原型。</returns>
     private static ItemProto RegisterTowerProto(int itemId, string name, string description, int gridOffset,
         string iconPath, Color color, string iconTag) {
         ItemProto item = ProtoRegistry.RegisterItem(itemId, name, description, iconPath,
@@ -115,12 +142,17 @@ public static class ItemManager {
         return item;
     }
 
-    private static void RegisterCivilizationItem(int itemId, string name, string description, int gridOffset,
-        Color iconColor, Color iconBackgroundColor, string iconTag) {
-        RegisterFeInternalItem(itemId, name, description, gridOffset, iconColor, iconBackgroundColor, iconTag);
-    }
-
-    private static void RegisterFeInternalItem(int itemId, string name, string description, int gridOffset,
+    /// <summary>
+    /// 注册残片与解析数据等 FE 内部文明资源物品。
+    /// </summary>
+    /// <param name="itemId">物品原型 ID。</param>
+    /// <param name="name">本地化名称键。</param>
+    /// <param name="description">本地化描述键。</param>
+    /// <param name="gridOffset">分馏页内网格偏移。</param>
+    /// <param name="iconColor">默认图标前景色。</param>
+    /// <param name="iconBackgroundColor">默认图标背景色。</param>
+    /// <param name="iconTag">图标资源标签。</param>
+    private static void RegisterInternalItem(int itemId, string name, string description, int gridOffset,
         Color iconColor, Color iconBackgroundColor, string iconTag) {
         ItemProto item = ProtoRegistry.RegisterItem(itemId, name, description,
             "Assets/fe/copy-essence", tab分馏 * 1000 + gridOffset, 100, EItemType.Material,
@@ -316,9 +348,6 @@ public static class ItemManager {
                 foreach (int itemId in outputIDs) {
                     if (unitValue < itemValue[itemId]) {
                         itemValue[itemId] = unitValue;
-                        // ItemProto item = LDB.items.Select(itemId);
-                        // LogDebug($"更新物品{item.name}({itemId})价值为{unitValue:F3}("
-                        //          + $"{inputValue / outputUnits:F3}+{adjustedTimeValue / outputUnits:F3})");
                         if (OrbitalRing.Enable) {
                             if (itemId == IOR蓄电器) {
                                 itemValue[IOR蓄电器满] = unitValue * 2;
@@ -378,9 +407,6 @@ public static class ItemManager {
             foreach (int itemId in outputIDs) {
                 if (unitValue < itemValue[itemId]) {
                     itemValue[itemId] = unitValue;
-                    // ItemProto item = LDB.items.Select(itemId);
-                    // LogDebug($"更新物品{item.name}({itemId})价值为{unitValue:F3}("
-                    //          + $"{inputValue / outputUnits:F3}+{adjustedTimeValue / outputUnits:F3})");
                     changed = true;
                 }
             }
@@ -619,7 +645,6 @@ public static class ItemManager {
                 }
             }
             itemToMatrix[item.ID] = topMatrixID;
-            // LogDebug($"物品{item.name}({item.ID})归类到{LDB.items.Select(topMatrixID).name}({topMatrixID})");
         }
         SetCivilizationResourceMatrixStages();
     }

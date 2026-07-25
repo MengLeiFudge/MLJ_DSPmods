@@ -24,7 +24,7 @@ feedback. I would be appreciated.
 
 ### [Fractionate Everything 万物分馏](https://github.com/MengLeiFudge/MLJ_DSPmods/tree/master/FractionateEverything)
 
-包含交互塔、资源塔、转化塔和解析塔，以及以矩阵解析数据、协议恢复和远古科技树组织的大量分馏配方；物流交互站可以把生产线直接接入数据中心。
+包含培养塔、解析塔、复制塔和转化塔，以及以矩阵解析数据、协议恢复和远古科技树组织的大量分馏配方；物流交互站可以把生产线直接接入数据中心。
 
 Featuring four specialized fractionators, protocol recovery driven by matrix analysis data, an ancient technology
 tree, and Interaction Stations that connect production lines directly to the data centre.

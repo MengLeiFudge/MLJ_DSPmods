@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -75,7 +75,6 @@ public class MyImageButton : MonoBehaviour {
         var tankWindow = UIRoot.instance.uiGame.tankWindow;
         mouseOverColor = tankWindow.closeMouseOverColor;
         pressColor = tankWindow.closePressColor;
-        // normalColor = tankWindow.closeNormalColor;
 
         // 创建一个新的GameObject
         _baseObject = new("my-image-button-base");

@@ -77,7 +77,7 @@ public class LayoutGrid : LayoutNode {
             : GridLayoutRuntime.CreateContainerRect(ObjectName, parent, outerRect);
         OnBuilt?.Invoke(root);
         LayoutRect contentRect = new LayoutRect(0f, 0f, outerRect.Width, logicalHeight).Inset(Padding);
-        GridLayoutRuntime.BuildChildren(wnd, root, contentRect, Rows, Cols, RowGap, ColumnGap, Children);
+        GridLayoutRuntime.BuildChildren(wnd, root, contentRect, this);
         return root;
     }
 }

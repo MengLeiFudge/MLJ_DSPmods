@@ -98,7 +98,6 @@ public static class RecipeManager {
         } else {
             recipeMatrixList.Add(recipe);
         }
-        // LogInfo($"Add {inputID}({LDB.items.Select(inputID).name}) to {recipeType.GetName()}.");
     }
 
     /// <summary>
