@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using FE.Logic.Progression.Presentation;
 using UnityEngine;
 using static FE.Utils.Utils;
 
@@ -10,9 +11,19 @@ namespace FE.Logic.Progression;
 /// 旧 TFE 科技 ID 继续作为存档、配方解锁和兼容状态使用，但不再作为玩家可研究的主脑科技树节点展示。
 /// </summary>
 public static class CivilizationRecoveryManager {
-    private const long StarterSignalStartTick = 720L;
-    private const long StarterSignalTipIntervalTicks = 1800L;
+    /// <summary>
+    /// 新存档开始后显示异常信号的最早游戏 tick；300 tick 约为 5 秒。
+    /// </summary>
+    private const long StarterSignalStartTick = 300L;
+
+    /// <summary>
+    /// 启动套件信号沿出生点切线方向偏移的地表弧长，单位为米。
+    /// </summary>
     private const float StarterSignalDistance = 160f;
+
+    /// <summary>
+    /// 玩家触发启动套件回收的直线距离上限，单位为米。
+    /// </summary>
     private const float StarterSignalRecoverRadius = 35f;
 
     private static readonly int[] matrixStageTechIds = [
@@ -64,7 +75,6 @@ public static class CivilizationRecoveryManager {
     private static readonly bool[] logisticsInteractionRecovered = new bool[logisticsInteractionTechIds.Length];
     private static bool starterKitRecovered;
     private static bool starterSignalNotified;
-    private static long nextStarterSignalTipTick;
 
     public static bool HasDataCenterCommunication =>
         GameMain.history != null
@@ -102,6 +112,10 @@ public static class CivilizationRecoveryManager {
         RecoverLogisticsInteractionProtocols();
     }
 
+    /// <summary>
+    /// 导入文明恢复状态，并在读取前清理上一存档的常驻信号对象。
+    /// </summary>
+    /// <param name="r">当前存档的文明恢复块读取器。</param>
     public static void Import(BinaryReader r) {
         IntoOtherSave();
         r.ReadBlocks(
@@ -126,9 +140,6 @@ public static class CivilizationRecoveryManager {
                 }
             })
         );
-        if (starterSignalNotified) {
-            nextStarterSignalTipTick = GameMain.gameTick + StarterSignalTipIntervalTicks;
-        }
         SyncRecoveredFlagsFromHistory();
     }
 
@@ -151,12 +162,15 @@ public static class CivilizationRecoveryManager {
         );
     }
 
+    /// <summary>
+    /// 清空存档级文明恢复状态并销毁常驻信号 HUD，防止切档后泄漏旧目标。
+    /// </summary>
     public static void IntoOtherSave() {
         starterKitRecovered = false;
         starterSignalNotified = false;
-        nextStarterSignalTipTick = 0L;
         Array.Clear(matrixStageSupplyRecovered, 0, matrixStageSupplyRecovered.Length);
         Array.Clear(logisticsInteractionRecovered, 0, logisticsInteractionRecovered.Length);
+        StarterSignalHud.DestroyForSaveSwitch();
     }
 
     public static void ShowProtocolRecoveredTip(int techId) {
@@ -165,8 +179,12 @@ public static class CivilizationRecoveryManager {
             : "旧文明协议恢复提示");
     }
 
+    /// <summary>
+    /// 推进启动套件信号、常驻 HUD 与近距离回收生命周期，不改变套件位置或回收半径。
+    /// </summary>
     private static void RecoverStarterKit() {
         if (starterKitRecovered) {
+            StarterSignalHud.Hide();
             return;
         }
 
@@ -180,27 +198,32 @@ public static class CivilizationRecoveryManager {
                 UnlockInternalRecoveryTech(TFE分馏塔原胚);
             }
             starterKitRecovered = true;
+            StarterSignalHud.Hide();
             return;
         }
 
         if (GameMain.gameTick < StarterSignalStartTick) {
+            StarterSignalHud.Hide();
             return;
         }
 
         if (!TryGetStarterSignalPosition(out Vector3 signalPosition)) {
-            ShowStarterSignalTip("异常旧文明信号出生星提示");
+            NotifyStarterSignalOnce(onBirthPlanet: false, distance: 0f);
+            StarterSignalHud.ShowReturnToBirth();
             return;
         }
 
         float distance = Vector3.Distance(GameMain.mainPlayer.position, signalPosition);
+        StarterSignalHud.ShowSignal(GameMain.mainPlayer.position, signalPosition);
         if (distance > StarterSignalRecoverRadius) {
-            ShowStarterSignalDistanceTip(distance);
+            NotifyStarterSignalOnce(onBirthPlanet: true, distance: distance);
             return;
         }
 
         bool recovered = UnlockInternalRecoveryTech(TFE分馏数据中心);
         recovered |= UnlockInternalRecoveryTech(TFE分馏塔原胚);
         starterKitRecovered = true;
+        StarterSignalHud.Hide();
         if (recovered) {
             ShowRecoveryTip("旧文明启动套件回收提示");
         }
@@ -233,18 +256,28 @@ public static class CivilizationRecoveryManager {
         return true;
     }
 
-    private static void ShowStarterSignalDistanceTip(float distance) {
-        ShowStarterSignalTip(string.Format("异常旧文明信号距离提示".Translate(), Mathf.CeilToInt(distance)));
-    }
+    /// <summary>
+    /// 首次探测到启动信号时弹一次有声音的实时提示；之后由常驻 HUD 持续指示方向与距离。
+    /// <see cref="starterSignalNotified"/> 表示是否已弹过提示，存档语义保持兼容，不会重复播放声音。
+    /// </summary>
+    /// <param name="onBirthPlanet">玩家当前是否位于出生星。</param>
+    /// <param name="distance">出生星上玩家与信号点的直线距离，仅在 <paramref name="onBirthPlanet"/> 为 true 时有效。</param>
+    private static void NotifyStarterSignalOnce(bool onBirthPlanet, float distance) {
+        if (starterSignalNotified) {
+            return;
+        }
 
-    private static void ShowStarterSignalTip(string text) {
-        if (starterSignalNotified && GameMain.gameTick < nextStarterSignalTipTick) {
+        // ShowRecoveryTip 在 UI 未激活时会静默返回；这里同样等待 UI 就绪再消耗首次提示机会，
+        // 避免 tick 300 恰好落在菜单/暂停时把唯一提示吞掉。
+        if (UIRoot.instance?.uiGame?.generalTips == null || !UIRoot.instance.uiGame.active) {
             return;
         }
 
         starterSignalNotified = true;
-        nextStarterSignalTipTick = GameMain.gameTick + StarterSignalTipIntervalTicks;
-        ShowRecoveryTip(text);
+        string text = onBirthPlanet
+            ? string.Format("异常旧文明信号距离提示".Translate(), Mathf.CeilToInt(distance))
+            : "异常旧文明信号出生星提示".Translate();
+        ShowRecoveryTipText(text);
     }
 
     private static void RecoverMatrixStageSupplies() {
@@ -335,10 +368,22 @@ public static class CivilizationRecoveryManager {
         }
     }
 
-    private static void ShowRecoveryTip(string key) {
+    /// <summary>
+    /// 翻译指定本地化键并显示恢复实时提示。
+    /// </summary>
+    /// <param name="translationKey">尚未翻译的本地化键。</param>
+    private static void ShowRecoveryTip(string translationKey) {
+        ShowRecoveryTipText(translationKey.Translate());
+    }
+
+    /// <summary>
+    /// 显示已完成翻译和格式化的恢复实时提示。
+    /// </summary>
+    /// <param name="text">可直接显示的最终文本。</param>
+    private static void ShowRecoveryTipText(string text) {
         if (UIRoot.instance?.uiGame?.generalTips == null || !UIRoot.instance.uiGame.active) {
             return;
         }
-        UIRealtimeTip.Popup(key.Translate(), true, 2);
+        UIRealtimeTip.Popup(text, true, 2);
     }
 }

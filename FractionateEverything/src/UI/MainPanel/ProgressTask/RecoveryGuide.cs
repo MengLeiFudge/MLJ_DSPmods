@@ -1,9 +1,7 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using BepInEx.Configuration;
 using FE.Logic.DataCenter;
 using FE.Logic.Progression;
-using FE.UI.Controls;
 using FE.UI.Foundation.Window;
 using FE.UI.Layout;
 using FE.UI.MainPanel.Theme;
@@ -16,136 +14,154 @@ using static FE.Utils.Utils;
 namespace FE.UI.MainPanel.ProgressTask;
 
 /// <summary>
-/// 旧文明恢复手册页面：把 FE 前期非原版操作拆成可回看、可确认的步骤清单。
+/// 旧文明恢复手册页面：上方“当前目标”按真实里程碑动态显示，下方为始终可回看的静态三组搭建步骤。
+/// 不含任何手动确认控件、Manual/Auto 类型列或伪完成状态；进度全部由真实游戏状态自动判定。
 /// </summary>
 public static class RecoveryGuide {
-    private const int ManualStepCount = 5;
+    /// <summary>
+    /// 旧版手动步骤存档块标签。仅用于读取并忽略旧存档内容；新导出不再写入该块。
+    /// </summary>
     private const string ManualStepsBlockTag = "ManualStepsV1";
 
-    private static readonly GuideStep[] initialProtoSteps = [
-        new("恢复手册步骤-启动套件", "恢复手册步骤说明-启动套件", StepKind.Auto, HasStarterKit),
-        new("恢复手册步骤-打开面板", "恢复手册步骤说明-打开面板", StepKind.Auto, HasDataCenterAccess),
-        new("恢复手册步骤-放置首塔", "恢复手册步骤说明-放置首塔", StepKind.Auto, HasFirstCultivationTowerReady),
-        new("恢复手册步骤-左右成环", "恢复手册步骤说明-左右成环", StepKind.Manual, manualIndex: 0),
-        new("恢复手册步骤-临时箱子", "恢复手册步骤说明-临时箱子", StepKind.Manual, manualIndex: 1),
-        new("恢复手册步骤-输入原胚", "恢复手册步骤说明-输入原胚", StepKind.Manual, manualIndex: 2),
-        new("恢复手册步骤-获得第二塔", "恢复手册步骤说明-获得第二塔", StepKind.Manual, manualIndex: 3),
-        new("恢复手册步骤-接入上传", "恢复手册步骤说明-接入上传", StepKind.Manual, manualIndex: 4),
-        new("恢复手册步骤-恢复协议", "恢复手册步骤说明-恢复协议", StepKind.Auto, HasItemInteractionProtocol),
+    /// <summary>
+    /// 上方当前目标卡片：三个真实里程碑对应的标题与说明翻译键。
+    /// </summary>
+    private static readonly string[] milestoneHintKeys = [
+        "恢复手册-目标-启动套件",
+        "恢复手册-目标-培养闭环",
+        "恢复手册-目标-协议已恢复",
     ];
 
+    /// <summary>
+    /// 上方当前目标卡片三个真实里程碑对应的详细说明翻译键。
+    /// </summary>
+    private static readonly string[] milestoneDetailKeys = [
+        "恢复手册-当前说明-启动套件",
+        "恢复手册-当前说明-培养闭环",
+        "恢复手册-当前说明-协议已恢复",
+    ];
+
+    /// <summary>
+    /// 下方静态搭建步骤的三个分组：组标题键 + 组内项目符号步骤标题键。
+    /// 不随里程碑变化，始终完整可回看。
+    /// </summary>
+    private static readonly (string groupKey, string[] bulletKeys)[] bottomGroups = [
+        ("恢复手册-分组-启动准备",
+            new[] { "恢复手册步骤-启动套件", "恢复手册步骤-打开面板" }),
+        ("恢复手册-分组-培养闭环",
+            new[] {
+                "恢复手册步骤-放置首塔",
+                "恢复手册步骤-左右成环",
+                "恢复手册步骤-临时箱子",
+                "恢复手册步骤-输入原胚",
+                "恢复手册步骤-获得第二塔",
+            }),
+        ("恢复手册-分组-协议接入",
+            new[] { "恢复手册步骤-接入上传", "恢复手册步骤-恢复协议" }),
+    ];
+
+    /// <summary>
+    /// 下方主卡内除总标题外的行数：每个分组贡献 1 行组标题 + 其项目符号行数。
+    /// </summary>
+    private static readonly int bottomRowCount = ComputeBottomRowCount();
+
+    /// <summary>
+    /// 后续章节卡片使用的短标题键；刻意保持单行以避免多语言换行重叠。
+    /// </summary>
     private static readonly string[] laterChapterKeys = [
-        "恢复手册章节-数据中心",
-        "恢复手册章节-时隧检索",
-        "恢复手册章节-塔型注册",
-        "恢复手册章节-物流交互",
-        "恢复手册章节-解析"
+        "恢复手册章节短-数据中心",
+        "恢复手册章节短-协议检索",
+        "恢复手册章节短-塔型注册",
+        "恢复手册章节短-物流交互",
+        "恢复手册章节短-文明解析",
     ];
 
-    private static readonly bool[] manualStepCompleted = new bool[ManualStepCount];
-
+    /// <summary>
+    /// 当前恢复手册页的根节点，用于避免离屏刷新。
+    /// </summary>
     private static RectTransform tab;
+
+    /// <summary>
+    /// 页面页头标题和摘要文本引用。
+    /// </summary>
     private static PageLayout.HeaderRefs header;
-    private static Text txtCurrentHint;
-    private static Text txtCurrentDetail;
-    private static readonly Text[] stepStateTexts = new Text[initialProtoSteps.Length];
-    private static readonly Text[] stepTitleTexts = new Text[initialProtoSteps.Length];
-    private static readonly Text[] stepDetailTexts = new Text[initialProtoSteps.Length];
-    private static readonly MyCheckBox[] manualChecks = new MyCheckBox[ManualStepCount];
-    private static readonly Text[] chapterTexts = new Text[laterChapterKeys.Length];
-    private static Text txtFooter;
 
-    private readonly struct GuideStep(
-        string titleKey,
-        string detailKey,
-        StepKind kind,
-        Func<bool> isCompleted = null,
-        int manualIndex = -1) {
-        public readonly string TitleKey = titleKey;
-        public readonly string DetailKey = detailKey;
-        public readonly StepKind Kind = kind;
-        public readonly Func<bool> IsCompleted = isCompleted;
-        public readonly int ManualIndex = manualIndex;
-    }
+    /// <summary>
+    /// 当前真实里程碑的短标题文本。
+    /// </summary>
+    private static Text currentHintText;
 
-    private enum StepKind {
-        Auto,
-        Manual,
-    }
+    /// <summary>
+    /// 当前真实里程碑的操作说明文本。
+    /// </summary>
+    private static Text currentDetailText;
 
+    /// <summary>
+    /// 说明自动目标与静态步骤职责边界的页脚文本。
+    /// </summary>
+    private static Text footerText;
+
+    /// <summary>
+    /// 注册恢复手册的当前目标、静态分组步骤和短章节标题文本。
+    /// </summary>
     public static void AddTranslations() {
         Register("恢复手册", "Recovery Manual", "恢复手册");
         Register("恢复手册页头摘要",
-            "Checklist for old-civilization recovery, first cultivation tower loop, and later system chapters.",
-            "旧文明恢复、培养塔原胚培养和后续系统章节的操作清单。");
+            "Old-civilization recovery manual: current objective, cultivation loop, and later chapters.",
+            "旧文明恢复手册：当前目标、培养闭环与后续章节。");
         Register("恢复手册-当前目标", "Current Objective", "当前目标");
-        Register("恢复手册-原胚培养", "Initial Proto Cultivation", "初始原胚培养");
         Register("恢复手册-后续章节", "Later Chapters", "后续章节");
-        Register("恢复手册-自动检测", "Auto", "自动");
-        Register("恢复手册-玩家确认", "Confirm", "确认");
-        Register("恢复手册-确认完成", "Mark Done", "确认完成");
-        Register("恢复手册-已完成", "Done", "已完成");
-        Register("恢复手册-未完成", "Pending", "未完成");
-        Register("恢复手册-状态", "State", "状态");
-        Register("恢复手册-类型", "Type", "类型");
-        Register("恢复手册-步骤", "Step", "步骤");
-        Register("恢复手册-当前目标完成", "Initial loop complete. Continue with retrieval and tower registration.",
-            "第一轮闭环已完成。接下来继续进行文明协议恢复和塔型注册。");
+        Register("恢复手册-原胚培养", "Initial Proto Cultivation", "初始原胚培养");
         Register("恢复手册-页脚",
-            "Manual confirmations only record guide progress. They do not unlock production, grant items, or replace real recovery conditions.",
-            "手动确认只记录指引进度，不解锁生产、不发放物品，也不替代真实恢复条件。");
+            "Current Objective follows real game state; the grouped steps below remain available for review.",
+            "当前目标跟随真实游戏状态；下方分组步骤始终可回看。");
+
+        Register("恢复手册-目标-启动套件", "Recover Starter Kit", "回收启动套件");
+        Register("恢复手册-目标-培养闭环", "Build Cultivation Loop", "搭建培养闭环");
+        Register("恢复手册-目标-协议已恢复", "Protocol Restored", "培养塔协议已恢复");
+
+        Register("恢复手册-当前说明-启动套件",
+            "Follow the abnormal old-civilization signal on the birth planet, recover the starter kit, then open the data centre.",
+            "前往出生星上的异常旧文明信号点回收启动套件，再打开分馏数据中心。");
+        Register("恢复手册-当前说明-培养闭环",
+            "Build the first cultivation loop so a Cultivation Tower can be produced and uploaded.",
+            "搭建第一个培养闭环，产出并上传一座培养塔。");
+        Register("恢复手册-当前说明-协议已恢复",
+            "The cultivation tower protocol is restored. Continue with protocol recovery and tower registration.",
+            "培养塔协议已恢复，可继续进行协议恢复与塔型注册。");
+
+        Register("恢复手册-分组-启动准备", "Starter Preparation", "启动准备");
+        Register("恢复手册-分组-培养闭环", "Cultivation Loop", "培养闭环");
+        Register("恢复手册-分组-协议接入", "Protocol Integration", "协议接入");
 
         Register("恢复手册步骤-启动套件", "Recover the starter kit", "回收启动套件");
-        Register("恢复手册步骤说明-启动套件",
-            "Find the abnormal old-civilization signal and recover the communication module, Cultivation Tower, and common protos.",
-            "前往异常旧文明信号点，回收通信模块、培养塔和通用原胚。");
         Register("恢复手册步骤-打开面板", "Open the data centre", "打开分馏数据中心");
-        Register("恢复手册步骤说明-打开面板",
-            "Use Shift+F after communication is established. This manual remains available for review.",
-            "通信建立后按 Shift+F 打开数据中心；本手册可随时回看。");
         Register("恢复手册步骤-放置首塔", "Place the first Cultivation Tower", "放置第一个培养塔");
-        Register("恢复手册步骤说明-放置首塔",
-            "Use the starter Cultivation Tower. It is the first machine that can cultivate tower protos.",
-            "使用启动套件中的培养塔；它是第一台能培养塔型原胚的设备。");
         Register("恢复手册步骤-左右成环", "Connect left and right ports into a loop", "左右口连接成环");
-        Register("恢复手册步骤说明-左右成环",
-            "Build a belt loop on the left and right ports. The loop keeps the proto cycling through the tower.",
-            "在左右口之间接一圈传送带，让原胚持续经过培养塔。");
         Register("恢复手册步骤-临时箱子", "Send the front output to a temporary box", "正面输出先接临时箱子");
-        Register("恢复手册步骤说明-临时箱子",
-            "Use a temporary box to catch the first produced Cultivation Tower before the upload tower exists.",
-            "先用临时箱子接住第一台产出的培养塔，因为此时还没有第二台上传塔。");
         Register("恢复手册步骤-输入原胚", "Feed common protos into the loop", "向环输入通用原胚");
-        Register("恢复手册步骤说明-输入原胚",
-            "Common protos randomly cultivate into one of four tower types. Keep each result and continue until a Cultivation Tower is produced.",
-            "通用原胚会随机培养为四种塔型之一。保留每次产物并继续培养，直到获得培养塔。");
         Register("恢复手册步骤-获得第二塔", "Produce and place the second Cultivation Tower", "获得并放置第二个培养塔");
-        Register("恢复手册步骤说明-获得第二塔",
-            "Place the cultivated Cultivation Tower next to the line as the upload tower; other tower results remain useful for later production.",
-            "把培养得到的培养塔放到产线旁作为上传塔；其他塔型产物保留用于后续生产。");
         Register("恢复手册步骤-接入上传", "Remove the box and feed the second tower front port", "拆箱并接入第二塔正面");
-        Register("恢复手册步骤说明-接入上传",
-            "Remove the temporary box, then send the first tower output into the second tower front port.",
-            "拆掉临时箱子，把第一台塔的产物接到第二台塔的正面入口。");
         Register("恢复手册步骤-恢复协议", "Recover the cultivation tower protocol", "恢复培养塔协议");
-        Register("恢复手册步骤说明-恢复协议",
-            "Uploading a Cultivation Tower registers the protocol and enables item interaction through the data centre.",
-            "上传培养塔会注册协议，并恢复数据中心物品交互能力。");
 
-        Register("恢复手册章节-数据中心", "Data centre storage: upload, extract, and view current stock.",
-            "数据中心库存：上传、提取和查看当前储量。");
-        Register("恢复手册章节-时隧检索", "Protocol recovery: upload analysis data, then spend retrieval opportunities to discover and complete recipes.",
-            "协议恢复：上传解析数据，再消耗检索机会发现并补全配方协议。");
-        Register("恢复手册章节-塔型注册", "Tower registration: upload each produced tower to recover its protocol.",
-            "塔型注册：上传各类产出的分馏塔，恢复对应协议。");
-        Register("恢复手册章节-物流交互", "Interaction stations: automate data-centre upload and download after the first loop.",
-            "物流交互站：第一轮闭环后，自动化数据中心上传和下载。");
-        Register("恢复手册章节-解析", "Civilization analysis: turn matrices into physical analysis data for protocol recovery.",
-            "文明解析：将矩阵转为实体解析数据，用于恢复配方协议。");
+        Register("恢复手册章节短-数据中心", "Data Centre", "数据中心");
+        Register("恢复手册章节短-协议检索", "Protocol Retrieval", "协议检索");
+        Register("恢复手册章节短-塔型注册", "Tower Registration", "塔型注册");
+        Register("恢复手册章节短-物流交互", "Logistics Interaction", "物流交互");
+        Register("恢复手册章节短-文明解析", "Civilization Analysis", "文明解析");
     }
 
+    /// <summary>
+    /// 恢复手册当前没有可配置项；保留入口以满足主面板页面合同。
+    /// </summary>
+    /// <param name="configFile">FE 配置文件，本页不读取。</param>
     public static void LoadConfig(ConfigFile configFile) { }
 
+    /// <summary>
+    /// 创建当前目标、后续章节、静态培养步骤和页脚四个区域。
+    /// </summary>
+    /// <param name="wnd">提供原版风格控件克隆能力的主窗口。</param>
+    /// <param name="trans">承载恢复手册页的根节点。</param>
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         tab = trans;
         BuildLayout(wnd, tab,
@@ -163,14 +179,15 @@ public static class RecoveryGuide {
                         children: [
                             CardTitleNode("恢复手册-当前目标", pos: (0, 0),
                                 objectName: "recovery-current-title"),
-                            TextNode("", 15, Orange, wrap: true, onBuilt: text => {
-                                    txtCurrentHint = text;
+                            TextNode("", 15, Orange, wrap: true,
+                                onBuilt: text => {
+                                    currentHintText = text;
                                     text.supportRichText = true;
                                 },
                                 pos: (1, 0), objectName: "recovery-current-hint"),
                             TextNode("", 13, anchor: TextAnchor.UpperLeft, wrap: true,
                                 onBuilt: text => {
-                                    txtCurrentDetail = text;
+                                    currentDetailText = text;
                                     text.supportRichText = true;
                                 },
                                 pos: (2, 0), objectName: "recovery-current-detail"),
@@ -179,17 +196,15 @@ public static class RecoveryGuide {
                         rows: BuildLaterChapterRows(),
                         rowGap: 4f,
                         children: BuildLaterChapterNodes()),
-                    ScrollableContentCard(680f, pos: (2, 0), span: (1, 2),
-                        objectName: "recovery-proto-scroll", strong: true,
-                        rows: BuildStepRows(),
-                        cols: [Px(56f), Px(150f), 1, Px(128f)],
-                        rowGap: 8f,
-                        columnGap: 10f,
-                        children: BuildStepNodes()),
+                    ContentCard(pos: (2, 0), span: (1, 2), objectName: "recovery-proto-card", strong: true,
+                        rows: BuildMainRows(),
+                        rowGap: 4f,
+                        children: BuildMainChildren()),
                     FooterCard(pos: (3, 0), span: (1, 2), objectName: "recovery-footer-card",
                         children: [
-                            TextNode("", 12, Gray, wrap: true, onBuilt: text => {
-                                    txtFooter = text;
+                            TextNode("", 12, Gray, wrap: true,
+                                onBuilt: text => {
+                                    footerText = text;
                                     text.supportRichText = true;
                                 },
                                 pos: (0, 0), objectName: "recovery-footer-text"),
@@ -198,74 +213,52 @@ public static class RecoveryGuide {
         UpdateUI();
     }
 
+    /// <summary>
+    /// 仅刷新由真实游戏状态驱动的当前目标；静态分组步骤始终保持完整可见。
+    /// </summary>
     public static void UpdateUI() {
         if (tab == null || !tab.gameObject.activeSelf) {
             return;
         }
 
+        int milestone = CurrentMilestone();
+
         header.Title.text = "恢复手册".Translate().WithColor(Orange);
         header.Summary.text = "恢复手册页头摘要".Translate().WithColor(White);
-        txtFooter.text = "恢复手册-页脚".Translate().WithColor(Gray);
-
-        int firstIncompleteIndex = GetFirstIncompleteStepIndex();
-        if (firstIncompleteIndex < 0) {
-            txtCurrentHint.text = "恢复手册-当前目标完成".Translate().WithColor(Green);
-            txtCurrentDetail.text = "恢复手册步骤说明-恢复协议".Translate().WithColor(White);
-        } else {
-            GuideStep step = initialProtoSteps[firstIncompleteIndex];
-            txtCurrentHint.text = step.TitleKey.Translate().WithColor(Orange);
-            txtCurrentDetail.text = step.DetailKey.Translate().WithColor(White);
-        }
-
-        for (int i = 0; i < initialProtoSteps.Length; i++) {
-            GuideStep step = initialProtoSteps[i];
-            bool completed = IsStepCompleted(step);
-            stepStateTexts[i].text = GetStepStateText(completed);
-            stepTitleTexts[i].text = step.TitleKey.Translate().WithColor(completed ? Green : Orange);
-            stepDetailTexts[i].text = step.DetailKey.Translate().WithColor(White);
-            if (step.Kind == StepKind.Manual && IsManualIndexValid(step.ManualIndex)) {
-                MyCheckBox check = manualChecks[step.ManualIndex];
-                if (check != null && check.Checked != manualStepCompleted[step.ManualIndex]) {
-                    check.Checked = manualStepCompleted[step.ManualIndex];
-                }
-            }
-        }
-
-        for (int i = 0; i < chapterTexts.Length; i++) {
-            chapterTexts[i].text = laterChapterKeys[i].Translate().WithColor(White);
-        }
+        footerText.text = "恢复手册-页脚".Translate().WithColor(Gray);
+        currentHintText.text = milestoneHintKeys[milestone].Translate();
+        currentDetailText.text = milestoneDetailKeys[milestone].Translate();
     }
 
+    /// <summary>
+    /// 读取旧版 ManualStepsV1 块并忽略其内容；不保留任何手动完成状态。
+    /// </summary>
+    /// <param name="r">存档读取器。</param>
     public static void Import(BinaryReader r) {
         IntoOtherSave();
         r.ReadBlocks(
-            (ManualStepsBlockTag, br => {
-                int count = Math.Min(Math.Max(0, br.ReadInt32()), manualStepCompleted.Length);
-                for (int i = 0; i < count; i++) {
-                    manualStepCompleted[i] = br.ReadBoolean();
-                }
-                for (int i = count; i < manualStepCompleted.Length; i++) {
-                    manualStepCompleted[i] = false;
-                }
-            })
+            (ManualStepsBlockTag, _ => { })
         );
     }
 
+    /// <summary>
+    /// 新导出不再写入 ManualStepsV1 块（写入空块列表），维持页面存档接口合同。
+    /// </summary>
+    /// <param name="w">存档写入器。</param>
     public static void Export(BinaryWriter w) {
-        w.WriteBlocks(
-            (ManualStepsBlockTag, bw => {
-                bw.Write(manualStepCompleted.Length);
-                foreach (bool completed in manualStepCompleted) {
-                    bw.Write(completed);
-                }
-            })
-        );
+        w.WriteBlocks();
     }
 
+    /// <summary>
+    /// 切档时重置手册运行态；当前实现无任何可变手动状态，保留为空实现以维持页面接口合同。
+    /// </summary>
     public static void IntoOtherSave() {
-        Array.Clear(manualStepCompleted, 0, manualStepCompleted.Length);
     }
 
+    /// <summary>
+    /// 构造后续章节的固定单行轨道，避免文本换行挤入相邻章节。
+    /// </summary>
+    /// <returns>标题行与五个短章节行的轨道。</returns>
     private static LayoutTrack[] BuildLaterChapterRows() {
         var rows = new LayoutTrack[laterChapterKeys.Length + 1];
         rows[0] = Px(28f);
@@ -275,138 +268,109 @@ public static class RecoveryGuide {
         return rows;
     }
 
+    /// <summary>
+    /// 构造后续章节标题和项目符号文本节点。
+    /// </summary>
+    /// <returns>与 <see cref="BuildLaterChapterRows"/> 一一对应的节点。</returns>
     private static LayoutNode[] BuildLaterChapterNodes() {
         var nodes = new LayoutNode[laterChapterKeys.Length + 1];
         nodes[0] = CardTitleNode("恢复手册-后续章节", pos: (0, 0), objectName: "recovery-chapters-title");
         for (int i = 0; i < laterChapterKeys.Length; i++) {
-            int index = i;
-            nodes[i + 1] = TextNode("", 12, White, wrap: true,
+            string key = laterChapterKeys[i];
+            nodes[i + 1] = TextNode("", 14, White, wrap: false,
                 onBuilt: text => {
-                    chapterTexts[index] = text;
                     text.supportRichText = true;
+                    text.text = $"• {key.Translate()}";
                 },
                 pos: (i + 1, 0), objectName: $"recovery-chapter-{i}");
         }
         return nodes;
     }
 
-    private static LayoutTrack[] BuildStepRows() {
-        var rows = new LayoutTrack[initialProtoSteps.Length + 2];
-        rows[0] = Px(30f);
-        rows[1] = Px(24f);
-        for (int i = 2; i < rows.Length; i++) {
-            rows[i] = Px(56f);
+    /// <summary>
+    /// 构造静态培养步骤卡的总标题、三组标题和九个项目符号轨道。
+    /// </summary>
+    /// <returns>总高 364px、可放入 381px 内容区的固定轨道。</returns>
+    private static LayoutTrack[] BuildMainRows() {
+        var rows = new LayoutTrack[bottomRowCount + 1];
+        rows[0] = Px(28f);
+        for (int i = 1; i < rows.Length; i++) {
+            rows[i] = Px(24f);
         }
         return rows;
     }
 
-    private static LayoutNode[] BuildStepNodes() {
-        var nodes = new LayoutNode[4 + initialProtoSteps.Length * 4];
-        int offset = 0;
-        nodes[offset++] = CardTitleNode("恢复手册-原胚培养", pos: (0, 0), span: (1, 4),
-            objectName: "recovery-proto-title");
-        nodes[offset++] = TextNode("恢复手册-状态", 12, Gray, anchor: TextAnchor.MiddleCenter,
-            pos: (1, 0), objectName: "recovery-step-header-state");
-        nodes[offset++] = TextNode("恢复手册-类型", 12, Gray, anchor: TextAnchor.MiddleCenter,
-            pos: (1, 1), objectName: "recovery-step-header-kind");
-        nodes[offset++] = TextNode("恢复手册-步骤", 12, Gray,
-            pos: (1, 2), objectName: "recovery-step-header-title");
-
-        for (int i = 0; i < initialProtoSteps.Length; i++) {
-            int stepIndex = i;
-            GuideStep step = initialProtoSteps[i];
-            int row = i + 2;
-            nodes[offset++] = TextNode("", 13, anchor: TextAnchor.MiddleCenter,
-                onBuilt: text => {
-                    stepStateTexts[stepIndex] = text;
-                    text.supportRichText = true;
-                },
-                pos: (row, 0), objectName: $"recovery-step-state-{i}");
-            nodes[offset++] = TextNode(GetStepKindText(step), 12, Gray, anchor: TextAnchor.MiddleCenter,
-                pos: (row, 1), objectName: $"recovery-step-kind-{i}");
-            nodes[offset++] = Grid(pos: (row, 2), rows: [Px(22f), 1], rowGap: 2f,
-                children: [
-                    TextNode("", 13, Orange, wrap: true, onBuilt: text => {
-                            stepTitleTexts[stepIndex] = text;
-                            text.supportRichText = true;
-                        },
-                        pos: (0, 0), objectName: $"recovery-step-title-{i}"),
-                    TextNode("", 12, White, anchor: TextAnchor.UpperLeft, wrap: true,
-                        onBuilt: text => {
-                            stepDetailTexts[stepIndex] = text;
-                            text.supportRichText = true;
-                        },
-                        pos: (1, 0), objectName: $"recovery-step-detail-{i}"),
-                ]);
-            nodes[offset++] = BuildActionNode(step, row, i);
+    /// <summary>
+    /// 构造始终可回看的三组静态培养步骤，并缩进项目符号形成原版目标式层级。
+    /// </summary>
+    /// <returns>与 <see cref="BuildMainRows"/> 一一对应的节点。</returns>
+    private static LayoutNode[] BuildMainChildren() {
+        var nodes = new LayoutNode[bottomRowCount + 1];
+        nodes[0] = CardTitleNode("恢复手册-原胚培养", 16, pos: (0, 0),
+            objectName: "recovery-proto-master-title");
+        int index = 1;
+        int row = 1;
+        for (int g = 0; g < bottomGroups.Length; g++) {
+            string groupKey = bottomGroups[g].groupKey;
+            nodes[index] = CardTitleNode(groupKey, pos: (row, 0), objectName: $"recovery-proto-group-{g}");
+            index++;
+            row++;
+            foreach (string bulletKey in bottomGroups[g].bulletKeys) {
+                string key = bulletKey;
+                nodes[index] = TextNode("", 14, White, wrap: false,
+                    onBuilt: text => {
+                        text.supportRichText = true;
+                        text.text = $"• {key.Translate()}";
+                    },
+                    pos: (row, 0), margin: new LayoutInsets(14f, 0f, 0f, 0f),
+                    objectName: $"recovery-proto-bullet-{row}");
+                index++;
+                row++;
+            }
         }
         return nodes;
     }
 
-    private static LayoutNode BuildActionNode(GuideStep step, int row, int stepIndex) {
-        if (step.Kind != StepKind.Manual || !IsManualIndexValid(step.ManualIndex)) {
-            return TextNode("", pos: (row, 3), objectName: $"recovery-step-auto-action-{stepIndex}");
+    /// <summary>
+    /// 计算下方主卡除总标题外的固定行数（每组 1 行组标题 + 其项目符号行数）。
+    /// </summary>
+    /// <returns>组标题与项目符号行数总和。</returns>
+    private static int ComputeBottomRowCount() {
+        int total = 0;
+        foreach (var (_, bullets) in bottomGroups) {
+            total += 1 + bullets.Length;
+        }
+        return total;
+    }
+
+    /// <summary>
+    /// 根据可观测的真实游戏状态判定当前里程碑。
+    /// </summary>
+    /// <returns>0=未回收启动套件，1=已回收但培养塔协议未恢复，2=培养塔协议已恢复。</returns>
+    private static int CurrentMilestone() {
+        if (HasItemInteractionProtocol()) {
+            return 2;
         }
 
-        return CheckBoxNode(false, "恢复手册-确认完成", 12,
-            onBuilt: check => {
-                manualChecks[step.ManualIndex] = check;
-                check.Checked = manualStepCompleted[step.ManualIndex];
-                check.OnChecked += () => {
-                    manualStepCompleted[step.ManualIndex] = check.Checked;
-                    UpdateUI();
-                };
-            },
-            pos: (row, 3), objectName: $"recovery-step-manual-{stepIndex}");
+        return HasStarterKit() ? 1 : 0;
     }
 
-    private static int GetFirstIncompleteStepIndex() {
-        for (int i = 0; i < initialProtoSteps.Length; i++) {
-            if (!IsStepCompleted(initialProtoSteps[i])) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    private static bool IsStepCompleted(GuideStep step) {
-        return step.Kind switch {
-            StepKind.Manual => IsManualIndexValid(step.ManualIndex) && manualStepCompleted[step.ManualIndex],
-            _ => step.IsCompleted?.Invoke() == true,
-        };
-    }
-
-    private static bool IsManualIndexValid(int index) {
-        return index >= 0 && index < manualStepCompleted.Length;
-    }
-
-    private static string GetStepKindText(GuideStep step) {
-        return (step.Kind == StepKind.Manual ? "恢复手册-玩家确认" : "恢复手册-自动检测").Translate();
-    }
-
-    private static string GetStepStateText(bool completed) {
-        string label = (completed ? "恢复手册-已完成" : "恢复手册-未完成").Translate();
-        string marker = completed ? "✓" : "○";
-        return $"{marker} {label}".WithColor(completed ? Green : Gray);
-    }
-
+    /// <summary>
+    /// 判断启动套件是否已通过通信状态或套件货物留下可观测证据。
+    /// </summary>
+    /// <returns>玩家已经越过启动套件回收里程碑时返回 true。</returns>
     private static bool HasStarterKit() {
-        return HasDataCenterAccess()
+        return CivilizationRecoveryManager.HasDataCenterCommunication
                || GetItemTotalCount(IFE培养塔) > 0
                || GetItemTotalCount(IFE通用原胚) > 0
                || DataCenterInventory.centerItemCount[IFE培养塔] > 0
                || DataCenterInventory.centerItemCount[IFE通用原胚] > 0;
     }
 
-    private static bool HasDataCenterAccess() {
-        return CivilizationRecoveryManager.HasDataCenterCommunication;
-    }
-
-    private static bool HasFirstCultivationTowerReady() {
-        return GetItemTotalCount(IFE培养塔) > 0
-               || DataCenterInventory.centerItemCount[IFE培养塔] > 0;
-    }
-
+    /// <summary>
+    /// 判断培养塔物品交互协议是否已由真实隐藏科技状态恢复。
+    /// </summary>
+    /// <returns>培养塔协议已恢复时返回 true。</returns>
     private static bool HasItemInteractionProtocol() {
         return GameMain.history != null && GameMain.history.TechUnlocked(TFE培养塔);
     }

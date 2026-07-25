@@ -22,6 +22,11 @@ public static class ProtocolRecoveryPage {
     private static PageLayout.HeaderRefs header;
     private static Text stageSummaryText;
     private static Text protocolListText;
+
+    /// <summary>
+    /// 当前协议页码与总页数的本地化文本节点。
+    /// </summary>
+    private static Text protocolPageText;
     private static Text resultText;
     private static UIButton previousButton;
     private static UIButton nextButton;
@@ -30,6 +35,31 @@ public static class ProtocolRecoveryPage {
     private static UIButton retrieveButton;
     private static UIButton batchButton;
     private static UIButton priorityButton;
+
+    /// <summary>
+    /// 向前翻页按钮；第一页时禁用。
+    /// </summary>
+    private static UIButton previousPageButton;
+
+    /// <summary>
+    /// 向后翻页按钮；最后一页时禁用。
+    /// </summary>
+    private static UIButton nextPageButton;
+
+    /// <summary>
+    /// 每页最多显示的协议条目数，保证最大内容不会进入分页栏或结果页脚。
+    /// </summary>
+    private const int ProtocolsPerPage = 15;
+
+    /// <summary>
+    /// 当前协议页的零基索引；阶段切换时归零，协议刷新时钳制到有效范围。
+    /// </summary>
+    private static int currentPageIndex;
+
+    /// <summary>
+    /// 当前阶段的协议总页数；空列表也保持一页以稳定分页控件。
+    /// </summary>
+    private static int currentTotalPages;
     private static int selectedStageIndex;
     private static ProtocolRetrievalMode selectedMode;
     private static ERecipe selectedDirectionalRecipeType;
@@ -37,6 +67,9 @@ public static class ProtocolRecoveryPage {
     private static bool hasSelectedAnchoredRecipe;
     private static string lastResult = "尚未执行检索";
 
+    /// <summary>
+    /// 注册协议恢复页面及其独立分页控件使用的本地化文本。
+    /// </summary>
     public static void AddTranslations() {
         Register("文明协议恢复", "Protocol Recovery");
         Register("协议恢复摘要", "Choose broad, directional, or anchored recovery and settle each retrieval independently.",
@@ -63,10 +96,18 @@ public static class ProtocolRecoveryPage {
         Register("空协议阶段说明",
             "This stage has no required base protocols. Broad retrieval opportunities are submitted directly to deep analysis.",
             "本阶段没有必需基础协议；广域检索机会将直接投入深层解析。 ");
+        Register("协议恢复-上一页", "Previous Page", "上一页");
+        Register("协议恢复-下一页", "Next Page", "下一页");
+        Register("协议恢复-页码格式", "Page {0} / {1}", "第 {0} / {1} 页");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
 
+    /// <summary>
+    /// 在主面板设计画布内创建协议控制区、固定容量列表、分页栏和结果页脚。
+    /// </summary>
+    /// <param name="wnd">提供原版风格控件克隆能力的主窗口。</param>
+    /// <param name="trans">承载协议恢复页的根节点。</param>
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         tab = trans;
         BuildLayout(wnd, tab,
@@ -77,7 +118,7 @@ public static class ProtocolRecoveryPage {
                     Header("文明协议恢复", "协议恢复摘要", pos: (0, 0), objectName: "protocol-recovery-header",
                         onBuilt: refs => header = refs),
                     ContentCard(pos: (1, 0), objectName: "protocol-recovery-control-card", strong: true,
-                        rows: [Px(50f), Px(30f), Px(30f)], rowGap: 6f,
+                        rows: [Px(60f), Px(30f), Px(30f)], rowGap: 6f,
                         children: [
                             TextNode("", 13, White, wrap: true, pos: (0, 0),
                                 onBuilt: text => {
@@ -112,13 +153,28 @@ public static class ProtocolRecoveryPage {
                                         objectName: "protocol-recovery-priority"),
                                 ]),
                         ]),
-                    ScrollableContentCard(1400f, pos: (2, 0), objectName: "protocol-recovery-list-card",
-                        rows: [1], children: [
+                    ContentCard(pos: (2, 0), objectName: "protocol-recovery-list-card", strong: true,
+                        rows: [1, Px(36f)], rowGap: 8f,
+                        children: [
                             TextNode("", 13, White, anchor: TextAnchor.UpperLeft, wrap: true, pos: (0, 0),
                                 onBuilt: text => {
                                     protocolListText = text;
                                     text.supportRichText = true;
                                 }, objectName: "protocol-recovery-list"),
+                            Grid(pos: (1, 0), cols: [Px(130f), 1, Px(130f)], columnGap: 8f,
+                                children: [
+                                    ButtonNode("协议恢复-上一页", PreviousPage, pos: (0, 0),
+                                        onBuilt: button => previousPageButton = button,
+                                        objectName: "protocol-recovery-previous-page"),
+                                    TextNode("", 13, Gray, anchor: TextAnchor.MiddleCenter, pos: (0, 1),
+                                        onBuilt: text => {
+                                            protocolPageText = text;
+                                            text.supportRichText = true;
+                                        }, objectName: "protocol-recovery-page-indicator"),
+                                    ButtonNode("协议恢复-下一页", NextPage, pos: (0, 2),
+                                        onBuilt: button => nextPageButton = button,
+                                        objectName: "protocol-recovery-next-page"),
+                                ]),
                         ]),
                     FooterCard(pos: (3, 0), objectName: "protocol-recovery-footer", children: [
                         TextNode("", 12, Gray, wrap: true, pos: (0, 0),
@@ -131,6 +187,9 @@ public static class ProtocolRecoveryPage {
         UpdateUI();
     }
 
+    /// <summary>
+    /// 根据当前文明阶段和检索快照刷新控制状态、当前协议页及分页边界。
+    /// </summary>
     public static void UpdateUI() {
         if (tab == null || !tab.gameObject.activeSelf) {
             return;
@@ -158,7 +217,10 @@ public static class ProtocolRecoveryPage {
                 ? $"  失败保底：{snapshot.FailureStreak}/4  新发现保底：{snapshot.DiscoveryStreak}/5  "
                   + $"阶段完成：{(snapshot.StageComplete ? "是" : "否")}"
                 : "\n" + "空协议阶段说明".Translate());
-        protocolListText.text = BuildProtocolList(snapshot.Protocols);
+        protocolListText.text = BuildProtocolPage(snapshot.Protocols);
+        protocolPageText.text = string.Format("协议恢复-页码格式".Translate(), currentPageIndex + 1, currentTotalPages);
+        previousPageButton.button.interactable = currentPageIndex > 0;
+        nextPageButton.button.interactable = currentPageIndex < currentTotalPages - 1;
         resultText.text = lastResult.WithColor(Gray);
         previousButton.button.interactable = selectedStageIndex > 0;
         nextButton.button.interactable = selectedStageIndex < profile.Stages.Count - 1;
@@ -171,30 +233,80 @@ public static class ProtocolRecoveryPage {
         priorityButton.button.interactable = snapshot.HasPriorityCandidate;
     }
 
-    private static string BuildProtocolList(IReadOnlyList<ProtocolRetrievalProtocolSnapshot> protocols) {
+    /// <summary>
+    /// 构建当前页的协议列表文本：按 <see cref="currentPageIndex"/> 切片，全局序号连续，
+    /// 更新 <see cref="currentTotalPages"/> 并钳制 <see cref="currentPageIndex"/>；条目间以换行分隔，末尾不追加空行。
+    /// </summary>
+    /// <param name="protocols">当前矩阵阶段的全部协议快照。</param>
+    /// <returns>当前页协议文本；协议为空时返回空阶段说明。</returns>
+    private static string BuildProtocolPage(IReadOnlyList<ProtocolRetrievalProtocolSnapshot> protocols) {
+        currentTotalPages = Mathf.Max(1, (protocols.Count + ProtocolsPerPage - 1) / ProtocolsPerPage);
+        currentPageIndex = Mathf.Clamp(currentPageIndex, 0, currentTotalPages - 1);
+        if (protocols.Count == 0) {
+            return "空协议阶段说明".Translate();
+        }
+
+        int startIndex = currentPageIndex * ProtocolsPerPage;
+        int endIndex = Mathf.Min(startIndex + ProtocolsPerPage, protocols.Count);
         var builder = new StringBuilder();
-        int index = 1;
-        foreach (ProtocolRetrievalProtocolSnapshot protocol in protocols) {
+        for (int i = startIndex; i < endIndex; i++) {
+            if (i > startIndex) {
+                builder.Append('\n');
+            }
+
+            ProtocolRetrievalProtocolSnapshot protocol = protocols[i];
             string name = protocol.Discovered ? protocol.DisplayName : "未识别协议".Translate();
             string state = protocol.Discovered ? $"{protocol.Completeness}%" : "未发现".Translate();
-            builder.Append(index++).Append(". ")
+            builder.Append(i + 1).Append(". ")
                 .Append(protocol.Preferred ? "[优先] " : string.Empty)
                 .Append(protocol.CountsTowardStageCompletion ? string.Empty : $"[{"附属".Translate()}] ")
                 .Append(protocol.Eligible ? string.Empty : $"[{"未具备资格".Translate()}] ")
-                .Append(name).Append("  ").Append(state).Append('\n');
+                .Append(name).Append("  ").Append(state);
         }
-        return builder.Length == 0 ? "空协议阶段说明".Translate() : builder.ToString();
+        return builder.ToString();
     }
 
+    /// <summary>
+    /// 切换到上一文明阶段，并从该阶段第一页开始显示协议。
+    /// </summary>
     private static void PreviousStage() {
         selectedStageIndex--;
+        currentPageIndex = 0;
         lastResult = "已切换阶段。";
         UpdateUI();
     }
 
+    /// <summary>
+    /// 切换到下一文明阶段，并从该阶段第一页开始显示协议。
+    /// </summary>
     private static void NextStage() {
         selectedStageIndex++;
+        currentPageIndex = 0;
         lastResult = "已切换阶段。";
+        UpdateUI();
+    }
+
+    /// <summary>
+    /// 在有效范围内切换到上一协议页。
+    /// </summary>
+    private static void PreviousPage() {
+        if (currentPageIndex <= 0) {
+            return;
+        }
+
+        currentPageIndex--;
+        UpdateUI();
+    }
+
+    /// <summary>
+    /// 在有效范围内切换到下一协议页。
+    /// </summary>
+    private static void NextPage() {
+        if (currentPageIndex >= currentTotalPages - 1) {
+            return;
+        }
+
+        currentPageIndex++;
         UpdateUI();
     }
 

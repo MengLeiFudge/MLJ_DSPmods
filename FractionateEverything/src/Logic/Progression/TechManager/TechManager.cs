@@ -7,6 +7,9 @@ namespace FE.Logic.Progression;
 /// Preload2会初始化unlockRecipeArray，之后LDBTool添加就不会报空指针异常。
 /// </summary>
 public static partial class TechManager {
+    /// <summary>
+    /// 注册隐藏科技、文明恢复提示和启动信号 HUD 使用的本地化文本。
+    /// </summary>
     public static void AddTranslations() {
         Register("T分馏数据中心", "Fractionation Data Centre", "分馏数据中心");
         Register("分馏数据中心描述",
@@ -24,6 +27,17 @@ public static partial class TechManager {
         Register("异常旧文明信号距离提示",
             "Abnormal old-civilization signal: about {0} m to the east-northeast.",
             "异常旧文明信号：东北偏东方向约 {0} 米。");
+        Register("启动信号HUD-标题", "Old-Civilization Signal", "异常旧文明信号");
+        Register("启动信号HUD-返回出生星", "Return to the birth planet.", "请返回出生星定位信号。");
+        Register("启动信号HUD-方向距离", "{0} · about {1} m", "{0} · 约{1}米");
+        Register("启动信号方向-前", "ahead", "前");
+        Register("启动信号方向-右前", "front-right", "右前");
+        Register("启动信号方向-右", "right", "右");
+        Register("启动信号方向-右后", "rear-right", "右后");
+        Register("启动信号方向-后", "behind", "后");
+        Register("启动信号方向-左后", "rear-left", "左后");
+        Register("启动信号方向-左", "left", "左");
+        Register("启动信号方向-左前", "front-left", "左前");
         Register("文明阶段补给恢复提示", "Civilization recovery stage supplies received.", "文明恢复阶段补给已回收。");
         Register("旧文明协议恢复提示", "Old-civilization protocol restored.", "旧文明协议已恢复。");
         Register("物流交互协议恢复提示", "Logistics interaction protocol restored.", "物流交互协议已恢复。");
