@@ -11,7 +11,7 @@ using FE.UI.MainPanel.Setting;
 using FE.UI.MainPanel.Shell.Analysis;
 using FE.UI.MainPanel.Shell.MessageBox;
 using FE.UI.MainPanel.Theme;
-using FE.Logic.Progression;
+using FE.Logic.Civilization;
 using UnityEngine;
 using static FE.Utils.Utils;
 using static FE.UI.Foundation.RectTransformUtils;

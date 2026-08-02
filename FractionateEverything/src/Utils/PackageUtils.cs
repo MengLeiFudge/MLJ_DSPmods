@@ -16,8 +16,8 @@ public static partial class Utils {
         Register("无法兑换", "Can not exchange");
         Register("FE存档版本不兼容标题", "Save Incompatible", "存档版本不兼容");
         Register("FE存档版本不兼容内容",
-            "Due to a major mod update, this save is incompatible with the previous version. Some data has been cleared. As compensation, 5000 Fragments have been added to your data centre.",
-            "由于模组大版本更新，本次更新不兼容以前的存档，部分数据已被清除。作为补偿，5000残片已添加至数据中心。");
+            "This save was made with an older FE major version. FE 3.x does not import previous FE-owned progress. Where possible, legacy building and item references that still have a current counterpart are migrated.",
+            "此存档来自旧版 FE 大版本。FE 3.x 不会导入旧 FE 自有进度。对仍有现役对应物的旧建筑与物品引用，会尽可能迁移。");
     }
 
     /// <summary>

@@ -1,15 +1,12 @@
 ﻿using System.IO;
-using FE.Logic.Achievements;
-using FE.Logic.Buildings;
 using FE.Logic.Civilization;
-using FE.Logic.DarkFog;
-using FE.Logic.Fractionation.Process;
-using FE.Logic.Fractionation.FracRecipes;
+using FE.Logic.Civilization.Achievements;
 using FE.Logic.DataCenter;
-using FE.Logic.Progression;
-using FE.Logic.Progression.Stacking;
+using FE.Logic.Enhancements.Stacking;
+using FE.Logic.Enhancements.VanillaRecipes;
+using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Station;
-using FE.Logic.VanillaRecipes;
 using FE.UI.MainPanel;
 using static FE.Utils.Utils;
 
@@ -24,7 +21,7 @@ public static class FeatureSaveRegistry {
             ("Recipe", RecipeManager.Import),
             ("VanillaRecipes", VanillaRecipeManager.Import),
             ("Stacking", StackingManager.Import),
-            ("Building", BuildingManager.Import),
+            ("Building", FractionatorManager.Import),
             ("Item", DataCenterInventory.Import),
             ("Process", ProcessManager.Import),
             ("AncientCivilization", CivilizationModule.Import),
@@ -42,7 +39,7 @@ public static class FeatureSaveRegistry {
             ("Recipe", RecipeManager.Export),
             ("VanillaRecipes", VanillaRecipeManager.Export),
             ("Stacking", StackingManager.Export),
-            ("Building", BuildingManager.Export),
+            ("Building", FractionatorManager.Export),
             ("Item", DataCenterInventory.Export),
             ("Process", ProcessManager.Export),
             ("AncientCivilization", CivilizationModule.Export),
@@ -56,10 +53,10 @@ public static class FeatureSaveRegistry {
         RecipeManager.IntoOtherSave();
         VanillaRecipeManager.IntoOtherSave();
         StackingManager.IntoOtherSave();
-        BuildingManager.IntoOtherSave();
+        FractionatorManager.IntoOtherSave();
         DataCenterInventory.IntoOtherSave();
         ProcessManager.IntoOtherSave();
-        DarkFogCombatManager.IntoOtherSave();
+        // DarkFog 调查状态及其派生缓存统一由 CivilizationModule 重置。
         CivilizationModule.IntoOtherSave();
         AchievementModule.IntoOtherSave();
         MainWindow.IntoOtherSave();

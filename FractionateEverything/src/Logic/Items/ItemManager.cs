@@ -15,19 +15,33 @@ namespace FE.Logic.Items;
 /// </summary>
 public static class ItemManager {
     /// <summary>
-    /// 注册残片、六阶段解析数据、通用原胚与四种定向塔原胚的名称和说明本地化键。
+    /// 注册 Frag/Memory、运输包裹、黑雾样本、通用原胚与四种定向塔原胚的名称和说明本地化键。
     /// </summary>
     public static void AddTranslations() {
-        Register("残片", "Archive Fragment", "残片");
+        Register("残片", "Frag", "残片");
         Register("I残片",
-            "Archive currency recovered from invalid protocol data. It pays for directional and anchored retrieval.",
-            "从无效协议数据中整理出的档案货币，用于支付方向检索和锚定检索。");
-        RegisterAnalysisDataTranslations("电磁解析数据", "Electromagnetic Analysis Data", "电磁");
-        RegisterAnalysisDataTranslations("能量解析数据", "Energy Analysis Data", "能量");
-        RegisterAnalysisDataTranslations("结构解析数据", "Structure Analysis Data", "结构");
-        RegisterAnalysisDataTranslations("信息解析数据", "Information Analysis Data", "信息");
-        RegisterAnalysisDataTranslations("引力解析数据", "Gravity Analysis Data", "引力");
-        RegisterAnalysisDataTranslations("宇宙解析数据", "Universe Analysis Data", "宇宙");
+            "Base Frag balance unit. Analysis towers output it or larger Frag packages; upload packages normalize into this balance.",
+            "残片基础余额单位。解析塔会输出基础残片或更大面额包裹；包裹上传后会折算回该基础余额。");
+        RegisterCurrencyPackageTranslations("残片", "Frag");
+
+        Register("记忆源点", "Memory", "记忆源点");
+        Register("I记忆源点",
+            "Base Memory balance unit. Every 2000 Frag analyzed yields 1 Memory for formal protocol unlocks.",
+            "记忆源点基础余额单位。每累计解析 2000 残片确定性产出 1 记忆源点，用于正式协议解锁。");
+        RegisterCurrencyPackageTranslations("记忆源点", "Memory");
+
+        Register("黑雾样本A", "Dark Fog Sample A", "黑雾样本A");
+        Register("I黑雾样本A",
+            "A low-density dark-fog sample. Analyze it for Frag scaled by ground and space cognition.",
+            "低密度黑雾样本。送入解析塔可产出受地表与星域认知影响的残片。");
+        Register("黑雾样本B", "Dark Fog Sample B", "黑雾样本B");
+        Register("I黑雾样本B",
+            "A mid-density dark-fog sample. Analyze it for Frag scaled by ground and space cognition.",
+            "中密度黑雾样本。送入解析塔可产出受地表与星域认知影响的残片。");
+        Register("黑雾样本C", "Dark Fog Sample C", "黑雾样本C");
+        Register("I黑雾样本C",
+            "A high-density dark-fog sample. Analyze it for Frag scaled by ground and space cognition.",
+            "高密度黑雾样本。送入解析塔可产出受地表与星域认知影响的残片。");
 
         Register("通用原胚", "Common Tower Proto", "通用原胚");
         Register("I通用原胚",
@@ -40,16 +54,20 @@ public static class ItemManager {
     }
 
     /// <summary>
-    /// 注册一种矩阵阶段解析数据的名称与说明，并保持名称键和 <c>I{name}</c> 说明键成对。
+    /// 注册 10/100/1000 运输包裹的名称与说明。
     /// </summary>
-    /// <param name="name">中文名称键，同时作为中文显示名。</param>
-    /// <param name="englishName">英文显示名。</param>
-    /// <param name="stageName">插入中英文说明模板的阶段名称文本。</param>
-    private static void RegisterAnalysisDataTranslations(string name, string englishName, string stageName) {
-        Register(name, englishName, name);
+    private static void RegisterCurrencyPackageTranslations(string baseName, string englishBaseName) {
+        RegisterPackageTranslation(baseName, englishBaseName, 10);
+        RegisterPackageTranslation(baseName, englishBaseName, 100);
+        RegisterPackageTranslation(baseName, englishBaseName, 1000);
+    }
+
+    private static void RegisterPackageTranslation(string baseName, string englishBaseName, int faceValue) {
+        string name = $"{baseName}×{faceValue}";
+        Register(name, $"{englishBaseName} ×{faceValue}", name);
         Register($"I{name}",
-            $"Physical analysis data extracted from {stageName} matrix records. Upload it to generate retrieval opportunities.",
-            $"从{stageName}矩阵中解析出的实体数据；上传后会积累{stageName}阶段的协议检索机会。");
+            $"Upload-only {englishBaseName} package worth {faceValue}. Analysis towers create it; the data centre normalizes it into base {englishBaseName}.",
+            $"面额为 {faceValue} 的{baseName}单向运输包裹，仅由解析塔产出；上传到数据中心后折算为基础{baseName}余额。");
     }
 
     /// <summary>
@@ -95,20 +113,32 @@ public static class ItemManager {
         // recipe.NonProductive = true 表示增产剂仅能加速，不能增产
         // RecipeUnlocked Patch 用于调整配方解锁状态（Item直接用UnlockKey=-1，就不需要patch item的）
 
-        RegisterInternalItem(IFE残片, "残片", "I残片", 101,
+        RegisterInternalItem(IFE残片, "残片", "I残片", 101, 9999,
             Color.gray, Color.black, "cpfragment");
-        RegisterInternalItem(IFE电磁解析数据, "电磁解析数据", "I电磁解析数据", 102,
-            new Color(0.32f, 0.72f, 1f), new Color(0.04f, 0.14f, 0.28f), "emanalysis");
-        RegisterInternalItem(IFE能量解析数据, "能量解析数据", "I能量解析数据", 103,
-            new Color(1f, 0.52f, 0.18f), new Color(0.26f, 0.08f, 0.02f), "energyanalysis");
-        RegisterInternalItem(IFE结构解析数据, "结构解析数据", "I结构解析数据", 104,
-            new Color(0.86f, 0.68f, 1f), new Color(0.16f, 0.06f, 0.28f), "structureanalysis");
-        RegisterInternalItem(IFE信息解析数据, "信息解析数据", "I信息解析数据", 105,
-            new Color(0.36f, 0.96f, 0.78f), new Color(0.02f, 0.20f, 0.12f), "infoanalysis");
-        RegisterInternalItem(IFE引力解析数据, "引力解析数据", "I引力解析数据", 106,
-            new Color(0.76f, 0.82f, 1f), new Color(0.10f, 0.10f, 0.30f), "gravityanalysis");
-        RegisterInternalItem(IFE宇宙解析数据, "宇宙解析数据", "I宇宙解析数据", 107,
-            new Color(1f, 0.92f, 0.42f), new Color(0.28f, 0.20f, 0.04f), "universeanalysis");
+        RegisterInternalItem(IFE记忆源点, "记忆源点", "I记忆源点", 102, 100,
+            new Color(0.55f, 0.82f, 1f), new Color(0.08f, 0.18f, 0.34f), "memory-core");
+        RegisterCurrencyPackage(IFE残片10, "残片×10", "I残片×10", 10,
+            Color.gray, new Color(0.12f, 0.12f, 0.12f), "frag-pack-10");
+        RegisterCurrencyPackage(IFE残片100, "残片×100", "I残片×100", 100,
+            Color.gray, new Color(0.18f, 0.18f, 0.18f), "frag-pack-100");
+        RegisterCurrencyPackage(IFE残片1000, "残片×1000", "I残片×1000", 1000,
+            Color.gray, new Color(0.24f, 0.24f, 0.24f), "frag-pack-1000");
+        RegisterCurrencyPackage(IFE记忆源点10, "记忆源点×10", "I记忆源点×10", 10,
+            new Color(0.55f, 0.82f, 1f), new Color(0.10f, 0.20f, 0.36f), "memory-pack-10");
+        RegisterCurrencyPackage(IFE记忆源点100, "记忆源点×100", "I记忆源点×100", 100,
+            new Color(0.55f, 0.82f, 1f), new Color(0.12f, 0.24f, 0.40f), "memory-pack-100");
+        RegisterCurrencyPackage(IFE记忆源点1000, "记忆源点×1000", "I记忆源点×1000", 1000,
+            new Color(0.55f, 0.82f, 1f), new Color(0.14f, 0.28f, 0.46f), "memory-pack-1000");
+        // 掉落区间在 InitEnemyDropTables 前写入 ItemProto；三段互不重叠且避开原版 0..0.300。
+        RegisterDarkFogSample(IFE黑雾样本A, "黑雾样本A", "I黑雾样本A", 103,
+            new Color(0.72f, 0.92f, 0.42f), new Color(0.10f, 0.18f, 0.04f), "dfs-sample-a",
+            enemyDropLevel: 1, enemyDropRange: new Vector2(0.300f, 0.018f), enemyDropCount: 1.2f);
+        RegisterDarkFogSample(IFE黑雾样本B, "黑雾样本B", "I黑雾样本B", 104,
+            new Color(0.42f, 0.86f, 0.72f), new Color(0.04f, 0.16f, 0.14f), "dfs-sample-b",
+            enemyDropLevel: 4, enemyDropRange: new Vector2(0.318f, 0.010f), enemyDropCount: 0.8f);
+        RegisterDarkFogSample(IFE黑雾样本C, "黑雾样本C", "I黑雾样本C", 105,
+            new Color(0.92f, 0.56f, 0.86f), new Color(0.18f, 0.06f, 0.16f), "dfs-sample-c",
+            enemyDropLevel: 7, enemyDropRange: new Vector2(0.328f, 0.004f), enemyDropCount: 0.4f);
         RegisterTowerProto(IFE培养塔原胚, "培养塔原胚", "I培养塔原胚", 201,
             "Assets/fe/frac-proto-normal", CultivationTower.color, "cultivation-proto");
         RegisterTowerProto(IFE解析塔原胚, "解析塔原胚", "I解析塔原胚", 202,
@@ -143,19 +173,43 @@ public static class ItemManager {
     }
 
     /// <summary>
-    /// 注册残片与解析数据等 FE 内部文明资源物品。
+    /// 注册 Frag/Memory 基础文明货币；类型为 Material，UnlockKey=-1。
     /// </summary>
-    /// <param name="itemId">物品原型 ID。</param>
-    /// <param name="name">本地化名称键。</param>
-    /// <param name="description">本地化描述键。</param>
-    /// <param name="gridOffset">分馏页内网格偏移。</param>
-    /// <param name="iconColor">默认图标前景色。</param>
-    /// <param name="iconBackgroundColor">默认图标背景色。</param>
-    /// <param name="iconTag">图标资源标签。</param>
     private static void RegisterInternalItem(int itemId, string name, string description, int gridOffset,
+        int stackSize, Color iconColor, Color iconBackgroundColor, string iconTag) {
+        ItemProto item = ProtoRegistry.RegisterItem(itemId, name, description,
+            "Assets/fe/copy-essence", tab分馏 * 1000 + gridOffset, stackSize, EItemType.Material,
+            ProtoRegistry.GetDefaultIconDesc(iconColor, iconBackgroundColor));
+        item.UnlockKey = -1;
+        item.IconTag = iconTag;
+    }
+
+    /// <summary>
+    /// 注册黑雾样本 A/B/C：EItemType.DarkFog、UnlockKey=-2、StackSize100，并配置地面掉落。
+    /// EnemyDropMask=0x1000000、EnemyDropMaskRatio=1；须在 ItemProto.InitEnemyDropTables 前调用。
+    /// </summary>
+    private static void RegisterDarkFogSample(int itemId, string name, string description, int gridOffset,
+        Color iconColor, Color iconBackgroundColor, string iconTag,
+        int enemyDropLevel, Vector2 enemyDropRange, float enemyDropCount) {
+        ItemProto item = ProtoRegistry.RegisterItem(itemId, name, description,
+            "Assets/fe/copy-essence", tab分馏 * 1000 + gridOffset, 100, EItemType.DarkFog,
+            ProtoRegistry.GetDefaultIconDesc(iconColor, iconBackgroundColor));
+        item.UnlockKey = -2;
+        item.IconTag = iconTag;
+        item.EnemyDropLevel = enemyDropLevel;
+        item.EnemyDropRange = enemyDropRange;
+        item.EnemyDropCount = enemyDropCount;
+        item.EnemyDropMask = 0x1000000;
+        item.EnemyDropMaskRatio = 1f;
+    }
+
+    /// <summary>
+    /// 注册仅由解析塔产出的单向货币包裹；GridIndex 无效，不可进入普通选择器。
+    /// </summary>
+    private static void RegisterCurrencyPackage(int itemId, string name, string description, int faceValue,
         Color iconColor, Color iconBackgroundColor, string iconTag) {
         ItemProto item = ProtoRegistry.RegisterItem(itemId, name, description,
-            "Assets/fe/copy-essence", tab分馏 * 1000 + gridOffset, 100, EItemType.Material,
+            "Assets/fe/copy-essence", 0, 100, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(iconColor, iconBackgroundColor));
         item.UnlockKey = -1;
         item.IconTag = iconTag;
@@ -475,39 +529,122 @@ public static class ItemManager {
 
     public static readonly int[] itemToMatrix = new int[12000];
 
-    public static readonly int[] AnalysisDataItemIds = [
-        IFE电磁解析数据,
-        IFE能量解析数据,
-        IFE结构解析数据,
-        IFE信息解析数据,
-        IFE引力解析数据,
-        IFE宇宙解析数据,
+    /// <summary>
+    /// Frag 基础与 10/100/1000 包裹 ID。
+    /// </summary>
+    public static readonly int[] FragItemIds = [
+        IFE残片,
+        IFE残片10,
+        IFE残片100,
+        IFE残片1000,
     ];
 
-    public static bool IsAnalysisDataItem(int itemId) {
-        return itemId >= IFE电磁解析数据 && itemId <= IFE宇宙解析数据;
-    }
+    /// <summary>
+    /// Memory 基础与 10/100/1000 包裹 ID。
+    /// </summary>
+    public static readonly int[] MemoryItemIds = [
+        IFE记忆源点,
+        IFE记忆源点10,
+        IFE记忆源点100,
+        IFE记忆源点1000,
+    ];
 
-    public static bool IsCivilizationResourceItem(int itemId) {
-        return itemId == IFE残片 || IsAnalysisDataItem(itemId);
-    }
+    /// <summary>
+    /// 黑雾样本 A/B/C。
+    /// </summary>
+    public static readonly int[] DarkFogSampleItemIds = [
+        IFE黑雾样本A,
+        IFE黑雾样本B,
+        IFE黑雾样本C,
+    ];
 
-    public static int GetAnalysisDataLevel(int itemId) {
-        return IsAnalysisDataItem(itemId) ? itemId - IFE电磁解析数据 : -1;
-    }
+    /// <summary>
+    /// 判断是否为 Frag 基础余额物品。
+    /// </summary>
+    public static bool IsFragBaseItem(int itemId) => itemId == IFE残片;
 
-    public static int GetAnalysisDataItemId(int level) {
-        if (level < 0) {
-            level = 0;
-        } else if (level >= AnalysisDataItemIds.Length) {
-            level = AnalysisDataItemIds.Length - 1;
+    /// <summary>
+    /// 判断是否为 Memory 基础余额物品。
+    /// </summary>
+    public static bool IsMemoryBaseItem(int itemId) => itemId == IFE记忆源点;
+
+    /// <summary>
+    /// 判断是否为 Frag/Memory 任一运输面额实体。
+    /// </summary>
+    public static bool IsCivilizationCurrencyItem(int itemId) =>
+        IsFragBaseItem(itemId) || IsMemoryBaseItem(itemId) || IsCurrencyPackageItem(itemId);
+
+    /// <summary>
+    /// 判断是否为仅上传的 10/100/1000 货币包裹。
+    /// </summary>
+    public static bool IsCurrencyPackageItem(int itemId) =>
+        itemId is IFE残片10 or IFE残片100 or IFE残片1000
+            or IFE记忆源点10 or IFE记忆源点100 or IFE记忆源点1000;
+
+    /// <summary>
+    /// 判断是否为黑雾样本 A/B/C。
+    /// </summary>
+    public static bool IsDarkFogSampleItem(int itemId) =>
+        itemId is IFE黑雾样本A or IFE黑雾样本B or IFE黑雾样本C;
+
+    /// <summary>
+    /// 判断是否为文明货币、包裹或样本；这些物品不进入通用可估值候选。
+    /// </summary>
+    public static bool IsCivilizationResourceItem(int itemId) =>
+        IsCivilizationCurrencyItem(itemId) || IsDarkFogSampleItem(itemId);
+
+    /// <summary>
+    /// 读取货币包裹面额；非包裹返回 0。
+    /// </summary>
+    public static int GetCurrencyPackageFaceValue(int itemId) => itemId switch {
+        IFE残片10 or IFE记忆源点10 => 10,
+        IFE残片100 or IFE记忆源点100 => 100,
+        IFE残片1000 or IFE记忆源点1000 => 1000,
+        _ => 0,
+    };
+
+    /// <summary>
+    /// 将货币包裹解析为基础物品与面额；基础物品自身返回 faceValue=1。
+    /// </summary>
+    public static bool TryGetCurrencyNormalization(int itemId, out int baseItemId, out int faceValue) {
+        switch (itemId) {
+            case IFE残片:
+                baseItemId = IFE残片;
+                faceValue = 1;
+                return true;
+            case IFE残片10:
+                baseItemId = IFE残片;
+                faceValue = 10;
+                return true;
+            case IFE残片100:
+                baseItemId = IFE残片;
+                faceValue = 100;
+                return true;
+            case IFE残片1000:
+                baseItemId = IFE残片;
+                faceValue = 1000;
+                return true;
+            case IFE记忆源点:
+                baseItemId = IFE记忆源点;
+                faceValue = 1;
+                return true;
+            case IFE记忆源点10:
+                baseItemId = IFE记忆源点;
+                faceValue = 10;
+                return true;
+            case IFE记忆源点100:
+                baseItemId = IFE记忆源点;
+                faceValue = 100;
+                return true;
+            case IFE记忆源点1000:
+                baseItemId = IFE记忆源点;
+                faceValue = 1000;
+                return true;
+            default:
+                baseItemId = 0;
+                faceValue = 0;
+                return false;
         }
-        return AnalysisDataItemIds[level];
-    }
-
-    public static int GetAnalysisDataFaceValue(int itemId) {
-        int level = GetAnalysisDataLevel(itemId);
-        return level < 0 ? 0 : 1 << (level + 1);
     }
 
     /// <summary>
@@ -574,23 +711,6 @@ public static class ItemManager {
         };
     }
 
-    public static int GetAnalysisBaseFragmentYield(int matrixId) {
-        return matrixId switch {
-            I电磁矩阵 => 2,
-            I能量矩阵 => 4,
-            I结构矩阵 => 8,
-            I信息矩阵 => 16,
-            I引力矩阵 => 32,
-            I宇宙矩阵 => 64,
-            _ => 1,
-        };
-    }
-
-    public static int GetAnalysisFragmentYield(int matrixId, float ratio = 1f) {
-        float value = GetAnalysisBaseFragmentYield(matrixId) * ratio;
-        return Mathf.Max(1, Mathf.RoundToInt(value));
-    }
-
     public static void ClassifyItemsToMatrix() {
         //       物品状态                         missingTech    preTech
         //         正常                              false        tech
@@ -649,24 +769,36 @@ public static class ItemManager {
         SetCivilizationResourceMatrixStages();
     }
 
+    /// <summary>
+    /// 文明货币、包裹与样本保持不可估值，避免进入培养/复制/转化候选。
+    /// </summary>
     private static void SetCivilizationResourceValues() {
-        itemValue[IFE残片] = 1.0f;
-        itemValue[IFE电磁解析数据] = 2.0f;
-        itemValue[IFE能量解析数据] = 4.0f;
-        itemValue[IFE结构解析数据] = 8.0f;
-        itemValue[IFE信息解析数据] = 16.0f;
-        itemValue[IFE引力解析数据] = 32.0f;
-        itemValue[IFE宇宙解析数据] = 64.0f;
+        foreach (int itemId in FragItemIds) {
+            itemValue[itemId] = maxValue;
+        }
+        foreach (int itemId in MemoryItemIds) {
+            itemValue[itemId] = maxValue;
+        }
+        foreach (int itemId in DarkFogSampleItemIds) {
+            itemValue[itemId] = maxValue;
+        }
     }
 
+    /// <summary>
+    /// 为文明资源指定矩阵分层，确保解析配方能够注册。
+    /// </summary>
     private static void SetCivilizationResourceMatrixStages() {
         itemToMatrix[IFE残片] = I电磁矩阵;
-        itemToMatrix[IFE电磁解析数据] = I电磁矩阵;
-        itemToMatrix[IFE能量解析数据] = I能量矩阵;
-        itemToMatrix[IFE结构解析数据] = I结构矩阵;
-        itemToMatrix[IFE信息解析数据] = I信息矩阵;
-        itemToMatrix[IFE引力解析数据] = I引力矩阵;
-        itemToMatrix[IFE宇宙解析数据] = I宇宙矩阵;
+        itemToMatrix[IFE残片10] = I电磁矩阵;
+        itemToMatrix[IFE残片100] = I电磁矩阵;
+        itemToMatrix[IFE残片1000] = I电磁矩阵;
+        itemToMatrix[IFE记忆源点] = I电磁矩阵;
+        itemToMatrix[IFE记忆源点10] = I电磁矩阵;
+        itemToMatrix[IFE记忆源点100] = I电磁矩阵;
+        itemToMatrix[IFE记忆源点1000] = I电磁矩阵;
+        itemToMatrix[IFE黑雾样本A] = I黑雾矩阵;
+        itemToMatrix[IFE黑雾样本B] = I黑雾矩阵;
+        itemToMatrix[IFE黑雾样本C] = I黑雾矩阵;
     }
 
     public static int GetTechTopMatrixID(TechProto tech) {

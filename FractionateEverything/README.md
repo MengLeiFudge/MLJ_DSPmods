@@ -24,9 +24,9 @@ ancient-civilization protocols.
 万物分馏添加了全新的建筑，它们的效果非常强大！
 
 * 培养塔：将通用原胚随机培养为四类塔，将专属原胚稳定培养为对应塔型，并在返祖协议恢复后把实体塔还原为专属原胚；正面输入且两侧无连接时，将物品上传至分馏数据中心。
-* 解析塔：将矩阵处理为实体解析数据，上传后为对应文明阶段生成协议检索机会；也负责把通用原胚分化为专属谱系。
-* 复制塔：复制可持续消耗的原矿资源，并保留硅石、石矿、煤矿、氢等配方既定的自然伴生副产物；临界光子和反物质不进入复制配方，对应协议完整度达到 100 后才可运行。
-* 转化塔：在已确认的建筑、设备、燃料、防御、弹药、消耗品和黑雾物品链内转换；可以投入大量低层建筑取得下一层建筑，对应协议完整度达到 100 后才可运行。
+* 解析塔：将矩阵与样本转化为残片实体（Frag），并随残片生产按固定比例派生记忆源点（Memory）；上传数据中心入账，供协议检索与正式解锁使用；也负责把通用原胚分化为专属谱系。
+* 复制塔：复制可持续消耗的原矿资源，并保留硅石、石矿、煤矿、氢等配方既定的自然伴生副产物；临界光子和反物质不进入复制配方。对应协议完整度达到 100% 后还需支付记忆源点与实物正式解锁，才能运行该配方。
+* 转化塔：在已确认的建筑、设备、燃料、防御、弹药、消耗品和黑雾物品链内转换；可以投入大量低层建筑取得下一层建筑。对应协议完整度达到 100% 后还需支付记忆源点与实物正式解锁，才能运行该配方。
 * 物流交互站：可以与分馏数据中心进行物品交互的行星内物流运输站。
 
 Fractionate Everything has added brand new buildings which are very powerful in their effects!
@@ -34,44 +34,52 @@ Fractionate Everything has added brand new buildings which are very powerful in 
 * Cultivation Tower: Randomly cultivates common protos into one of four tower types, stably cultivates dedicated protos,
   and reverses towers into dedicated protos after the atavism protocol is recovered. It also uploads front-input items
   to the Data Center when neither side is connected.
-* Analysis Tower: Processes matrices into physical analysis data and differentiates common protos into dedicated
-  lineages. Uploading analysis data generates retrieval opportunities for the matching civilization stage.
-* Replication Tower: Replicates consumable raw resources, including eligible dark-fog drops. A managed recipe becomes
-  usable only after its protocol reaches 100 completeness.
-* Conversion Tower: Converts items within the same production or use chain. A managed recipe becomes usable only after
-  its protocol reaches 100 completeness.
+* Analysis Tower: Converts matrices and samples into Frag items and derives Memory from Frag
+  production at a fixed rate. Uploading credits the Data Center balances used for retrieval and formal unlock. It also
+  differentiates common protos into dedicated lineages.
+* Replication Tower: Replicates consumable raw resources, including their established natural byproducts such as
+  silica, stone, coal, and hydrogen. Critical photons and antimatter never enter replication recipes. Reaching 100%
+  completeness grants only purchase eligibility; the recipe runs only after it is formally unlocked by paying Memory and
+  physical items.
+* Conversion Tower: Converts within established building, equipment, fuel, defense, ammunition, consumable, and
+  dark-fog chains. You may feed many low-tier buildings to obtain the next tier. Reaching 100% completeness grants only
+  purchase eligibility; the recipe runs only after it is formally unlocked by paying Memory and physical items.
 * Logistics Interaction Station: An intra-planetary logistics station that can interact with the Fractionation Data
   Center.
 
 ### 文明恢复与协议 Civilization Recovery Protocols
 
-万物分馏能力不再作为主脑科技树里的普通研究项。数据中心内的残缺文明 AI 只管理档案索引、权限和设施调度，不能读取协议正文或自行创造科技。玩家通过解析塔生产实体解析数据，再将数据上传到分馏数据中心，逐步生成越来越昂贵的检索机会。
+万物分馏能力不再作为主脑科技树里的普通研究项。数据中心内的残缺文明 AI 只管理档案索引、权限和设施调度，不能读取协议正文或自行创造科技。解析塔把矩阵与样本转化为残片实体（Frag），残片生产按固定比例派生记忆源点（Memory）；两者上传数据中心后计入余额，残片支付检索、记忆源点支付正式解锁。
 
-检索分为三种策略：广域检索只消耗机会；方向检索额外消耗 8 残片，将候选限制到一种配方方向；锚定检索额外消耗 32 残片，固定发现或推进选中的未完成协议。残片是唯一普通检索货币；远古文明科技点只用于科技树，两者不能互换，记忆源点不再作为 active 物品。首轮教学只要求广域检索；无效响应会提供残片，并在此后提示方向和锚定策略。连续失败和连续未发现都有保底；批量检索仍按相同单次顺序逐次结算。随机性只改变恢复顺序和速度，协议最终都能取得。完整度达到 100 后，对应配方才可运行；阶段主协议完成后，广域检索直接进入深层解析，未完成附属协议仍可用方向或锚定恢复并保证有效，不再产生失败残片。
+检索协议每次消耗残片，成本随全局检索次数增长并有上限：方向检索按比例加价，把候选限制到一种配方方向；锚定检索消耗更多残片，固定发现或推进选中的未完成协议。无效响应返还部分残片成本，连续失败有保底；批量检索仍按相同单次顺序逐次结算。协议目录全局唯一，同塔同输入一张协议，不再按矩阵阶段分段。完整度达到 100% 只取得购买资格；玩家还需用记忆源点和实物支付，由主机原子结算后正式解锁对应配方。全局协议全部完成后，广域检索转入深层解析，产出远古文明科技点。黑雾路线是可选的调查支线：接触对应掉落后相关协议才进入候选池，只加速恢复不阻塞完成，战斗本身不发放残片、记忆源点或科技点。
 
 Fractionate Everything abilities are no longer ordinary core-game research. The damaged archive AI only manages indexes,
-permissions, and facility scheduling; it cannot read protocol contents or invent technology. Analysis Towers produce
-physical analysis data, and uploading it to the Data Center generates progressively more expensive retrieval opportunities.
+permissions, and facility scheduling; it cannot read protocol contents or invent technology. Analysis Towers convert
+matrices and samples into Frag items, and Frag production derives Memory at a fixed rate. Uploading both
+credits the Data Center balances: Frag pays for retrieval, Memory pays for formal unlock.
 
-Broad retrieval spends only an opportunity. Directional retrieval spends 8 fragments to restrict the recipe family,
-while anchored retrieval spends 32 fragments to target one unfinished protocol. Fragments are the only ordinary retrieval
-currency; ancient technology points are permanent and only purchase technology-tree nodes, with no exchange between them.
-The first tutorial retrieval is broad. Invalid responses award fragments and then introduce directional and anchored
-strategies. Pity rules prevent permanent stalls, and batch retrieval settles the same single-step rules in order. A managed
-recipe becomes usable at 100 completeness. After a stage's required protocols are complete, broad retrieval enters deep
-analysis; unfinished auxiliary protocols remain available through guaranteed-effective directional or anchored retrieval.
+Every retrieval spends Frag, and the cost grows with the global retrieval count up to a cap: directional retrieval is
+proportionally more expensive and restricts candidates to one recipe family; anchored retrieval costs more and always
+finds or advances the selected unfinished protocol. Invalid responses refund part of the cost, and pity rules prevent
+permanent stalls; batch retrieval settles the same single-step rules in order. The protocol catalog is global and unique —
+one tower type plus one input yields exactly one protocol — with no matrix-stage sections. Reaching 100% completeness
+grants only purchase eligibility; you still pay Memory and physical items, and the host settles atomically before the
+recipe is formally unlocked. After all global protocols are complete, broad retrieval becomes deep analysis and awards
+ancient technology points. The dark-fog route is an optional investigation line: a protocol enters the candidate pool only
+after you actually encounter the matching drop. It only accelerates recovery and never blocks completion, and combat
+itself never grants Frag, Memory, or technology points.
 
 ### 远古科技树 Ancient Technology Tree
 
-阶段内主协议全部完成后，后续广域检索转为深层解析，并稳定产出唯一一种远古文明科技点。科技树包含培养塔、解析塔、复制塔、转化塔四条并列纵向主干；每条主干按以下顺序推进：
+全局协议目录没有未完成候选后，后续广域检索转为深层解析，并稳定产出唯一一种远古文明科技点，其成本随已获得点数增长。科技树包含培养塔、解析塔、复制塔、转化塔四条并列纵向主干；每条主干按以下顺序推进：
 
 `流动输出堆叠 → 产物输出堆叠 → 分馏永动 → 主路锁定 → 副产物弃置`
 
 节点有真实前置关系和递增价格，同类所有实体塔共享解锁状态。五项能力彼此独立，但每一项都以相同结构覆盖四类塔；每塔可以处于不同解锁状态，当前配方没有可用效果时仍显示该能力及其无目标状态，而不会整项消失。主路锁定和副产物弃置还要求当前配方累计成功次数达到校准门槛，并由单座塔保存目标或开关；这些实例状态随存档、复制粘贴、蓝图和联机同步。四塔共用主路目标状态，解析塔谱系分化继续使用自己的候选与结算规则。主路锁定只选择主产物，副产物弃置只销毁副产物且不提供补偿。系统设置中的“始终显示完整分馏配方信息”开启后，会在所有分馏塔窗口和配方页面直接显示产物名称、数量和概率。
 
-After all required protocols in a stage are complete, later broad retrievals become deep analysis and award the single
-ancient technology point type. The tree has four parallel vertical paths for Cultivation, Analysis, Replication, and Conversion
-Towers. The five abilities remain independent, but each ability uses the same structure across all four tower types.
+After the global protocol catalog has no unfinished candidates left, later broad retrievals become deep analysis
+and award the single ancient technology point type, whose cost grows with the points already earned. The tree has four
+parallel vertical paths for Cultivation, Analysis, Replication, and Conversion Towers. The five abilities remain independent, but each ability uses the same structure across all four tower types.
 A tower may have a different enabled state, while recipes with no current effect still display the ability instead of
 omitting it. Main-output locking and byproduct discard additionally require recipe calibration and per-building settings.
 Those settings persist through saves, copy/paste, blueprints, and multiplayer sync. All towers share the main-output target
@@ -81,20 +89,23 @@ reveals product names, amounts, and probabilities in every fractionator window a
 
 ### 成就 Achievements
 
-成就是独立的单存档固定里程碑，由协议恢复、阶段完成、科技投入和真实分馏次数自然推进。完成后自动提供固定加成，不消耗科技点，也不使用领取任务、每日奖励或跨存档抽取强度。
+成就分为普通成就与秘密成就。普通成就是当前存档内的固定生产里程碑，由协议恢复、科技投入和真实分馏次数自然推进，完成后自动提供固定加成；秘密成就记录在本机 profile，属于发现与纪念内容，不发放生产强度或经济资源。两者都不消耗科技点，也不使用领取任务、每日奖励或跨存档抽取强度。
 
-Achievements are independent fixed milestones in the current save. Protocol recovery, stage completion, technology
-spending, and real fractionation activity advance them naturally. Their fixed bonuses apply automatically and do not use
-claimable quests, daily rewards, or cross-save draw power.
+Achievements come in two kinds. Normal achievements are fixed milestones inside the current save, advanced naturally
+by protocol recovery, technology spending, and real fractionation activity, with fixed bonuses applied automatically.
+Secret achievements are recorded in the local machine profile as discovery and memorial content and grant no production
+strength or economic resources. Neither consumes technology points, and neither uses claimable quests, daily rewards, or
+cross-save draw power.
 
-### 3.0 存档迁移 3.0 Save Migration
+### 3.x 存档兼容 3.x Save Compatibility
 
-3.0 为 FE 自有物品、配方、模型和隐藏科技重新分配了独立 ID。迁移只处理 FE 2.x 中仍有明确现役对应物的六类建筑、物流配方和相关持久状态；量子复制塔、点金塔、旧等级成长等已废弃内容不会映射成新机制。旧存档和蓝图的映射已做结构复核，但在取得真实 FE 2.x 样本前不视为完成样本验证。
+3.x 存档总版本为 10：低于 10 的存档不读取 FE 自有状态。FE 2.x 旧档只触发“旧日余响”纪念内容，不发放奖励；量子复制塔、点金塔、旧等级成长等已废弃内容不会映射成新机制。建筑、模型与物品的物理 ID 保持兼容，旧蓝图与存档引用仍可解析；物理兼容与状态迁移相互独立。在取得真实 FE 2.x 样本前，旧档迁移不视为完成样本验证。
 
-Version 3.0 assigns new isolated IDs to FE items, recipes, models, and hidden carrier technologies. Migration is limited
-to the six FE 2.x buildings and related active state that still have an unambiguous modern counterpart. Removed content
-such as Quantum Replication, Alchemy, and building-level growth is not reinterpreted as a new mechanic. The migration is
-structurally reviewed but remains unverified against real FE 2.x save and blueprint samples.
+Version 3.x saves use total version 10: saves below version 10 do not read FE-owned state. FE 2.x saves only trigger the
+Old Echoes memorial content with no rewards; removed content such as Quantum Replication, Alchemy, and building-level
+growth is not reinterpreted as a new mechanic. Building, model, and item physical IDs stay compatible so old blueprints and
+save references still resolve; physical compatibility is independent of state migration. Migration remains unverified
+against real FE 2.x save and blueprint samples.
 
 ## 安装方法 Installation
 

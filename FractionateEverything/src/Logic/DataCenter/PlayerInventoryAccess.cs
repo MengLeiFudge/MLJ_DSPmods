@@ -82,15 +82,32 @@ public static class PlayerInventoryAccess {
     }
 
     /// <summary>
+    /// 非负 long 饱和加法：任一项为负按 0 处理；和超过 long.MaxValue 时夹到上界，避免 unchecked 回绕。
+    /// 用于跨容器数量/增产点汇总，不改变各来源扫描合同。
+    /// </summary>
+    private static long AddNonNegativeSaturated(long a, long b) {
+        if (a < 0) {
+            a = 0;
+        }
+        if (b < 0) {
+            b = 0;
+        }
+        // a, b ∈ [0, Max]；若 a > Max - b 则 a + b 会溢出
+        if (a > long.MaxValue - b) {
+            return long.MaxValue;
+        }
+        return a + b;
+    }
+
+    /// <summary>
     /// 获取所有背包中指定物品的总数。
     /// </summary>
     public static long GetItemTotalCount(int itemId) {
         long dataCenterCount = PackageAccessRules.TechItemInteractionUnlocked
             ? GetModDataItemCount(itemId, out _)
             : 0;
-        return dataCenterCount
-               + GetPackageItemCount(itemId, out _)
-               + GetDeliveryPackageItemCount(itemId, out _);
+        long total = AddNonNegativeSaturated(dataCenterCount, GetPackageItemCount(itemId, out _));
+        return AddNonNegativeSaturated(total, GetDeliveryPackageItemCount(itemId, out _));
     }
 
     /// <summary>
@@ -102,10 +119,12 @@ public static class PlayerInventoryAccess {
         if (PackageAccessRules.TechItemInteractionUnlocked) {
             dataCenterCount = GetModDataItemCount(itemId, out inc1);
         }
-        long ret = dataCenterCount
-                   + GetPackageItemCount(itemId, out int inc2)
-                   + GetDeliveryPackageItemCount(itemId, out int inc3);
-        inc = inc1 + inc2 + inc3;
+        long packageCount = GetPackageItemCount(itemId, out int inc2);
+        long deliveryCount = GetDeliveryPackageItemCount(itemId, out int inc3);
+        long ret = AddNonNegativeSaturated(dataCenterCount, packageCount);
+        ret = AddNonNegativeSaturated(ret, deliveryCount);
+        inc = AddNonNegativeSaturated(inc1, inc2);
+        inc = AddNonNegativeSaturated(inc, inc3);
         return ret;
     }
 

@@ -11,15 +11,16 @@ using CommonAPI.Systems.ModLocalization;
 using crecheng.DSPModSave;
 using FE.Lifecycle;
 using FE.Compatibility;
+using FE.Compatibility.LegacySave;
 using FE.Compatibility.Nebula;
-using FE.Logic.Achievements;
+using FE.Logic.Civilization.Achievements;
+using FE.Logic.Civilization.DarkFog;
 using FE.UI.Foundation.Window;
 using FE.UI.MainPanel;
 using HarmonyLib;
 using NebulaAPI;
 using NebulaAPI.Interfaces;
 using xiaoye97;
-using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
 
 namespace FE;
@@ -120,6 +121,8 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
                 }
                 harmony.PatchAll(type);
             }
+            // FE.Compatibility.* 被上方循环跳过；旧存档 Proto 迁移需在主实例上显式注册一次
+            harmony.PatchAll(typeof(LegacyProtoMigration));
             //在LDBTool已执行完毕所有PostAddData、EditData后，执行最终修改操作
             harmony.Patch(
                 AccessTools.Method(typeof(VFPreload), nameof(VFPreload.InvokeOnLoadWorkEnded)),
@@ -153,6 +156,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     private void Update() {
         MainWindow.OnInputUpdate();
         AchievementModule.Tick();
+        DarkFogInvestigationService.Tick();
     }
 
     #region IModCanSave & IMultiplayerModWithSettings
@@ -164,6 +168,13 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         FeatureSaveRegistry.IntoOtherSave();
         int version = r.ReadInt32();
         if (version < 10) {
+            // 精确 version1 旧档：在跳过自有块前幂等解锁本机秘密成就“旧日余响”。
+            // 仅主机/单人触发；2..9 不触发；不发放任何经济补偿。
+            if (version == 1 && !NebulaMultiplayerModAPI.IsClient) {
+                SecretAchievementProfile.TryUnlock(
+                    SecretAchievementCatalog.Legacy2xSaveKey,
+                    SecretAchievementSources.Legacy2xSave);
+            }
             // 旧版存档不兼容，读取流中剩余所有字节
             if (r.BaseStream.CanSeek) {
                 r.BaseStream.Seek(0, SeekOrigin.End);
@@ -173,11 +184,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
                 "FE存档版本不兼容内容".Translate(),
                 "确定".Translate(),
                 UIMessageBox.WARNING,
-                () => {
-                    if (!NebulaMultiplayerModAPI.IsClient) {
-                        AddItemToModData(IFE残片, 5000);
-                    }
-                });
+                null);
             return;
         }
         FeatureSaveRegistry.Import(r);

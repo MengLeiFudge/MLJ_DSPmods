@@ -10,13 +10,12 @@
 
 | 设计职责 | 代码域 |
 |---|---|
-| 文明阶段、协议、科技和恢复状态 | `Logic/Civilization` |
-| 单存档成就与奖励投影 | `Logic/Achievements` |
-| 分馏配方和可用性投影 | `Logic/Fractionation/FracRecipes` |
-| 分馏热路径 | `Logic/Fractionation/Process` |
+| 协议目录、货币、科技和恢复状态 | `Logic/Civilization` |
+| 单存档成就与奖励投影 | `Logic/Civilization/Achievement.cs` |
+| 分馏配方和可用性投影 | `Logic/Fractionation` |
+| 分馏热路径 | `Logic/Fractionation/Fractionators/FractionatorRuntime.cs` |
 | 塔型定义、能力投影和实例状态 | `Logic/Fractionation/Fractionators` |
-| FE 2.x Proto 迁移 | `Logic/Buildings/Migration` |
-| 数据中心库存和上传路由 | `Logic/DataCenter` |
+| 数据中心库存、上传路由和货币余额 | `Logic/DataCenter` |
 | 物流自动上传 | `Logic/Station` |
 | 文明解析页面 | `UI/MainPanel/Civilization` |
 | 恢复手册与成就页面 | `UI/MainPanel/ProgressTask` |
@@ -24,28 +23,25 @@
 依赖方向：
 
 ```text
-DataCenterUploadRouter -> Civilization Analysis / DataCenterInventory
+DataCenterUploadRouter -> 货币入账 / DataCenterInventory
 Civilization state -> CivilizationRuntimeSync -> Fractionation runtime caches
 Achievement state -> AchievementModule -> RecipeModifierCache
 Fractionation hot path -> runtime caches
 ```
 
-`Logic/Fractionation` 不引用 `Logic/Civilization` 或 `Logic/Achievements`。`CivilizationModule` 管理文明定义索引、状态、权限校验和运行投影调度；`AchievementModule` 独立管理成就定义、完成状态、低频检查、存档和奖励投影。协议内容由已注册配方定义提供，文明服务不生成新科技或协议正文。
-
-当前稳定配置由 `ProgressionProfileRegistry` 在原型和分馏配方注册完成后构建。默认配置 ID 为 `vanilla-compatible`，版本为 `1`。
+`Logic/Fractionation` 不引用 `Logic/Civilization`。`CivilizationModule` 管理文明定义索引、状态、权限校验和运行投影调度；`AchievementModule` 独立管理成就定义、完成状态、低频检查、存档和奖励投影。协议内容由已注册配方定义提供，文明服务不生成新科技或协议正文。
 
 ## 2. 核心玩法循环
 
 当前循环的主要执行入口：
 
 ```text
-矩阵或原胚进入分馏塔
-    -> 分馏热路径结算实际产物
+矩阵或样本进入解析塔
+    -> 分馏热路径结算实际产物（残片/记忆源点面额实体）
     -> 培养塔或其他上传入口调用 DataCenterUploadRouter.Upload
-    -> 解析数据进入 AnalysisService
-    -> 生成阶段检索机会
-    -> ProtocolRetrievalService 逐次结算检索
-    -> ProtocolProgressStore 保存发现与完整度
+    -> 残片/记忆源点实体上传后按面额入账；每满 2000 残片生产量派生 1 记忆源点实体（尾数记入 MemoryResidue）
+    -> ProtocolRetrievalService 逐次结算检索（消耗残片余额）
+    -> ProtocolProgressStore 保存发现、完整度与正式解锁状态
     -> CivilizationRuntimeSync.Refresh 重建配方和科技投影
     -> AchievementModule 按 60 tick 检查成就并重建奖励投影
     -> 新协议、科技能力、成就奖励和配方校准进入后续分馏循环
@@ -53,13 +49,13 @@ Fractionation hot path -> runtime caches
 
 `CivilizationRuntimeSync.Refresh()` 的固定顺序：
 
-1. 重建协议管理范围和配方可用集合。
+1. 重建协议管理范围和配方可用集合（含正式解锁的协议）。
 2. 重建科技树提供的塔型能力。
 3. 刷新 `ProcessManager` 分馏塔运行配置。
 
 `AchievementModule` 独立重建成就提供的配方成功率加成，再刷新 `ProcessManager` 运行配置。初始化、导入、切档和主机完成新成就时必须分别刷新对应投影。
 
-`ProcessManager` 只在实际产生至少一个产物时调用 `BaseRecipe.RecordSuccesses`。批量结算把“判定成功但实际产物数为零”按单次语义视为损毁，不推进配方校准。
+`ProcessManager` 只在实际产生至少一个产物时调用 `BaseRecipe.RecordSuccesses`。批量结算把"判定成功但实际产物数为零"按单次语义视为损毁，不推进配方校准。
 
 ## 3. 资源与状态体系
 
@@ -67,141 +63,106 @@ Fractionation hot path -> runtime caches
 
 | 资源或状态 | 用途 | 不允许的用途 |
 |---|---|---|
-| 残片 | 支付方向检索和锚定检索 | 购买科技、兑换其他文明货币 |
-| 远古文明科技点 | 购买科技树节点 | 协议检索、普通库存交易 |
-| 检索机会 | 执行当前阶段检索或深层解析 | 跨阶段转移、物品化交易 |
-| 实体解析数据 | 上传并生成对应阶段检索机会 | 进入普通数据中心库存 |
-| 配方累计成功 | 校准主路锁定和副产物弃置 | 代替协议完整度或科技解锁 |
+| 残片 Frag | 支付每次检索（广域/方向/锚定） | 购买科技、兑换记忆源点或科技点 |
+| 记忆源点 Memory | 正式解锁达到 100% 的协议 | 检索、兑换残片或科技点 |
+| 远古文明科技点 | 购买科技树节点 | 检索、解锁协议、兑换货币 |
+| 深层解析进度 | 无候选广域检索累计残片成本，达到成本后产出科技点 | 其他用途 |
+| 配方累计成功 | 校准主路锁定和副产物弃置 | 代替完整度、解锁或科技 |
 
-阶段状态由 `AnalysisProgressStore` 保存：
+货币实体（8 个 active 物品）：
 
-```text
-PendingData
-GeneratedOpportunities
-AvailableOpportunities
-```
+| 资源 | 面额 | 类型 | StackSize | 说明 |
+|---|---|---|---:|---|
+| 残片 Frag | 1 | 基础 | 9999 | 可下载、可上传，GridIndex 有效 |
+| 残片 Frag | 10 | 包裹 | 100 | 仅解析塔输出、只可上传，GridIndex 无效 |
+| 残片 Frag | 100 | 包裹 | 100 | 仅解析塔输出、只可上传，GridIndex 无效 |
+| 残片 Frag | 1000 | 包裹 | 100 | 仅解析塔输出、只可上传，GridIndex 无效 |
+| 记忆源点 Memory | 1 | 基础 | 100 | 可下载、可上传，GridIndex 有效 |
+| 记忆源点 Memory | 10 | 包裹 | 100 | 仅解析塔输出、只可上传，GridIndex 无效 |
+| 记忆源点 Memory | 100 | 包裹 | 100 | 仅解析塔输出、只可上传，GridIndex 无效 |
+| 记忆源点 Memory | 1000 | 包裹 | 100 | 仅解析塔输出、只可上传，GridIndex 无效 |
 
-协议状态由 `ProtocolProgressStore` 保存：
+ID 与 GridIndex 职责：
 
-```text
-Discovered
-Completeness: 0..100
-```
+- active item ID：基础残片面额实体 ID 为 `8161`；其余七个面额实体（残片 10/100/1000、记忆源点 1/10/100/1000）使用 `8168..8174`（具体对应见 `Utils/ProtoID.cs`）。旧六阶段解析数据 ID `8162..8167` 退役，不重解释。
+- StackSize：残片基础 9999；记忆源点基础 100；六种包裹面额实体（10/100/1000）全部 100。
+- GridIndex：仅基础面额实体有效（承担网格索引与 UI 排序）；包裹面额实体 GridIndex 无效，不参与索引、排序、数值结算或存取路由判断。
+- 余额下载与上传：余额只可下载为基础面额实体；包裹面额实体只由解析塔输出且只可上传，不可下载。
+- 包裹面额实体本身就是面额实体，不是装载其他实体的容器。
 
-配方状态由 `BaseRecipe` 保存：
+稳定状态：
 
-```text
-TotalSuccessCount
-```
+- 货币状态：数据中心基础残片/记忆源点余额（顶层 `Item`/`DataCenterInventory`）、`MemoryResidue`（顶层 `Recipe`/`RecipeManager`，0..1999）、深层解析进度（`AncientCivilization`）。
+- 协议状态：`Discovered`、`Completeness`（0..100）、正式解锁标记（`AncientCivilization`）。
+- 配方状态（`BaseRecipe`）：`TotalSuccessCount`。
+- 科技状态：`AvailablePoints`、`TotalPointsEarned`、`TotalPointsSpent`、`NodeLevels[nodeKey]`（`AncientCivilization`）。
+- 普通成就：存档级状态（`Achievements` 块）；秘密成就：独立本机 profile 状态。
 
-科技树状态只保存：
-
-```text
-AvailablePoints
-TotalPointsEarned
-TotalPointsSpent
-NodeLevels[nodeKey]
-```
-
-运行投影缓存不进入存档。残片奖励和内部联机库存同步直接写数据中心库存，不经过玩家上传路由，避免被误判为新的上传行为。
+运行投影缓存不进入存档。生产派生的记忆源点以实体形式产出，经上传后入账；无效响应返还与首协议记忆奖励直接计入数据中心余额，不经过玩家上传路由。
 
 ## 4. 文明解析与协议检索
 
 代码入口：
 
-- `Logic/Civilization/Analysis/AnalysisProgressStore.cs`
-- `Logic/Civilization/Analysis/AnalysisService.cs`
-- `Logic/Civilization/Protocols/ProtocolRetrievalService.cs`
-- `Logic/DataCenter/DataCenterUploadRouter.cs`
+- `Logic/DataCenter`（上传入账统一入口，`DataCenterUploadRouter`）
+- `Logic/Civilization`（检索结算与协议状态，`ProtocolRetrievalService`、`ProtocolProgressStore`）
+- 残片生产与记忆派生：解析塔配方域（`Logic/Fractionation`）与数据中心文明结算域
 
-六阶段与实体解析数据：
+残片生产：
 
-| 顺序 | StageKey | 矩阵 | 实体解析数据 |
-|---:|---|---|---|
-| 0 | `electromagnetic` | 电磁矩阵 | 电磁解析数据 |
-| 1 | `energy` | 能量矩阵 | 能量解析数据 |
-| 2 | `structure` | 结构矩阵 | 结构解析数据 |
-| 3 | `information` | 信息矩阵 | 信息解析数据 |
-| 4 | `gravity` | 引力矩阵 | 引力解析数据 |
-| 5 | `universe` | 宇宙矩阵 | 宇宙解析数据 |
+- 矩阵解析产出残片：`Frag = max(1, floor(matrixValue + 0.5))`，`matrixValue` 为矩阵 itemValue。
+- 样本档位 A/B/C 产出残片：
+  - A：`4 + G + S`
+  - B：`8 + 2G + 2S`
+  - C：`16 + 4G + 4S`
+  - G 为地表认知等级、S 为星域认知等级，均为 0..4。样本属于黑雾物品（`EItemType.DarkFog` / `UnlockKey == -2`）；样本的接触资格与认知等级是不同事实——接触资格按第 5 章黑雾接触判定，认知等级只参与残片产出公式。
 
-六种实体解析数据使用 active IFE ID `8162..8167`，玩家可见名称与用途统一为“解析数据”。旧矩阵精华不再作为 active 内容。
+记忆派生：
 
-六阶段基础机会成本：
+- 每累计生产 2000 残片派生 1 记忆源点实体（由解析成功产出，经上传后入账，不直接写入余额）。
+- 残片累计生产量按 2000 取整后，剩余尾数保留为 `MemoryResidue`（0..1999）。
 
-```text
-[8, 12, 18, 28, 42, 64]
-```
+上传与下载：
 
-阶段内第 `n` 个已生成机会的成本：
+- 残片/记忆源点面额实体上传数据中心时按面额计入对应余额。
+- 数据中心余额只可下载为基础面额实体；包裹面额实体不可下载。
+- 包裹面额实体（10/100/1000）本身就是面额实体，不是装载其他实体的容器；只由解析塔输出，且只可上传入账。
 
-```text
-ceil(BaseCost(stage) * 1.32 ^ n)
-```
+检索成本：
 
-单次成本上限为 `1,000,000,000`。上传解析数据时直接消费实体物品并增加对应阶段进度，不进入普通库存。
+- 全局第 `n` 次检索的基础成本：`C(n) = min(4000, 100 + 50 * n)`，`n` 为全局已执行检索次数（从 0 起算）。
+- 方向检索成本约为基础成本的 125%。
+- 锚定检索成本为基础成本的 200%。
+- 无效响应返还本次检索基础成本 `C(n)` 的 20%。
+- 连续 4 次无效响应后，下一次检索保证有效。
 
-检索策略：
+检索结果：
 
-| 策略 | 额外成本 | 候选范围 | 结果保证 |
-|---|---:|---|---|
-| 广域检索 | 0 | 阶段全部可行动协议 | 允许无效响应 |
-| 方向检索 | 残片 8 | 指定 `ERecipe` 方向 | 允许无效响应 |
-| 锚定检索 | 残片 32 | 指定未完成协议 | 必定发现或推进目标 |
-
-默认批量数为 `10`。批量入口逐次调用同一单次规则，每一步更新候选池、货币、保底和协议状态。
-
-消费顺序：
-
-1. 验证阶段、候选、机会和策略参数。
-2. 验证额外货币余额。
-3. 消费策略货币。
-4. 消费一个检索机会。
-5. 若机会消费失败，原额返还策略货币。
-6. 执行无效响应、发现、推进或深层解析结算。
-
-没有候选、机会不足或策略参数无效时，不扣除机会和策略货币。
-
-普通检索结果参数：
-
-- 基础无效响应概率：`20%`。
-- 连续 `4` 次无效响应后，下一次保证有效。
-- 无效响应奖励残片 `2`。
-- 存在未发现协议时，基础新发现概率：`35%`。
-- 连续 `5` 次未产生新发现后，下一次有效结果优先发现新协议。
-- 首次发现增加完整度：随机 `20..40`。
+- 新发现协议增加完整度：随机 `20..40`。
 - 推进已发现协议增加完整度：随机 `12..25`。
+- 锚定检索跳过无效响应，必定对指定目标产生发现或推进结果。
 
-优先协议必须已发现且未完成。当前有 `N` 项可推进协议时，优先目标被选中的概率：
+批量与深层解析：
 
-```text
-0.4 + 0.6 / N
-```
+- 批量检索逐次调用同一单次规则，每一步更新候选池、残片余额、保底和完整度。
+- 候选池 = 全局目录中已满足检索资格且完整度未满的协议；候选池为空时，广域检索结算为深层解析，本次检索消耗的残片计入深层解析进度。
+- 下一个科技点所需深层解析进度：`NextPointCost = 8000 + 4000 * floor(TotalEarned / 3)`，达到后获得 1 点远古文明科技点并扣除对应进度。
+- 方向或锚定检索在指定方向或目标无候选时不可执行且不消耗残片。
 
-剩余概率进入普通随机选择。锚定检索跳过无效响应，并保证对指定目标产生发现或推进结果。
-
-阶段主协议（即 `CountsTowardStageCompletion` 为 `true`，不含附属协议）全部达到 `100` 后，广域检索机会执行深层解析。仍未完成的附属协议只接受方向或锚定检索；这些检索在已完成阶段保证有效，不执行无效响应，也不再奖励失败残片。下一个科技点所需深层解析进度：
-
-```text
-NextPointCost = 2 + floor(TotalPointsEarned / 3)
-```
-
-达到成本后获得 `1` 点远古文明科技点，并扣除对应深层解析进度。
-
-## 5. 协议、配方与阶段
+## 5. 协议目录与配方
 
 代码入口：
 
-- `Logic/Civilization/Protocols/ProtocolCatalog.cs`
-- `Logic/Civilization/Protocols/ProtocolProgressStore.cs`
-- `Logic/Civilization/Protocols/ProtocolEligibilityService.cs`
-- `Logic/Fractionation/FracRecipes/RecipeManager.cs`
+- `Logic/Civilization`（全局协议目录、发现、完整度、正式解锁状态、检索资格与正式解锁结算）
+- `Logic/Fractionation`（配方族注册）
 
 协议稳定键：
 
 ```text
 RecipeKey = (ERecipe RecipeType, int InputId)
 ```
+
+同塔同输入唯一一张协议，完整度与正式解锁状态按该键全局共享。目录全局唯一，不再按矩阵阶段分段。
 
 进入协议目录的配方类型：
 
@@ -213,57 +174,69 @@ RecipeKey = (ERecipe RecipeType, int InputId)
 
 - 通用原胚随机培养。
 - 专属原胚稳定培养。
-- 六色矩阵解析。
+- 矩阵与样本残片生产。
 - 通用原胚谱系分化。
 
-实体塔返祖固定归入电磁阶段。只有对应专属培养累计实际产出成功达到 `20` 次后才具备检索资格，并且标记为附属协议，不阻塞阶段主线完成。
+检索资格（进入候选池）：
 
-资源复制协议沿用资源本身的阶段分类。不可自动采集的木材和植物燃料归电磁阶段；可燃冰允许进入能量阶段；必须依赖星际航行的其他珍奇矿物不得提前。转化协议按全部主产物和副产物中的最高主线矩阵阶段归类；取得协议后，建筑升级链不再要求目标建筑的原版科技解锁或制造掌握。
+- 普通物品协议不设额外解锁前置，正式解锁的实物支付天然限制超前恢复。
+- 黑雾物品协议只有在玩家实际接触对应掉落后才具备资格，使用双认知判断：
+  - 常规物品：`GameHistoryData.ItemUnlocked(inputId)`。
+  - `EItemType.DarkFog` / `UnlockKey == -2` 物品：`GameHistoryData.ItemUnlocked` 反映的是敌方掉落解锁集合（`enemyDropItemUnlocked`），不是普通科技解锁。
+  - 两种认知都接受"玩家当前实际持有该物品"作为已接触证据。
+- 实体塔返祖协议在对应专属培养累计实际产出成功达到培养资格门槛后进入候选池。
+- 特殊协议的前置由协议显式定义。
+- 黑雾接触资格（能否进入候选池/能否获得样本）与黑雾物品的认知等级（第 4 章地表/星域认知等级 0..4）是两个不同事实，不得互相替代判断。
 
-黑雾输入协议只有在玩家实际接触对应掉落后才具备检索资格。实现判断为 `GameHistoryData.ItemUnlocked(inputId)` 或玩家实际持有该物品；对 `EItemType.DarkFog` / `UnlockKey == -2` 物品，前者表示该敌方掉落已经进入 `enemyDropItemUnlocked`，不是普通科技解锁。当前黑雾协议挂入电磁检索池并标记为附属协议，不计入六个主阶段完成条件；取得资格后仍消耗该阶段机会恢复。
+黑雾路线是可选支线，只加速恢复，不阻塞任何完成条件；战斗不直接发放残片、记忆源点或科技点。
 
-协议完整度达到 `100` 后，`CivilizationRuntimeSync` 将配方写入 `RecipeAvailabilityStore` 的可用集合。配方不读取旧抽取共鸣、旧配方成长输入保留或旧双倍产出加成。
+正式解锁（购买）：
 
-`ReplicationRecipe.Create` 明确排除临界光子和反物质。每张资源复制配方的主产物固定为 `100%` 输出 `2` 个输入资源；以下自然伴生副产物各自独立按 `1%` 结算：
+- 完整度达到 100% 只取得购买资格。
+- Memory 分档按协议相关物品中的最高有效 itemValue：
 
-| 输入 | 自然伴生副产物 |
-|---|---|
-| 硅石 | 分形硅石 |
-| 石矿 | 硅石、钛石 |
-| 煤矿 | 金刚石 |
-| 氢 | 重氢 |
-| 重氢 | 氢 |
-| GenesisBook 硫矿 | 硫酸、二氧化硫 |
-| GenesisBook 放射性矿物 | 铀矿、钚矿 |
-| GenesisBook 海水 | 氯化钠 |
-| GenesisBook 氨 | 氮、氢 |
-| GenesisBook 氮 | 氨 |
-| GenesisBook 氧 | 二氧化碳 |
-| GenesisBook 氦 | 氦三 |
-| GenesisBook 氦三 | 氦 |
-| GenesisBook 二氧化碳 | 氧、高能石墨 |
-| GenesisBook 二氧化硫 | 氧、硫粉 |
+| 最高有效 itemValue | Memory 成本 |
+|---:|---:|
+| < 100 | 1 |
+| < 1000 | 5 |
+| < 10000 | 20 |
+| 其余 | 100 |
 
-外部模组未提供某个副产物时，创建配方前过滤该输出；不附带复制精华或其他旧精华。
+- 实物支付集合：
+  - 一般规则：需求集合中的不同物品各消耗一组（该物品 StackSize）实物。
+  - 复制协议：只收输入物品。
+  - 普通材料协议：收输入与全部输出，去重后每种一组。
+  - 建筑升级协议：通常只收输入物品。
+  - 特殊协议：支付集合由协议显式定义。
 
-`ConversionRecipe.CreateAll` 保持已经确认的建筑升级、物流运输、发电与燃料、生产设施、防御与弹药、消耗品、黑雾材料和兼容建筑链，并排除普通矿物、基础中间产物和通用制造材料链。`CreateChain` 继续按相邻层级和同层候选生成主产物，并根据 `itemValue` 计算输出数量；对于 `A -> B -> C` 建筑链，大量投入 `A` 可以得到 `B`，投入 `B` 可以得到 `C`。转化配方不附带转化精华。
+- 结算顺序（主机原子执行）：
+  1. 校验完整度达到 100% 且未正式解锁。
+  2. 校验特殊前置（如黑雾接触、返祖培养资格）已满足。
+  3. 校验记忆源点余额与实物库存充足。
+  4. 原子扣减记忆源点与实物。
+  5. 标记正式解锁并写入配方可用集合。
+  任一步失败不扣减任何资源，并向 UI 返回对应状态（余额不足 / 资格未满 / 特殊前置不足）。
+
+- 当前存档首个协议的完整度首次达到 100%（取得购买资格）时，立即一次性奖励与其 Memory 分档成本相等的记忆源点（仅一次），不等待正式解锁。
+
+复制与转化边界：
+
+- 复制配方主产物为输入资源本身，保留既定自然伴生副产物；不复制临界光子、反物质或配方未明确列出的关键稀有产物。
+- 转化配方只覆盖已确认的建筑、设备、燃料、防御、弹药、消耗品、黑雾材料和兼容建筑链，排除普通矿物、基础中间产物和通用制造材料链；建筑升级链按相邻层级与同层候选生成主产物，允许大量低层建筑取得下一层建筑。
 
 ## 6. 四塔职责与原胚体系
 
-主要代码入口：
+主要代码入口（域）：
 
-- `Logic/Fractionation/FracRecipes/CultivationRecipe.cs`
-- `Logic/Fractionation/FracRecipes/AnalysisRecipe.cs`
-- `Logic/Fractionation/FracRecipes/ReplicationRecipe.cs`
-- `Logic/Fractionation/FracRecipes/ConversionRecipe.cs`
-- `Logic/Fractionation/Fractionators/FractionatorTowerCatalog.cs`
+- `Logic/Fractionation`（四塔配方族）
+- `Logic/Fractionation/Fractionators`（塔型定义、能力投影和实例状态）
 
 塔型与稳定内部配方类型：
 
 | 塔型 | `ERecipe` | 基础职责 |
 |---|---|---|
 | 培养塔 | `Cultivation` | 原胚培养、实体塔返祖、上传 |
-| 解析塔 | `Analysis` | 矩阵解析、原胚谱系分化 |
+| 解析塔 | `Analysis` | 矩阵与样本残片生产、记忆派生、原胚谱系分化 |
 | 复制塔 | `Replication` | 同种原矿复制与既定自然伴生副产物 |
 | 转化塔 | `Conversion` | 已确认物品链的层级转换 |
 
@@ -271,28 +244,24 @@ RecipeKey = (ERecipe RecipeType, int InputId)
 
 - 通用原胚输入：随机产出四类实体塔。
 - 专属原胚输入：稳定产出对应实体塔。
-- 实体塔输入：在返祖协议完成后产出对应专属原胚。
+- 实体塔输入：在返祖协议正式解锁后产出对应专属原胚。
 
 `AnalysisRecipe` 生成两类规则：
 
-- 六色矩阵输入：产出对应阶段实体解析数据。
+- 矩阵与样本输入：按第 4 章残片生产规则产出残片实体，并触发记忆派生。
 - 通用原胚输入：随机分化为四类专属原胚；满足主路锁定许可和校准后可保存实例谱系目标。
 
-返祖资格按对应专属培养配方的 `TotalSuccessCount >= 20` 判断。通用培养、专属培养和谱系分化作为基础设施始终不进入随机协议目录。
+返祖资格按对应专属培养配方的 `TotalSuccessCount` 达到培养资格门槛判断。通用培养、专属培养和谱系分化作为基础设施始终不进入随机协议目录。
 
 开局套件提供培养塔和通用原胚。具体数量必须满足第二座培养塔和首座解析塔不会因首轮随机培养结果而永久阻断；启动套件不再发放旧 I-V 原胚、点数聚集塔或旧提示物品。
 
 ## 7. 远古科技与运行控制
 
-代码入口：
+代码入口（域）：
 
-- `Logic/Civilization/Technology/AncientTechTreeCatalog.cs`
-- `Logic/Civilization/Technology/AncientTechTreeState.cs`
-- `Logic/Civilization/Technology/AncientTechTreeService.cs`
-- `Logic/Fractionation/Fractionators/TowerRuntimeModifierCache.cs`
-- `Logic/Fractionation/Fractionators/FractionatorMainOutputLock.cs`
-- `Logic/Fractionation/Fractionators/FractionatorByproductDiscard.cs`
-- `Logic/Fractionation/Process/ProcessManager.cs`
+- `Logic/Civilization/AncientTechnology.cs`（科技树目录、状态与服务）
+- `Logic/Fractionation/Fractionators`（塔型能力投影与实例状态）
+- `Logic/Fractionation/Fractionators/FractionatorRuntime.cs`（分馏热路径）
 
 节点定义字段：
 
@@ -314,19 +283,15 @@ PrerequisiteNodeKey
 | 3 | 复制塔 | `Replication` |
 | 4 | 转化塔 | `Conversion` |
 
-每条主干固定五级串行节点：
+每条主干固定五级串行能力（顺序）：
 
-| 顺序 | 能力 | 成本 |
-|---:|---|---:|
-| 1 | 流动输出堆叠 | 1 |
-| 2 | 产物输出堆叠 | 2 |
-| 3 | 分馏永动 | 3 |
-| 4 | 主路锁定 | 5 |
-| 5 | 副产物弃置 | 8 |
+```text
+流动输出堆叠 -> 产物输出堆叠 -> 分馏永动 -> 主路锁定 -> 副产物弃置
+```
 
-购买要求至少完成一个协议阶段，并且前置节点已解锁。同一塔型的所有实体塔共享节点状态。
+节点有真实前置关系，前置节点解锁后才能购买；购买只消耗远古文明科技点（来源见第 4 章深层解析）。同一塔型的所有实体塔共享节点状态。
 
-每项能力分别维护自己的授权与执行逻辑，但四塔必须都接入该项能力的同一入口。每塔状态可以分别为启用或未解锁；不得按塔型、配方类、主产物数量或副产物数量省略能力字段或 UI 行。当前配方无可用效果时显示对应的无目标/无副产物状态。
+每项能力分别维护自己的授权与执行逻辑，但四塔必须都接入该项能力的同一入口；不得按塔型、配方类、主产物数量或副产物数量省略能力字段或 UI 行。当前配方无可用效果时显示对应的无目标/无副产物状态。
 
 能力语义：
 
@@ -340,48 +305,32 @@ PrerequisiteNodeKey
 
 ```text
 塔型节点已购买
-AND 当前配方 TotalSuccessCount 达到门槛
+AND 当前配方累计实际产出成功达到校准门槛
 AND 当前实体塔已保存对应设置
 ```
 
-主路锁定校准门槛 `S`：
+配方校准只累计实际产生至少一个产物的成功；判定成功但产物数为零的批次不推进校准。四塔统一使用 `LockedOutput` 保存主路目标，存档和蓝图只读写当前通用主路目标；培养塔通用培养、转化塔多主产物和解析塔谱系分化分别提供自己的候选集合与结算算法。主路锁定只作用于 `OutputMain`；副产物弃置只作用于 `OutputAppend`。实例设置随存档、复制粘贴、蓝图和联机同步。
 
-- 培养配方：`20`。
-- 其他配方：电磁阶段从 `200` 开始，此后每个矩阵阶段翻倍。
-
-副产物弃置校准门槛：
-
-```text
-5S
-```
-
-四塔统一使用 `LockedOutput` 保存主路目标。培养塔通用培养、转化塔多主产物和解析塔谱系分化仍分别提供自己的候选集合与结算算法；复制塔等当前只有单一主产物的配方保留主路锁定状态和 UI，但显示当前无可选目标。主路锁定只作用于 `OutputMain`；副产物弃置只作用于 `OutputAppend`。
-
-批量结算只按实际产出成功数调用 `RecordSuccesses`。副产物批量补救按缺失成功次数和本批次已观察副产物命中率计算：
-
-```text
-RollBinomialApprox(
-    missingSuccessCount,
-    producedHits / rolledSuccessCount)
-```
-
-主路目标和副产物弃置通过 `FractionatorBlueprintParameters` 的共享 `Upsert/TryRead` 写入同一蓝图参数数组，互不覆盖；同时接入存档、复制粘贴和 Nebula packet type `2/4`。
+文明与成就业务不进入逐物品分馏热路径；热路径只读取各自状态生成的运行缓存。
 
 ## 8. 成就与长期目标
 
-代码入口：
+代码入口（域）：
 
-- `Logic/Achievements/AchievementModule.cs`
-- `Logic/Achievements/AchievementCatalog.cs`
-- `Logic/Achievements/AchievementService.cs`
-- `Logic/Fractionation/FracRecipes/Runtime/RecipeModifierCache.cs`
+- `Logic/Civilization/Achievement.cs`（成就模块、目录与服务）
+- `Logic/Fractionation`（奖励投影缓存）
 
-成就每 `60 tick` 低频检查一次，完成状态保存在当前存档。当前定义：
+成就每 60 tick 低频检查一次。
+
+- 普通成就：完成状态保存在当前存档；奖励与完成时机匹配，不跨档提供决定性强度。
+- 秘密成就：完成状态保存在本机 profile；只承载发现记录、背景或纪念内容，不发放生产强度或经济资源。
+
+当前普通成就定义（四个 key 全部保留）：
 
 | 键 | 条件 | 奖励 |
 |---|---|---|
 | `first-protocol` | 完成 1 项协议 | 资源复制成功率 `+1%` |
-| `first-stage` | 完成 1 个阶段 | 转化成功率 `+1%` |
+| `first-stage` | 兼容 key，按无阶段协议数量里程碑判定（具体显示名与阈值以最终实现为准） | 转化成功率 `+1%` |
 | `first-tech` | 累计投入 1 科技点 | 全配方成功率 `+0.5%` |
 | `fractionation-1000` | 累计成功分馏 1000 次 | 全配方成功率 `+0.5%` |
 
@@ -393,22 +342,24 @@ RollBinomialApprox(
 
 | 分类 | 页面 | 展示和操作范围 |
 |---|---|---|
-| 文明解析 | 文明总览 | 六阶段数据、机会、发现数和完成数 |
-| 文明解析 | 文明协议恢复 | 阶段、广域/方向/锚定策略、目标、批量结算、优先协议、货币和结果 |
+| 文明解析 | 文明总览 | 残片/记忆源点余额、深层解析进度、目录发现数和完成数 |
+| 文明解析 | 协议恢复 | 广域/方向/锚定策略、方向、锚定目标、批量次数、残片余额、逐次结果、无效返还与保底 |
 | 文明解析 | 远古科技树 | 科技点、四条塔型主干、前置和购买 |
 | 恢复指引 | 恢复手册 | 长期机制说明和当前恢复步骤 |
-| 恢复指引 | 成就 | 当前进度、完成状态和固定奖励 |
+| 恢复指引 | 成就 | 当前存档普通里程碑 + 本机 profile 秘密纪念 |
 
-客户端联机 UI 提交需要主机结算的动作后，显示“等待主机”状态，不继续修改本地文明状态。
+客户端联机 UI 提交需要主机结算的动作后显示"等待主机"状态，不继续修改本地文明状态。检索与解锁必须向玩家反馈：余额不足、资格未满、特殊前置不足、原子解锁成功、旧档纪念；不能把这些状态合并成无法诊断的单一提示。
 
 `DataCenterUploadRouter.Upload` 是玩家和建筑实体上传的统一入口：
 
 ```text
-若 itemId 是当前阶段配置中的解析数据:
-    AnalysisService.TrySubmitDataItem
+若 itemId 是残片/记忆源点面额实体:
+    按面额计入对应余额
+若 itemId 是货币包裹:
+    仅在解析塔输出与上传时解析内容并按内容面额入账
 否则:
     DataCenterInventory.AddItemToModData
-    若是有效分馏塔实体，再触发内部塔型注册科技兼容逻辑
+    若是有效分馏塔实体，再触发内部塔型注册兼容逻辑
 ```
 
 接入上传路由的入口：
@@ -419,50 +370,41 @@ RollBinomialApprox(
 - 物流交互站上传。
 - `PackageLogistic` 兼容写入。
 
-内部奖励、联机库存同步包和残片奖励直接写数据中心库存，不经过上传路由。
+内部奖励、联机库存同步包和残片返还直接写数据中心余额/库存，不经过上传路由。
 
 恢复手册保存长期机制说明；原生 Tutorial 只提供入口提示和首轮操作引导。旧抽取、成长规划、市场交易、旧主线任务、旧成就、旧分馏统计、全局成长和旧建筑操作页面及其存档块不再保留隐藏入口或兼容读取。
 
 ## 10. 存档、联机与版本迁移
 
-`FeatureSaveRegistry` 使用独立顶层块：
+存档所有权（`FeatureSaveRegistry` 顶层块）：
 
 ```text
+Item / DataCenterInventory     (基础残片余额、基础记忆源点余额)
+Recipe / RecipeManager         (MemoryResidue)
 AncientCivilization
-├── Profile
-├── Analysis
-├── Protocols
-├── Technology
-└── Recovery
-Achievements
+├── Analysis    (检索计数、深层解析进度)
+├── Protocols   (发现、完整度、正式解锁状态)
+└── Technology  (科技点、节点状态)
+Achievements     (普通成就)
 ```
 
-`AncientCivilization` 由 `CivilizationModule` 管理，`Achievements` 由 `AchievementModule` 管理。定义目录不保存，只保存当前存档状态；所有顶层块导入后分别重建对应运行投影。存档总版本保持 `10`，不读取 FE 3.0 开发中间状态中的 `AncientCivilization/Achievements` 子块。FE 2.x 的 `Gacha`、`Economy`、`RecipeGrowth`、旧主面板页面和旧顶层文明恢复块不读取或导出。
+`AncientCivilization` 由 `CivilizationModule` 管理，`Achievements` 由 `AchievementModule` 管理；秘密成就记录于独立的本机 profile，不进入存档状态。定义目录不保存，只保存当前存档状态；所有顶层块导入后分别重建对应运行投影。
 
-`BuildingManager` 保存配方累计成功和实例运行设置。四塔主路目标统一写入 `LockedOutput`，存档和蓝图只读写当前通用主路目标。
+存档总版本保持 10。低于 10 的存档不读取任何 FE 自有状态块（`AncientCivilization` / `Achievements` 均不读取），也不读取 FE 3.0 开发中间状态。识别为 FE 2.x 旧版（版本 1）的存档只触发"旧日余响"纪念内容，不发放任何奖励。FE 2.x 的 `Gacha`、`Economy`、`RecipeGrowth`、旧主面板页面和旧顶层文明恢复块不读取或导出。
+
+物理 Proto 兼容单独说明：建筑、模型和物品的物理 ID 保持 FE 2.x 值或提供映射，使旧蓝图和存档引用仍可解析；该兼容与状态迁移相互独立，不读取旧状态。
+
+`FractionatorManager` 保存配方累计成功和实例运行设置。四塔主路目标统一写入 `LockedOutput`，存档和蓝图只读写当前通用主路目标。
 
 Nebula 文明同步采用主机权威模型：
 
-- 客户端动作请求包括手动解析数据上传、优先协议切换、单次/批量检索和科技购买。
-- 主机验证检索模式；网络批量请求上限为默认批量数 `10`。
-- 主机结算后复用 `CivilizationStatePacket` 传输文明、成就、配方校准和残片余额；载荷中 `Civilization` 与 `Achievements` 是独立子块，复用传输包不改变领域所有权。
-- 自动上传形成新检索机会、主机成就完成和玩家加入时，由主机广播或补发权威快照。
-- `CivilizationStatePacketProcessor` 在主机拒绝客户端全量快照。
-- 客户端请求分支返回等待主机状态，不提前修改本地文明状态。
+- 客户端动作请求包括手动上传、单次/批量检索、科技购买和正式解锁请求。
+- 主机验证检索模式、余额与资格；批量请求逐次等价结算；正式解锁由主机原子扣减记忆源点与实物后广播权威状态。
+- 载荷中文明、成就与配方校准是独立子块，复用传输包不改变领域所有权。
+- 自动上传、普通成就完成和玩家加入时，由主机广播或补发权威快照。
+- 客户端不能发送全量文明快照覆盖主机；请求分支返回等待主机状态，不提前修改本地文明状态。
 
-`LegacyProtoMigration` 以 FE `v2.2.3` 为基准，映射范围：
-
-- 六类现役建筑：`8021/8022/8026/8027/8028/8029`。
-- 对应模型：`601/602/606/607/608/609`。
-- 物流配方：`928/929`。
-- 旧定向原胚：`8016`。
-- 有明确现役对应物的隐藏科技和相关引用。
-
-迁移覆盖实体、预建筑、蓝图、库存与物流组件、传送带/分馏/分拣缓存、配方和科技引用。量子复制、点金、点数聚集和旧 I-V 原胚不映射。映射函数幂等。
-
-`FractionatorOutputState.OutputExtendImport` 只保留 `LDB.items.Exist(outputId)` 的产物。数据中心旧 `LeftInc` 自动喷涂池块不再导出；导入旧存档时由未知标签长度机制完整跳过。下载物品只保留库存原有增产点。
-
-没有真实 FE 2.x 存档和蓝图样本时，迁移验证范围仅包括结构探针、人工映射复核和可编译性，不声明实档迁移通过。
+迁移幂等。没有真实 FE 2.x 存档和蓝图样本时，迁移验证范围仅包括结构探针、人工映射复核和可编译性，不声明实档迁移通过。
 
 ## 11. 全局红线
 
@@ -470,12 +412,14 @@ Nebula 文明同步采用主机权威模型：
 
 - 不注册旧建筑等级、经验、突破、献祭、裂变池、共振、`SuccessBoost` 或自动喷涂池运行路径。
 - 不注册旧抽取、成长商店、市场交易、旧线性配方成长页面或存档块。
-- 不把残片和远古文明科技点加入互换入口，也不重新注册记忆源点。
+- 不让残片、记忆源点和远古文明科技点进入互换入口。
 - 不让 `Replication` 创建临界光子、反物质或配方未明确列出的关键稀有产物；既定自然伴生副产物不属于该禁令。
 - 不让普通广域或方向检索绕过随机候选，也不让锚定检索返回无关或无效结果。
 - 不让批量检索采用与逐次单次不同的近似状态结算。
+- 正式解锁必须原子执行；禁止先扣减后失败回滚或只扣实物不扣记忆源点的部分结算。
 - 不从客户端发送全量文明状态覆盖主机。
 - 不把 `Logic/Civilization` 引入逐物品分馏热路径。
 - 不直接修改共享 `BaseRecipe.GetOutputs` 来实现某一配方特例；配方差异由子类承担。
 - 不使用保留字段 `buffBonus1/2/3`。
+- 战斗不直接发放残片、记忆源点或科技点；秘密成就和旧档纪念不发放生产强度、经济资源或任何奖励。
 - 不把构建命令、验证日志、提交历史、临时缺口、AI 工作流或聊天状态写入本文件。

@@ -1,18 +1,22 @@
 ﻿using System.Collections.Concurrent;
 using System.IO;
+using FE.Logic.Station.Definitions;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Station;
 
 /// <summary>
 /// 物流交互站管理器。
-/// 负责交互站与数据中心的物品同步、两套站点面板的扩展按钮，以及弹窗状态与存档读写。
+/// 负责交互站原型注册、固定运行属性、与数据中心的物品同步、两套站点面板的扩展按钮，以及弹窗状态与存档读写。
 /// </summary>
 public static partial class StationManager {
     /// <summary>
-    /// 注册交互站扩展按钮的多语言文本。
+    /// 注册交互站原型与扩展按钮的多语言文本。
     /// </summary>
     public static void AddTranslations() {
+        PlanetaryInteractionStation.AddTranslations();
+        InterstellarInteractionStation.AddTranslations();
+
         // 传输模式按钮文本
         Register("双向同步", "Sync", "双向同步");
         Register("仅上传", "Upload Only", "仅上传");
@@ -22,6 +26,52 @@ public static partial class StationManager {
         Register("无限上传", "Infinite Upload", "无限上传");
         // 物流交互站集装上限复选框文本。原版物流站保留游戏自带文本。
         Register("使用强化上限", "Up to bonus limit", "使用强化上限");
+    }
+
+    /// <summary>
+    /// 注册两类物流交互站原型。
+    /// </summary>
+    public static void AddStations() {
+        PlanetaryInteractionStation.Create();
+        InterstellarInteractionStation.Create();
+    }
+
+    /// <summary>
+    /// 设置物流交互站材质与颜色。
+    /// </summary>
+    public static void SetStationMaterial() {
+        PlanetaryInteractionStation.SetMaterial();
+        InterstellarInteractionStation.SetMaterial();
+    }
+
+    /// <summary>
+    /// 刷新物流交互站血量与能耗。
+    /// </summary>
+    public static void UpdateHpAndEnergy() {
+        PlanetaryInteractionStation.UpdateHpAndEnergy();
+        InterstellarInteractionStation.UpdateHpAndEnergy();
+    }
+
+    /// <summary>
+    /// 读取物流交互站当前允许的处理堆叠上限；该值来自全局堆叠科技，不属于建筑等级。
+    /// </summary>
+    public static int MaxStack(this ItemProto building) {
+        return building.ID switch {
+            IFE行星内物流交互站 => PlanetaryInteractionStation.MaxStack,
+            IFE星际物流交互站 => InterstellarInteractionStation.MaxStack,
+            _ => 1
+        };
+    }
+
+    /// <summary>
+    /// 读取物流交互站的固定交互能耗倍率。
+    /// </summary>
+    public static float InteractEnergyRatio(this ItemProto building) {
+        return building.ID switch {
+            IFE行星内物流交互站 => PlanetaryInteractionStation.InteractEnergyRatio,
+            IFE星际物流交互站 => InterstellarInteractionStation.InteractEnergyRatio,
+            _ => 1.0f
+        };
     }
 
     public static void Import(BinaryReader r) {

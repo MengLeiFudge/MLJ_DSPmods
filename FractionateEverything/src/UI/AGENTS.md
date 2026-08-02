@@ -60,7 +60,7 @@ Import/Export/IntoOtherSave();
 
 - `Patches/Common/`：只放与功能域无关的通用控件 patch，例如按钮、下拉框兼容。
 - 分馏塔窗口、配方显示、图标注入、信号选择等 patch 不再定义为“主面板 UI”，应归入对应功能域的 `Presentation`：
-  - 分馏塔窗口、分馏塔 brief info、分馏配方显示 -> `Logic/Fractionation/Presentation`
+  - 分馏塔窗口、分馏塔 brief info、分馏配方显示 -> `Logic/Fractionation/Fractionators/Presentation`
   - 物品图标、信号选择、信号标签选择 -> `Logic/Items/Presentation`
 
 UI 补丁只处理界面层；游戏状态逻辑放对应 `Logic/*` 功能域。

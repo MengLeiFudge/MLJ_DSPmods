@@ -1,4 +1,4 @@
-﻿using FE.Logic.Fractionation.FracRecipes;
+﻿using FE.Logic.Fractionation.Recipes;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Fractionators;

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using BepInEx.Configuration;
-using FE.Logic.Civilization.Protocols;
+using FE.Compatibility.Nebula;
 using FE.Logic.Civilization.Technology;
 using FE.UI.Foundation;
 using FE.UI.Foundation.Window;
@@ -45,8 +45,9 @@ public static class AncientTechTreePage {
         Register("节点已解锁", "Unlocked");
         Register("科技点不足", "Insufficient points");
         Register("前置节点未解锁", "Prerequisite locked");
-        Register("文明阶段未完成", "Complete a civilization stage first");
         Register("运行能力尚未接入", "Runtime support pending");
+        Register("远古科技-等待主机", "Awaiting host", "等待主机");
+        Register("远古科技-客户端说明", "Client purchases are settled by the host.", "客户端购买由主机结算。");
         Register("可用科技点", "Available Points");
         Register("累计获得", "Total Earned");
         Register("累计投入", "Total Spent");
@@ -107,10 +108,14 @@ public static class AncientTechTreePage {
             }
         }
 
-        footerText.text =
+        string footer =
             $"{"可用科技点".Translate()}：{AncientTechTreeState.AvailablePoints}  "
             + $"{"累计获得".Translate()}：{AncientTechTreeState.TotalPointsEarned}  "
             + $"{"累计投入".Translate()}：{AncientTechTreeState.TotalPointsSpent}";
+        if (NebulaMultiplayerModAPI.IsClient) {
+            footer += "  ·  " + "远古科技-客户端说明".Translate();
+        }
+        footerText.text = footer;
     }
 
     private static IReadOnlyList<LayoutNode> BuildTowerPaths() {
@@ -187,13 +192,14 @@ public static class AncientTechTreePage {
             text = "节点已解锁".Translate();
         } else if (!node.RuntimeImplemented) {
             text = "运行能力尚未接入".Translate();
-        } else if (ProtocolCatalog.GetCompletedStageCount() <= 0) {
-            text = "文明阶段未完成".Translate();
         } else if (node.PrerequisiteNodeKey != null
                    && AncientTechTreeState.GetLevel(node.PrerequisiteNodeKey) <= 0) {
             text = "前置节点未解锁".Translate();
         } else if (AncientTechTreeState.AvailablePoints < node.Cost) {
             text = "科技点不足".Translate();
+        } else if (NebulaMultiplayerModAPI.IsClient) {
+            // 客户端只把购买请求转发给主机；本地不扣点，结算状态在主机广播后回填。
+            text = "远古科技-等待主机".Translate();
         } else {
             text = $"{"购买节点".Translate()} ({node.Cost})";
         }

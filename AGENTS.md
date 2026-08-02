@@ -106,7 +106,7 @@ cd "/mnt/d/project/dsp/MLJ_DSPmods/AfterBuildEvent/bin/Debug"
 - `FractionateEverything/GAME_DESIGN.md` is the FE author/AI-facing game-design source of truth. It records stable experience goals, player decisions, system relationships, mechanism contracts, responsibility boundaries, and red lines; it is not a marketing summary, numeric implementation spec, or audit report.
 - `FractionateEverything/GAME_DESIGN_SPEC.md` is the matching executable game-design specification. Keep formulas, probabilities, thresholds, units, applicability, trigger timing, settlement order, state fields, persistence/network semantics, UI operations, and necessary code entry points there.
 - The two files must use the same numbered chapter names and order. `GAME_DESIGN_SPEC.md` refines `GAME_DESIGN.md` but never overrides it. If a detailed rule changes a system's purpose, player decision, responsibility boundary, or invariant, update `GAME_DESIGN.md` first, then the matching `GAME_DESIGN_SPEC.md` chapter and code.
-- Confirmed parameters have one source of truth in `GAME_DESIGN_SPEC.md`; do not duplicate numeric tables in `GAME_DESIGN.md`. Structural counts that define the design itself, such as four tower types or six progression stages, may remain in both when needed for comprehension.
+- Confirmed parameters have one source of truth in `GAME_DESIGN_SPEC.md`; do not duplicate numeric tables in `GAME_DESIGN.md`. Structural counts that define the design itself, such as four tower types, may remain in both when needed for comprehension.
 - Do not add candidate designs, unconfirmed balance, implementation gaps, audit reasoning, build/publish commands, validation logs, commit history, AI workflow instructions, task plans, or chat-derived status reports to either game-design document.
 - AI workflow and repository rules belong in this `AGENTS.md` or the relevant domain `AGENTS.md`; user-facing installation or public behavior belongs in `README.md`; temporary reasoning belongs in `.codex/drafts/` or `.codex/plans/`.
 - When updating FE game design, preserve the direction -> mechanism contract -> executable specification hierarchy and remove obsolete or duplicated rules instead of accumulating historical alternatives.
@@ -118,20 +118,17 @@ FractionateEverything/src/
 ├── FractionateEverything.cs    # BepInEx plugin entry point (Awake, config, Harmony)
 ├── Lifecycle/                  # Feature bootstrap and save/load dispatch
 ├── Compatibility/              # Per-mod detection + integration → Compatibility/AGENTS.md
+│   ├── LegacySave/             # FE 2.x physical Item/Model/Recipe reference migration (vanilla containers only)
 │   ├── Mods/                   # General external mod integrations
 │   └── Nebula/                 # Multiplayer packets and sync hooks
 ├── Logic/                      # → Logic/AGENTS.md
-│   ├── Achievements/           # Single-save milestones, state, rewards, runtime projection
-│   ├── Buildings/              # Building registration and FE 2.x Proto migration
-│   ├── Civilization/           # Ancient stages, analysis, protocols, recovery, tech tree
+│   ├── Civilization/           # Ancient civilization: analysis, protocols, recovery, tech tree, achievements, dark fog, tutorial
 │   ├── DataCenter/             # Data centre inventory + package access patches
-│   ├── DarkFog/                # FE dark-fog branch and combat progression
+│   ├── Enhancements/           # Stacking and vanilla recipe adjustment (Stacking/, VanillaRecipes/)
 │   ├── EnginePatches/          # Standalone engine/data loading transpilers
-│   ├── Fractionation/          # Recipes, process/state, tower definitions and presentation
+│   ├── Fractionation/          # Recipes, runtime, tower definitions and presentation
 │   ├── Items/                  # Item prototypes/value/matrix helpers + item presentation patches
-│   ├── Progression/            # Hidden tech, stacking compatibility, starter flow and tutorials
-│   ├── Station/                # Data-centre station interaction and station UI patches
-│   └── VanillaRecipes/         # Vanilla recipe adjustment state and runtime sync
+│   └── Station/                # Data-centre station interaction and station UI patches
 ├── UI/                         # → UI/AGENTS.md
 │   ├── Controls/               # Reusable widgets → Controls/AGENTS.md
 │   ├── Foundation/             # Window lifecycle and RectTransform helpers
@@ -164,7 +161,7 @@ FractionateEverything/src/
 | Local variables | `camelCase` | `outputList`, `fluidInputInc` |
 | Proto ID constants | `I` prefix + Chinese item name | `I铁块`, `I电磁矩阵` |
 | Harmony patch methods | `ClassName_MethodName_Suffix` | `FractionatorComponent_Import_Postfix` |
-| Namespaces | `FE.*` (root `FE`) | `FE.Logic.Buildings`, `FE.Utils` |
+| Namespaces | `FE.*` (root `FE`) | `FE.Logic.Fractionation.Fractionators`, `FE.Utils` |
 
 ## Import Organization
 
@@ -181,13 +178,13 @@ using UnityEngine;
 
 // 3. Internal FE namespaces (alphabetical)
 using FE.Compatibility;
-using FE.Logic.Buildings;
+using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Fractionation.Recipes;
 using FE.Logic.Station;
 
 // 4. Static imports last
 using static FE.FractionateEverything;
-using static FE.Logic.Fractionation.Process.ProcessManager;
+using static FE.Logic.Fractionation.Fractionators.ProcessManager;
 using static FE.Utils.Utils;
 ```
 
@@ -230,9 +227,9 @@ public static void SomeMethod() { ... }
 ## DSP/Unity-Specific Patterns
 
 ### Static Building Class Template
-Every building definition in `Logic/Buildings/Definitions/` follows this structure:
+Every tower definition in `Logic/Fractionation/Fractionators/Definitions/` follows this structure:
 ```csharp
-namespace FE.Logic.Buildings.Definitions;
+namespace FE.Logic.Fractionation.Fractionators;
 
 public static class ConversionTower {
     private static ItemProto item;
@@ -292,15 +289,15 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
 
 ## Common Tasks
 
-### Adding a New Building
-1. Create `Logic/Buildings/Definitions/NewBuildingName.cs` following the static class template above
+### Adding a New Tower
+1. Create `Logic/Fractionation/Fractionators/Definitions/NewTowerName.cs` following the static class template above
 2. Add `Level`, `EnableXxx`, switch-expression properties as needed
 3. Implement `AddTranslations()`, `Create()`, `SetMaterial()`, `UpdateHpAndEnergy()`
-4. Register in `Logic/Buildings/BuildingManager.cs`: call new methods inside `AddTranslations()`, `AddFractionators()`, `SetFractionatorMaterial()`, `UpdateHpAndEnergy()`
+4. Register in `Logic/Fractionation/Fractionators/FractionatorManager.cs`
 5. Add Proto IDs to `Utils/ProtoID.cs`
 
 ### Adding a New Recipe Type
-1. Create `Logic/Fractionation/Recipes/NewRecipe.cs` inheriting from `BaseRecipe`
+1. Create `Logic/Fractionation/Recipes/Definitions/NewRecipe.cs` inheriting from `BaseRecipe`
 2. Override `RecipeType` (returns an `ERecipe` value)
 3. Override `GetOutputs()` with the distribution logic
 4. Add a static `CreateAll()` method and call it from `Logic/Fractionation/Recipes/RecipeManager.cs`
@@ -355,7 +352,7 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
 - `.sisyphus/plans/` — task plans with checkboxes; update when tasks complete
 - `.sisyphus/notepads/` — learnings from previous sessions; read before starting
 - `.sisyphus/evidence/` — screenshots and supporting evidence
-- Subdirectory `AGENTS.md` files exist for major FE domains such as `Logic/Civilization/`, `Logic/Fractionation/`, `Logic/Station/`, `Logic/Buildings/`, `Logic/DataCenter/`, `Logic/Items/`, `Logic/Progression/`, `Logic/DarkFog/`, `UI/`, `UI/Controls/`, `UI/MainPanel/`, `Compatibility/`, `Utils/`, and `AfterBuildEvent/src/`
+- Subdirectory `AGENTS.md` files exist for major FE domains such as `Logic/Civilization/`, `Logic/Fractionation/`, `Logic/Station/`, `Logic/DataCenter/`, `Logic/Items/`, `Logic/Enhancements/`, `UI/`, `UI/Controls/`, `UI/MainPanel/`, `Compatibility/`, `Utils/`, and `AfterBuildEvent/src/`
 - **Simulator-first workflow (mandatory):** when the user is exploring balance, pacing, or design direction and has not yet approved applying the result to the real mod, agents must restrict code changes to `VanillaCurveSim/**` (and supporting docs/plans if needed). In this stage, agents may read `FractionateEverything/**` to mirror real formulas, but must not modify FE project files until the user explicitly confirms that the simulated result should be applied to FE.
 
 ## Analysis UI Layout Baseline (Mandatory)

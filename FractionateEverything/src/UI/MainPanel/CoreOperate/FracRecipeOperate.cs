@@ -3,19 +3,16 @@ using System.IO;
 using System.Text;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
-using FE.Logic.Buildings;
-using FE.Logic.Civilization.Configuration;
 using FE.Logic.Civilization.Protocols;
-using FE.Logic.Fractionation.FracRecipes;
-using FE.Logic.Fractionation.FracRecipes.Runtime;
+using FE.Logic.Fractionation.Recipes;
 using FE.Logic.Fractionation.Fractionators;
 using FE.UI.Controls;
 using FE.UI.Foundation.Window;
 using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.UI;
-using static FE.Logic.Fractionation.FracRecipes.ERecipeExtension;
-using static FE.Logic.Fractionation.FracRecipes.RecipeManager;
+using static FE.Logic.Fractionation.Recipes.ERecipeExtension;
+using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.UI.Layout.GridDsl;
 using static FE.Utils.Utils;
 
@@ -55,19 +52,19 @@ public static class FracRecipeOperate {
         Register("协议未发现", "Protocol not discovered");
         Register("协议解析中", "Protocol analysis in progress");
         Register("协议已恢复", "Protocol recovered");
+        Register("可购买", "Purchase ready");
         Register("不由文明协议控制", "Not controlled by civilization protocols");
         Register("尚未进入检索池", "Not yet eligible for retrieval");
         Register("已经进入检索池", "Eligible for retrieval");
         Register("当前不可运行", "Unavailable");
         Register("当前可运行", "Available");
-        Register("协议未完整恢复，产物结构将在完整度达到100%后显示。",
-            "The output structure becomes visible after protocol completeness reaches 100%.");
+        Register("协议未完整恢复，产物结构将在正式解锁后显示。",
+            "The output structure becomes visible after the protocol is formally unlocked.");
         Register("无", "None");
         Register("输入", "Input");
         Register("基础成功率", "Base Success Rate");
         Register("损毁率", "Destruction Rate");
         Register("状态", "Status");
-        Register("文明阶段", "Civilization Stage");
         Register("协议状态", "Protocol Status");
         Register("协议完整度", "Protocol Completeness");
         Register("检索资格", "Retrieval Eligibility");
@@ -218,7 +215,7 @@ public static class FracRecipeOperate {
         text.AppendLine($"{"状态".Translate()}：{(available ? "当前可运行" : "当前不可运行").Translate()}");
         text.AppendLine();
         if (!available) {
-            text.Append("协议未完整恢复，产物结构将在完整度达到100%后显示。".Translate());
+            text.Append("协议未完整恢复，产物结构将在正式解锁后显示。".Translate());
             return text.ToString();
         }
 
@@ -251,13 +248,14 @@ public static class FracRecipeOperate {
             text.AppendLine($"{"协议状态".Translate()}：{"不由文明协议控制".Translate()}");
         } else {
             ProtocolProgressStore.ProtocolProgress progress = ProtocolProgressStore.GetOrCreate(recipeKey);
-            MatrixStageDefinition stage = ProgressionProfileRegistry.Current?.GetStage(definition.StageKey);
-            string protocolState = progress.Completeness >= 100
+            string protocolState = progress.FormallyUnlocked
                 ? "协议已恢复"
-                : progress.Discovered ? "协议解析中" : "协议未发现";
-            text.AppendLine($"{"文明阶段".Translate()}：{stage?.DisplayNameKey.Translate() ?? definition.StageKey}");
+                : progress.Completeness >= 100
+                    ? "可购买"
+                    : progress.Discovered ? "协议解析中" : "协议未发现";
             text.AppendLine($"{"协议状态".Translate()}：{protocolState.Translate()}");
             text.AppendLine($"{"协议完整度".Translate()}：{progress.Completeness}%");
+            text.AppendLine($"正式解锁：{(progress.FormallyUnlocked ? "是" : "否")}");
             text.AppendLine($"{"检索资格".Translate()}：{(ProtocolEligibilityService.IsEligible(definition)
                 ? "已经进入检索池" : "尚未进入检索池").Translate()}");
         }

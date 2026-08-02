@@ -1,38 +1,46 @@
-# Logic/Fractionation — 分馏域
+﻿# Logic/Fractionation — 分馏域
 
-分馏域是 FE 核心玩法逻辑，包含配方、文明状态的运行投影、分馏塔运行热路径、实例状态和分馏塔窗口表现层 patch。
+分馏域是 FE 核心玩法逻辑，包含配方族、文明状态的运行投影、分馏塔运行热路径、塔型定义与实例状态、以及分馏塔窗口表现层 patch。
 
 ## Structure
 
 ```
 Fractionation/
-├── FracRecipes/    # BaseRecipe、ERecipe、RecipeManager、具体分馏配方
-├── Fractionators/  # 分馏塔定义、科技运行投影与单塔实例状态
-├── Process/        # 分馏器运行热路径、能耗 patch、性能探针
-└── Presentation/   # 分馏塔窗口、brief info、配方显示相关 UI patch
+├── Recipes/                     # namespace FE.Logic.Fractionation.Recipes
+│   ├── RecipeManager.cs         # 配方族注册与可用集合
+│   ├── RecipeRuntime.cs         # 文明/成就域投影过来的运行缓存（可用性、固定加成）
+│   ├── Definitions/             # 5 个配方族定义文件（BaseRecipe 子类）
+│   └── Models/                  # 2 个模型定义文件
+└── Fractionators/               # namespace FE.Logic.Fractionation.Fractionators（表现层 .Presentation）
+    ├── FractionatorManager.cs   # 四塔注册、active 列表、能力投影与实例状态聚合
+    ├── FractionatorRuntime.cs   # 分馏热路径与运行分发
+    ├── Definitions/             # 四塔定义（培养/解析/复制/转化）
+    └── Presentation/            # 分馏塔窗口与 brief info（非 partial）
+        ├── FractionatorWindow.cs
+        └── FractionatorBriefInfoPatch.cs
 ```
+
+依赖方向：`Recipes` 与 `Fractionators` 只读取 `Civilization` / 成就域投影生成的运行缓存（`RecipeRuntime`、`TowerRuntimeModifierCache`），不得引用文明业务对象；`Logic/Fractionation` 不反向引用 `Logic/Civilization`。
 
 ## Recipe Rules
 
-- `BaseRecipe.GetOutputs()` 是共享热路径，禁止直接为单个需求改它。
-- 新配方类型放 `FracRecipes/NewRecipe.cs`，继承 `BaseRecipe`，并在 `RecipeManager.AddFracRecipes()` 注册。
+- `BaseRecipe.GetOutputs()` 是共享热路径，禁止直接为单个需求改它；配方差异由子类承担。
+- 新配方族定义放 `Recipes/Definitions/NewRecipe.cs`，继承 `BaseRecipe`，并在 `Recipes/RecipeManager.cs` 注册。
 - `OutputMain` 是主产物，`OutputAppend` 是副产物。
 - `fluidInputInc` 必须沿输出链路传递，不能吞掉增产点。
-- `FracRecipes/Runtime/` 只保存文明域投影过来的配方可用性和固定加成；不得引用文明业务对象。
+- `Recipes/RecipeRuntime.cs` 只保存文明域投影过来的配方可用性和固定加成（含成就加成缓存）；不得引用文明业务对象。
 - 旧线性配方等级、经验、突破和重复抽取增幅已经删除，不得在运行缓存中恢复这些概念。
 
-## Process Rules
+## Runtime Rules
 
-- `Process/ProcessManager.cs` 保持核心 `InternalUpdate<T>` 集中可读。
+- 分馏热路径集中在 `Fractionators/FractionatorRuntime.cs`，保持核心 `InternalUpdate<T>` 集中可读。
 - 四塔运行分发必须按建筑 ID 显式映射到对应 handler 和 `ERecipe`；不得用目录下标索引另一份平行 handler 数组。
-- 完整处理流程内部的传送带输入输出 helper 留在 `Process/ProcessManager.cs`。
-- 能耗 IL patch 放 `Process/PowerPatch.cs`。
-- 性能探针和日志桶放 `Process/Perf.cs`。
+- 完整处理流程内部的传送带输入输出 helper 留在热路径文件内。
 - 旧献祭成功率、建筑等级和裂变池逻辑已经删除，不得重新接入热路径。
 
 ## Fractionator Rules
 
-- 分馏塔定义、科技运行投影和单塔实例状态放 `Fractionators`。
+- 塔型定义、能力投影和单塔实例状态放 `Fractionators`。
 - 四塔 active 列表、UI、注册和文档统一按培养、解析、复制、转化排列；对应 `ERecipe` 为 `Cultivation/Analysis/Replication/Conversion`，连续取值 `1/2/3/4`，不得保留旧类型 alias 或开发期数值兼容。
 - `TowerRuntimeModifierCache` 是科技树投影结果，不保存、不自行计算科技条件。
 - 五项能力彼此保持独立；对每一项能力，四塔必须接入同一份控制代码、状态字段和 UI。每塔布尔值可以不同，但不得按塔型或配方属性省略整项能力。
@@ -44,5 +52,5 @@ Fractionation/
 
 ## Presentation Rules
 
-- 分馏塔原生窗口 partial 放 `Presentation/FractionatorWindow/`，brief info、配方显示 patch 直接放 `Presentation`。
+- 分馏塔窗口为唯一非 partial 文件 `Fractionators/Presentation/FractionatorWindow.cs`，brief info 补丁为 `Fractionators/Presentation/FractionatorBriefInfoPatch.cs`，配方显示 patch 直接放 `Fractionators/Presentation`。
 - 这里只处理表现层和窗口交互；核心配方/运行状态不得写进 Presentation。

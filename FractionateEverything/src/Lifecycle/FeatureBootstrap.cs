@@ -1,13 +1,11 @@
-﻿using FE.Logic.Achievements;
-using FE.Logic.Buildings;
-using FE.Logic.Civilization;
-using FE.Logic.Fractionation.Process;
-using FE.Logic.Fractionation.FracRecipes;
+﻿using FE.Logic.Civilization;
+using FE.Logic.Civilization.Achievements;
+using FE.Logic.Enhancements.Stacking;
+using FE.Logic.Enhancements.VanillaRecipes;
+using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Items;
-using FE.Logic.Progression;
-using FE.Logic.Progression.Stacking;
 using FE.Logic.Station;
-using FE.Logic.VanillaRecipes;
 using FE.UI.MainPanel;
 using FeUtils = FE.Utils.Utils;
 using static FE.Utils.Utils;
@@ -24,10 +22,10 @@ public static class FeatureBootstrap {
         Register("分馏页面", "Fractionate", "分馏");
         ERecipeExtension.AddTranslations();
         FeUtils.AddTranslations();
-        BuildingManager.AddTranslations();
+        FractionatorManager.AddTranslations();
+        StationManager.AddTranslations();
         ItemManager.AddTranslations();
         ProcessManager.AddTranslations();
-        StationManager.AddTranslations();
         TechManager.AddTranslations();
         TutorialManager.AddTranslations();
         CivilizationModule.AddTranslations();
@@ -39,7 +37,9 @@ public static class FeatureBootstrap {
         // 添加 3.0 主路径使用的核心物品与原胚
         ItemManager.AddCoreItemsAndPrototypes();
         // 初步添加分馏塔
-        BuildingManager.AddFractionators();
+        FractionatorManager.AddFractionators();
+        // 初步添加物流交互站
+        StationManager.AddStations();
         // 添加科技
         TechManager.AddTechs();
         // 添加指引手册
@@ -49,7 +49,8 @@ public static class FeatureBootstrap {
 
     public static void PostAddData() {
         // 设置分馏塔、物流交互站颜色
-        BuildingManager.SetFractionatorMaterial();
+        FractionatorManager.SetFractionatorMaterial();
+        StationManager.SetStationMaterial();
     }
 
     /// <summary>
@@ -69,9 +70,10 @@ public static class FeatureBootstrap {
         // 将物品分类到各个矩阵层级中
         ItemManager.ClassifyItemsToMatrix();
         // UpdateHpAndEnergy 用到了 Init 生成的数据
-        BuildingManager.UpdateHpAndEnergy();
+        FractionatorManager.UpdateHpAndEnergy();
+        StationManager.UpdateHpAndEnergy();
         // SetFractionatorCacheSize 用到了 Init 生成的数据
-        BuildingManager.SetFractionatorCacheSize();
+        FractionatorManager.SetFractionatorCacheSize();
         // AddFracRecipes 用到了 Init 生成的数据
         RecipeManager.AddFracRecipes();
         CivilizationModule.Initialize();

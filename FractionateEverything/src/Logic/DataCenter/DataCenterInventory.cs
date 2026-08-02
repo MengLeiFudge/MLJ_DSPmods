@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using FE.Compatibility.Nebula;
-using FE.Logic.Buildings.Migration;
 using FE.UI.MainPanel.Setting;
 using NebulaAPI;
+using static FE.Logic.Items.ItemManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.DataCenter;
@@ -51,8 +52,10 @@ public static class DataCenterInventory {
                     long count = br.ReadInt64();
                     long inc = br.ReadInt64();
                     if (itemId >= 0 && itemId < centerItemCount.Length) {
-                        centerItemCount[itemId] = Math.Max(0, count);
-                        centerItemInc[itemId] = Math.Max(0, Math.Min(inc, centerItemCount[itemId] * 10));
+                        centerItemCount[itemId] = Math.Max(0L, count);
+                        long safeCount = centerItemCount[itemId];
+                        long maxInc = MaxIncForCount(safeCount);
+                        centerItemInc[itemId] = Math.Max(0L, Math.Min(inc, maxInc));
                     }
                 }
             }),
@@ -61,7 +64,37 @@ public static class DataCenterInventory {
                 ManualUploadCount = Math.Max(0L, br.ReadInt64());
             })
         );
-        LegacyProtoMigration.MigrateDataCenterInventory(centerItemCount, centerItemInc);
+        // FE 自有 DataCenter 余额不经 Legacy 物理引用迁移；旧槽位由后续自有状态叶处理。
+        NormalizeCurrencyPackagesLocked();
+    }
+
+    /// <summary>
+    /// 将误入自身槽的货币包裹折算为基础余额并清空包裹槽。
+    /// </summary>
+    private static void NormalizeCurrencyPackagesLocked() {
+        lock (centerItemCount) {
+            NormalizeOnePackage(IFE残片10, IFE残片, 10);
+            NormalizeOnePackage(IFE残片100, IFE残片, 100);
+            NormalizeOnePackage(IFE残片1000, IFE残片, 1000);
+            NormalizeOnePackage(IFE记忆源点10, IFE记忆源点, 10);
+            NormalizeOnePackage(IFE记忆源点100, IFE记忆源点, 100);
+            NormalizeOnePackage(IFE记忆源点1000, IFE记忆源点, 1000);
+        }
+    }
+
+    private static void NormalizeOnePackage(int packageId, int baseId, int faceValue) {
+        long packageCount = centerItemCount[packageId];
+        if (packageCount <= 0) {
+            centerItemCount[packageId] = 0;
+            centerItemInc[packageId] = 0;
+            return;
+        }
+
+        // 溢出时基础余额饱和，仍清空包裹槽，避免丢值回绕。
+        long converted = SaturatingMulNonNegative(packageCount, faceValue);
+        centerItemCount[baseId] = SaturatingAddNonNegative(centerItemCount[baseId], converted);
+        centerItemCount[packageId] = 0;
+        centerItemInc[packageId] = 0;
     }
 
     public static void IntoOtherSave() {
@@ -72,10 +105,41 @@ public static class DataCenterInventory {
     }
 
     /// <summary>
+    /// 记录一次成功的手动提取；达到 <see cref="long.MaxValue"/> 后保持饱和，避免回绕为负。
+    /// </summary>
+    public static void RecordManualExtract() {
+        IncrementSaturating(ref ManualExtractCount);
+    }
+
+    /// <summary>
+    /// 记录一次成功的手动上传；达到 <see cref="long.MaxValue"/> 后保持饱和，避免回绕为负。
+    /// </summary>
+    public static void RecordManualUpload() {
+        IncrementSaturating(ref ManualUploadCount);
+    }
+
+    /// <summary>
+    /// 线程安全地将计数加 1；已达 <see cref="long.MaxValue"/> 时保持不变。
+    /// </summary>
+    private static void IncrementSaturating(ref long counter) {
+        long current;
+        do {
+            current = Interlocked.Read(ref counter);
+            if (current >= long.MaxValue) {
+                return;
+            }
+        } while (Interlocked.CompareExchange(ref counter, current + 1, current) != current);
+    }
+
+    /// <summary>
     /// 从数据中心取出指定物品，再将其放入玩家背包/物流背包/手上。
     /// </summary>
     public static void ClickToMoveModDataItem(int itemId, bool leftClick) {
         if (!PackageAccessRules.TechItemInteractionUnlocked) {
+            return;
+        }
+        // 下载只可能取得基础 Frag/Memory 等普通物品，永不下载货币包裹。
+        if (!PackageAccessRules.CanDownloadFromDataCenter(itemId)) {
             return;
         }
         ItemProto item = LDB.items.Select(itemId);
@@ -92,7 +156,7 @@ public static class DataCenterInventory {
         if (count <= 0) {
             return;
         }
-        ManualExtractCount++;
+        RecordManualExtract();
         if (itemId == I沙土) {
             if (GameMain.mainPlayer.inhandItemId != I沙土) {
                 GameMain.mainPlayer.ThrowHandItems();
@@ -153,16 +217,33 @@ public static class DataCenterInventory {
     }
 
     private static void AddItemToModDataInternal(int itemId, long count, long inc = 0) {
+        if (count <= 0) {
+            return;
+        }
         if (itemId == I沙土) {
-            GameMain.mainPlayer.sandCount += count;
+            GameMain.mainPlayer.sandCount = SaturatingAddNonNegative(GameMain.mainPlayer.sandCount, count);
             return;
         }
         if (itemId <= 0 || itemId >= 12000) {
             return;
         }
+
+        // 货币包裹不得占用自身库存槽，始终折算为基础 Frag/Memory；溢出时基础余额饱和。
+        if (IsCurrencyPackageItem(itemId)
+            && TryGetCurrencyNormalization(itemId, out int baseItemId, out int faceValue)) {
+            itemId = baseItemId;
+            count = SaturatingMulNonNegative(count, faceValue);
+            inc = 0;
+        }
+
         lock (centerItemCount) {
-            centerItemCount[itemId] += count;
-            centerItemInc[itemId] += inc;
+            centerItemCount[itemId] = SaturatingAddNonNegative(centerItemCount[itemId], count);
+            long addInc = Math.Max(0L, inc);
+            centerItemInc[itemId] = SaturatingAddNonNegative(centerItemInc[itemId], addInc);
+            long maxInc = MaxIncForCount(centerItemCount[itemId]);
+            if (centerItemInc[itemId] > maxInc) {
+                centerItemInc[itemId] = maxInc;
+            }
         }
     }
 
@@ -210,6 +291,9 @@ public static class DataCenterInventory {
         if (count <= 0) {
             return 0;
         }
+        if (IsCurrencyPackageItem(itemId)) {
+            return 0;
+        }
         if (itemId == I沙土) {
             if (GameMain.mainPlayer.sandCount >= count) {
                 GameMain.mainPlayer.sandCount -= count;
@@ -244,6 +328,168 @@ public static class DataCenterInventory {
             }
             return count;
         }
+    }
+
+    /// <summary>
+    /// 在同一把锁内聚合预检并一次扣除多种物品；任一不足或输入非法则零改动。
+    /// 扣除时丢弃对应增产点，不向外返回 inc。
+    /// </summary>
+    /// <param name="costs">待扣除的 (itemId, count) 列表，允许重复 itemId。</param>
+    /// <returns>全部扣除成功返回 true；否则 false 且库存不变。</returns>
+    public static bool TryConsumeItemsAtomic(IReadOnlyList<(int itemId, long count)> costs) {
+        if (costs == null || costs.Count == 0) {
+            return true;
+        }
+
+        Dictionary<int, long> aggregated = new();
+        for (int i = 0; i < costs.Count; i++) {
+            (int itemId, long count) = costs[i];
+            if (count < 0) {
+                return false;
+            }
+            // count==0 的非法 itemId 也必须失败，避免静默跳过脏输入。
+            if (itemId != I沙土 && (itemId <= 0 || itemId >= 12000)) {
+                return false;
+            }
+            if (IsCurrencyPackageItem(itemId)) {
+                // 协议成本只接受基础余额，不接受包裹面额。
+                return false;
+            }
+            if (count == 0) {
+                continue;
+            }
+            if (aggregated.TryGetValue(itemId, out long existing)) {
+                if (count > long.MaxValue - existing) {
+                    return false;
+                }
+                aggregated[itemId] = existing + count;
+            } else {
+                aggregated[itemId] = count;
+            }
+        }
+
+        if (aggregated.Count == 0) {
+            return true;
+        }
+
+        lock (centerItemCount) {
+            foreach (KeyValuePair<int, long> pair in aggregated) {
+                if (!HasEnoughLocked(pair.Key, pair.Value)) {
+                    return false;
+                }
+            }
+
+            foreach (KeyValuePair<int, long> pair in aggregated) {
+                ConsumeDiscardIncLocked(pair.Key, pair.Value);
+            }
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// 便捷重载：按并行数组构造原子扣除请求。
+    /// </summary>
+    public static bool TryConsumeItemsAtomic(int[] itemIds, long[] counts) {
+        if (itemIds == null || counts == null || itemIds.Length != counts.Length) {
+            return false;
+        }
+        List<(int itemId, long count)> costs = new(itemIds.Length);
+        for (int i = 0; i < itemIds.Length; i++) {
+            costs.Add((itemIds[i], counts[i]));
+        }
+        return TryConsumeItemsAtomic(costs);
+    }
+
+    private static bool HasEnoughLocked(int itemId, long count) {
+        if (itemId == I沙土) {
+            return GameMain.mainPlayer != null && GameMain.mainPlayer.sandCount >= count;
+        }
+        return centerItemCount[itemId] >= count;
+    }
+
+    private static void ConsumeDiscardIncLocked(int itemId, long count) {
+        if (count <= 0) {
+            return;
+        }
+        if (itemId == I沙土) {
+            long sand = GameMain.mainPlayer.sandCount;
+            GameMain.mainPlayer.sandCount = sand >= count ? sand - count : 0;
+            return;
+        }
+
+        long remainingCount = centerItemCount[itemId];
+        if (remainingCount <= 0) {
+            centerItemCount[itemId] = 0;
+            centerItemInc[itemId] = 0;
+            return;
+        }
+
+        long take = count < remainingCount ? count : remainingCount;
+        long remainingInc = centerItemInc[itemId];
+        if (remainingInc < 0) {
+            remainingInc = 0;
+        }
+        long maxIncBefore = MaxIncForCount(remainingCount);
+        if (remainingInc > maxIncBefore) {
+            remainingInc = maxIncBefore;
+        }
+
+        if (take >= remainingCount) {
+            centerItemCount[itemId] = 0;
+            centerItemInc[itemId] = 0;
+            return;
+        }
+
+        // 复用项目既有 split_inc：更新剩余 count/inc，扣除部分增产点直接丢弃。
+        _ = split_inc(ref remainingCount, ref remainingInc, take);
+        if (remainingCount <= 0) {
+            centerItemCount[itemId] = 0;
+            centerItemInc[itemId] = 0;
+            return;
+        }
+
+        if (remainingInc < 0) {
+            remainingInc = 0;
+        }
+        long maxIncAfter = MaxIncForCount(remainingCount);
+        if (remainingInc > maxIncAfter) {
+            remainingInc = maxIncAfter;
+        }
+        centerItemCount[itemId] = remainingCount;
+        centerItemInc[itemId] = remainingInc;
+    }
+
+    /// <summary>
+    /// 非负 long 饱和加法，避免回绕。
+    /// </summary>
+    private static long SaturatingAddNonNegative(long value, long delta) {
+        if (delta <= 0) {
+            return value < 0 ? 0 : value;
+        }
+        if (value <= 0) {
+            return delta;
+        }
+        return value > long.MaxValue - delta ? long.MaxValue : value + delta;
+    }
+
+    /// <summary>
+    /// 非负 long 饱和乘法，避免回绕。
+    /// </summary>
+    private static long SaturatingMulNonNegative(long left, long right) {
+        if (left <= 0 || right <= 0) {
+            return 0;
+        }
+        return left > long.MaxValue / right ? long.MaxValue : left * right;
+    }
+
+    /// <summary>
+    /// 计算 count 对应的增产点合法上限（count*10），使用饱和算术。
+    /// </summary>
+    private static long MaxIncForCount(long count) {
+        if (count <= 0) {
+            return 0;
+        }
+        return count > long.MaxValue / 10L ? long.MaxValue : count * 10L;
     }
 
 }

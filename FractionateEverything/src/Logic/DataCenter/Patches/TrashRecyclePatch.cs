@@ -21,7 +21,7 @@ public static class TrashRecyclePatch {
             || ItemManager.itemValue[itemId] >= ItemManager.maxValue) {
             return true;
         }
-        DataCenterInventory.ManualUploadCount++;
+        DataCenterInventory.RecordManualUpload();
         DataCenterUploadRouter.Upload(itemId, count, inc, true);
         return false;
     }
@@ -42,7 +42,7 @@ public static class TrashRecyclePatch {
             return true;
         }
         if (__instance.inhandItemId > 0 && __instance.inhandItemCount > 0) {
-            DataCenterInventory.ManualUploadCount++;
+            DataCenterInventory.RecordManualUpload();
             DataCenterUploadRouter.Upload(__instance.inhandItemId, __instance.inhandItemCount,
                 __instance.inhandItemInc, true);
         }

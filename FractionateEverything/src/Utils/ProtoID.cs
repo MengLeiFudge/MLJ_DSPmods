@@ -451,12 +451,28 @@ public static partial class Utils {
     internal const int IFE行星内物流交互站 = 8131;
     internal const int IFE星际物流交互站 = 8132;
     internal const int IFE残片 = 8161;
+    /// <summary>旧六阶段解析数据 ID，3.x 不再注册为 active 资源。</summary>
     internal const int IFE电磁解析数据 = 8162;
+    /// <summary>旧六阶段解析数据 ID，3.x 不再注册为 active 资源。</summary>
     internal const int IFE能量解析数据 = 8163;
+    /// <summary>旧六阶段解析数据 ID，3.x 不再注册为 active 资源。</summary>
     internal const int IFE结构解析数据 = 8164;
+    /// <summary>旧六阶段解析数据 ID，3.x 不再注册为 active 资源。</summary>
     internal const int IFE信息解析数据 = 8165;
+    /// <summary>旧六阶段解析数据 ID，3.x 不再注册为 active 资源。</summary>
     internal const int IFE引力解析数据 = 8166;
+    /// <summary>旧六阶段解析数据 ID，3.x 不再注册为 active 资源。</summary>
     internal const int IFE宇宙解析数据 = 8167;
+    internal const int IFE残片10 = 8168;
+    internal const int IFE残片100 = 8169;
+    internal const int IFE残片1000 = 8170;
+    internal const int IFE记忆源点 = 8171;
+    internal const int IFE记忆源点10 = 8172;
+    internal const int IFE记忆源点100 = 8173;
+    internal const int IFE记忆源点1000 = 8174;
+    internal const int IFE黑雾样本A = 8175;
+    internal const int IFE黑雾样本B = 8176;
+    internal const int IFE黑雾样本C = 8177;
     internal const int ISM熔炉采矿机A型 = 9446;
     internal const int ISM熔炉采矿机B型 = 9447;
     internal const int ISM化工采矿机C型 = 9448;
@@ -1022,11 +1038,17 @@ public static partial class Utils {
     internal const int TFE转化塔 = 2056;
     internal const int TFE行星内物流交互 = 2061;
     internal const int TFE星际物流交互 = 2062;
+    /// <summary>旧六阶段补给科技 ID，3.x 不注册/不复用。</summary>
     internal const int TFE阶段补给1 = 2071;
+    /// <summary>旧六阶段补给科技 ID，3.x 不注册/不复用。</summary>
     internal const int TFE阶段补给2 = 2072;
+    /// <summary>旧六阶段补给科技 ID，3.x 不注册/不复用。</summary>
     internal const int TFE阶段补给3 = 2073;
+    /// <summary>旧六阶段补给科技 ID，3.x 不注册/不复用。</summary>
     internal const int TFE阶段补给4 = 2074;
+    /// <summary>旧六阶段补给科技 ID，3.x 不注册/不复用。</summary>
     internal const int TFE阶段补给5 = 2075;
+    /// <summary>旧六阶段补给科技 ID，3.x 不注册/不复用。</summary>
     internal const int TFE阶段补给6 = 2076;
     internal const int T处理器 = 1302;
     internal const int T量子芯片 = 1303;

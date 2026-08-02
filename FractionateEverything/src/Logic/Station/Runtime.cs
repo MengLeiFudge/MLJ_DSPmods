@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using FE.Logic.Buildings;
 using FE.Logic.DataCenter;
 using FE.UI.MainPanel.Setting;
 using HarmonyLib;

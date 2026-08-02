@@ -2,8 +2,8 @@
 using System.IO;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
-using FE.Logic.Progression.Stacking;
-using FE.Logic.VanillaRecipes;
+using FE.Logic.Enhancements.Stacking;
+using FE.Logic.Enhancements.VanillaRecipes;
 using FE.UI.Controls;
 using FE.UI.Foundation.Window;
 using FE.UI.Layout;
