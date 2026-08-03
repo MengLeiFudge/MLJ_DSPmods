@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Text;
 using HarmonyLib;
 using static FE.Utils.Utils;
 
@@ -13,6 +15,14 @@ namespace FE.Compatibility.LegacySave;
 /// 退休实体/预建筑必须延迟到 PlanetFactory.Import 完整消费外层 payload 后再 Remove*WithComponents。
 /// </summary>
 public static class LegacyProtoMigration {
+    [ThreadStatic]
+    private static bool inGameDataImport;
+
+    [ThreadStatic]
+    private static bool migrateCurrentGameData;
+
+    private static bool migratePendingSave;
+
     // 同线程 PlanetFactory.Import 作用域：避免跨 factory 的 id 串扰；游戏导入通常单线程。
     [ThreadStatic]
     private static bool inPlanetFactoryImport;
@@ -70,6 +80,8 @@ public static class LegacyProtoMigration {
         931, 932, 933, 934, 935, 936, 937,
     ];
 
+    private static bool ShouldMapImportedId => !inGameDataImport || migrateCurrentGameData;
+
     public static bool IsRetiredItemId(int id) => RetiredItemIds.Contains(id);
 
     public static bool IsRetiredModelId(int id) => RetiredModelIds.Contains(id);
@@ -77,9 +89,12 @@ public static class LegacyProtoMigration {
     public static bool IsRetiredRecipeId(int id) => RetiredRecipeIds.Contains(id);
 
     /// <summary>
-    /// 纯函数：现役映射、退休清零、其余 ID 原样返回；可重复应用。
+    /// 导入映射：2.x 存档及独立导入执行现役映射/退休清零，3.x GameData 导入原样返回。
     /// </summary>
     public static int MapItemId(int id) {
+        if (!ShouldMapImportedId) {
+            return id;
+        }
         if (ItemIds.TryGetValue(id, out int mapped)) {
             return mapped;
         }
@@ -87,9 +102,12 @@ public static class LegacyProtoMigration {
     }
 
     /// <summary>
-    /// 纯函数：现役映射、退休清零、其余 ID 原样返回；可重复应用。
+    /// 导入映射：2.x 存档及独立导入执行现役映射/退休清零，3.x GameData 导入原样返回。
     /// </summary>
     public static int MapModelId(int id) {
+        if (!ShouldMapImportedId) {
+            return id;
+        }
         if (ModelIds.TryGetValue(id, out int mapped)) {
             return mapped;
         }
@@ -97,9 +115,12 @@ public static class LegacyProtoMigration {
     }
 
     /// <summary>
-    /// 纯函数：现役映射、退休清零、其余 ID 原样返回；可重复应用。
+    /// 导入映射：2.x 存档及独立导入执行现役映射/退休清零，3.x GameData 导入原样返回。
     /// </summary>
     public static int MapRecipeId(int id) {
+        if (!ShouldMapImportedId) {
+            return id;
+        }
         if (RecipeIds.TryGetValue(id, out int mapped)) {
             return mapped;
         }
@@ -107,6 +128,80 @@ public static class LegacyProtoMigration {
     }
 
     private static bool WasRetiredContent(int originalId, int mappedId) => originalId > 0 && mappedId == 0;
+
+    private static bool ReadLegacySaveGeneration(string saveName) {
+        string path = Path.Combine(GameConfig.gameSaveFolder, $"{saveName}.moddsv");
+        if (!File.Exists(path)) {
+            return false;
+        }
+        try {
+            using FileStream stream = new(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            using BinaryReader reader = new(stream);
+            if (reader.ReadChar() != 'M' || reader.ReadChar() != 'O' || reader.ReadChar() != 'D') {
+                return false;
+            }
+            reader.ReadInt32();
+            for (int i = 0; i < 5; i++) {
+                reader.ReadInt64();
+            }
+            int entryCount = reader.ReadInt32();
+            if (entryCount < 0 || entryCount > 10000) {
+                return false;
+            }
+            long feDataStart = -1;
+            for (int i = 0; i < entryCount; i++) {
+                string guid = reader.ReadString();
+                long dataStart = reader.ReadInt64();
+                reader.ReadInt64();
+                if (guid == PluginInfo.PLUGIN_GUID) {
+                    feDataStart = dataStart;
+                }
+            }
+            if (feDataStart < 0 || feDataStart > stream.Length - sizeof(int)) {
+                return false;
+            }
+            stream.Position = feDataStart;
+            int feSaveVersion = reader.ReadInt32();
+            return feSaveVersion is > 0 and < 10;
+        } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException
+            or FormatException or DecoderFallbackException) {
+            LogWarning($"[LegacySave] 无法读取 {saveName}.moddsv 的 FE 版本，已禁用 2.x 物理迁移：{ex.Message}");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 在原版 GameData 导入前识别 FE moddsv 代际，避免把 version 10 的 3.x 存档或其他模组 ID 当作 2.x 内容。
+    /// </summary>
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(GameSave), nameof(GameSave.LoadCurrentGame))]
+    public static void GameSave_LoadCurrentGame_Prefix(string saveName) {
+        migratePendingSave = ReadLegacySaveGeneration(saveName);
+    }
+
+    /// <summary>
+    /// 将已识别的存档代际限定在本次 GameData.Import 作用域内；独立蓝图导入仍执行旧 ID 映射。
+    /// </summary>
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(GameData), nameof(GameData.Import))]
+    public static void GameData_Import_Prefix() {
+        inGameDataImport = true;
+        migrateCurrentGameData = migratePendingSave;
+    }
+
+    /// <summary>
+    /// GameData 导入结束或异常退出时清理本次存档的迁移门禁状态。
+    /// </summary>
+    /// <param name="__exception">原始导入异常；成功时为 null。</param>
+    /// <returns>原样返回导入异常。</returns>
+    [HarmonyFinalizer]
+    [HarmonyPatch(typeof(GameData), nameof(GameData.Import))]
+    public static Exception GameData_Import_Finalizer(Exception __exception) {
+        inGameDataImport = false;
+        migrateCurrentGameData = false;
+        migratePendingSave = false;
+        return __exception;
+    }
 
     private static void EnsureImportScopeLists() {
         pendingRetiredEntityIds ??= [];
