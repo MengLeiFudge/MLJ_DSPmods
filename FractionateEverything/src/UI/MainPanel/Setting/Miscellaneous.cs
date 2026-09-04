@@ -311,7 +311,7 @@ public static class Miscellaneous {
         public override int ValueToIndex(float value) => (int)Math.Round((value - 0.6f) / 0.02f);
     }
 
-    #region IModCanSave
+    #region 模组存档接口实现
 
     public static void Import(BinaryReader r) {
         r.ReadBlocks(

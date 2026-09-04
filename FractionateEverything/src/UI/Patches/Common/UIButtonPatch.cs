@@ -12,7 +12,7 @@ namespace FE.UI.Patches.Common;
 /// </summary>
 public static class UIButtonPatch {
     /// <summary>
-    /// Bring popup tip window to top layer.
+    /// 将弹出提示窗口置于顶层。
     /// 使通过AddTipsButton、将通过AddTipsButton2方法增加的弹窗在最上层显示。
     /// </summary>
     [HarmonyTranspiler]

@@ -44,7 +44,7 @@ public static class PlayerInventoryItemAccessPatches {
 
     private static IEnumerable<CodeInstruction> TakeItem_Transpiler(IEnumerable<CodeInstruction> instructions) {
         try {
-            // Replace player.package.TakeItem(int itemId, int count, out int inc)
+            // 替换 player.package.TakeItem(int itemId, int count, out int inc) 调用
             var method = AccessTools.Method(typeof(StorageComponent), nameof(StorageComponent.TakeItem),
                 [typeof(int), typeof(int), typeof(int).MakeByRefType()]);
             var codeMatcher = new CodeMatcher(instructions)
@@ -118,7 +118,7 @@ public static class PlayerInventoryItemAccessPatches {
 
     public static IEnumerable<CodeInstruction> TakeTailItems_Transpiler(IEnumerable<CodeInstruction> instructions) {
         try {
-            // Replace player.package.TakeTailItems(ref int itemId, ref int count, out int inc, bool useBan = false)
+            // 替换 player.package.TakeTailItems(ref int itemId, ref int count, out int inc, bool useBan = false) 调用
             var method = AccessTools.Method(typeof(StorageComponent), nameof(StorageComponent.TakeTailItems),
                 [typeof(int).MakeByRefType(), typeof(int).MakeByRefType(), typeof(int).MakeByRefType(), typeof(bool)]);
             var codeMatcher = new CodeMatcher(instructions)
@@ -161,7 +161,7 @@ public static class PlayerInventoryItemAccessPatches {
     private static IEnumerable<CodeInstruction> TakeTailItemsByIncTable_Transpiler(
         IEnumerable<CodeInstruction> instructions) {
         try {
-            // Replace player.package.TakeTailItemsByIncTable(int itemId, out int count, ref int[] incTable, bool useBan = false)
+            // 替换 player.package.TakeTailItemsByIncTable(int itemId, out int count, ref int[] incTable, bool useBan = false) 调用
             var method = AccessTools.Method(typeof(StorageComponent), nameof(StorageComponent.TakeTailItemsByIncTable),
                 [typeof(int), typeof(int).MakeByRefType(), typeof(int[]).MakeByRefType(), typeof(bool)]);
             var codeMatcher = new CodeMatcher(instructions)

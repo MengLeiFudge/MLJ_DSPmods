@@ -402,7 +402,7 @@ public static class ItemInteraction {
         }
     }
 
-    #region IModCanSave
+    #region 模组存档接口实现
 
     public static void Import(BinaryReader r) {
         r.ReadBlocks();

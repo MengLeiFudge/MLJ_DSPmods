@@ -5,7 +5,7 @@ using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.Controls;
 
-// MySlider modified from LSTM: https://github.com/hetima/DSP_LSTM/blob/main/LSTM/MySlider.cs
+// MySlider 基于 LSTM 修改：https://github.com/hetima/DSP_LSTM/blob/main/LSTM/MySlider.cs
 /// <summary>
 /// 用于侧栏设置项的文本滑条控件。
 /// </summary>

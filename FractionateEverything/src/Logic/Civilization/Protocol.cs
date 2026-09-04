@@ -13,7 +13,7 @@ using static FE.Logic.Items.ItemManager;
 
 namespace FE.Logic.Civilization.Protocols;
 
-#region ProtocolDefinition
+#region 协议定义
 
 /// <summary>
 /// 描述一项远古协议；全局目录中由塔型与输入物品唯一标识。
@@ -22,9 +22,9 @@ public sealed class ProtocolDefinition(RecipeKey recipeKey) {
     public RecipeKey RecipeKey { get; } = recipeKey;
 }
 
-#endregion // ProtocolDefinition
+#endregion // 协议定义
 
-#region ProtocolCatalog
+#region 协议目录
 
 /// <summary>
 /// 根据当前配方目录生成不可变的全局协议定义。
@@ -92,9 +92,9 @@ public static class ProtocolCatalog {
     }
 }
 
-#endregion // ProtocolCatalog
+#endregion // 协议目录
 
-#region ProtocolProgressStore
+#region 协议进度存储
 
 /// <summary>
 /// 保存协议发现、完整度、正式解锁与首个 100% 记忆奖励标记。
@@ -228,9 +228,9 @@ public static class ProtocolProgressStore {
     }
 }
 
-#endregion // ProtocolProgressStore
+#endregion // 协议进度存储
 
-#region ProtocolEligibilityService
+#region 协议资格服务
 
 /// <summary>
 /// 集中判断协议能否进入全局检索池，不修改任何玩家状态。
@@ -292,9 +292,9 @@ public static class ProtocolEligibilityService {
     }
 }
 
-#endregion // ProtocolEligibilityService
+#endregion // 协议资格服务
 
-#region ProtocolRetrievalService
+#region 协议检索服务
 
 /// <summary>
 /// 协议检索的货币策略。
@@ -846,9 +846,9 @@ public static class ProtocolRetrievalService {
         new(ProtocolRetrievalOutcome.None, default, 0, 0, false, 0, 0, 0, stopReason);
 }
 
-#endregion // ProtocolRetrievalService
+#endregion // 协议检索服务
 
-#region ProtocolUnlockService
+#region 协议解锁服务
 
 /// <summary>
 /// 正式解锁无法执行时的明确原因。
@@ -1088,4 +1088,4 @@ public static class ProtocolUnlockService {
     }
 }
 
-#endregion // ProtocolUnlockService
+#endregion // 协议解锁服务

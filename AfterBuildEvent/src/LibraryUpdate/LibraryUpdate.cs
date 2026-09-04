@@ -14,46 +14,46 @@ static partial class AfterBuildEvent {
     #region 更新类库需要的部分DLL
 
     /// <summary>
-    /// Matches soft-dependency attributes in CheckPlugins.cs for mode-2 mod decompile targets.
+    /// 匹配 CheckPlugins.cs 中的软依赖特性，用于确定模式 2 的模组反编译目标。
     /// </summary>
     private static readonly Regex SoftDependencyRegex =
         new(@"\[BepInDependency\(([^,\)]+),\s*BepInDependency\.DependencyFlags\.SoftDependency\)\]",
             RegexOptions.Compiled);
 
     /// <summary>
-    /// Extracts a GUID string literal from FE compatibility source files for keyword matching.
+    /// 从 FE 兼容性源文件中提取 GUID 字符串字面量，用于关键字匹配。
     /// </summary>
     private static readonly Regex GuidLiteralRegex =
         new(@"public\s+const\s+string\s+GUID\s*=\s*""([^""]+)""", RegexOptions.Compiled);
 
     /// <summary>
-    /// Assembly name prefixes that are companion libraries, never primary mod decompile targets.
+    /// 作为附属库的程序集名称前缀，绝不会作为主要模组反编译目标。
     /// </summary>
     private static readonly string[] IgnoredModDllPrefixes =
         ["System.", "Newtonsoft.Json", "0Harmony", "BepInEx.", "Mono.", "MonoMod.", "K4os.", "Unity."];
 
     /// <summary>
-    /// Exact assembly base names that are companion libraries, never primary mod decompile targets.
+    /// 作为附属库的确切程序集基本名称，绝不会作为主要模组反编译目标。
     /// </summary>
     private static readonly string[] IgnoredModDllNames =
         ["websocket-sharp", "discord_game_sdk", "discord_game_sdk_dotnet", "Open.Nat", "HarmonyXInterop"];
 
     /// <summary>
-    /// One soft-dependency decompile candidate resolved from CheckPlugins and optional GUID keywords.
+    /// 根据 CheckPlugins 和可选 GUID 关键字解析出的一个软依赖反编译候选项。
     /// </summary>
     private sealed class ModDecompileTarget {
         /// <summary>
-        /// Original dependency expression text from the BepInDependency attribute.
+        /// 来自 BepInDependency 特性的原始依赖表达式文本。
         /// </summary>
         public string DependencyExpression { get; set; } = "";
 
         /// <summary>
-        /// Leading identifier used as the primary keyword and compatibility file stem.
+        /// 用作主要关键字和兼容性文件主名的前导标识符。
         /// </summary>
         public string SourceName { get; set; } = "";
 
         /// <summary>
-        /// Normalized match keywords used against mods.yml package and display names.
+        /// 用于匹配 mods.yml 包名和显示名称的规范化关键字。
         /// </summary>
         public List<string> Keywords { get; set; } = [];
     }

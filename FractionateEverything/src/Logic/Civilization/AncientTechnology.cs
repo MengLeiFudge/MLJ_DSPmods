@@ -7,7 +7,7 @@ using FE.Compatibility.Nebula;
 
 namespace FE.Logic.Civilization.Technology;
 
-#region AncientTechNodeDefinition
+#region 远古科技节点定义
 
 /// <summary>
 /// 标识固定塔型科技节点可投影到运行时的工程能力。
@@ -40,9 +40,9 @@ public sealed class AncientTechNodeDefinition(
     public bool RuntimeImplemented { get; } = runtimeImplemented;
 }
 
-#endregion // AncientTechNodeDefinition
+#endregion // 远古科技节点定义
 
-#region AncientTechTreeCatalog
+#region 远古科技树目录
 
 /// <summary>
 /// 保存四条稳定塔型主干及其固定五节点顺序。
@@ -88,9 +88,9 @@ public static class AncientTechTreeCatalog {
     }
 }
 
-#endregion // AncientTechTreeCatalog
+#endregion // 远古科技树目录
 
-#region AncientTechTreeState
+#region 远古科技树状态
 
 /// <summary>
 /// 保存单存档远古文明科技点和节点等级。
@@ -188,9 +188,9 @@ public static class AncientTechTreeState {
     }
 }
 
-#endregion // AncientTechTreeState
+#endregion // 远古科技树状态
 
-#region AncientTechTreeService
+#region 远古科技树服务
 
 /// <summary>
 /// 校验科技节点前置和价格，并在购买后刷新分馏运行缓存。
@@ -228,4 +228,4 @@ public static class AncientTechTreeService {
     }
 }
 
-#endregion // AncientTechTreeService
+#endregion // 远古科技树服务

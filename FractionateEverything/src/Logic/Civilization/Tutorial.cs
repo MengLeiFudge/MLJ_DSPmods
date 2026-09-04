@@ -10,7 +10,7 @@ using UnityEngine.UI;
 
 namespace FE.Logic.Civilization;
 
-#region TutorialManager
+#region 教程管理器
 
 /// <summary>
 /// 注册 FE 教程及其解锁条件；教程阅读不再承载旧成就状态。
@@ -64,9 +64,9 @@ public static partial class TutorialManager {
     }
 }
 
-#endregion // TutorialManager
+#endregion // 教程管理器
 
-#region TutorialTexts
+#region 教程文本
 
 /// <summary>
 /// 教程系统翻译文本注册入口。
@@ -282,9 +282,9 @@ public static partial class TutorialManager {
     }
 }
 
-#endregion // TutorialTexts
+#endregion // 教程文本
 
-#region TutorialWindowPatch
+#region 教程窗口补丁
 
 /// <summary>
 /// 教程窗口布局兼容补丁。
@@ -305,7 +305,7 @@ public static partial class TutorialManager {
             __instance.entryList.VertScroll = true;
             __instance.entryList.m_ScrollRect.vertical = true;
             __instance.entryList.m_ScrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
-            // Trigger ScrollRect.OnEnable() to add listeners
+            // 触发 ScrollRect.OnEnable() 以添加监听器
             __instance.entryList.m_ScrollRect.enabled = false;
             __instance.entryList.m_ScrollRect.enabled = true;
         }
@@ -338,12 +338,12 @@ public static partial class TutorialManager {
             Call GetLayoutStr
             Br_S endLabel
 
-            IL_0027: ldsfld       string UITutorialWindow::textFolder // originalLogicLabel
-            IL_002c: ldarg.0      // this
+            IL_0027: ldsfld       string UITutorialWindow::textFolder // originalLogicLabel（原逻辑标签）
+            IL_002c: ldarg.0      // this（当前实例）
             IL_002d: ldfld        class TutorialProto UITutorialWindow::tutorialProto
             IL_0032: ldfld        string TutorialProto::LayoutFileName
             IL_0037: call         string UILayoutParserManager::GetLayoutStr(string, string)
-            IL_003c: stloc.0      // layoutStr // endLabel
+            IL_003c: stloc.0      // layoutStr（布局字符串） // endLabel（结束标签）
 
          */
 
@@ -447,4 +447,4 @@ public static partial class TutorialManager {
     }
 }
 
-#endregion // TutorialWindowPatch
+#endregion // 教程窗口补丁

@@ -1144,7 +1144,7 @@ public static class DevelopmentDiary {
     private const string UnlockedFragmentsBlockTag = "UnlockedFragmentsV1";
     private const string SelectionBlockTag = "SelectionV1";
 
-    #region IModCanSave
+    #region 模组存档接口实现
 
     public static void Import(BinaryReader r) {
         ResetState();

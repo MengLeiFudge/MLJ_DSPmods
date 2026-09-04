@@ -67,10 +67,10 @@ public static partial class StationManager {
         // 移动到 maxPilerCount 参数加载的位置
         matcher.Advance(2);
         // 替换为 GetOutputStack
-        matcher.SetInstructionAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))// this (PlanetTransport)
+        matcher.SetInstructionAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))// 当前实例（PlanetTransport）
             .Insert(
                 new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PlanetTransport), "factory")),// factory
-                new CodeInstruction(OpCodes.Ldarg_0),// this (PlanetTransport) 再次加载
+                new CodeInstruction(OpCodes.Ldarg_0),// 当前实例（PlanetTransport），再次加载
                 new CodeInstruction(OpCodes.Ldfld,
                     AccessTools.Field(typeof(PlanetTransport), "stationPool")),// stationPool
                 new CodeInstruction(OpCodes.Ldloc_3),// index

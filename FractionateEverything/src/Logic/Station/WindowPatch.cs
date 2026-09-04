@@ -502,7 +502,7 @@ public static partial class StationManager {
         SetStoragePopupShift(storage, false);
     }
 
-    // Intercept option clicks when our popup is active
+    // 弹窗激活时拦截选项点击
     /// <summary>拦截独立存储选项 0 点击并应用 FE 模式</summary>
     /// <param name="__instance">当前的 UIStationStorage 实例</param>
     /// <returns>是否让原版继续执行</returns>
@@ -577,7 +577,7 @@ public static partial class StationManager {
             // 选完就关闭弹窗，并标记为“非 FE 弹窗激活态”。
             storage.popupBoxRect.gameObject.SetActive(false);
             slotIsMyPopup[popupStateKey] = false;
-            return false;// prevent original OnOptionButton* handlers
+            return false;// 阻止原版 OnOptionButton* 处理方法
         }
         catch (Exception ex) {
             LogError($"FE HandleOptionClick error: {ex}");

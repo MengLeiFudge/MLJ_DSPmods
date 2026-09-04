@@ -17,89 +17,89 @@ static partial class AfterBuildEvent {
     #region 提取计算器图标资源
 
     /// <summary>
-    /// One calculator icon source group: offline AssetStudio/embedded paths plus in-game export mod set.
+    /// 一个计算器图标源组：离线 AssetStudio/嵌入式路径，以及游戏内导出所需的模组集合。
     /// </summary>
     private sealed class CalcIconExportTarget {
         /// <summary>
-        /// Output subdirectory under the full-icon pool and calculator asset tree.
+        /// 完整图标池和计算器资源树下的输出子目录。
         /// </summary>
         public string TargetMod { get; set; } = "";
 
         /// <summary>
-        /// Prefix stripped from embedded resource file names before icon matching.
+        /// 图标匹配前从嵌入式资源文件名中去除的前缀。
         /// </summary>
         public string SourcePrefix { get; set; } = "";
 
         /// <summary>
-        /// R2 plugin package that contains AssetStudio-readable icon bundles.
+        /// 包含 AssetStudio 可读取图标资源包的 R2 插件包。
         /// </summary>
         public string AssetStudioPackageName { get; set; } = "";
 
         /// <summary>
-        /// Bundle paths relative to the R2 plugin package root.
+        /// 相对于 R2 插件包根目录的资源包路径。
         /// </summary>
         public List<string> AssetStudioRelativePaths { get; set; } = [];
 
         /// <summary>
-        /// Bundle paths relative to the DSP game install directory.
+        /// 相对于 DSP 游戏安装目录的资源包路径。
         /// </summary>
         public List<string> AssetStudioGameDataRelativePaths { get; set; } = [];
 
         /// <summary>
-        /// R2 plugin package that embeds PNG resources inside a managed DLL.
+        /// 在托管 DLL 中嵌入 PNG 资源的 R2 插件包。
         /// </summary>
         public string EmbeddedDllPackageName { get; set; } = "";
 
         /// <summary>
-        /// DLL path relative to the embedded package root.
+        /// 相对于嵌入式资源包根目录的 DLL 路径。
         /// </summary>
         public string EmbeddedDllRelativePath { get; set; } = "";
 
         /// <summary>
-        /// R2 mods that must be enabled for in-game export of this target.
+        /// 在游戏内导出该目标时必须启用的 R2 模组。
         /// </summary>
         public List<string> EnabledMods { get; set; } = [];
 
         /// <summary>
-        /// Lower-priority full-icon directories already searched before writing a new export request.
+        /// 写入新的导出请求前已搜索过的较低优先级完整图标目录。
         /// </summary>
         public List<string> LowerPriorityMods { get; set; } = [];
     }
 
     /// <summary>
-    /// One required calculator icon still missing from the full-icon pool.
+    /// 完整图标池中仍缺少的一个计算器必需图标。
     /// </summary>
     private sealed class MissingCalcIcon {
         /// <summary>
-        /// Canonical IconName string from calculator raw JSON.
+        /// 来自计算器原始 JSON 的规范 IconName 字符串。
         /// </summary>
         public string IconName { get; set; } = "";
 
         /// <summary>
-        /// TargetMod values that may own this missing icon based on enabled raw-file mods.
+        /// 根据原始数据文件中启用的模组，可能拥有该缺失图标的 TargetMod 值。
         /// </summary>
         public HashSet<string> CandidateTargets { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// Raw JSON file names that still require this icon.
+        /// 仍需要该图标的原始 JSON 文件名。
         /// </summary>
         public HashSet<string> DataFiles { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// Short diagnostic samples pairing data files with item display names.
+        /// 将数据文件与物品显示名称配对的简短诊断样例。
         /// </summary>
         public List<string> Examples { get; set; } = [];
     }
 
     /// <summary>
-    /// Combines the already-built icon index and alias tables used by one icon-resolution pass; property references stay fixed after construction.
+    /// 汇集一次图标解析过程中所用的已构建图标索引和别名表；构造后属性引用保持不变。
     /// </summary>
     private sealed class CalcIconLookupIndex {
         /// <summary>
-        /// Stores the provided icon index and alias table references for later lookups.
+        /// 存储所提供的图标索引和别名表引用，以供后续查找。
         /// </summary>
-        /// <param name="fullIconIndex">Per-TargetMod map of sanitized icon file stem to absolute PNG path.</param>
-        /// <param name="iconAliases">Item IDs to all IconName aliases observed across the calculator raw JSON set.</param>
+        /// <param name="fullIconIndex">按 TargetMod 映射：从清理后的图标文件主名映射到 PNG 绝对路径。</param>
+        /// <param name="iconAliases">从物品 ID 映射到计算器原始 JSON 集合中发现的所有 IconName 别名。</param>
         public CalcIconLookupIndex(
             IReadOnlyDictionary<string, Dictionary<string, string>> fullIconIndex,
             IReadOnlyDictionary<int, HashSet<string>> iconAliases) {
@@ -108,12 +108,12 @@ static partial class AfterBuildEvent {
         }
 
         /// <summary>
-        /// Per-TargetMod map of sanitized icon file stem to absolute PNG path.
+        /// 按 TargetMod 映射：从清理后的图标文件主名映射到 PNG 绝对路径。
         /// </summary>
         public IReadOnlyDictionary<string, Dictionary<string, string>> FullIconIndex { get; }
 
         /// <summary>
-        /// Item IDs to all IconName aliases observed across the calculator raw JSON set.
+        /// 从物品 ID 映射到计算器原始 JSON 集合中发现的所有 IconName 别名。
         /// </summary>
         public IReadOnlyDictionary<int, HashSet<string>> IconAliases { get; }
     }
@@ -975,10 +975,10 @@ static partial class AfterBuildEvent {
     }
 
     /// <summary>
-    /// Builds the icon index and alias tables used by one calculator data-directory resolution pass.
+    /// 构建一次计算器数据目录解析过程所用的图标索引和别名表。
     /// </summary>
-    /// <param name="dataDir">Directory containing calculator raw JSON files.</param>
-    /// <returns>Lookup index shared by required-copy and missing-icon scans.</returns>
+    /// <param name="dataDir">包含计算器原始 JSON 文件的目录。</param>
+    /// <returns>由必需图标复制和缺失图标扫描共享的查找索引。</returns>
     private static CalcIconLookupIndex BuildCalcIconLookupIndex(string dataDir) {
         return new(
             BuildIconFileIndex(DspCalcFullIconDir),
@@ -1035,15 +1035,15 @@ static partial class AfterBuildEvent {
     }
 
     /// <summary>
-    /// Resolves one required icon from the shared index, preferring the current raw-file mod order.
+    /// 从共享索引中解析一个必需图标，优先采用当前原始数据文件的模组顺序。
     /// </summary>
-    /// <param name="lookupIndex">Icon index and alias tables for the current data directory resolution pass.</param>
-    /// <param name="lookupOrder">Enabled-mod priority order for the current raw JSON file.</param>
-    /// <param name="itemId">Item ID whose IconName aliases may be tried.</param>
-    /// <param name="iconName">Primary IconName from calculator raw JSON.</param>
-    /// <param name="sourceMod">Receives the TargetMod directory that owned the matched PNG.</param>
-    /// <param name="sourceFile">Receives the absolute path of the matched PNG.</param>
-    /// <returns>True when a matching PNG exists in the preferred order or full-pool fallback.</returns>
+    /// <param name="lookupIndex">当前数据目录解析过程所用的图标索引和别名表。</param>
+    /// <param name="lookupOrder">当前原始 JSON 文件的已启用模组优先级顺序。</param>
+    /// <param name="itemId">可尝试其 IconName 别名的物品 ID。</param>
+    /// <param name="iconName">来自计算器原始 JSON 的主要 IconName。</param>
+    /// <param name="sourceMod">接收拥有匹配 PNG 的 TargetMod 目录。</param>
+    /// <param name="sourceFile">接收匹配 PNG 的绝对路径。</param>
+    /// <returns>在首选顺序或完整图标池回退中存在匹配 PNG 时为 true。</returns>
     private static bool TryFindIconFile(
         CalcIconLookupIndex lookupIndex,
         IReadOnlyList<string> lookupOrder,

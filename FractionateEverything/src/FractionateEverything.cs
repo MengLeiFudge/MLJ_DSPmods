@@ -38,7 +38,7 @@ namespace FE;
 [CommonAPISubmoduleDependency(nameof(CustomKeyBindSystem), nameof(ProtoRegistry), nameof(TabSystem),
     nameof(LocalizationModule))]
 public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerModWithSettings {
-    #region Fields
+    #region 字段
 
     /// <summary>
     /// 原版分馏科技图标，主要用于标签页。暂时无图标的新增科技也可以临时使用它作为图标路径。
@@ -54,7 +54,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
 
     #endregion
 
-    #region Config
+    #region 配置
 
     private static ConfigFile configFile;
 
@@ -98,15 +98,15 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
             //加载顺序：
             //LDBTool.PreAddDataAction
             //VFPreload
-            //  model preload
-            //  item preload
-            //  recipe preload
-            //  tech preload
-            //  item init
-            //  model init
-            //  recipe init
-            //  RaycastLogic LoadStatic
-            //  tech preload2
+            //  模型预加载
+            //  物品预加载
+            //  配方预加载
+            //  科技预加载
+            //  物品初始化
+            //  模型初始化
+            //  配方初始化
+            //  RaycastLogic.LoadStatic
+            //  第二阶段科技预加载
             //LDBTool.PostAddDataAction
 
             LDBTool.PreAddDataAction += FeatureBootstrap.PreAddData;
@@ -159,7 +159,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         DarkFogInvestigationService.Tick();
     }
 
-    #region IModCanSave & IMultiplayerModWithSettings
+    #region 存档与联机设置接口实现
 
     /// <summary>
     /// 载入存档时执行。

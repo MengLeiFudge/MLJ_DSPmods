@@ -9,7 +9,7 @@ using HarmonyLib;
 
 namespace FE.Logic.Civilization.DarkFog;
 
-#region DarkFogEnemyEvidenceKind
+#region 黑雾敌人证据类型
 
 /// <summary>
 /// 黑雾击杀证据分类。仅统计 LDB.enemies 声明模型中可识别的六类实体。
@@ -24,9 +24,9 @@ public enum DarkFogEnemyEvidenceKind : byte {
     Tinder = 6,
 }
 
-#endregion // DarkFogEnemyEvidenceKind
+#endregion // 黑雾敌人证据类型
 
-#region DarkFogEnemyModelCatalog
+#region 黑雾敌人模型目录
 
 /// <summary>
 /// 预构建 modelIndex → 证据分类表，避免击杀热路径查询 EnemyProto。
@@ -141,9 +141,9 @@ public static class DarkFogEnemyModelCatalog {
     }
 }
 
-#endregion // DarkFogEnemyModelCatalog
+#endregion // 黑雾敌人模型目录
 
-#region DarkFogInvestigationState
+#region 黑雾调查状态
 
 /// <summary>
 /// 主机权威的黑雾调查证据状态。等级由证据派生，不重复保存。
@@ -347,9 +347,9 @@ public static class DarkFogInvestigationState {
     }
 }
 
-#endregion // DarkFogInvestigationState
+#endregion // 黑雾调查状态
 
-#region DarkFogInvestigationService
+#region 黑雾调查服务
 
 /// <summary>
 /// 黑雾调查运行时：击杀证据累计、低频清剿检测、认知投影、协议特殊资格与节流广播。
@@ -752,9 +752,9 @@ public static class DarkFogInvestigationService {
     };
 }
 
-#endregion // DarkFogInvestigationService
+#endregion // 黑雾调查服务
 
-#region DarkFogKillStatisticsPatches
+#region 黑雾击杀统计补丁
 
 /// <summary>
 /// 仅挂钩原版 KillStatistics 工厂/星际击杀登记；不重复统计 Mecha 击杀。
@@ -773,4 +773,4 @@ public static class DarkFogKillStatisticsPatches {
     }
 }
 
-#endregion // DarkFogKillStatisticsPatches
+#endregion // 黑雾击杀统计补丁

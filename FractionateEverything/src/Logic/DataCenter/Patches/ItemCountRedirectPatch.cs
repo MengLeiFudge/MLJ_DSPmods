@@ -59,7 +59,7 @@ public static class ItemCountRedirectPatch {
 
     public static IEnumerable<CodeInstruction> GetItemCount_Transpiler(IEnumerable<CodeInstruction> instructions) {
         try {
-            // Replace player.package.GetItemCount(int itemId)
+            // 替换 player.package.GetItemCount(int itemId) 调用
             var method = AccessTools.Method(typeof(StorageComponent), nameof(StorageComponent.GetItemCount),
                 [typeof(int)]);
             var codeMatcher = new CodeMatcher(instructions)
@@ -138,7 +138,7 @@ public static class ItemCountRedirectPatch {
             } else {
                 LogWarning($"MethodBase {original}, DeliverySlotsTweaksCompat.enabled not found");
             }
-            // Replace player.package.GetItemCount(int itemId)
+            // 替换 player.package.GetItemCount(int itemId) 调用
             var method = AccessTools.Method(typeof(StorageComponent), nameof(StorageComponent.GetItemCount),
                 [typeof(int)]);
             codeMatcher = new CodeMatcher(codeMatcher.InstructionEnumeration())
@@ -148,7 +148,7 @@ public static class ItemCountRedirectPatch {
                 .Repeat(matcher => matcher
                     .SetAndAdvance(OpCodes.Call,
                         AccessTools.Method(typeof(ItemCountRedirectPatch), nameof(GetItemCount))));
-            // Replace history.ItemUnlocked(int itemId)
+            // 替换 history.ItemUnlocked(int itemId) 调用
             method = AccessTools.Method(typeof(GameHistoryData), nameof(GameHistoryData.ItemUnlocked),
                 [typeof(int)]);
             codeMatcher = new CodeMatcher(codeMatcher.InstructionEnumeration())
@@ -190,7 +190,7 @@ public static class ItemCountRedirectPatch {
 
     private static IEnumerable<CodeInstruction> ItemUnlocked_Transpiler(IEnumerable<CodeInstruction> instructions) {
         try {
-            // Replace history.ItemUnlocked(int itemId)
+            // 替换 history.ItemUnlocked(int itemId) 调用
             var method = AccessTools.Method(typeof(GameHistoryData), nameof(GameHistoryData.ItemUnlocked),
                 [typeof(int)]);
             var codeMatcher = new CodeMatcher(instructions)
@@ -232,7 +232,7 @@ public static class ItemCountRedirectPatch {
                     ...
                     num += count;
                 }
-                AddConstructableCountsInStorage(this, player, ref num); // Insert method here
+                AddConstructableCountsInStorage(this, player, ref num); // 在此插入方法
             }
             else if (this.entityId > 0)
             {
@@ -250,7 +250,7 @@ public static class ItemCountRedirectPatch {
                 .Insert(
                     new CodeInstruction(OpCodes.Ldarg_0),
                     new CodeInstruction(OpCodes.Ldarg_2),
-                    new CodeInstruction(OpCodes.Ldloca_S, (byte)0),// num += count; in the loop
+                    new CodeInstruction(OpCodes.Ldloca_S, (byte)0),// 循环内执行 num += count
                     new CodeInstruction(OpCodes.Call,
                         AccessTools.Method(typeof(ItemCountRedirectPatch), nameof(AddConstructableCountsInStorage)))
                 );

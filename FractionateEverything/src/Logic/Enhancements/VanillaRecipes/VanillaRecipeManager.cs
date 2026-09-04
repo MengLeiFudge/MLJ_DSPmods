@@ -305,7 +305,7 @@ public class VanillaRecipe {
         recipe.TimeSpend = GetTimeSpendByUpgrade(VanillaRecipeManager.GlobalTimeLimitLevel);
     }
 
-    #region IModCanSave
+    #region 模组存档接口实现
 
     public virtual void Import(BinaryReader r) {
         r.ReadBlocks(

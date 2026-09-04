@@ -5,7 +5,7 @@ using FE.Logic.Fractionation.Fractionators;
 
 namespace FE.Logic.Civilization;
 
-#region CivilizationRuntimeSync
+#region 文明运行时同步
 
 /// <summary>
 /// 将文明探索状态投影为分馏域只读缓存，避免分馏热路径依赖文明业务对象。
@@ -53,4 +53,4 @@ public static class CivilizationRuntimeSync {
     }
 }
 
-#endregion // CivilizationRuntimeSync
+#endregion // 文明运行时同步

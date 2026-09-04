@@ -6,7 +6,7 @@ using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.Controls;
 
-// MyCheckBox modified from LSTM: https://github.com/hetima/DSP_LSTM/blob/main/LSTM/MyCheckBox.cs
+// MyCheckBox 基于 LSTM 修改：https://github.com/hetima/DSP_LSTM/blob/main/LSTM/MyCheckBox.cs
 /// <summary>
 /// 勾选框
 /// </summary>

@@ -35,7 +35,7 @@ public class MessageBoxMainPanelWindow : MyWindowWithTabs {
         OnUICreated?.Invoke(this, _windowTrans);
         SetCurrentTab(0);
         OnUpdateUI?.Invoke();
-        // Delay 500ms to run AutoFitWindowSize() after the window is created
+        // 窗口创建后延迟 500 毫秒执行 AutoFitWindowSize()
         // Invoke(nameof(AutoFitWindowSize), 0f);
     }
 

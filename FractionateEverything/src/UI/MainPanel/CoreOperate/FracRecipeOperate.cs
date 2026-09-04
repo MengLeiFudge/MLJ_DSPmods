@@ -285,7 +285,7 @@ public static class FracRecipeOperate {
 
     private static string GetSwitchText(bool enabled) => (enabled ? "已启用" : "未解锁").Translate();
 
-    #region IModCanSave
+    #region 模组存档接口实现
 
     public static void Import(BinaryReader r) {
         r.ReadBlocks();

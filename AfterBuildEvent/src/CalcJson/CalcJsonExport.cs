@@ -15,12 +15,12 @@ static partial class AfterBuildEvent {
     #region 生成戴森球量化计算器所需文件，并将其复制到计算器项目目录下
 
     /// <summary>
-    /// Local solution projects whose Debug/Release DLL fingerprints enter the calc JSON cache signature.
+    /// 其 Debug/Release DLL 指纹会纳入计算器 JSON 缓存签名的本地解决方案项目。
     /// </summary>
     private static readonly string[] CalcJsonLocalProjectNames = ["FractionateEverything", "GetDspData"];
 
     /// <summary>
-    /// Bumped when the calc JSON cache signature schema changes and old meta files must be ignored.
+    /// 计算器 JSON 缓存签名架构发生变化、旧元数据文件必须忽略时递增。
     /// </summary>
     private const int CalcJsonCacheVersion = 2;
 

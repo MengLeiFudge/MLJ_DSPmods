@@ -51,7 +51,7 @@ public class GetDspData : BaseUnityPlugin {
     private const string IconExportRequestPath =
         SolutionDir + @"\gamedata\calc-icon-export-request.json";
 
-    #region Logger
+    #region 日志
 
     private static ManualLogSource logger;
 

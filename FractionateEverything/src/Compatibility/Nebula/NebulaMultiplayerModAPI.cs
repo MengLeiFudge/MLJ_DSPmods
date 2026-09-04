@@ -65,7 +65,7 @@ public static class NebulaMultiplayerModAPI {
         CivilizationRecoveryManager.ResetNetworkRequestThrottle();
     }
 
-    public static bool IsOthers()// Action triggered by packets from other player
+    public static bool IsOthers()// 由其他玩家的数据包触发
     {
         var factoryManager = NebulaModAPI.MultiplayerSession.Factories;
         return factoryManager.IsIncomingRequest.Value

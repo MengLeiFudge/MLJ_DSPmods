@@ -6,7 +6,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Recipes;
 
-#region CivilizationCurrencyPacker
+#region 文明货币打包器
 
 /// <summary>
 /// 将 Frag/Memory 基础数量贪心打包为 1000/100/10/1 实体。
@@ -93,7 +93,7 @@ public static class CivilizationCurrencyPacker {
 
 #endregion
 
-#region MemoryResidueStore
+#region 记忆余数存储
 
 /// <summary>
 /// 保存解析产线共享的 Memory 余数，并保证批量与逐次累计等价。
@@ -180,7 +180,7 @@ public static class MemoryResidueStore {
 
 #endregion
 
-#region DarkFogCognitionCache
+#region 黑雾认知缓存
 
 /// <summary>
 /// 保存黑雾域投影到分馏热路径的地表/星域认知等级，供解析塔读取。
@@ -220,7 +220,7 @@ public static class DarkFogCognitionCache {
 
 #endregion
 
-#region RecipeAvailabilityStore
+#region 配方可用性存储
 
 /// <summary>
 /// 保存文明系统投影到分馏域的协议管理范围和当前可用配方。
@@ -253,7 +253,7 @@ public static class RecipeAvailabilityStore {
 
 #endregion
 
-#region RecipeModifierCache
+#region 配方修正缓存
 
 /// <summary>
 /// 保存成就域投影到分馏热路径的固定配方加成。

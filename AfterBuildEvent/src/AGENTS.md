@@ -50,7 +50,7 @@ Required publish usage passes mode `1` as argv. The latest commit body is the pu
 
 ```bash
 ./AfterBuildEvent.exe 1
-# Optional single-project correction publish:
+# 可选：仅发布单个项目的修正
 ./AfterBuildEvent.exe 1 UXAEnhance
 ```
 
@@ -97,13 +97,13 @@ Codex final replies for publish runs must include the `AfterBuildEvent.exe 1` co
 ## Option 2 — UpdateLibDll Detail
 
 ```
-# Game DLLs (from game install → nuget → decompile)
+# 游戏 DLL：从游戏安装目录复制到 NuGet，再执行反编译
 PublizeDll(DSPACDll → NugetGameLibNet45Dir\Assembly-CSharp.dll)
     → DecompileDll(ilspycmd → gamedata/DecompiledSource/Assembly-CSharp/)
 PublizeDll(DSPUIDll → NugetGameLibNet45Dir\UnityEngine.UI.dll)
     → DecompileDll(ilspycmd → gamedata/DecompiledSource/UnityEngine.UI/)
 
-# Mod DLLs (from CheckPlugins soft dependencies → mods.yml → R2 plugins → decompile)
+# 模组 DLL：从 CheckPlugins 软依赖出发，经 mods.yml 定位 R2 插件后反编译
 Parse `FractionateEverything/src/Compatibility/CheckPlugins.cs`
     → collect `[BepInDependency(..., SoftDependency)]`
 Read `mods.yml`

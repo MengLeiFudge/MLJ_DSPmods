@@ -13,7 +13,7 @@ using BepInEx;
 
 namespace FE.Logic.Civilization.Achievements;
 
-#region AchievementDefinition
+#region 成就定义
 
 /// <summary>
 /// 标识单存档成就使用的累计进度条件。
@@ -95,9 +95,9 @@ public sealed class AchievementCompletionRecord(
     public long TriggerValue { get; } = triggerValue;
 }
 
-#endregion // AchievementDefinition
+#endregion // 成就定义
 
-#region AchievementCatalog
+#region 成就目录
 
 /// <summary>
 /// 保存单存档普通成就定义，不把条件和奖励闭包放入 UI。
@@ -125,9 +125,9 @@ public static class AchievementCatalog {
     }
 }
 
-#endregion // AchievementCatalog
+#endregion // 成就目录
 
-#region AchievementState
+#region 成就状态
 
 /// <summary>
 /// 保存当前存档已完成的普通成就及其首次解锁元数据。
@@ -299,9 +299,9 @@ public static class AchievementState {
     }
 }
 
-#endregion // AchievementState
+#endregion // 成就状态
 
-#region AchievementService
+#region 成就服务
 
 /// <summary>
 /// 低频评估类型化条件，完成后立即让固定奖励生效。
@@ -375,9 +375,9 @@ public static class AchievementService {
     }
 }
 
-#endregion // AchievementService
+#endregion // 成就服务
 
-#region AchievementModule
+#region 成就模块
 
 /// <summary>
 /// 成就域的翻译、初始化、低频评估、存档和运行投影入口。
@@ -455,9 +455,9 @@ public static class AchievementModule {
     }
 }
 
-#endregion // AchievementModule
+#endregion // 成就模块
 
-#region SecretAchievementDefinition
+#region 秘密成就定义
 
 /// <summary>
 /// 秘密成就完成时的固定触发来源字符串，不写入隐私字段。
@@ -497,9 +497,9 @@ public sealed class SecretAchievementRecord(
     public string TriggerSource { get; } = triggerSource ?? "";
 }
 
-#endregion // SecretAchievementDefinition
+#endregion // 秘密成就定义
 
-#region SecretAchievementCatalog
+#region 秘密成就目录
 
 /// <summary>
 /// 本机秘密成就定义目录；未解锁项不进入可见列表。
@@ -551,9 +551,9 @@ public static class SecretAchievementCatalog {
     }
 }
 
-#endregion // SecretAchievementCatalog
+#endregion // 秘密成就目录
 
-#region SecretAchievementProfile
+#region 秘密成就本机档案
 
 /// <summary>
 /// 本机秘密成就 profile：跨存档保留，不进入存档/Nebula，不提供生产奖励。
@@ -804,4 +804,4 @@ public static class SecretAchievementProfile {
     }
 }
 
-#endregion // SecretAchievementProfile
+#endregion // 秘密成就本机档案

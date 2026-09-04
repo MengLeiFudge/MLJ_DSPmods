@@ -480,7 +480,7 @@ public static partial class ProcessManager {
                     var locals = original.GetMethodBody()!.LocalVariables;
                     var planetFactoryLocal = locals.First(v => v.LocalType == typeof(PlanetFactory));
                     m.InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_S,
-                        (byte)planetFactoryLocal.LocalIndex));// PlanetFactory (local var)
+                        (byte)planetFactoryLocal.LocalIndex));// PlanetFactory（局部变量）
                     m.InsertAndAdvance(new CodeInstruction(OpCodes.Ldfld, entityPoolField));// EntityData[]
                 }
                 m.SetInstruction(new CodeInstruction(OpCodes.Call, replacementSetPCStateMethod));
@@ -602,7 +602,7 @@ public static partial class ProcessManager {
         Register("已关闭副产物弃置", "Byproduct discard disabled");
     }
 
-    #region Field
+    #region 字段
 
     /// <summary>
     /// 定义单次更新最多尝试输出产物的次数。
@@ -1504,7 +1504,7 @@ public static partial class ProcessManager {
 
     #endregion
 
-    #region IModCanSave
+    #region 模组存档接口实现
 
     /// <summary>
     /// 将该分馏域状态写入存档。

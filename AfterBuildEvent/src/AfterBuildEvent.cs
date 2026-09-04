@@ -5,41 +5,41 @@ using AfterBuildEvent.DspCalcQuickUpdate;
 namespace AfterBuildEvent;
 
 /// <summary>
-/// Build automation entry and mode router. Mode-specific DTOs and workflows live in owning folders.
+/// 构建自动化入口和模式路由。特定模式的 DTO 与工作流位于各自所属目录中。
 /// </summary>
 static partial class AfterBuildEvent {
     /// <summary>
-    /// UTF-8 without BOM for deterministic text/hash payloads shared across workflows.
+    /// 使用无 BOM 的 UTF-8，以便各工作流生成确定性的文本/哈希载荷。
     /// </summary>
     private static readonly Encoding Utf8NoBom = new UTF8Encoding(false);
 
     /// <summary>
-    /// Maximum attempts when R2 profile files are locked by another process.
+    /// R2 配置文件被其他进程锁定时的最大尝试次数。
     /// </summary>
     private const int R2CopyRetryCount = 60;
 
     /// <summary>
-    /// Delay between R2 copy retries in milliseconds.
+    /// R2 复制重试的间隔时间，单位为毫秒。
     /// </summary>
     private const int R2CopyRetryDelayMs = 500;
 
 #if DEBUG
     /// <summary>
-    /// Local project output configuration selected by the current AfterBuildEvent build.
+    /// 当前 AfterBuildEvent 构建所选择的本地项目输出配置。
     /// </summary>
     private const string BuildConfiguration = "Debug";
 #else
     /// <summary>
-    /// Local project output configuration selected by the current AfterBuildEvent build.
+    /// 当前 AfterBuildEvent 构建所选择的本地项目输出配置。
     /// </summary>
     private const string BuildConfiguration = "Release";
 #endif
 
     /// <summary>
-    /// Prints mode help and dispatches CLI/interactive selection to the owning workflow.
+    /// 输出模式帮助，并将 CLI/交互式选择分派给所属工作流。
     /// </summary>
     /// <param name="args">
-    /// Optional argv. First value is the mode; remaining values are mode-specific filters.
+    /// 可选 argv。第一个值为模式，其余值为特定模式的筛选条件。
     /// </param>
     public static void Main(string[] args) {
         bool automationMode = args.Length > 0;

@@ -8,7 +8,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Civilization;
 
-#region CivilizationModule
+#region 文明模块
 
 /// <summary>
 /// 远古文明探索域的翻译、初始化、存档和运行投影入口。
@@ -64,4 +64,4 @@ public static class CivilizationModule {
     }
 }
 
-#endregion // CivilizationModule
+#endregion // 文明模块

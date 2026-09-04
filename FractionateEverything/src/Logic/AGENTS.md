@@ -45,7 +45,7 @@ public static void Import(BinaryReader r) {
 }
 
 public static void IntoOtherSave() {
-    // reset state
+    // 重置状态
 }
 ```
 

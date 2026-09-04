@@ -1,26 +1,22 @@
 ###############################################################################
-# Set default behavior to automatically normalize line endings.
+# 默认自动规范化换行符。
 ###############################################################################
 * text=auto
 
 ###############################################################################
-# Set default behavior for command prompt diff.
+# 设置命令行 diff 的默认行为。
 #
-# This is need for earlier builds of msysgit that does not have it on by
-# default for csharp files.
-# Note: This is only used by command line
+# 早期 msysgit 默认未对 C# 文件启用该行为，因此需要此设置。
+# 注意：该设置仅供命令行使用。
 ###############################################################################
 #*.cs     diff=csharp
 
 ###############################################################################
-# Set the merge driver for project and solution files
+# 为项目文件和解决方案文件设置合并驱动。
 #
-# Merging from the command prompt will add diff markers to the files if there
-# are conflicts (Merging from VS is not affected by the settings below, in VS
-# the diff markers are never inserted). Diff markers may cause the following 
-# file extensions to fail to load in VS. An alternative would be to treat
-# these files as binary and thus will always conflict and require user
-# intervention with every merge. To do so, just uncomment the entries below
+# 从命令行合并时，冲突文件会包含 diff 标记（从 VS 合并不受下列设置影响，
+# VS 不会插入 diff 标记）。这些标记可能导致下列文件无法加载。另一种方式
+# 是取消对应规则的注释，把这些文件视为二进制；这样每次冲突都必须人工处理。
 ###############################################################################
 #*.sln       merge=binary
 #*.csproj    merge=binary
@@ -36,20 +32,19 @@
 #*.wwaproj   merge=binary
 
 ###############################################################################
-# behavior for image files
+# 图像文件的处理方式。
 #
-# image files are treated as binary by default.
+# 图像文件默认按二进制处理。
 ###############################################################################
 #*.jpg   binary
 #*.png   binary
 #*.gif   binary
 
 ###############################################################################
-# diff behavior for common document formats
+# 常见文档格式的 diff 行为。
 # 
-# Convert binary document formats to text before diffing them. This feature
-# is only available from the command line. Turn it on by uncommenting the 
-# entries below.
+# 比较前先把二进制文档格式转换为文本。该功能仅在命令行中可用；
+# 需要启用时，请取消下列对应规则的注释。
 ###############################################################################
 #*.doc   diff=astextplain
 #*.DOC   diff=astextplain

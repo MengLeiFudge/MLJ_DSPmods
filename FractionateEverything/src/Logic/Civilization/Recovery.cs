@@ -14,7 +14,7 @@ using UnityEngine.UI;
 
 namespace FE.Logic.Civilization {
 
-    #region TechManager
+    #region 科技管理器
 
     /// <summary>
     /// 添加科技后，需要Preload、Preload2。
@@ -120,9 +120,9 @@ namespace FE.Logic.Civilization {
         }
     }
 
-    #endregion // TechManager
+    #endregion // 科技管理器
 
-    #region Techs
+    #region 科技定义
 
     /// <summary>
     /// 添加科技后，需要Preload、Preload2。
@@ -250,9 +250,9 @@ namespace FE.Logic.Civilization {
         }
     }
 
-    #endregion // Techs
+    #endregion // 科技定义
 
-    #region MatrixProgress
+    #region 矩阵进度
 
     /// <summary>
     /// 添加科技后，需要Preload、Preload2。
@@ -345,9 +345,9 @@ namespace FE.Logic.Civilization {
         }
     }
 
-    #endregion // MatrixProgress
+    #endregion // 矩阵进度
 
-    #region RuntimePatches
+    #region 运行时补丁
 
     /// <summary>
     /// 添加科技后，需要Preload、Preload2。
@@ -445,9 +445,9 @@ namespace FE.Logic.Civilization {
         }
     }
 
-    #endregion // RuntimePatches
+    #endregion // 运行时补丁
 
-    #region CivilizationRecoveryManager
+    #region 文明恢复管理器
 
     /// <summary>
     /// 将旧 FE 科技树入口迁移为文明恢复流程。
@@ -950,13 +950,13 @@ namespace FE.Logic.Civilization {
         }
     }
 
-    #endregion // CivilizationRecoveryManager
+    #endregion // 文明恢复管理器
 
 }
 
 namespace FE.Logic.Civilization.Presentation {
 
-    #region StarterSignalHud
+    #region 启动信号 HUD
 
     /// <summary>
     /// 启动信号常驻 HUD：在原版目标面板展开位置下方持续显示当前方向/距离。
@@ -1216,6 +1216,6 @@ namespace FE.Logic.Civilization.Presentation {
         }
     }
 
-    #endregion // StarterSignalHud
+    #endregion // 启动信号 HUD
 
 }

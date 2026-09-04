@@ -24,7 +24,7 @@ public static class TemporaryPackageAccessPatch {
         return PackageAccessRules.ArchitectMode && item != null && item.BuildMode != 0;
     }
 
-    #region MechaForge._test_storage
+    #region 机甲制造临时仓储（MechaForge._test_storage）
 
     /// <summary>
     /// 初始化临时背包已经消耗的物品数目
@@ -55,7 +55,7 @@ public static class TemporaryPackageAccessPatch {
     [HarmonyPatch(typeof(MechaForge), nameof(MechaForge.TryAddTaskIterate))]
     private static IEnumerable<CodeInstruction> TryTakeItem_Transpiler(IEnumerable<CodeInstruction> instructions) {
         try {
-            // Replace _test_storage.TakeItem(int itemId, int count, out int inc)
+            // 替换 _test_storage.TakeItem(int itemId, int count, out int inc) 调用
             var method = AccessTools.Method(typeof(StorageComponent), nameof(StorageComponent.TakeItem),
                 [typeof(int), typeof(int), typeof(int).MakeByRefType()]);
             var codeMacher = new CodeMatcher(instructions)
@@ -91,7 +91,7 @@ public static class TemporaryPackageAccessPatch {
 
     #endregion
 
-    #region BuildTool.tmpPackage
+    #region 建造工具临时物品包（BuildTool.tmpPackage）
 
     /// <summary>
     /// 初始化临时背包已经消耗的物品数目
@@ -165,7 +165,7 @@ public static class TemporaryPackageAccessPatch {
 
     private static IEnumerable<CodeInstruction> TryTakeTailItems_Transpiler(IEnumerable<CodeInstruction> instructions) {
         try {
-            // Replace BuildTool.tmpPackage.TakeTailItems(ref int itemId, ref int count, out int inc, bool useBan = false)
+            // 替换 BuildTool.tmpPackage.TakeTailItems(ref int itemId, ref int count, out int inc, bool useBan = false) 调用
             var method = AccessTools.Method(typeof(StorageComponent), nameof(StorageComponent.TakeTailItems),
                 [typeof(int).MakeByRefType(), typeof(int).MakeByRefType(), typeof(int).MakeByRefType(), typeof(bool)]);
             var codeMacher = new CodeMatcher(instructions)
@@ -212,7 +212,7 @@ public static class TemporaryPackageAccessPatch {
     private static IEnumerable<CodeInstruction> TakeTailItemsWithIncTable_Transpiler(
         IEnumerable<CodeInstruction> instructions) {
         try {
-            // Replace BuildTool.tmpPackage.TakeTailItemsWithIncTable(int itemId, ref int count, out int inc, ref int[] incTable, bool useBan = false)
+            // 替换 BuildTool.tmpPackage.TakeTailItemsWithIncTable(int itemId, ref int count, out int inc, ref int[] incTable, bool useBan = false) 调用
             var method = AccessTools.Method(typeof(StorageComponent),
                 nameof(StorageComponent.TakeTailItemsWithIncTable),
                 [

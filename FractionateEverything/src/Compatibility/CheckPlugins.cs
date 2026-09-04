@@ -52,7 +52,7 @@ public class CheckPlugins : BaseUnityPlugin {
     /// </summary>
     public static ConfigEntry<bool> DisableMessageBox;
 
-    #region Logger
+    #region 日志
 
     private static ManualLogSource logger;
     public static void LogDebug(object data) => logger.LogDebug(data);

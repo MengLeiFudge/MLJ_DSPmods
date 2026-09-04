@@ -418,7 +418,7 @@ public abstract class BaseRecipe(
     /// </summary>
     public virtual byte GetOutputInc(int itemId) => 0;
 
-    #region IModCanSave
+    #region 模组存档接口实现
 
     /// <summary>
     /// 从存档读取该分馏域状态。

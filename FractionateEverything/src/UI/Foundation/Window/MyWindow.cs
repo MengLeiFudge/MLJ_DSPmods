@@ -9,7 +9,7 @@ using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.Foundation.Window;
 
-// MyWindow modified from LSTM: https://github.com/hetima/DSP_LSTM/blob/main/LSTM/MyWindowCtl.cs
+// MyWindow 基于 LSTM 修改：https://github.com/hetima/DSP_LSTM/blob/main/LSTM/MyWindowCtl.cs
 // 大部分UI来源为UXAssist，感谢@soarqin的源码以供参考！
 /// <summary>
 /// FE 自定义窗口的基础布局、控件创建和刷新框架。
@@ -244,7 +244,7 @@ public class MyWindow : ManualBehaviour {
         return comboBox;
     }
 
-    #region Slider
+    #region 滑动条
 
     /// <summary>
     /// 滑条索引与业务值之间的映射基类。

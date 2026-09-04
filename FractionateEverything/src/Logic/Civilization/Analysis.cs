@@ -5,7 +5,7 @@ using FE.Logic.Civilization.Technology;
 
 namespace FE.Logic.Civilization.Analysis;
 
-#region AnalysisProgressStore
+#region 解析进度存储
 
 /// <summary>
 /// 保存全局检索计数、无效保底与深层解析进度。
@@ -49,9 +49,9 @@ public static class AnalysisProgressStore {
     }
 }
 
-#endregion // AnalysisProgressStore
+#endregion // 解析进度存储
 
-#region DeepAnalysisService
+#region 深层解析服务
 
 /// <summary>
 /// 将无候选广域检索消耗的基础残片成本累计为远古文明科技点进度。
@@ -90,4 +90,4 @@ public static class DeepAnalysisService {
     }
 }
 
-#endregion // DeepAnalysisService
+#endregion // 深层解析服务

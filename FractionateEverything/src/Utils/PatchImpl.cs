@@ -17,9 +17,9 @@ public class PatchGuidAttribute(string guid) : Attribute {
 /// Harmony 补丁生命周期回调标记。
 /// </summary>
 public enum PatchCallbackFlag {
-    // By default, OnEnable() is called After patch applied, set this flag to call it before patch is applied
+    // 默认在应用补丁后调用 OnEnable()；设置此标志可改为在应用补丁前调用
     CallOnEnableBeforePatch,
-    // By default, OnDisable() is called Before patch removed, set this flag to call it after patch is removed
+    // 默认在移除补丁前调用 OnDisable()；设置此标志可改为在移除补丁后调用
     CallOnDisableAfterUnpatch,
 }
 

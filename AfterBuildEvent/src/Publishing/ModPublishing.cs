@@ -19,107 +19,107 @@ static partial class AfterBuildEvent {
     #region 更新mod、打包、启动游戏
 
     /// <summary>
-    /// Timeout for the localhost qqbot publish-local HTTP request, in milliseconds.
+    /// 本机 qqbot publish-local HTTP 请求的超时时间，单位为毫秒。
     /// </summary>
     private const int QqbotArtifactUploadTimeoutMs = 60000;
 
     /// <summary>
-    /// qqbot project_id used by automated zip delivery.
+    /// 自动投递压缩包时使用的 qqbot project_id。
     /// </summary>
     private const string AutoUploadProjectId = "mlj_dspmods";
 
     /// <summary>
-    /// Default QQ group that receives configured publish packages.
+    /// 接收已配置发布包的默认 QQ 群。
     /// </summary>
     private const int AutoUploadGroupId = 319567534;
 
     /// <summary>
-    /// Localhost-only qqbot admin endpoint that accepts already-built zip paths.
+    /// 仅限本机访问、接收已构建压缩包路径的 qqbot 管理端点。
     /// </summary>
     private const string QqbotArtifactUploadUrl = "http://127.0.0.1:8080/admin/api/artifacts/publish-local";
 
     /// <summary>
-    /// One packaged project zip produced during mode 1, including integrity and content hashes.
+    /// 模式 1 生成的一个项目压缩包，包含完整性哈希和内容哈希。
     /// </summary>
     private sealed class GeneratedPackageInfo {
         /// <summary>
-        /// Local project/package id used to match PublishTargets and CLI filters.
+        /// 用于匹配 PublishTargets 和 CLI 筛选条件的本地项目/包 ID。
         /// </summary>
         public string ProjectName { get; set; } = "";
 
         /// <summary>
-        /// Absolute path of the generated zip file.
+        /// 所生成压缩包的绝对路径。
         /// </summary>
         public string Path { get; set; } = "";
 
         /// <summary>
-        /// Zip file name sent to qqbot as the upload display name.
+        /// 作为上传显示名称发送给 qqbot 的压缩包文件名。
         /// </summary>
         public string Name { get; set; } = "";
 
         /// <summary>
-        /// Zip byte length at package time.
+        /// 打包时压缩包的字节长度。
         /// </summary>
         public long SizeBytes { get; set; }
 
         /// <summary>
-        /// UTC last-write timestamp of the zip, ISO-8601.
+        /// 压缩包的 UTC 最后写入时间戳，格式为 ISO-8601。
         /// </summary>
         public string LastWriteTimeUtc { get; set; } = "";
 
         /// <summary>
-        /// SHA-256 of the zip file bytes; used as transfer integrity checksum.
+        /// 压缩包文件字节的 SHA-256；用作传输完整性校验和。
         /// </summary>
         public string Sha256 { get; set; } = "";
 
         /// <summary>
-        /// Stable hash of sorted zip entry names, sizes, and bytes; used by the local content guard.
+        /// 对排序后的压缩包条目名称、大小和字节计算的稳定哈希；由本地内容保护机制使用。
         /// </summary>
         public string ContentSha256 { get; set; } = "";
     }
 
     /// <summary>
-    /// Declares which packaged project may be offered to qqbot and which QQ groups receive it.
+    /// 声明可提供给 qqbot 的打包项目，以及接收该项目的 QQ 群。
     /// </summary>
     private sealed class PublishTarget {
         /// <summary>
-        /// Local project name that must match GeneratedPackageInfo.ProjectName.
+        /// 必须与 GeneratedPackageInfo.ProjectName 匹配的本地项目名称。
         /// </summary>
         public string ProjectName { get; set; } = "";
 
         /// <summary>
-        /// QQ group ids included in the publish-local file entry targets array.
+        /// publish-local 文件条目 targets 数组中包含的 QQ 群 ID。
         /// </summary>
         public int[] GroupIds { get; set; } = [];
     }
 
     /// <summary>
-    /// Parsed qqbot publish-local response counters when the body contains uploaded/deleted/skipped arrays.
+    /// 当响应正文包含 uploaded/deleted/skipped 数组时解析出的 qqbot publish-local 响应计数。
     /// </summary>
     private sealed class QqbotPublishSummary {
         /// <summary>
-        /// True when uploaded/deleted/skipped arrays were all present and parsed.
+        /// uploaded/deleted/skipped 数组均存在且解析成功时为 true。
         /// </summary>
         public bool HasCounts { get; set; }
 
         /// <summary>
-        /// Number of zip entries qqbot reported as uploaded.
+        /// qqbot 报告为已上传的压缩包条目数。
         /// </summary>
         public int UploadedCount { get; set; }
 
         /// <summary>
-        /// Number of old artifacts qqbot reported as deleted.
+        /// qqbot 报告为已删除的旧产物数。
         /// </summary>
         public int DeletedCount { get; set; }
 
         /// <summary>
-        /// Number of zip entries qqbot reported as unchanged skips.
+        /// qqbot 报告为因未变化而跳过的压缩包条目数。
         /// </summary>
         public int SkippedCount { get; set; }
     }
 
     /// <summary>
-    /// Configured packages that mode 1 may offer to qqbot after local packaging.
+    /// 模式 1 本地打包后可提供给 qqbot 的已配置包。
     /// </summary>
     private static readonly PublishTarget[] PublishTargets = [
         new() {
@@ -141,31 +141,31 @@ static partial class AfterBuildEvent {
     ];
 
     /// <summary>
-    /// Outcome of one mode-1 qqbot publish attempt, including whether a request was sent.
+    /// 一次模式 1 qqbot 发布尝试的结果，包括是否已发送请求。
     /// </summary>
     private sealed class QqbotPublishOutcome {
         /// <summary>
-        /// True when packaging can treat the publish step as successful or intentionally skipped.
+        /// 打包流程可将发布步骤视为成功或有意跳过时为 true。
         /// </summary>
         public bool Succeeded { get; set; }
 
         /// <summary>
-        /// True when an HTTP publish-local request was actually posted to qqbot.
+        /// 实际已向 qqbot 发送 HTTP publish-local 请求时为 true。
         /// </summary>
         public bool SentRequest { get; set; }
     }
 
     /// <summary>
-    /// Local publish-content-sha256 cache entry used to skip unchanged package uploads.
+    /// 用于跳过未变化包上传的本地 publish-content-sha256 缓存条目。
     /// </summary>
     private sealed class LocalPublishState {
         /// <summary>
-        /// Cached zip file name.
+        /// 缓存的压缩包文件名。
         /// </summary>
         public string Name { get; set; } = "";
 
         /// <summary>
-        /// Cached package content hash from the last successful qqbot request.
+        /// 上次成功请求 qqbot 时缓存的包内容哈希。
         /// </summary>
         public string ContentSha256 { get; set; } = "";
     }
