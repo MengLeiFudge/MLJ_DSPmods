@@ -168,9 +168,9 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         FeatureSaveRegistry.IntoOtherSave();
         int version = r.ReadInt32();
         if (version < 10) {
-            // 精确 version1 旧档：在跳过自有块前幂等解锁本机秘密成就“旧日余响”。
-            // 仅主机/单人触发；2..9 不触发；不发放任何经济补偿。
-            if (version == 1 && !NebulaMultiplayerModAPI.IsClient) {
+            // 小于 10 的版本均为 FE 2.x 旧档；跳过自有块前幂等解锁本机秘密成就“旧日余响”。
+            // 仅主机/单机触发，不发放任何经济补偿。
+            if (!NebulaMultiplayerModAPI.IsClient) {
                 SecretAchievementProfile.TryUnlock(
                     SecretAchievementCatalog.Legacy2xSaveKey,
                     SecretAchievementSources.Legacy2xSave);

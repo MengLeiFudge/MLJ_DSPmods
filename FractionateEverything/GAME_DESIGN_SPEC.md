@@ -390,7 +390,7 @@ Achievements     (普通成就)
 
 `AncientCivilization` 由 `CivilizationModule` 管理，`Achievements` 由 `AchievementModule` 管理；秘密成就记录于独立的本机 profile，不进入存档状态。定义目录不保存，只保存当前存档状态；所有顶层块导入后分别重建对应运行投影。
 
-存档总版本保持 10。低于 10 的存档不读取任何 FE 自有状态块（`AncientCivilization` / `Achievements` 均不读取），也不读取 FE 3.0 开发中间状态。识别为 FE 2.x 旧版（版本 1）的存档只触发"旧日余响"纪念内容，不发放任何奖励。FE 2.x 的 `Gacha`、`Economy`、`RecipeGrowth`、旧主面板页面和旧顶层文明恢复块不读取或导出。
+存档总版本保持 10。低于 10 的存档均视为 FE 2.x 旧档，不读取任何 FE 自有状态块（`AncientCivilization` / `Achievements` 均不读取），也不读取 FE 3.0 开发中间状态。主机或单机载入此类旧档时，在跳过旧状态块前幂等解锁本机秘密成就"旧日余响"，不发放任何奖励；客户端不触发解锁。FE 2.x 的 `Gacha`、`Economy`、`RecipeGrowth`、旧主面板页面和旧顶层文明恢复块不读取或导出。
 
 物理 Proto 兼容单独说明：建筑、模型和物品的物理 ID 保持 FE 2.x 值或提供映射，使旧蓝图和存档引用仍可解析；该兼容与状态迁移相互独立，不读取旧状态。
 

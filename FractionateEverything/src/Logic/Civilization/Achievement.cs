@@ -463,7 +463,7 @@ public static class AchievementModule {
 /// 秘密成就完成时的固定触发来源字符串，不写入隐私字段。
 /// </summary>
 public static class SecretAchievementSources {
-    /// <summary>精确载入 FE 自有 version1 旧档。</summary>
+    /// <summary>载入总版本号小于 10 的 FE 2.x 旧档。</summary>
     public const string Legacy2xSave = "legacy-2x-save";
 }
 
@@ -674,7 +674,7 @@ public static class SecretAchievementProfile {
             LogWarning($"[SecretAchievements] key length {achievementKey.Length} exceeds {MaxStringChars}, ignored");
             return false;
         }
-        // Import 可能早于 FinalAction；目录为空时先重建，避免 version1 旧档触发被误判为未知键。
+        // Import 可能早于 FinalAction；目录为空时先重建，避免 FE 2.x 旧档触发被误判为未知键。
         if (SecretAchievementCatalog.All.Count == 0) {
             SecretAchievementCatalog.Initialize();
         }
