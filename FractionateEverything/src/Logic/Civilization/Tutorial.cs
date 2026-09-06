@@ -314,7 +314,7 @@ public static partial class TutorialManager {
     [HarmonyPatch(typeof(UITutorialWindow), nameof(UITutorialWindow.OnTutorialChange))]
     [HarmonyTranspiler]
     [HarmonyPriority(Priority.First)]
-    [HarmonyBefore(GenesisBook.GUID)]
+    [HarmonyBefore(GenesisBook.GUID, OrbitalRing.GUID)]
     public static IEnumerable<CodeInstruction> UITutorialWindow_Transpiler(
         IEnumerable<CodeInstruction> instructions, ILGenerator ilGenerator) {
         var instructionList = instructions as List<CodeInstruction> ?? [.. instructions];
@@ -390,8 +390,13 @@ public static partial class TutorialManager {
         return !string.IsNullOrEmpty(layoutFileName) && layoutFileName.StartsWith(FeTutorialLayoutPrefix);
     }
 
+    /// <summary>
+    /// 判断当前教程是否由 FE 或已启用的兼容模组生成正文。
+    /// </summary>
+    /// <param name="proto">当前选中的教程原型。</param>
+    /// <returns>存在适用的自定义布局生成器时返回 true。</returns>
     public static bool UseCustomLayoutParser(TutorialProto proto) {
-        return IsFELayout(proto) || IsGenesisBookLayout(proto);
+        return IsFELayout(proto) || IsGenesisBookLayout(proto) || OrbitalRing.IsTutorialLayout(proto);
     }
 
     const string preText =
@@ -399,9 +404,17 @@ public static partial class TutorialManager {
     const string postText =
         "{$Text|fontsize=14;linespacing=1.1;textalignment=0,1;color=#FFFFFF52;material=UI/Materials/widget-text-alpha-5x-thick;margins=20,20,20,20}\n";
 
+    /// <summary>
+    /// 将外部模组教程委派给其布局生成器，FE 教程仍使用自身翻译文本。
+    /// </summary>
+    /// <param name="proto">已命中自定义布局分派的教程原型。</param>
+    /// <returns>当前教程的布局文本。</returns>
     public static string GetLayoutStr(TutorialProto proto) {
         if (IsGenesisBookLayout(proto)) {
             return GetGenesisBookLayoutStr(proto);
+        }
+        if (OrbitalRing.IsTutorialLayout(proto)) {
+            return OrbitalRing.GetTutorialLayoutStr(proto);
         }
 
         string protoName = proto.Name;
