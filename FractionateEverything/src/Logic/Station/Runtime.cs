@@ -212,11 +212,11 @@ public static partial class StationManager {
         }
     }
 
-    /// <summary>设置交互站某槽位的目标物品数量并消耗对应电力</summary>
-    /// <param name="stationComponent">操作的交互站组件</param>
-    /// <param name="index">槽位索引</param>
-    /// <param name="targetCount">目标数量</param>
-    /// <param name="maxSlotEnergy">单槽位可用的最大电量</param>
+    /// <summary>按可用电量裁剪槽位目标数量，并按实际搬运数量结算耗电。</summary>
+    /// <param name="stationComponent">发起上传或下载的交互站。</param>
+    /// <param name="index">物品槽位的零基索引。</param>
+    /// <param name="targetCount">槽位期望保留的物品数量。</param>
+    /// <param name="maxSlotEnergy">本轮分配给该槽位的电量上限，单位 J。</param>
     private static void SetTargetCount(this StationComponent stationComponent, int index, int targetCount,
         long maxSlotEnergy) {
         ref StationStore store = ref stationComponent.storage[index];
@@ -225,42 +225,36 @@ public static partial class StationManager {
         }
 
         ItemProto itemProto = LDB.items.Select(IFE行星内物流交互站);
-        // 物品价值(100价值=1000000J=1MJ，即每1价值，耗电10000J)
-        float cost = (float)Math.Sqrt(itemValue[store.itemId]) * 10000 * itemProto.InteractEnergyRatio();
-        if (store.count < targetCount) {
-            // 将数据中心的物品下载到交互站
-            int count = targetCount - store.count;
-            // 总耗电大于剩余电量，修改数量
-            if (cost * count > maxSlotEnergy) {
-                // 1个都玩不起直接放弃
-                if (cost > maxSlotEnergy) {
-                    return;
-                }
+        // 单件耗电（J）为物品价值的平方根乘以 10000 和交互耗电倍率。
+        double cost = Math.Sqrt(itemValue[store.itemId]) * 10000 * itemProto.InteractEnergyRatio();
+        if (cost < 0 || double.IsNaN(cost) || double.IsInfinity(cost)) {
+            return;
+        }
 
-                count = Mathf.FloorToInt(maxSlotEnergy / cost);
-            }
+        long budget = Math.Max(0L, Math.Min(maxSlotEnergy, stationComponent.energy));
+        bool download = store.count < targetCount;
+        int count = download ? targetCount - store.count : store.count - targetCount;
+        if (cost > 0) {
+            count = (int)Math.Min(count, Math.Floor(budget / cost));
+        }
+        if (count <= 0) {
+            return;
+        }
 
+        if (download) {
+            // 将数据中心的物品下载到交互站，按实际取出的数量计费。
             count = TakeItemFromModData(store.itemId, count, out int inc);
             store.count += count;
             store.inc += inc;
-            stationComponent.energy -= Mathf.CeilToInt(cost * count);
         } else {
-            // 将交互站的物品上传到数据中心
-            int count = store.count - targetCount;
-            // 总耗电大于剩余电量，修改数量
-            if (cost * count > maxSlotEnergy) {
-                // 1个都玩不起直接放弃
-                if (cost > maxSlotEnergy) {
-                    return;
-                }
-
-                count = Mathf.FloorToInt(maxSlotEnergy / cost);
-            }
-
+            // 将交互站的物品上传到数据中心。
             int inc = store.count <= 0 ? 0 : split_inc(ref store.count, ref store.inc, count);
             DataCenterUploadRouter.Upload(store.itemId, count, inc);
-            stationComponent.energy -= Mathf.CeilToInt(cost * count);
         }
+
+        double spent = Math.Ceiling(cost * count);
+        // 先限制预算再转 long，避免 long.MaxValue 转 double 后舍入到 2^63 导致溢出。
+        stationComponent.energy -= spent >= budget ? budget : (long)spent;
     }
 
     /// <summary>
