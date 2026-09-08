@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -75,6 +76,73 @@ public static partial class Utils {
                     LogWarning($"[Save] Skipping unknown tag: {tag}");
                 }
             });
+        }
+    }
+
+    /// <summary>
+    /// 写入集合元素数量，再按枚举顺序写入各项；数量和元素布局与手动循环一致。
+    /// </summary>
+    /// <typeparam name="T">集合元素类型，由调用方的回调决定其存储结构。</typeparam>
+    /// <param name="writer">接收集合数据的写入器。</param>
+    /// <param name="items">待写入的集合，不能为 null；空集合只写入数量 0，支持列表和数组。</param>
+    /// <param name="writeItem">写入一项完整数据的回调，可继续嵌套命名块或集合。</param>
+    public static void WriteList<T>(this BinaryWriter writer, IReadOnlyCollection<T> items,
+        Action<BinaryWriter, T> writeItem) {
+        if (writer == null) {
+            throw new ArgumentNullException(nameof(writer));
+        }
+        if (items == null) {
+            throw new ArgumentNullException(nameof(items));
+        }
+        if (writeItem == null) {
+            throw new ArgumentNullException(nameof(writeItem));
+        }
+
+        writer.Write(items.Count);
+        foreach (T item in items) {
+            writeItem(writer, item);
+        }
+    }
+
+    /// <summary>
+    /// 根据存储的元素数量逐项读取并返回新列表，不按存档数量预分配容量。
+    /// </summary>
+    /// <typeparam name="T">回调创建的集合元素类型。</typeparam>
+    /// <param name="reader">位于集合数量之前的读取器。</param>
+    /// <param name="readItem">完整读取一项并返回其值的回调，可继续读取嵌套块或集合。</param>
+    /// <returns>按存档顺序恢复的新列表；数量为 0 时返回空列表。</returns>
+    public static List<T> ReadList<T>(this BinaryReader reader, Func<BinaryReader, T> readItem) {
+        if (readItem == null) {
+            throw new ArgumentNullException(nameof(readItem));
+        }
+
+        List<T> items = [];
+        reader.ReadList(r => {
+            items.Add(readItem(r));
+        });
+        return items;
+    }
+
+    /// <summary>
+    /// 根据存储的元素数量逐项执行读取回调，供调用方直接恢复已有对象而不创建临时列表。
+    /// </summary>
+    /// <param name="reader">位于集合数量之前的读取器。</param>
+    /// <param name="readItem">消费一项完整数据的回调；即使目标对象不存在也必须读完该项。</param>
+    /// <exception cref="InvalidDataException">集合元素数量为负数。</exception>
+    public static void ReadList(this BinaryReader reader, Action<BinaryReader> readItem) {
+        if (reader == null) {
+            throw new ArgumentNullException(nameof(reader));
+        }
+        if (readItem == null) {
+            throw new ArgumentNullException(nameof(readItem));
+        }
+
+        int count = reader.ReadInt32();
+        if (count < 0) {
+            throw new InvalidDataException($"集合元素数量不能为负数：{count}。");
+        }
+        for (int i = 0; i < count; i++) {
+            readItem(reader);
         }
     }
 }

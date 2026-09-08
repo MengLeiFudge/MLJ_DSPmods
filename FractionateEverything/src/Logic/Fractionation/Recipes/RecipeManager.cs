@@ -167,18 +167,15 @@ public static class RecipeManager {
     /// </summary>
     public static void Import(BinaryReader r) {
         r.ReadBlocks(
-            ("MainRecipes", br => {
-                int count = br.ReadInt32();
-                for (int i = 0; i < count; i++) {
-                    ERecipe recipeType = (ERecipe)br.ReadInt32();
-                    int inputID = br.ReadInt32();
-                    var fRecipe = GetRecipe<BaseRecipe>(recipeType, inputID);
-                    // 不管有没有实例对象，都必须执行 ReadBlocks 以确保流位置正确
-                    br.ReadBlocks(
-                        ("RecipeData", br => fRecipe?.Import(br))
-                    );
-                }
-            }),
+            ("MainRecipes", br => br.ReadList(reader => {
+                ERecipe recipeType = (ERecipe)reader.ReadInt32();
+                int inputID = reader.ReadInt32();
+                var fRecipe = GetRecipe<BaseRecipe>(recipeType, inputID);
+                // 不管有没有实例对象，都必须执行 ReadBlocks 以确保流位置正确
+                reader.ReadBlocks(
+                    ("RecipeData", data => fRecipe?.Import(data))
+                );
+            })),
             ("MemoryResidue", MemoryResidueStore.Import)
         );
     }
@@ -188,16 +185,13 @@ public static class RecipeManager {
     /// </summary>
     public static void Export(BinaryWriter w) {
         w.WriteBlocks(
-            ("MainRecipes", bw => {
-                bw.Write(RecipeList.Count);
-                foreach (var fRecipe in RecipeList) {
-                    bw.Write((int)fRecipe.RecipeType);
-                    bw.Write(fRecipe.InputID);
-                    bw.WriteBlocks(
-                        ("RecipeData", fRecipe.Export)
-                    );
-                }
-            }),
+            ("MainRecipes", bw => bw.WriteList(RecipeList, (writer, fRecipe) => {
+                writer.Write((int)fRecipe.RecipeType);
+                writer.Write(fRecipe.InputID);
+                writer.WriteBlocks(
+                    ("RecipeData", fRecipe.Export)
+                );
+            })),
             ("MemoryResidue", MemoryResidueStore.Export)
         );
     }

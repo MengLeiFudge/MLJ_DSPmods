@@ -426,26 +426,20 @@ public abstract class BaseRecipe(
     public virtual void Import(BinaryReader r) {
         r.ReadBlocks(
             ("TotalSuccessCount", br => Interlocked.Exchange(ref totalSuccessCount, Math.Max(0, br.ReadInt64()))),
-            ("OutputMain", br => {
-                int count = br.ReadInt32();
-                for (int i = 0; i < count; i++) {
-                    int id = br.ReadInt32();
-                    int total = br.ReadInt32();
-                    var info = OutputMain.Find(x => x.OutputID == id);
-                    if (info != null) info.OutputTotalCount = total;
-                    else LogWarning($"Output {id} not found in {TypeName} main outputs");
-                }
-            }),
-            ("OutputAppend", br => {
-                int count = br.ReadInt32();
-                for (int i = 0; i < count; i++) {
-                    int id = br.ReadInt32();
-                    int total = br.ReadInt32();
-                    var info = OutputAppend.Find(x => x.OutputID == id);
-                    if (info != null) info.OutputTotalCount = total;
-                    else LogWarning($"Output {id} not found in {TypeName} append outputs");
-                }
-            })
+            ("OutputMain", br => br.ReadList(reader => {
+                int id = reader.ReadInt32();
+                int total = reader.ReadInt32();
+                var info = OutputMain.Find(x => x.OutputID == id);
+                if (info != null) info.OutputTotalCount = total;
+                else LogWarning($"Output {id} not found in {TypeName} main outputs");
+            })),
+            ("OutputAppend", br => br.ReadList(reader => {
+                int id = reader.ReadInt32();
+                int total = reader.ReadInt32();
+                var info = OutputAppend.Find(x => x.OutputID == id);
+                if (info != null) info.OutputTotalCount = total;
+                else LogWarning($"Output {id} not found in {TypeName} append outputs");
+            }))
         );
     }
 
@@ -455,20 +449,14 @@ public abstract class BaseRecipe(
     public virtual void Export(BinaryWriter w) {
         w.WriteBlocks(
             ("TotalSuccessCount", bw => bw.Write(TotalSuccessCount)),
-            ("OutputMain", bw => {
-                bw.Write(OutputMain.Count);
-                foreach (var info in OutputMain) {
-                    bw.Write(info.OutputID);
-                    bw.Write(info.OutputTotalCount);
-                }
-            }),
-            ("OutputAppend", bw => {
-                bw.Write(OutputAppend.Count);
-                foreach (var info in OutputAppend) {
-                    bw.Write(info.OutputID);
-                    bw.Write(info.OutputTotalCount);
-                }
-            })
+            ("OutputMain", bw => bw.WriteList(OutputMain, (writer, info) => {
+                writer.Write(info.OutputID);
+                writer.Write(info.OutputTotalCount);
+            })),
+            ("OutputAppend", bw => bw.WriteList(OutputAppend, (writer, info) => {
+                writer.Write(info.OutputID);
+                writer.Write(info.OutputTotalCount);
+            }))
         );
     }
 
