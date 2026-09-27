@@ -372,3 +372,6 @@ DefaultPath.props
 .sisyphus/
 .codex/
 .claude/
+/.idea/
+/out/
+/target/
