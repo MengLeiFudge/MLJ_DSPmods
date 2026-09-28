@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using FE.Compatibility.Nebula;
+using FE.Logic.Civilization;
 using FE.UI.MainPanel.Setting;
 using NebulaAPI;
 using static FE.Logic.Items.ItemManager;
@@ -11,7 +12,7 @@ using static FE.Utils.Utils;
 namespace FE.Logic.DataCenter;
 
 /// <summary>
-/// 分馏数据中心库存、手动上传/提取统计，以及对应存档。
+/// 分馏亚空间库存、单物品容量、手动上传/提取统计及存档。
 /// </summary>
 public static class DataCenterInventory {
     private const int MaxIntTakeCountByInc = int.MaxValue / 10;
@@ -21,51 +22,56 @@ public static class DataCenterInventory {
     public static readonly long[] centerItemInc = new long[12000];
     public static long ManualExtractCount;
     public static long ManualUploadCount;
+    private static bool snapshotDirty;
 
     public static void Export(BinaryWriter w) {
-        w.WriteBlocks(
-            ("CenterItems", bw => {
-                List<int> activeIds = [];
-                for (int i = 0; i < centerItemCount.Length; i++) {
-                    if (centerItemCount[i] > 0) activeIds.Add(i);
-                }
-                bw.Write(activeIds.Count);
-                foreach (int itemId in activeIds) {
-                    bw.Write(itemId);
-                    bw.Write(centerItemCount[itemId]);
-                    bw.Write(centerItemInc[itemId]);
-                }
-            }),
-            ("ManualInteractionStats", bw => {
-                bw.Write(ManualExtractCount);
-                bw.Write(ManualUploadCount);
-            })
-        );
+        lock (centerItemCount) {
+            w.WriteBlocks(
+                ("CenterItems", bw => {
+                    List<int> activeIds = [];
+                    for (int i = 0; i < centerItemCount.Length; i++) {
+                        if (centerItemCount[i] > 0) activeIds.Add(i);
+                    }
+                    bw.Write(activeIds.Count);
+                    foreach (int itemId in activeIds) {
+                        bw.Write(itemId);
+                        bw.Write(centerItemCount[itemId]);
+                        bw.Write(centerItemInc[itemId]);
+                    }
+                }),
+                ("ManualInteractionStats", bw => {
+                    bw.Write(Interlocked.Read(ref ManualExtractCount));
+                    bw.Write(Interlocked.Read(ref ManualUploadCount));
+                })
+            );
+        }
     }
 
     public static void Import(BinaryReader r) {
-        r.ReadBlocks(
-            ("CenterItems", br => {
-                int size = br.ReadInt32();
-                for (int i = 0; i < size; i++) {
-                    int itemId = br.ReadInt32();
-                    long count = br.ReadInt64();
-                    long inc = br.ReadInt64();
-                    if (itemId >= 0 && itemId < centerItemCount.Length) {
-                        centerItemCount[itemId] = Math.Max(0L, count);
-                        long safeCount = centerItemCount[itemId];
-                        long maxInc = MaxIncForCount(safeCount);
-                        centerItemInc[itemId] = Math.Max(0L, Math.Min(inc, maxInc));
+        lock (centerItemCount) {
+            r.ReadBlocks(
+                ("CenterItems", br => {
+                    int size = br.ReadInt32();
+                    for (int i = 0; i < size; i++) {
+                        int itemId = br.ReadInt32();
+                        long count = br.ReadInt64();
+                        long inc = br.ReadInt64();
+                        if (itemId >= 0 && itemId < centerItemCount.Length) {
+                            centerItemCount[itemId] = Math.Max(0L, count);
+                            long safeCount = centerItemCount[itemId];
+                            long maxInc = MaxIncForCount(safeCount);
+                            centerItemInc[itemId] = Math.Max(0L, Math.Min(inc, maxInc));
+                        }
                     }
-                }
-            }),
-            ("ManualInteractionStats", br => {
-                ManualExtractCount = Math.Max(0L, br.ReadInt64());
-                ManualUploadCount = Math.Max(0L, br.ReadInt64());
-            })
-        );
-        // FE 自有 DataCenter 余额不经 Legacy 物理引用迁移；旧槽位由后续自有状态叶处理。
-        NormalizeCurrencyPackagesLocked();
+                }),
+                ("ManualInteractionStats", br => {
+                    ManualExtractCount = Math.Max(0L, br.ReadInt64());
+                    ManualUploadCount = Math.Max(0L, br.ReadInt64());
+                })
+            );
+            // FE 自有 DataCenter 余额不经 Legacy 物理引用迁移；旧槽位由后续自有状态叶处理。
+            NormalizeCurrencyPackagesLocked();
+        }
     }
 
     /// <summary>
@@ -98,10 +104,13 @@ public static class DataCenterInventory {
     }
 
     public static void IntoOtherSave() {
-        Array.Clear(centerItemCount, 0, centerItemCount.Length);
-        Array.Clear(centerItemInc, 0, centerItemInc.Length);
-        ManualExtractCount = 0;
-        ManualUploadCount = 0;
+        lock (centerItemCount) {
+            Array.Clear(centerItemCount, 0, centerItemCount.Length);
+            Array.Clear(centerItemInc, 0, centerItemInc.Length);
+            ManualExtractCount = 0;
+            ManualUploadCount = 0;
+            snapshotDirty = false;
+        }
     }
 
     /// <summary>
@@ -184,51 +193,38 @@ public static class DataCenterInventory {
         }
     }
 
-    public static int GetFragmentMinCount() {
-        long count = centerItemCount[IFE残片];
-        return (int)Math.Min(int.MaxValue, count);
+    public static long AddItemToModData(int itemId, int count, int inc = 0, bool manual = false) {
+        long accepted = AddItemToModDataInternal(itemId, count, inc);
+        if (itemId != I沙土 && NebulaModAPI.IsMultiplayerActive && manual && accepted > 0) {
+            int acceptedInc = count <= 0 ? 0 : (int)Math.Min(int.MaxValue, (long)inc * accepted / count);
+            NebulaModAPI.MultiplayerSession.Network.SendPacket(
+                new CenterItemChangePacket(itemId, (int)accepted, acceptedInc));
+        }
+        return accepted;
     }
 
-    public static bool TakeFragmentsFromModData(int n, int[] consumeRegister) {
-        if (centerItemCount[IFE残片] < n) {
-            return false;
+    public static long AddItemToModData(int itemId, long count, long inc = 0, bool manual = false) {
+        long accepted = AddItemToModDataInternal(itemId, count, inc);
+        if (itemId != I沙土 && NebulaModAPI.IsMultiplayerActive && manual && accepted > 0) {
+            long acceptedInc = count <= 0 ? 0 : SaturatingMulNonNegative(Math.Max(0L, inc), accepted) / count;
+            NebulaModAPI.MultiplayerSession.Network.SendPacket(
+                new CenterItemChangeLongPacket(itemId, accepted, acceptedInc));
         }
-        lock (centerItemCount) {
-            TakeItemFromModData(IFE残片, n, out _);
-        }
-        lock (consumeRegister) {
-            consumeRegister[IFE残片] += n;
-        }
-        return true;
+        return accepted;
     }
 
-    public static void AddItemToModData(int itemId, int count, int inc = 0, bool manual = false) {
-        AddItemToModDataInternal(itemId, count, inc);
-        if (NebulaModAPI.IsMultiplayerActive && manual) {
-            NebulaModAPI.MultiplayerSession.Network.SendPacket(new CenterItemChangePacket(itemId, count, inc));
-        }
-    }
-
-    public static void AddItemToModData(int itemId, long count, long inc = 0, bool manual = false) {
-        AddItemToModDataInternal(itemId, count, inc);
-        if (NebulaModAPI.IsMultiplayerActive && manual) {
-            NebulaModAPI.MultiplayerSession.Network.SendPacket(new CenterItemChangeLongPacket(itemId, count, inc));
-        }
-    }
-
-    private static void AddItemToModDataInternal(int itemId, long count, long inc = 0) {
+    private static long AddItemToModDataInternal(int itemId, long count, long inc = 0) {
         if (count <= 0) {
-            return;
+            return 0;
         }
         if (itemId == I沙土) {
             GameMain.mainPlayer.sandCount = SaturatingAddNonNegative(GameMain.mainPlayer.sandCount, count);
-            return;
+            return count;
         }
         if (itemId <= 0 || itemId >= 12000) {
-            return;
+            return 0;
         }
 
-        // 货币包裹不得占用自身库存槽，始终折算为基础 Frag/Memory；溢出时基础余额饱和。
         if (IsCurrencyPackageItem(itemId)
             && TryGetCurrencyNormalization(itemId, out int baseItemId, out int faceValue)) {
             itemId = baseItemId;
@@ -237,15 +233,93 @@ public static class DataCenterInventory {
         }
 
         lock (centerItemCount) {
-            centerItemCount[itemId] = SaturatingAddNonNegative(centerItemCount[itemId], count);
-            long addInc = Math.Max(0L, inc);
-            centerItemInc[itemId] = SaturatingAddNonNegative(centerItemInc[itemId], addInc);
+            long remaining = GetRemainingCapacityUnsafe(itemId);
+            long accepted = Math.Min(count, remaining);
+            if (accepted <= 0) {
+                return 0;
+            }
+            long acceptedInc = count <= 0
+                ? 0
+                : SaturatingMulNonNegative(Math.Max(0L, inc), accepted) / count;
+            centerItemCount[itemId] = SaturatingAddNonNegative(centerItemCount[itemId], accepted);
+            centerItemInc[itemId] = SaturatingAddNonNegative(centerItemInc[itemId], acceptedInc);
             long maxInc = MaxIncForCount(centerItemCount[itemId]);
             if (centerItemInc[itemId] > maxInc) {
                 centerItemInc[itemId] = maxInc;
             }
+            snapshotDirty = true;
+            return accepted;
         }
     }
+
+    /// <summary>
+    /// 探索奖励直接写入亚空间并允许超过常规容量上限。
+    /// </summary>
+    public static void AddExplorationReward(int itemId, int count) {
+        if (count <= 0 || itemId <= 0 || itemId >= 12000) {
+            return;
+        }
+        if (itemId == I沙土) {
+            GameMain.mainPlayer.sandCount = SaturatingAddNonNegative(GameMain.mainPlayer.sandCount, count);
+            return;
+        }
+        lock (centerItemCount) {
+            centerItemCount[itemId] = SaturatingAddNonNegative(centerItemCount[itemId], count);
+            snapshotDirty = true;
+        }
+    }
+
+    /// <summary>
+    /// 返回并清除亚空间权威快照脏标记。
+    /// </summary>
+    public static bool TakeSnapshotDirty() {
+        lock (centerItemCount) {
+            bool dirty = snapshotDirty;
+            snapshotDirty = false;
+            return dirty;
+        }
+    }
+
+    /// <summary>
+    /// 获取当前每种物品的常规容量组数。
+    /// </summary>
+    public static int CurrentCapacityGroups => 10 + GrowthTechnologyManager.SubspaceCapacityLevel * 10;
+
+    /// <summary>
+    /// 获取指定物品在亚空间中的容量上限。
+    /// </summary>
+    public static long GetItemCapacity(int itemId) {
+        if (itemId <= 0 || itemId >= 12000) {
+            return 0;
+        }
+        ItemProto item = LDB.items.Select(itemId);
+        int stackSize = Math.Max(1, item?.StackSize ?? 1);
+        int stackGroups = CurrentCapacityGroups;
+        return (long)stackGroups * stackSize;
+    }
+
+    /// <summary>
+    /// 获取指定物品当前还能写入亚空间的数量。
+    /// </summary>
+    public static long GetRemainingCapacity(int itemId) {
+        if (itemId == I沙土) {
+            return long.MaxValue;
+        }
+        if (itemId <= 0 || itemId >= 12000) {
+            return 0;
+        }
+        lock (centerItemCount) {
+            return GetRemainingCapacityUnsafe(itemId);
+        }
+    }
+
+    /// <summary>
+    /// 判断指定物品是否已经达到单物品容量上限。
+    /// </summary>
+    public static bool IsItemFull(int itemId) => GetRemainingCapacity(itemId) <= 0;
+
+    private static long GetRemainingCapacityUnsafe(int itemId) =>
+        Math.Max(0L, GetItemCapacity(itemId) - centerItemCount[itemId]);
 
     public static long GetModDataItemCount(int itemId) {
         return GetModDataItemCount(itemId, out _);
@@ -262,15 +336,17 @@ public static class DataCenterInventory {
         if (itemId <= 0 || itemId >= 12000) {
             return 0;
         }
-        inc = centerItemInc[itemId];
-        return centerItemCount[itemId];
+        lock (centerItemCount) {
+            inc = centerItemInc[itemId];
+            return centerItemCount[itemId];
+        }
     }
 
     public static int TakeItemFromModData(int itemId, int count, out int inc, bool manual = false) {
         long cappedCount = Math.Min(count, MaxIntTakeCountByInc);
         long takeCount = TakeItemFromModDataInternal(itemId, cappedCount, out long takeInc);
         inc = (int)takeInc;
-        if (NebulaModAPI.IsMultiplayerActive && manual && takeCount > 0) {
+        if (itemId != I沙土 && NebulaModAPI.IsMultiplayerActive && manual && takeCount > 0) {
             NebulaModAPI.MultiplayerSession.Network.SendPacket(
                 new CenterItemChangePacket(itemId, -(int)takeCount, -inc));
         }
@@ -280,7 +356,7 @@ public static class DataCenterInventory {
     public static long TakeItemFromModData(int itemId, long count, out long inc, bool manual = false) {
         long cappedCount = Math.Min(count, MaxLongTakeCountByInc);
         long takeCount = TakeItemFromModDataInternal(itemId, cappedCount, out inc);
-        if (NebulaModAPI.IsMultiplayerActive && manual && takeCount > 0) {
+        if (itemId != I沙土 && NebulaModAPI.IsMultiplayerActive && manual && takeCount > 0) {
             NebulaModAPI.MultiplayerSession.Network.SendPacket(new CenterItemChangeLongPacket(itemId, -takeCount, -inc));
         }
         return takeCount;
@@ -326,137 +402,9 @@ public static class DataCenterInventory {
                     centerItemInc[itemId] = 0;
                 }
             }
+            snapshotDirty = true;
             return count;
         }
-    }
-
-    /// <summary>
-    /// 在同一把锁内聚合预检并一次扣除多种物品；任一不足或输入非法则零改动。
-    /// 扣除时丢弃对应增产点，不向外返回 inc。
-    /// </summary>
-    /// <param name="costs">待扣除的 (itemId, count) 列表，允许重复 itemId。</param>
-    /// <returns>全部扣除成功返回 true；否则 false 且库存不变。</returns>
-    public static bool TryConsumeItemsAtomic(IReadOnlyList<(int itemId, long count)> costs) {
-        if (costs == null || costs.Count == 0) {
-            return true;
-        }
-
-        Dictionary<int, long> aggregated = new();
-        for (int i = 0; i < costs.Count; i++) {
-            (int itemId, long count) = costs[i];
-            if (count < 0) {
-                return false;
-            }
-            // count==0 的非法 itemId 也必须失败，避免静默跳过脏输入。
-            if (itemId != I沙土 && (itemId <= 0 || itemId >= 12000)) {
-                return false;
-            }
-            if (IsCurrencyPackageItem(itemId)) {
-                // 协议成本只接受基础余额，不接受包裹面额。
-                return false;
-            }
-            if (count == 0) {
-                continue;
-            }
-            if (aggregated.TryGetValue(itemId, out long existing)) {
-                if (count > long.MaxValue - existing) {
-                    return false;
-                }
-                aggregated[itemId] = existing + count;
-            } else {
-                aggregated[itemId] = count;
-            }
-        }
-
-        if (aggregated.Count == 0) {
-            return true;
-        }
-
-        lock (centerItemCount) {
-            foreach (KeyValuePair<int, long> pair in aggregated) {
-                if (!HasEnoughLocked(pair.Key, pair.Value)) {
-                    return false;
-                }
-            }
-
-            foreach (KeyValuePair<int, long> pair in aggregated) {
-                ConsumeDiscardIncLocked(pair.Key, pair.Value);
-            }
-        }
-        return true;
-    }
-
-    /// <summary>
-    /// 便捷重载：按并行数组构造原子扣除请求。
-    /// </summary>
-    public static bool TryConsumeItemsAtomic(int[] itemIds, long[] counts) {
-        if (itemIds == null || counts == null || itemIds.Length != counts.Length) {
-            return false;
-        }
-        List<(int itemId, long count)> costs = new(itemIds.Length);
-        for (int i = 0; i < itemIds.Length; i++) {
-            costs.Add((itemIds[i], counts[i]));
-        }
-        return TryConsumeItemsAtomic(costs);
-    }
-
-    private static bool HasEnoughLocked(int itemId, long count) {
-        if (itemId == I沙土) {
-            return GameMain.mainPlayer != null && GameMain.mainPlayer.sandCount >= count;
-        }
-        return centerItemCount[itemId] >= count;
-    }
-
-    private static void ConsumeDiscardIncLocked(int itemId, long count) {
-        if (count <= 0) {
-            return;
-        }
-        if (itemId == I沙土) {
-            long sand = GameMain.mainPlayer.sandCount;
-            GameMain.mainPlayer.sandCount = sand >= count ? sand - count : 0;
-            return;
-        }
-
-        long remainingCount = centerItemCount[itemId];
-        if (remainingCount <= 0) {
-            centerItemCount[itemId] = 0;
-            centerItemInc[itemId] = 0;
-            return;
-        }
-
-        long take = count < remainingCount ? count : remainingCount;
-        long remainingInc = centerItemInc[itemId];
-        if (remainingInc < 0) {
-            remainingInc = 0;
-        }
-        long maxIncBefore = MaxIncForCount(remainingCount);
-        if (remainingInc > maxIncBefore) {
-            remainingInc = maxIncBefore;
-        }
-
-        if (take >= remainingCount) {
-            centerItemCount[itemId] = 0;
-            centerItemInc[itemId] = 0;
-            return;
-        }
-
-        // 复用项目既有 split_inc：更新剩余 count/inc，扣除部分增产点直接丢弃。
-        _ = split_inc(ref remainingCount, ref remainingInc, take);
-        if (remainingCount <= 0) {
-            centerItemCount[itemId] = 0;
-            centerItemInc[itemId] = 0;
-            return;
-        }
-
-        if (remainingInc < 0) {
-            remainingInc = 0;
-        }
-        long maxIncAfter = MaxIncForCount(remainingCount);
-        if (remainingInc > maxIncAfter) {
-            remainingInc = maxIncAfter;
-        }
-        centerItemCount[itemId] = remainingCount;
-        centerItemInc[itemId] = remainingInc;
     }
 
     /// <summary>

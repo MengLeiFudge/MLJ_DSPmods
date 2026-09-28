@@ -13,8 +13,7 @@ using FE.Lifecycle;
 using FE.Compatibility;
 using FE.Compatibility.LegacySave;
 using FE.Compatibility.Nebula;
-using FE.Logic.Civilization.Achievements;
-using FE.Logic.Civilization.DarkFog;
+using FE.Logic.Civilization;
 using FE.UI.Foundation.Window;
 using FE.UI.MainPanel;
 using HarmonyLib;
@@ -60,6 +59,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
 
     public void LoadConfig() {
         configFile = Config;
+        PermanentProfileStore.Bind(Config);
 
         CheckPlugins.DisableMessageBox = Config.Bind("other", "DisableMessageBox", false,
             "Don't show messagebox when FractionateEverything loaded.");
@@ -155,8 +155,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
 
     private void Update() {
         MainWindow.OnInputUpdate();
-        AchievementModule.Tick();
-        DarkFogInvestigationService.Tick();
+        CivilizationModule.Tick();
     }
 
     #region 存档与联机设置接口实现
@@ -167,15 +166,11 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     public void Import(BinaryReader r) {
         FeatureSaveRegistry.IntoOtherSave();
         int version = r.ReadInt32();
-        if (version < 10) {
-            // 小于 10 的版本均为 FE 2.x 旧档；跳过自有块前幂等解锁本机秘密成就“旧日余响”。
-            // 仅主机/单机触发，不发放任何经济补偿。
-            if (!NebulaMultiplayerModAPI.IsClient) {
-                SecretAchievementProfile.TryUnlock(
-                    SecretAchievementCatalog.Legacy2xSaveKey,
-                    SecretAchievementSources.Legacy2xSave);
+        if (version != 11) {
+            if (version < 11) {
+                ResearchManager.MarkLegacyGeneration();
             }
-            // 旧版存档不兼容，读取流中剩余所有字节
+            // 只读取当前自有合同；旧实体迁移仍由独立版本门禁处理，未来版本也不得向后误读。
             if (r.BaseStream.CanSeek) {
                 r.BaseStream.Seek(0, SeekOrigin.End);
             }
@@ -194,7 +189,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     /// 导出存档时执行。
     /// </summary>
     public void Export(BinaryWriter w) {
-        w.Write(10);// version，固定为10
+        w.Write(11);
         FeatureSaveRegistry.Export(w);
     }
 
@@ -207,6 +202,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
             return;
         }
         FeatureSaveRegistry.IntoOtherSave();
+        ResearchManager.InitializeGeneration3StarterState();
     }
 
     public string Version => PluginInfo.PLUGIN_VERSION;

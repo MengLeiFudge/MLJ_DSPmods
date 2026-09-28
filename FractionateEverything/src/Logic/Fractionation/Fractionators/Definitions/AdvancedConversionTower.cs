@@ -9,15 +9,15 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Fractionation.Fractionators;
 
 /// <summary>
-/// 解析塔
+/// 高级转化塔（沿用 2.x 转化塔的物理原型 ID）。
 /// </summary>
-public static class AnalysisTower {
+public static class AdvancedConversionTower {
     private static ItemProto item;
     private static ModelProto model;
     /// <summary>
     /// 保存该分馏塔原型使用的主题颜色。
     /// </summary>
-    public static Color color = new(0.18f, 0.46f, 1.0f);
+    public static Color color = new(0.58f, 0.38f, 0.95f);
 
     /// <summary>
     /// 读取该建筑当前允许的分馏处理堆叠上限。
@@ -26,7 +26,7 @@ public static class AnalysisTower {
     /// <summary>
     /// 读取当前固定能耗倍率；后续增幅只由文明科技运行投影提供。
     /// </summary>
-    public const float EnergyRatio = 1.0f;
+    public const float EnergyRatio = 0.0f;
     /// <summary>
     /// 读取该建筑当前每 tick 工作能耗。
     /// </summary>
@@ -49,22 +49,22 @@ public static class AnalysisTower {
     /// 注册该分馏域对象需要的本地化文本。
     /// </summary>
     public static void AddTranslations() {
-        Register("解析塔", "Analysis Tower", "解析塔");
-        Register("I解析塔",
-            "Converts matrices into physical analysis data used to recover ancient-civilization protocols.",
-            "将矩阵转化为实体解析数据，用于恢复远古文明协议。");
+        Register("转化塔", "Advanced Conversion Tower", "高级转化塔");
+        Register("I转化塔",
+            "A living, matrix-fed tower that restructures related fuels and industrial equipment while recovering replaced parts.",
+            "由矩阵供养的生命型高级塔，用于重构相关燃料与工业设备，并回收被置换部件。");
     }
 
     /// <summary>
     /// 创建并注册该分馏塔的物品、配方和模型原型。
     /// </summary>
     public static void Create() {
-        item = ProtoRegistry.RegisterItem(IFE解析塔, "解析塔", "I解析塔",
-            "Assets/fe/deconstruction-tower", tab分馏 * 1000 + 305, 30, EItemType.Production,
+        item = ProtoRegistry.RegisterItem(IFE高级转化塔, "转化塔", "I转化塔",
+            "Assets/fe/conversion-tower", tab分馏 * 1000 + 304, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         item.UnlockKey = -1;
-        item.IconTag = "jlt";
-        model = ProtoRegistry.RegisterModel(MFE解析塔, item,
+        item.IconTag = "zht";
+        model = ProtoRegistry.RegisterModel(MFE高级转化塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(OrbitalRing.Enable ? 6 : 5, item.GridIndex % 10, true);
     }

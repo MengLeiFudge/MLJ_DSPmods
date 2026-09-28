@@ -1,56 +1,50 @@
-﻿# Logic/Fractionation — 分馏域
+# Logic/Fractionation — 五塔与配方域
 
-分馏域是 FE 核心玩法逻辑，包含配方族、文明状态的运行投影、分馏塔运行热路径、塔型定义与实例状态、以及分馏塔窗口表现层 patch。
+本域拥有五座现役分馏塔、基础/高级运行路径、稳定配方目录、实例持久化、蓝图配方选择和分馏塔窗口表现。
 
 ## Structure
 
 ```
 Fractionation/
-├── Recipes/                     # namespace FE.Logic.Fractionation.Recipes
-│   ├── RecipeManager.cs         # 配方族注册与可用集合
-│   ├── RecipeRuntime.cs         # 文明/成就域投影过来的运行缓存（可用性、固定加成）
-│   ├── Definitions/             # 5 个配方族定义文件（BaseRecipe 子类）
-│   └── Models/                  # 2 个模型定义文件
-└── Fractionators/               # namespace FE.Logic.Fractionation.Fractionators（表现层 .Presentation）
-    ├── FractionatorManager.cs   # 四塔注册、active 列表、能力投影与实例状态聚合
-    ├── FractionatorRuntime.cs   # 分馏热路径与运行分发
-    ├── Definitions/             # 四塔定义（培养/解析/复制/转化）
-    └── Presentation/            # 分馏塔窗口与 brief info（非 partial）
-        ├── FractionatorWindow.cs
-        └── FractionatorBriefInfoPatch.cs
+├── Fractionators/
+│   ├── Definitions/                 # 两座基础塔、三座高级塔原型
+│   ├── FractionatorTowerCatalog.cs  # 五塔稳定目录与 ERecipe 映射
+│   ├── FractionatorRuntime.cs       # 基础塔单输入、输出和正面上传
+│   ├── AdvancedFractionatorRuntime.cs # 多输入/输出、食物、营养、耐久、状态
+│   ├── AdvancedRecipeSelectionSync.cs # 复制粘贴、蓝图和联机配方 ID
+│   ├── LivingTowerPatches.cs        # 拆除/损毁、维修和运行接线
+│   ├── FractionatorManager.cs       # 原型入口与 Building 存档聚合
+│   └── Presentation/                # 原版分馏窗口与 brief info
+└── Recipes/
+    ├── Definitions/BaseRecipe.cs
+    ├── Definitions/WorldviewRecipe.cs
+    ├── Models/                       # ERecipe、输出模型
+    ├── RecipeManager.cs              # 目录、索引、稳定 ID、统计存档
+    └── RecipeRuntime.cs              # 基础配方可用性投影
 ```
 
-依赖方向：`Recipes` 与 `Fractionators` 只读取 `Civilization` / 成就域投影生成的运行缓存（`RecipeRuntime`、`TowerRuntimeModifierCache`），不得引用文明业务对象；`Logic/Fractionation` 不反向引用 `Logic/Civilization`。
+## Stable Identities
 
-## Recipe Rules
-
-- `BaseRecipe.GetOutputs()` 是共享热路径，禁止直接为单个需求改它；配方差异由子类承担。
-- 新配方族定义放 `Recipes/Definitions/NewRecipe.cs`，继承 `BaseRecipe`，并在 `Recipes/RecipeManager.cs` 注册。
-- `OutputMain` 是主产物，`OutputAppend` 是副产物。
-- `fluidInputInc` 必须沿输出链路传递，不能吞掉增产点。
-- `Recipes/RecipeRuntime.cs` 只保存文明域投影过来的配方可用性和固定加成（含成就加成缓存）；不得引用文明业务对象。
-- 旧线性配方等级、经验、突破和重复抽取增幅已经删除，不得在运行缓存中恢复这些概念。
+- 活动塔目录固定为基础矿物、基础解析、高级矿物、高级交互、高级转化，共 5 项。
+- `ERecipe` 数值保持：高级交互 1、基础解析 2、基础矿物 3、高级转化 4、高级矿物 5。
+- 物理 Item/Model/Recipe ID、`WorldviewRecipe.StableId` / `PersistentId`、蓝图 magic/version 和存档块名不得因源码重命名改变。
+- 旧中文塔常量只能作为同 ID 兼容别名，不能注册旧塔或建立第二套目录。
 
 ## Runtime Rules
 
-- 分馏热路径集中在 `Fractionators/FractionatorRuntime.cs`，保持核心 `InternalUpdate<T>` 集中可读。
-- 四塔运行分发必须按建筑 ID 显式映射到对应 handler 和 `ERecipe`；不得用目录下标索引另一份平行 handler 数组。
-- 完整处理流程内部的传送带输入输出 helper 留在热路径文件内。
-- 旧献祭成功率、建筑等级和裂变池逻辑已经删除，不得重新接入热路径。
+- 基础塔单输入自动识别；输入、流动输出、产物缓存均为 20 件，不随全局堆叠放大。
+- 基础塔按带尾真实 stack 做整批准入；失败物进入流动输出，`DestroyRatio` 为 0。
+- 高级塔先验证已研究且塔型匹配的稳定配方 ID，再接收多输入和矩阵食物。
+- 高级每种输入、食物、产物和流动物缓存上限为 20；优先食物、两轮底料、流出、多余输入。
+- 高级结算采用 `floor(expected + U)` 的批量期望取整；普通输入失败回流，低概率输入只在成功轮结算。
+- 旧/无关物最高排空优先，当前流动物与产物交替，多个产物按实际积压轮转。
+- 高级塔营养直接驱动速度与真实 HP；不耗电、不使用 `hpIncoming`，原版维修不能恢复生命塔。
+- 主动拆除返还所有真实字典缓存；损毁只移除状态。原版单槽镜像只供显示，不能用来返还。
 
-## Fractionator Rules
+## State And UI
 
-- 塔型定义、能力投影和单塔实例状态放 `Fractionators`。
-- 四塔 active 列表、UI、注册和文档统一按培养、解析、复制、转化排列；对应 `ERecipe` 为 `Cultivation/Analysis/Replication/Conversion`，连续取值 `1/2/3/4`，不得保留旧类型 alias 或开发期数值兼容。
-- `TowerRuntimeModifierCache` 是科技树投影结果，不保存、不自行计算科技条件。
-- 五项能力彼此保持独立；对每一项能力，四塔必须接入同一份控制代码、状态字段和 UI。每塔布尔值可以不同，但不得按塔型或配方属性省略整项能力。
-- 主路锁定和副产物弃置采用“塔型科技许可 + 配方累计成功校准 + 单塔实例设置”三层约束。
-- 四塔主路目标统一使用 `LockedOutput` 实例状态；解析谱系只是解析配方提供的候选与结算语义，不得另建 active 状态或独立 UI 路径。
-- 当前配方没有可选主产物或副产物时显示当前无效果，不隐藏对应能力状态。
-- 主路锁定只处理 `OutputMain`；副产物弃置只处理 `OutputAppend`，不得提供补偿。
-- 单塔实例状态必须接入存档、复制粘贴、蓝图和 Nebula 同步。
-
-## Presentation Rules
-
-- 分馏塔窗口为唯一非 partial 文件 `Fractionators/Presentation/FractionatorWindow.cs`，brief info 补丁为 `Fractionators/Presentation/FractionatorBriefInfoPatch.cs`，配方显示 patch 直接放 `Fractionators/Presentation`。
-- 这里只处理表现层和窗口交互；核心配方/运行状态不得写进 Presentation。
+- `AdvancedFractionatorRuntime` 是高级塔缓存、营养和选定配方的唯一真源；原版字段只镜像当前配方第一输入/第一产物。
+- 导入将外部字节视为不可信，限制状态数、字典项、ID、数量、营养和增产点。
+- 蓝图/复制粘贴只保存选定配方 ID，不复制缓存或营养。
+- 高级窗口只增加配方选择与当前营养；不得恢复主路锁定、副产物弃置或制造台式多缓存面板。
+- 表现代码不得直接写研究状态；选择操作统一走 `AdvancedRecipeSelectionSync`。

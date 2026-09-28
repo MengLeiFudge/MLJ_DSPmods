@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using FE.UI.Foundation.Window;
 using FE.UI.MainPanel.Archive;
 using FE.UI.MainPanel.Civilization;
-using FE.UI.MainPanel.CoreOperate;
-using FE.UI.MainPanel.ProgressTask;
 using FE.UI.MainPanel.ResourceInteraction;
 using FE.UI.MainPanel.Setting;
 using UnityEngine;
@@ -15,35 +13,24 @@ namespace FE.UI.MainPanel;
 /// FE 主面板页面注册、分类顺序和可见性过滤中心。
 /// </summary>
 public static class MainWindowPageRegistry {
-    public const string CoreOperateCategoryName = "生产管理";
     public const string ResourceInteractionCategoryName = "资源管理";
-    public const string CivilizationCategoryName = "文明解析";
-    public const string ProgressTaskCategoryName = "恢复指引";
-    public const string ArchiveCategoryName = "图鉴档案";
+    public const string CivilizationCategoryName = "生命工业";
+    public const string ArchiveCategoryName = "开发档案";
     public const string SystemSettingCategoryName = "系统设置";
     private static readonly string[] categoryOrder = [
-        CoreOperateCategoryName,
         CivilizationCategoryName,
         ResourceInteractionCategoryName,
-        ProgressTaskCategoryName,
         ArchiveCategoryName,
         SystemSettingCategoryName,
     ];
 
     private static readonly MainWindowPageDefinition[] allPages = [
-        new(CoreOperateCategoryName, "分馏配方", FracRecipeOperate.CreateUI, FracRecipeOperate.UpdateUI),
-        new(CoreOperateCategoryName, "原版配方", VanillaRecipeOperate.CreateUI, VanillaRecipeOperate.UpdateUI),
-
-        new(CivilizationCategoryName, "文明总览", CivilizationOverviewPage.CreateUI,
+        new(CivilizationCategoryName, "文明研究", CivilizationOverviewPage.CreateUI,
             CivilizationOverviewPage.UpdateUI),
-        new(CivilizationCategoryName, "文明协议恢复", ProtocolRecoveryPage.CreateUI, ProtocolRecoveryPage.UpdateUI),
-        new(CivilizationCategoryName, "远古科技树", AncientTechTreePage.CreateUI, AncientTechTreePage.UpdateUI),
+        new(CivilizationCategoryName, "遗物探索", ExplorationPage.CreateUI, ExplorationPage.UpdateUI),
 
-        new(ResourceInteractionCategoryName, "物品交互", ItemInteraction.CreateUI, ItemInteraction.UpdateUI),
-        new(ProgressTaskCategoryName, "恢复手册", RecoveryGuide.CreateUI, RecoveryGuide.UpdateUI),
-        new(ProgressTaskCategoryName, "成就", AchievementPage.CreateUI, AchievementPage.UpdateUI),
+        new(ResourceInteractionCategoryName, "亚空间仓储", ItemInteraction.CreateUI, ItemInteraction.UpdateUI),
 
-        new(ArchiveCategoryName, "配方图鉴", RecipeGallery.CreateUI, RecipeGallery.UpdateUI),
         new(ArchiveCategoryName, "开发日记", DevelopmentDiary.CreateUI, DevelopmentDiary.UpdateUI),
 
         new(SystemSettingCategoryName, "杂项设置", Miscellaneous.CreateUI, Miscellaneous.UpdateUI),

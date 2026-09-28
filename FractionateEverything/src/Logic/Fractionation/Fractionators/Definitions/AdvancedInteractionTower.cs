@@ -9,15 +9,15 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Fractionation.Fractionators;
 
 /// <summary>
-/// 复制塔
+/// 高级交互塔（沿用 2.x 培养塔的物理原型 ID）。
 /// </summary>
-public static class ReplicationTower {
+public static class AdvancedInteractionTower {
     private static ItemProto item;
     private static ModelProto model;
     /// <summary>
     /// 保存该分馏塔原型使用的主题颜色。
     /// </summary>
-    public static Color color = new(0.22f, 0.9f, 0.38f);
+    public static Color color = new(0.8f, 0.3f, 0.6f);
 
     /// <summary>
     /// 读取该建筑当前允许的分馏处理堆叠上限。
@@ -26,7 +26,7 @@ public static class ReplicationTower {
     /// <summary>
     /// 读取当前固定能耗倍率；后续增幅只由文明科技运行投影提供。
     /// </summary>
-    public const float EnergyRatio = 1.0f;
+    public const float EnergyRatio = 0.0f;
     /// <summary>
     /// 读取该建筑当前每 tick 工作能耗。
     /// </summary>
@@ -49,22 +49,22 @@ public static class ReplicationTower {
     /// 注册该分馏域对象需要的本地化文本。
     /// </summary>
     public static void AddTranslations() {
-        Register("复制塔", "Replication Tower", "复制塔");
-        Register("I复制塔",
-            "Replicates raw resources, including eligible dark-fog drops. Protocols are recovered through civilization analysis.",
-            "复制原矿资源以及符合条件的黑雾掉落；对应协议通过文明解析逐步恢复。");
+        Register("培养塔", "Advanced Interaction Tower", "高级交互塔");
+        Register("I培养塔",
+            "A living, matrix-fed tower for cultivating advanced towers and breeding universal embryos.",
+            "由矩阵供养的生命型高级塔，用于培育高级塔与繁育通用原胚。");
     }
 
     /// <summary>
     /// 创建并注册该分馏塔的物品、配方和模型原型。
     /// </summary>
     public static void Create() {
-        item = ProtoRegistry.RegisterItem(IFE复制塔, "复制塔", "I复制塔",
-            "Assets/fe/mineral-copy-tower", tab分馏 * 1000 + 302, 30, EItemType.Production,
+        item = ProtoRegistry.RegisterItem(IFE高级交互塔, "培养塔", "I培养塔",
+            "Assets/fe/interaction-tower", tab分馏 * 1000 + 301, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         item.UnlockKey = -1;
-        item.IconTag = "fzt";
-        model = ProtoRegistry.RegisterModel(MFE复制塔, item,
+        item.IconTag = "pyt";
+        model = ProtoRegistry.RegisterModel(MFE高级交互塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(OrbitalRing.Enable ? 6 : 5, item.GridIndex % 10, true);
     }

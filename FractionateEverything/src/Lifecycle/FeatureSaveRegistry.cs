@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using FE.Logic.Civilization;
-using FE.Logic.Civilization.Achievements;
 using FE.Logic.DataCenter;
 using FE.Logic.Enhancements.Stacking;
 using FE.Logic.Enhancements.VanillaRecipes;
@@ -24,14 +23,12 @@ public static class FeatureSaveRegistry {
             ("Building", FractionatorManager.Import),
             ("Item", DataCenterInventory.Import),
             ("Process", ProcessManager.Import),
-            ("AncientCivilization", CivilizationModule.Import),
-            ("Achievements", AchievementModule.Import),
+            ("Civilization3", CivilizationModule.Import),
             ("UI", MainWindow.Import),
             ("Station", StationManager.Import)
         );
         VanillaRecipeManager.SyncRuntimeStateAfterImport();
         CivilizationModule.AfterImport();
-        AchievementModule.AfterImport();
     }
 
     public static void Export(BinaryWriter w) {
@@ -42,8 +39,7 @@ public static class FeatureSaveRegistry {
             ("Building", FractionatorManager.Export),
             ("Item", DataCenterInventory.Export),
             ("Process", ProcessManager.Export),
-            ("AncientCivilization", CivilizationModule.Export),
-            ("Achievements", AchievementModule.Export),
+            ("Civilization3", CivilizationModule.Export),
             ("UI", MainWindow.Export),
             ("Station", StationManager.Export)
         );
@@ -56,12 +52,8 @@ public static class FeatureSaveRegistry {
         FractionatorManager.IntoOtherSave();
         DataCenterInventory.IntoOtherSave();
         ProcessManager.IntoOtherSave();
-        // DarkFog 调查状态及其派生缓存统一由 CivilizationModule 重置。
         CivilizationModule.IntoOtherSave();
-        AchievementModule.IntoOtherSave();
         MainWindow.IntoOtherSave();
         StationManager.IntoOtherSave();
-
-        TechManager.ResetTechUnlockFlags();
     }
 }

@@ -32,12 +32,12 @@ public static class Miscellaneous {
     private static ConfigEntry<int> ExtractTargetEntry;
 
     private static readonly string[] TakeItemPriorityStrs = [
-        "背包 -> 物流背包 -> 分馏数据中心",
-        "背包 -> 分馏数据中心 -> 物流背包",
-        "物流背包 -> 背包 -> 分馏数据中心",
-        "物流背包 -> 分馏数据中心 -> 背包",
-        "分馏数据中心 -> 背包 -> 物流背包",
-        "分馏数据中心 -> 物流背包 -> 背包",
+        "背包 -> 物流背包 -> 分馏亚空间",
+        "背包 -> 分馏亚空间 -> 物流背包",
+        "物流背包 -> 背包 -> 分馏亚空间",
+        "物流背包 -> 分馏亚空间 -> 背包",
+        "分馏亚空间 -> 背包 -> 物流背包",
+        "分馏亚空间 -> 物流背包 -> 背包",
     ];
     private static readonly int[][] TakeItemPriorityArr = [
         [0, 1, 2],
@@ -97,18 +97,18 @@ public static class Miscellaneous {
             "当 FE 允许建造、制作或其他消耗物品的操作从多个位置取物品时，此设置决定先从哪里扣除。它只改变消耗优先级，不会移动物品。");
         Register("背包", "Inventory");
         Register("物流背包", "Logistics Inventory");
-        Register("背包 -> 物流背包 -> 分馏数据中心",
-            "Inventory -> Logistics Inventory -> Fractionation Data Center");
-        Register("背包 -> 分馏数据中心 -> 物流背包",
-            "Inventory -> Fractionation Data Center -> Logistics Inventory");
-        Register("物流背包 -> 背包 -> 分馏数据中心",
-            "Logistics Inventory -> Inventory -> Fractionation Data Center");
-        Register("物流背包 -> 分馏数据中心 -> 背包",
-            "Logistics Inventory -> Fractionation Data Center -> Inventory");
-        Register("分馏数据中心 -> 背包 -> 物流背包",
-            "Fractionation Data Center -> Inventory -> Logistics Inventory");
-        Register("分馏数据中心 -> 物流背包 -> 背包",
-            "Fractionation Data Center -> Logistics Inventory -> Inventory");
+        Register("背包 -> 物流背包 -> 分馏亚空间",
+            "Inventory -> Logistics Inventory -> Fractionation Subspace");
+        Register("背包 -> 分馏亚空间 -> 物流背包",
+            "Inventory -> Fractionation Subspace -> Logistics Inventory");
+        Register("物流背包 -> 背包 -> 分馏亚空间",
+            "Logistics Inventory -> Inventory -> Fractionation Subspace");
+        Register("物流背包 -> 分馏亚空间 -> 背包",
+            "Logistics Inventory -> Fractionation Subspace -> Inventory");
+        Register("分馏亚空间 -> 背包 -> 物流背包",
+            "Fractionation Subspace -> Inventory -> Logistics Inventory");
+        Register("分馏亚空间 -> 物流背包 -> 背包",
+            "Fractionation Subspace -> Logistics Inventory -> Inventory");
 
         Register("物流交互站下载阈值", "Interaction Station download threshold");
         Register("物流交互站上传阈值", "Interaction Station upload threshold");
@@ -125,12 +125,12 @@ public static class Miscellaneous {
             "When disabled, FE's own question dialogs execute the confirm branch directly. Warning/info dialogs are not affected.",
             "关闭后，FE 自己的确认弹窗会直接执行“确定”分支；警告框和提示框不受影响。");
 
-        Register("双击背包排序按钮将多余物品收入分馏数据中心",
-            "Double-click the inventory sort button to store excess items in the Fractionation Data Center");
-        Register("AutoSorter模组将背包中多余物品收入分馏数据中心",
-            "The AutoSorter mod stores excess inventory items in the Fractionation Data Center");
-        Register("PackageLogistic兼容数据中心",
-            "Allow PackageLogistic to use the Fractionation Data Center");
+        Register("双击背包排序按钮将多余物品收入分馏亚空间",
+            "Double-click the inventory sort button to store excess items in the Fractionation Subspace");
+        Register("AutoSorter模组将背包中多余物品收入分馏亚空间",
+            "The AutoSorter mod stores excess inventory items in the Fractionation Subspace");
+        Register("PackageLogistic兼容亚空间",
+            "Allow PackageLogistic to use the Fractionation Subspace");
     }
 
     public static void LoadConfig(ConfigFile configFile) {
@@ -167,11 +167,11 @@ public static class Miscellaneous {
             configFile.Bind("Miscellaneous", "EnableConfirmationDialog", true, "启用确认弹窗");
 
         EnablePackageSortTwiceEntry =
-            configFile.Bind("Miscellaneous", "EnablePackageSortTwice", true, "双击背包排序按钮将多余物品收入分馏数据中心");
+            configFile.Bind("Miscellaneous", "EnablePackageSortTwice", true, "双击背包排序按钮将多余物品收入分馏亚空间");
         EnablePackageAutoSortTwiceEntry =
-            configFile.Bind("Miscellaneous", "EnablePackageAutoSortTwice", false, "AutoSorter模组将背包中多余物品收入分馏数据中心");
+            configFile.Bind("Miscellaneous", "EnablePackageAutoSortTwice", false, "AutoSorter模组将背包中多余物品收入分馏亚空间");
         EnablePackageLogisticEntry =
-            configFile.Bind("Miscellaneous", "PackageLogistic", false, "PackageLogistic兼容数据中心");
+            configFile.Bind("Miscellaneous", "PackageLogistic", false, "PackageLogistic兼容亚空间");
     }
 
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
@@ -215,12 +215,12 @@ public static class Miscellaneous {
         for (int i = 0; i < rowIdx; i++) configRows.Add(Px(rowH));
         if (AutoSorter.Enable) {
             configRows.Add(Px(rowH));
-            configChildren.Add(CheckBoxNode(EnablePackageAutoSortTwiceEntry, "AutoSorter模组将背包中多余物品收入分馏数据中心",
+            configChildren.Add(CheckBoxNode(EnablePackageAutoSortTwiceEntry, "AutoSorter模组将背包中多余物品收入分馏亚空间",
                 onBuilt: cb => PackageAutoSortTwiceCheckBox = cb,
                 pos: (++rowIdx, 0), objectName: "misc-auto-sorter"));
         }
         configRows.Add(Px(rowH));
-        configChildren.Add(CheckBoxNode(EnablePackageSortTwiceEntry, "双击背包排序按钮将多余物品收入分馏数据中心",
+        configChildren.Add(CheckBoxNode(EnablePackageSortTwiceEntry, "双击背包排序按钮将多余物品收入分馏亚空间",
             onBuilt: cb => PackageSortTwiceCheckBox = cb,
             pos: (++rowIdx, 0), objectName: "misc-sort-twice"));
 

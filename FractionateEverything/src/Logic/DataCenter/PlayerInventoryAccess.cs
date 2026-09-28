@@ -176,7 +176,7 @@ public static class PlayerInventoryAccess {
                 //物流背包
                 GameMain.mainPlayer.deliveryPackage.TakeItems(ref itemIdTmp, ref realCountTemp, out incTemp);
             } else {
-                // 数据中心物品交互需要先恢复培养塔协议。
+                // 亚空间物品交互需要先由首遗物建立通信。
                 if (!PackageAccessRules.TechItemInteractionUnlocked) {
                     continue;
                 }

@@ -1,66 +1,49 @@
-# UI — Unity UI Layer
+# UI — Unity 界面层
 
-UI 层包含基础窗口设施、可复用控件、声明式布局、FE 主面板页面和通用 UI 控件 patch。MainPanel 是 FE 主面板页面系统，页面仍是静态类架构；主界面已升级为**双主面板并行**：MessageBox(`MessageBoxMainPanelWindow`) + Analysis(`AnalysisMainPanelWindow`)。
+UI 层包含窗口基础设施、可复用控件、声明式布局、FE 主面板和通用控件 patch。业务状态与结算归 `Logic/*`，UI 只读取快照和调用明确命令。
 
 ## Structure
 
 ```
 UI/
-├── Foundation/   # 窗口生命周期、窗口基类、RectTransform 工具
+├── Foundation/   # 窗口生命周期、基类、RectTransform 工具
 ├── Controls/     # 可复用控件，一类一文件
 ├── Layout/       # Grid DSL 与布局运行时
-└── MainPanel/
-    ├── Shell/               # MessageBox / Analysis 主面板窗口壳
-    ├── Theme/               # 主面板页面视觉骨架
-    ├── MainWindow.cs          # 双面板总控（打开/关闭/切换/导航/保存）
-    ├── MainWindowPageRegistry.cs # 页面注册中心（分类与过滤）
-    ├── Civilization/          # 文明总览、协议恢复、远古科技树
-    └── ProgressTask/          # 恢复手册和单存档成就
-└── Patches/      # 只保留 Common 通用控件 patch
+├── MainPanel/
+│   ├── Shell/    # MessageBox / Analysis 两种窗口壳
+│   ├── Theme/    # 页面尺寸、页头、内容区、页脚和视觉素材
+│   ├── MainWindow.cs
+│   ├── MainWindowPageRegistry.cs
+│   ├── Civilization/        # 文明研究、遗物探索
+│   ├── ResourceInteraction/ # 亚空间仓储
+│   ├── Archive/             # 开发日记
+│   └── Setting/             # 杂项设置
+└── Patches/Common/          # 与业务域无关的通用控件 patch
 ```
 
-## 双主面板契约（必须遵守）
+## Dual Panel Contract
 
-- 枚举：`FEMainPanelType = None/Legacy/Analysis`（`Legacy` 对应 MessageBox 风格窗口，`Analysis` 对应分析风格窗口）
-- 选中态：`SelectedMainPanelType`
-- 打开态：`OpenedMainPanelType`
-- 切换入口：`SwitchMainPanelFrom` / `SwitchSelectedMainPanelAndOpen`
-- 跨页跳转统一走：`MainWindow.NavigateToPage(category, tabIndex)`
+- `FEMainPanelType = None / Legacy / Analysis`；Legacy 是 MessageBox 外壳，Analysis 是分析外壳。
+- 选择态用 `SelectedMainPanelType`，打开态用 `OpenedMainPanelType`。
+- 切换统一走 `SwitchMainPanelFrom` / `SwitchSelectedMainPanelAndOpen`。
+- 跨页导航统一走 `MainWindow.NavigateToPage(category, tabIndex)`。
+- 两种外壳共享 `MainWindowPageRegistry` 和同一页面实现，不复制业务页面。
 
-## 页面注册规则
+## Page Rules
 
-在 `MainWindowPageRegistry.allPages` 注册页面：
+- 新页面只在 `MainWindowPageRegistry.allPages` 注册；未注册旧页面不得作为隐藏入口保留。
+- `UpdateUI()` 首先检查页面根节点是否存在且可见，避免离屏刷新。
+- 页面只调用文明、亚空间和配方域的只读快照/公开命令，不直接修改静态集合。
+- `UI/MainPanel/*` 富文本颜色统一用 `RichTextUtils`，禁止散落硬编码颜色。
+- 业务页面默认一个页面一个文件；共用布局下沉到 `Layout` / `Theme`，规则计算下沉到 `Logic`。
 
-```csharp
-new(category, subpage, createUI, updateUI, sandboxOnly: bool)
-```
+## Layout Baseline
 
-- 注册页面在 MessageBox 与 Analysis 两种窗口中共用同一套页面实现。
-- 仅沙盒页面使用 `sandboxOnly=true`，普通页面不要自行判断窗口风格。
+Analysis 中央黑色区域固定 1102 x 787；四边 10 px 间距；统一设计画布 1082 x 767，左上原点 `(10, 10)`。MessageBox 代理页面也按同一设计尺寸创建根节点。
 
-## MainPanel 页面最小接口（静态类）
+## Patch Ownership
 
-```csharp
-AddTranslations();
-LoadConfig(ConfigFile);
-CreateUI(MyWindow, RectTransform);
-UpdateUI();
-Import/Export/IntoOtherSave();
-```
-
-## 关键约束
-
-- `UpdateUI()` 必须先做可见性/面板态判断（避免离屏刷新）
-- 文本颜色在 `UI/MainPanel/*` 禁止硬编码，统一走 `RichTextUtils` 常量 + `WithColor`
-- 新页面优先接入 `MainWindowPageRegistry`，不要再在 `MainWindow` 手写大段分类分发逻辑
-- 主面板窗口壳放 `UI/MainPanel/Shell`，不要放回 `UI/Controls` 或 `UI/Foundation`。
-- 页面卡片/页头/页脚视觉骨架放 `UI/MainPanel/Theme`，不要放进通用控件目录。
-
-## Patches Folder
-
-- `Patches/Common/`：只放与功能域无关的通用控件 patch，例如按钮、下拉框兼容。
-- 分馏塔窗口、配方显示、图标注入、信号选择等 patch 不再定义为“主面板 UI”，应归入对应功能域的 `Presentation`：
-  - 分馏塔窗口、分馏塔 brief info、分馏配方显示 -> `Logic/Fractionation/Fractionators/Presentation`
-  - 物品图标、信号选择、信号标签选择 -> `Logic/Items/Presentation`
-
-UI 补丁只处理界面层；游戏状态逻辑放对应 `Logic/*` 功能域。
+- 分馏塔窗口与 brief info：`Logic/Fractionation/Fractionators/Presentation`。
+- 图标、物品/信号选择器：`Logic/Items/Presentation`。
+- 物流站窗口：`Logic/Station`。
+- `UI/Patches/Common` 只保留真正跨业务的控件兼容。

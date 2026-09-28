@@ -32,8 +32,8 @@ public static class PlanetaryInteractionStation {
         Register("物流交互站", "Interaction Station");
         Register("行星内物流交互站", "Planetary Interaction Station");
         Register("I行星内物流交互站",
-            "Planetary logistics station that interacts with the fractionation data centre.\nTransfer Mode: Upload - uploads items exceeding the threshold to data centre; Download - downloads items from data centre when below threshold; Sync - both upload and download.\nCapacity Mode: Limited - upload limited by data centre target count, which is related to item value; Infinite - unlimited upload.",
-            "可以与分馏数据中心进行物品交互的行星内物流运输站。\n传输模式：仅上传-超过阈值时上传超出部分；仅下载-低于阈值时下载至阈值；双向同步-同时支持上传和下载。\n容量模式：有限上传-受数据中心目标数量限制，目标数量与物品价值相关；无限上传-不限制上传数量。");
+            "Planetary logistics station that exchanges items with the fractionation subspace. Its original upload, download, synchronization, threshold and blueprint modes are retained; each transfer consumes station energy.",
+            "与分馏亚空间交换物品的行星内物流运输站。保留原有上传、下载、双向同步、阈值与蓝图模式；每次传输消耗站内电量。");
     }
 
     public static void Create() {
@@ -41,7 +41,8 @@ public static class PlanetaryInteractionStation {
             "Assets/fe/interaction-station", tab分馏 * 1000 + 306, 10, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE行星内物流交互站,
-            ERecipeType.Assemble, 1200, [I行星内物流运输站, IFE培养塔], [1, 12], [IFE行星内物流交互站], [1],
+            ERecipeType.Assemble, 1200, [I行星内物流运输站, IFE基础矿物塔, IFE基础解析塔], [1, 4, 4],
+            [IFE行星内物流交互站], [1],
             "I行星内物流交互站", TFE行星内物流交互, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;

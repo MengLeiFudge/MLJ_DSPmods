@@ -1,13 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Linq;
 using System.Text;
 using BepInEx.Configuration;
-using FE.Logic.Civilization.DarkFog;
 using FE.Compatibility.Nebula;
-using FE.Logic.Civilization.Protocols;
-using FE.Logic.Civilization.Technology;
+using FE.Logic.Civilization;
 using FE.Logic.Fractionation.Recipes;
+using FE.UI.Foundation;
 using FE.UI.Foundation.Window;
-using FE.UI.Layout;
 using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.UI;
@@ -17,280 +16,295 @@ using static FE.Utils.Utils;
 namespace FE.UI.MainPanel.Civilization;
 
 /// <summary>
-/// 汇总残片/记忆源点余额、协议发现/购买资格/正式解锁、检索与深层解析进度、远古科技点，
-/// 并在同一页呈现黑雾地表/星域认知、关键证据、首次清剿与 A/B/C 样本解译状态。
+/// 展示 FE 3.0 物品方向研究、内容发现和生命工业完成状态。
 /// </summary>
 public static class CivilizationOverviewPage {
-    private static readonly int[] DarkFogSamples = [IFE黑雾样本A, IFE黑雾样本B, IFE黑雾样本C];
-    private static readonly string[] DarkFogSampleLabels = ["A", "B", "C"];
+    private const float DirectionLineHeight = 24f;
+    private const float ContentLineHeight = 24f;
 
     private static RectTransform tab;
     private static PageLayout.HeaderRefs header;
-    private static Text economyText;
-    private static Text protocolText;
-    private static Text retrievalText;
-    private static Text deepText;
-    private static Text techPointText;
-    private static Text bannerText;
-    private static Text groundText;
-    private static Text spaceText;
-    private static Text sampleText;
+    private static Text overviewText;
+    private static Text directionListText;
+    private static RectTransform directionListRoot;
+    private static Text directionDetailText;
+    private static Text discoveredContentText;
+    private static RectTransform discoveredContentRoot;
     private static Text footerText;
+    private static UIButton directionButton;
+    private static int selectedDirectionItemId;
 
+    /// <summary>
+    /// 注册研究页面文本。
+    /// </summary>
     public static void AddTranslations() {
-        Register("文明总览", "Civilization Overview");
-        Register("文明总览摘要", "Inspect Frag/Memory balances, protocols, retrieval, dark-fog cognition and sample decoding.",
-            "查看残片与记忆源点余额、协议发现/购买资格/正式解锁、检索与深层解析、远古科技点，以及黑雾认知与样本解译。");
-        Register("文明总览页脚", "When no incomplete eligible protocols remain, broad retrieval becomes deep analysis.",
-            "全局没有可行动未完成协议时，广域检索转为深层解析并产出远古文明科技点。");
-        Register("总览-经济与协议", "Economy & Protocols");
-        Register("总览-黑雾调查", "Dark Fog Investigation");
-        Register("总览-残片", "Frag");
-        Register("总览-记忆源点", "Memory");
-        Register("总览-协议目录", "Catalog");
-        Register("总览-已发现", "Discovered");
-        Register("总览-购买资格", "Purchase ready");
-        Register("总览-正式解锁", "Unlocked");
-        Register("总览-检索次数", "Retrievals");
-        Register("总览-基础成本", "Base cost");
-        Register("总览-失败保底", "Failure streak");
-        Register("总览-深层解析", "Deep analysis");
-        Register("总览-下次深层点", "Next point");
-        Register("总览-科技点", "Tech points");
-        Register("总览-可用", "available");
-        Register("总览-累计获得", "earned");
-        Register("总览-地表认知", "Ground");
-        Register("总览-星域认知", "Space");
-        Register("总览-地表单位", "Units");
-        Register("总览-地表基地", "Bases");
-        Register("总览-星域单位", "S.Units");
-        Register("总览-蜂巢", "Hives");
-        Register("总览-中继", "Relays");
-        Register("总览-引火", "Tinders");
-        Register("总览-首次清剿行星", "First planet");
-        Register("总览-首次清除星系", "First system");
-        Register("总览-样本解译", "Samples");
-        Register("总览-已解译", "Decoded");
-        Register("总览-未解译", "Undecoded");
-        Register("总览-已完成", "Done");
-        Register("总览-未完成", "Pending");
-        Register("总览-和平模式", "Peaceful mode — no dark fog contact yet.",
-            "和平模式：尚未接触黑雾，样本解译将在接触后随认知等级提升。");
-        Register("总览-接触中", "Contact established.", "调查状态：接触中。");
-        Register("总览-等待首次接触", "Awaiting first contact — no dark fog evidence yet.",
-            "调查状态：等待首次接触，尚未获取任何黑雾证据。");
-        Register("总览-客户端说明", "Client state is synced by the host.",
-            "客户端：文明状态由主机同步。");
+        Register("文明研究", "Civilization Research");
+        Register("文明研究摘要",
+            "Inspect item-direction eligibility, analysis progress, discovered recipes, and living-tower traits.",
+            "查看物品方向的解析资格、研究进度、已发现配方与生命塔特质。");
+        Register("研究总览", "Research Overview");
+        Register("研究方向", "Research Directions");
+        Register("方向详情", "Direction Detail");
+        Register("已发现内容", "Discovered Content");
+        Register("切换研究方向", "Cycle Direction");
+        Register("解析资格", "Eligibility");
+        Register("已有资格", "Eligible");
+        Register("等待探索", "Awaiting Exploration");
+        Register("当前进度", "Current Progress");
+        Register("方向内容", "Direction Content");
+        Register("已发现", "Discovered");
+        Register("尚无已发现内容", "No content has been discovered yet.");
+        Register("研究方向为空", "No research directions are currently available.");
+        Register("本存档代际", "Save Generation");
+        Register("三点零代际", "FE 3.0");
+        Register("旧代际兼容", "Legacy Compatibility");
+        Register("高级塔收集", "Advanced Towers");
+        Register("跨存档完成", "Cross-save Completion");
+        Register("已完成", "Complete");
+        Register("未完成", "Incomplete");
+        Register("研究页脚",
+            "Feed eligible items into a Basic Analysis Tower. Each successful analysis advances one lowest-tier undiscovered result in that direction.",
+            "将已取得资格的物品送入基础解析塔；每次解析成功会推进该方向当前最低未发现层级中的一项内容。");
+        Register("研究客户端说明", "Research state is settled and synchronized by the host.",
+            "研究状态由主机结算并同步。");
     }
 
+    /// <summary>
+    /// 研究页面没有独立配置。
+    /// </summary>
     public static void LoadConfig(ConfigFile configFile) { }
 
+    /// <summary>
+    /// 创建研究总览、方向列表和发现内容区域。
+    /// </summary>
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         tab = trans;
+        ResearchDirectionSnapshot[] directions = ResearchManager.GetDirectionSnapshots();
+        float directionHeight = Math.Max(360f, directions.Length * DirectionLineHeight + 20f);
+        int discoveredHeightUnits = ResearchManager.GetUnlockedContentDefinitions()
+            .Sum(definition => RecipeManager.GetRecipe(definition.Id) == null ? 1 : 5);
+        float contentHeight = Math.Max(260f, Math.Max(1, discoveredHeightUnits) * ContentLineHeight + 20f);
+
         BuildLayout(wnd, tab,
             Grid(
-                rows: [Px(PageLayout.HeaderHeight), 1, Px(PageLayout.FooterHeight)],
+                rows: [Px(PageLayout.HeaderHeight), Px(112f), 1, Px(PageLayout.FooterHeight)],
                 rowGap: PageLayout.Gap,
                 children: [
-                    Header("文明总览", "文明总览摘要", pos: (0, 0), objectName: "civilization-overview-header",
+                    Header("文明研究", "文明研究摘要", pos: (0, 0), objectName: "research-header",
                         onBuilt: refs => header = refs),
-                    Grid(pos: (1, 0), cols: [1, 1], columnGap: PageLayout.Gap,
-                        objectName: "civilization-overview-body",
+                    ContentCard(pos: (1, 0), objectName: "research-overview-card", strong: true,
+                        cols: [1, Px(210f)], columnGap: PageLayout.InnerGap,
                         children: [
-                            ContentCard(pos: (0, 0), objectName: "civilization-overview-economy-card", strong: true,
-                                rows: [Px(28f), Px(30f), Px(30f), Px(30f), Px(30f), 1], rowGap: 6f,
-                                children: [
-                                    CardTitleNode("总览-经济与协议", pos: (0, 0),
-                                        objectName: "civilization-overview-economy-title"),
-                                    TextNode("", 13, White, anchor: TextAnchor.MiddleLeft, wrap: true, pos: (1, 0),
-                                        onBuilt: text => {
-                                            economyText = text;
-                                            text.supportRichText = true;
-                                        }, objectName: "civilization-overview-economy"),
-                                    TextNode("", 13, White, anchor: TextAnchor.MiddleLeft, wrap: true, pos: (2, 0),
-                                        onBuilt: text => {
-                                            protocolText = text;
-                                            text.supportRichText = true;
-                                        }, objectName: "civilization-overview-protocol"),
-                                    TextNode("", 13, White, anchor: TextAnchor.MiddleLeft, wrap: true, pos: (3, 0),
-                                        onBuilt: text => {
-                                            retrievalText = text;
-                                            text.supportRichText = true;
-                                        }, objectName: "civilization-overview-retrieval"),
-                                    TextNode("", 13, White, anchor: TextAnchor.MiddleLeft, wrap: true, pos: (4, 0),
-                                        onBuilt: text => {
-                                            deepText = text;
-                                            text.supportRichText = true;
-                                        }, objectName: "civilization-overview-deep"),
-                                    TextNode("", 13, Gray, anchor: TextAnchor.UpperLeft, wrap: true, pos: (5, 0),
-                                        onBuilt: text => {
-                                            techPointText = text;
-                                            text.supportRichText = true;
-                                        }, objectName: "civilization-overview-techpoints"),
-                                ]),
-                            ContentCard(pos: (0, 1), objectName: "civilization-overview-darkfog-card",
-                                rows: [Px(28f), Px(24f), 1, 1, 1], rowGap: 6f,
-                                children: [
-                                    CardTitleNode("总览-黑雾调查", pos: (0, 0),
-                                        objectName: "civilization-overview-darkfog-title"),
-                                    TextNode("", 13, Gray, anchor: TextAnchor.MiddleLeft, wrap: false, pos: (1, 0),
-                                        onBuilt: text => {
-                                            bannerText = text;
-                                            text.supportRichText = true;
-                                        }, objectName: "civilization-overview-banner"),
-                                    TextNode("", 13, White, anchor: TextAnchor.UpperLeft, wrap: true, pos: (2, 0),
-                                        onBuilt: text => {
-                                            groundText = text;
-                                            text.supportRichText = true;
-                                        }, objectName: "civilization-overview-ground"),
-                                    TextNode("", 13, White, anchor: TextAnchor.UpperLeft, wrap: true, pos: (3, 0),
-                                        onBuilt: text => {
-                                            spaceText = text;
-                                            text.supportRichText = true;
-                                        }, objectName: "civilization-overview-space"),
-                                    TextNode("", 13, White, anchor: TextAnchor.UpperLeft, wrap: true, pos: (4, 0),
-                                        onBuilt: text => {
-                                            sampleText = text;
-                                            text.supportRichText = true;
-                                        }, objectName: "civilization-overview-sample"),
-                                ]),
-                        ]),
-                    FooterCard(pos: (2, 0), objectName: "civilization-overview-footer",
-                        children: [
-                            TextNode("", 12, Gray, wrap: true, pos: (0, 0),
+                            TextNode("", 13, White, anchor: TextAnchor.MiddleLeft, wrap: true, pos: (0, 0),
                                 onBuilt: text => {
-                                    footerText = text;
+                                    overviewText = text;
                                     text.supportRichText = true;
-                                }, objectName: "civilization-overview-footer-text"),
+                                }, objectName: "research-overview-text"),
+                            ButtonNode("切换研究方向", CycleDirection, pos: (0, 1),
+                                onBuilt: button => directionButton = button,
+                                objectName: "research-cycle-direction"),
                         ]),
+                    Grid(pos: (2, 0), cols: [1, 1], columnGap: PageLayout.Gap,
+                        objectName: "research-body", children: [
+                            ContentCard(pos: (0, 0), objectName: "research-direction-card", strong: true,
+                                rows: [Px(28f), 1], rowGap: 8f, children: [
+                                    CardTitleNode("研究方向", pos: (0, 0), objectName: "research-direction-title"),
+                                    ScrollableContentCard(directionHeight, pos: (1, 0),
+                                        objectName: "research-direction-scroll",
+                                        onBuilt: root => directionListRoot = root, children: [
+                                            TextNode("", 13, White, anchor: TextAnchor.UpperLeft, wrap: true,
+                                                pos: (0, 0), onBuilt: text => {
+                                                    directionListText = text;
+                                                    text.supportRichText = true;
+                                                }, objectName: "research-direction-list"),
+                                        ]),
+                                ]),
+                            Grid(pos: (0, 1), rows: [Px(184f), 1], rowGap: PageLayout.Gap,
+                                objectName: "research-detail-column", children: [
+                                    ContentCard(pos: (0, 0), objectName: "research-direction-detail-card",
+                                        rows: [Px(28f), 1], rowGap: 8f, children: [
+                                            CardTitleNode("方向详情", pos: (0, 0),
+                                                objectName: "research-direction-detail-title"),
+                                            TextNode("", 13, White, anchor: TextAnchor.UpperLeft, wrap: true,
+                                                pos: (1, 0), onBuilt: text => {
+                                                    directionDetailText = text;
+                                                    text.supportRichText = true;
+                                                }, objectName: "research-direction-detail"),
+                                        ]),
+                                    ContentCard(pos: (1, 0), objectName: "research-content-card",
+                                        rows: [Px(28f), 1], rowGap: 8f, children: [
+                                            CardTitleNode("已发现内容", pos: (0, 0),
+                                                objectName: "research-content-title"),
+                                            ScrollableContentCard(contentHeight, pos: (1, 0),
+                                                objectName: "research-content-scroll",
+                                                onBuilt: root => discoveredContentRoot = root, children: [
+                                                    TextNode("", 13, White, anchor: TextAnchor.UpperLeft,
+                                                        wrap: true, pos: (0, 0), onBuilt: text => {
+                                                            discoveredContentText = text;
+                                                            text.supportRichText = true;
+                                                        }, objectName: "research-content-list"),
+                                                ]),
+                                        ]),
+                                ]),
+                        ]),
+                    FooterCard(pos: (3, 0), objectName: "research-footer", children: [
+                        TextNode("", 12, Gray, wrap: true, pos: (0, 0), onBuilt: text => {
+                            footerText = text;
+                            text.supportRichText = true;
+                        }, objectName: "research-footer-text"),
+                    ]),
                 ]));
         UpdateUI();
     }
 
+    /// <summary>
+    /// 刷新研究快照，不在页面层执行任何研究结算。
+    /// </summary>
     public static void UpdateUI() {
         if (tab == null || !tab.gameObject.activeSelf) {
             return;
         }
 
-        header.Title.text = "文明总览".Translate().WithColor(Orange);
-        header.Summary.text = "文明总览摘要".Translate().WithColor(White);
+        ResearchDirectionSnapshot[] directions = ResearchManager.GetDirectionSnapshots();
+        SynchronizeSelectedDirection(directions);
+        header.Title.text = "文明研究".Translate().WithColor(Orange);
+        header.Summary.text = "文明研究摘要".Translate().WithColor(White);
+        overviewText.text = BuildOverviewText();
+        directionListText.text = BuildDirectionList(directions);
+        ResizeScrollableText(directionListRoot, directionListText);
+        directionDetailText.text = BuildDirectionDetail(directions);
+        discoveredContentText.text = BuildDiscoveredContent();
+        ResizeScrollableText(discoveredContentRoot, discoveredContentText);
+        directionButton.button.interactable = directions.Length > 1;
+        directionButton.SetText("切换研究方向".Translate());
 
-        ProtocolRetrievalGlobalSnapshot snapshot = ProtocolRetrievalService.GetGlobalSnapshot();
-        int total = ProtocolCatalog.All.Count;
-        int discovered = ProtocolCatalog.CountDiscovered();
-        int eligible = ProtocolCatalog.CountPurchaseEligible();
-        int unlocked = ProtocolCatalog.CountFormallyUnlocked();
-
-        economyText.text =
-            $"{"总览-残片".Translate()} {snapshot.Fragments.ToString().WithColor(Orange)}    "
-            + $"{"总览-记忆源点".Translate()} {snapshot.Memory.ToString().WithColor(Blue)}";
-        protocolText.text =
-            $"{"总览-协议目录".Translate()}：{"总览-已发现".Translate()} {discovered}/{total}  ·  "
-            + $"{"总览-购买资格".Translate()} {eligible}/{total}  ·  "
-            + $"{"总览-正式解锁".Translate()} {unlocked}/{total}";
-        retrievalText.text =
-            $"{"总览-检索次数".Translate()} {snapshot.TotalRetrievalCount}    "
-            + $"{"总览-基础成本".Translate()} {snapshot.NextBaseCost}    "
-            + $"{"总览-失败保底".Translate()} {snapshot.FailureStreak}/4";
-        deepText.text =
-            $"{"总览-深层解析".Translate()} {snapshot.DeepAnalysisProgress}/{snapshot.NextDeepPointCost}    "
-            + $"{"总览-下次深层点".Translate()} {snapshot.NextDeepPointCost}";
-
-        string techLine =
-            $"{"总览-科技点".Translate()}：{AncientTechTreeState.AvailablePoints.ToString().WithColor(Orange)} "
-            + $"{"总览-可用".Translate()}  ·  "
-            + $"{AncientTechTreeState.TotalPointsEarned.ToString().WithColor(Green)} {"总览-累计获得".Translate()}";
+        string footer = "研究页脚".Translate();
         if (NebulaMultiplayerModAPI.IsClient) {
-            techLine += "\n" + "总览-客户端说明".Translate().WithColor(Gray);
+            footer += "  ·  " + "研究客户端说明".Translate();
         }
-        techPointText.text = techLine;
-
-        bannerText.text = BuildBannerLine();
-        groundText.text = BuildGroundLine();
-        spaceText.text = BuildSpaceLine();
-        sampleText.text = BuildSampleLine();
-
-        footerText.text = "文明总览页脚".Translate().WithColor(Gray);
+        footerText.text = footer.WithColor(Gray);
     }
 
-    private static string BuildBannerLine() {
-        // 真正的和平模式由游戏战斗开关决定；战斗模式下尚无任何证据/清剿则视为等待首次接触。
-        if (!IsCombatModeActive()) {
-            return "总览-和平模式".Translate().WithColor(Gray);
+    private static string BuildOverviewText() {
+        string generation = (ResearchManager.BelongsToGeneration3 ? "三点零代际" : "旧代际兼容")
+            .Translate();
+        string towers = (ResearchManager.HasAcquiredAllAdvancedTowers ? "已完成" : "未完成").Translate();
+        string completion = (PermanentProfileStore.HasPlayedFractionation ? "已完成" : "未完成").Translate();
+        return $"{"本存档代际".Translate()}：{generation.WithColor(Orange)}    "
+               + $"{"已发现内容".Translate()}：{ResearchManager.DiscoveredContentCount.ToString().WithColor(Blue)}\n"
+               + $"{"高级塔收集".Translate()}：{towers}    "
+               + $"{"跨存档完成".Translate()}：{completion}";
+    }
+
+    private static string BuildDirectionList(ResearchDirectionSnapshot[] directions) {
+        if (directions.Length == 0) {
+            return "研究方向为空".Translate().WithColor(Gray);
         }
-        return HasAnyContact()
-            ? "总览-接触中".Translate().WithColor(Orange)
-            : "总览-等待首次接触".Translate().WithColor(Gray);
-    }
 
-    private static bool IsCombatModeActive() {
-        // GameLogic.isCombatMode 是实例字段，不可静态访问；通过真实游戏实例入口 null-safe 读取，存档未就绪时按非战斗处理。
-        return GameMain.logic?.isCombatMode ?? GameMain.data?.gameDesc?.isCombatMode ?? false;
-    }
-
-    private static bool HasAnyContact() {
-        return DarkFogInvestigationState.GroundUnits > 0L
-               || DarkFogInvestigationState.GroundBases > 0L
-               || DarkFogInvestigationState.SpaceUnits > 0L
-               || DarkFogInvestigationState.HiveCores > 0L
-               || DarkFogInvestigationState.Relays > 0L
-               || DarkFogInvestigationState.Tinders > 0L
-               || DarkFogInvestigationState.FirstPlanetCleared
-               || DarkFogInvestigationState.FirstSystemCleared;
-    }
-
-    private static string BuildGroundLine() {
-        int rank = DarkFogInvestigationState.GroundRank;
-        return new StringBuilder()
-            .Append($"{"总览-地表认知".Translate()} {RankLabel("G", rank)}    ")
-            .Append($"{"总览-地表单位".Translate()} {DarkFogInvestigationState.GroundUnits}    ")
-            .Append($"{"总览-地表基地".Translate()} {DarkFogInvestigationState.GroundBases}    ")
-            .Append($"{"总览-首次清剿行星".Translate()} {ClearedLabel(DarkFogInvestigationState.FirstPlanetCleared)}")
-            .ToString();
-    }
-
-    private static string BuildSpaceLine() {
-        int rank = DarkFogInvestigationState.SpaceRank;
-        return new StringBuilder()
-            .Append($"{"总览-星域认知".Translate()} {RankLabel("S", rank)}    ")
-            .Append($"{"总览-星域单位".Translate()} {DarkFogInvestigationState.SpaceUnits}    ")
-            .Append($"{"总览-蜂巢".Translate()} {DarkFogInvestigationState.HiveCores}    ")
-            .Append($"{"总览-中继".Translate()} {DarkFogInvestigationState.Relays}    ")
-            .Append($"{"总览-引火".Translate()} {DarkFogInvestigationState.Tinders}    ")
-            .Append($"{"总览-首次清除星系".Translate()} {ClearedLabel(DarkFogInvestigationState.FirstSystemCleared)}")
-            .ToString();
-    }
-
-    private static string BuildSampleLine() {
         var builder = new StringBuilder();
-        builder.Append($"{"总览-样本解译".Translate()}    ");
-        for (int i = 0; i < DarkFogSamples.Length; i++) {
-            if (i > 0) {
-                builder.Append("    ");
-            }
-            bool decoded = IsSampleDecoded(DarkFogSamples[i]);
-            builder.Append($"{DarkFogSampleLabels[i]} {SampleLabel(decoded)}");
+        foreach (ResearchDirectionSnapshot direction in directions) {
+            bool selected = direction.ItemId == selectedDirectionItemId;
+            string marker = selected ? ">".WithColor(Orange) : " ";
+            string eligibility = (direction.Eligible ? "已有资格" : "等待探索").Translate()
+                .WithColor(direction.Eligible ? Green : Gray);
+            builder.Append(marker).Append(' ')
+                .Append(GetItemName(direction.ItemId))
+                .Append("  ").Append(eligibility)
+                .Append("  ").Append(direction.DiscoveredCount).Append('/').Append(direction.TotalCount)
+                .Append('\n');
         }
         return builder.ToString();
     }
 
-    private static bool IsSampleDecoded(int sampleItemId) {
-        AnalysisRecipe recipe = RecipeManager.GetRecipe<AnalysisRecipe>(ERecipe.Analysis, sampleItemId);
-        return recipe != null && recipe.TotalSuccessCount > 0;
+    private static string BuildDirectionDetail(ResearchDirectionSnapshot[] directions) {
+        ResearchDirectionSnapshot direction = directions.FirstOrDefault(candidate =>
+            candidate.ItemId == selectedDirectionItemId);
+        if (direction == null) {
+            return "研究方向为空".Translate().WithColor(Gray);
+        }
+
+        string eligibility = (direction.Eligible ? "已有资格" : "等待探索").Translate()
+            .WithColor(direction.Eligible ? Green : Gray);
+        float percentage = direction.Progress / 100f;
+        return $"{GetItemName(direction.ItemId).WithColor(Orange)}\n\n"
+               + $"{"解析资格".Translate()}：{eligibility}\n"
+               + $"{"当前进度".Translate()}：{percentage:0.##}%\n"
+               + $"{"方向内容".Translate()}：{direction.DiscoveredCount}/{direction.TotalCount}";
     }
 
-    private static string RankLabel(string prefix, int rank) {
-        Color color = rank switch {
-            <= 0 => Gray,
-            < 4 => White,
-            _ => Orange,
-        };
-        return $"{prefix}{rank}".WithColor(color);
+    private static string BuildDiscoveredContent() {
+        ResearchContentDefinition[] definitions = ResearchManager.GetUnlockedContentDefinitions();
+        if (definitions.Length == 0) {
+            return "尚无已发现内容".Translate().WithColor(Gray);
+        }
+
+        var builder = new StringBuilder();
+        foreach (ResearchContentDefinition definition in definitions) {
+            WorldviewRecipe recipe = RecipeManager.GetRecipe(definition.Id);
+            builder.Append("T").Append(definition.Tier).Append("  ")
+                .Append(definition.DisplayName.WithColor(Orange)).Append('\n');
+            if (recipe == null) {
+                builder.Append('\n');
+                continue;
+            }
+
+            builder.Append("稳定配方ID".Translate()).Append("：").Append(recipe.StableId)
+                .Append("  ·  ").Append("运行塔型".Translate()).Append("：")
+                .Append(GetItemName(recipe.RecipeType.GetSpriteItemId())).Append('\n');
+            builder.Append("成功率".Translate()).Append("：")
+                .Append(recipe.CycleSuccessProbability.ToString("P0")).Append('\n');
+            builder.Append("配方输入".Translate()).Append("：")
+                .Append(string.Join(" + ", recipe.Inputs.Select(input => {
+                    string consumption = input.ConsumeProbability < 0.9999f
+                        ? $" ({input.ConsumeProbability:P0} {"每次成功消耗概率".Translate()})"
+                        : string.Empty;
+                    return $"{input.Count} × {GetItemName(input.ItemId)}{consumption}";
+                }))).Append('\n');
+            builder.Append("配方输出".Translate()).Append("：")
+                .Append(string.Join(" + ", recipe.Products.Select(output => {
+                    string recovery = output.ScalesWithRecovery
+                        ? $" ({"按回收率结算".Translate()})"
+                        : string.Empty;
+                    return $"{output.Count:0.##} × {GetItemName(output.ItemId)}{recovery}";
+                }))).Append("\n\n");
+        }
+        return builder.ToString();
     }
 
-    private static string ClearedLabel(bool cleared) =>
-        (cleared ? "总览-已完成" : "总览-未完成").Translate().WithColor(cleared ? Green : Gray);
+    private static void CycleDirection() {
+        ResearchDirectionSnapshot[] directions = ResearchManager.GetDirectionSnapshots();
+        if (directions.Length == 0) {
+            return;
+        }
+        int index = Array.FindIndex(directions, direction => direction.ItemId == selectedDirectionItemId);
+        selectedDirectionItemId = directions[(index + 1) % directions.Length].ItemId;
+        UpdateUI();
+    }
 
-    private static string SampleLabel(bool decoded) =>
-        (decoded ? "总览-已解译" : "总览-未解译").Translate().WithColor(decoded ? Green : Gray);
+    private static void SynchronizeSelectedDirection(ResearchDirectionSnapshot[] directions) {
+        if (directions.Length == 0) {
+            selectedDirectionItemId = 0;
+            return;
+        }
+        if (directions.All(direction => direction.ItemId != selectedDirectionItemId)) {
+            selectedDirectionItemId = directions.FirstOrDefault(direction => direction.Eligible)?.ItemId
+                                      ?? directions[0].ItemId;
+        }
+    }
+
+    private static void ResizeScrollableText(RectTransform contentRoot, Text text) {
+        if (contentRoot == null || text == null) {
+            return;
+        }
+        RectTransform viewport = contentRoot.parent as RectTransform;
+        float height = Math.Max(viewport?.rect.height ?? 0f, text.preferredHeight + 20f);
+        contentRoot.sizeDelta = new Vector2(contentRoot.sizeDelta.x, height);
+        if (text.rectTransform.parent is RectTransform textContainer) {
+            float textHeight = Math.Max(0f, height - 20f);
+            textContainer.sizeDelta = new Vector2(textContainer.sizeDelta.x, textHeight);
+            text.rectTransform.sizeDelta = new Vector2(text.rectTransform.sizeDelta.x, textHeight);
+        }
+    }
+
+    private static string GetItemName(int itemId) => LDB.items.Select(itemId)?.name ?? itemId.ToString();
 }

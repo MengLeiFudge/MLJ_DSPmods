@@ -1,5 +1,4 @@
 ﻿using FE.Logic.Civilization;
-using FE.Logic.Civilization.Achievements;
 using FE.Logic.Enhancements.Stacking;
 using FE.Logic.Enhancements.VanillaRecipes;
 using FE.Logic.Fractionation.Recipes;
@@ -21,6 +20,7 @@ public static class FeatureBootstrap {
     public static void AddTranslations() {
         Register("分馏页面", "Fractionate", "分馏");
         ERecipeExtension.AddTranslations();
+        RecipeManager.AddTranslations();
         FeUtils.AddTranslations();
         FractionatorManager.AddTranslations();
         StationManager.AddTranslations();
@@ -29,7 +29,6 @@ public static class FeatureBootstrap {
         TechManager.AddTranslations();
         TutorialManager.AddTranslations();
         CivilizationModule.AddTranslations();
-        AchievementModule.AddTranslations();
         MainWindow.AddTranslations();
     }
 
@@ -40,8 +39,8 @@ public static class FeatureBootstrap {
         FractionatorManager.AddFractionators();
         // 初步添加物流交互站
         StationManager.AddStations();
-        // 添加科技
-        TechManager.AddTechs();
+        // 添加隐藏亚空间根节点、物流交互科技与第二页成长科技。
+        GrowthTechnologyManager.AddTechs();
         // 添加指引手册
         TutorialManager.AddTutorials();
         StackingManager.ApplyVanillaTechProtoOverrides();
@@ -62,7 +61,6 @@ public static class FeatureBootstrap {
         }
 
         PreloadAndInitAll();
-        CivilizationRecoveryManager.SuppressInternalTechTreeEntries();
         // 获取部分数据，例如传送带最大速度等
         ProcessManager.Init();
         // 计算物品价值
@@ -77,7 +75,6 @@ public static class FeatureBootstrap {
         // AddFracRecipes 用到了 Init 生成的数据
         RecipeManager.AddFracRecipes();
         CivilizationModule.Initialize();
-        AchievementModule.Initialize();
         VanillaRecipeManager.AddVanillaRecipes();
         // CalculateItemModSaveCount 用到了 CalculateItemValues 生成的数据
         StationManager.CalculateItemModSaveCount();

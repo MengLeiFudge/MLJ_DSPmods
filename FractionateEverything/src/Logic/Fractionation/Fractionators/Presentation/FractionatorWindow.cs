@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using FE.Logic.Fractionation.Fractionators;
+using FE.Logic.DataCenter;
 using FE.Logic.Fractionation.Recipes;
+using FE.UI.Controls;
+using FE.UI.Foundation;
 using FE.UI.MainPanel.Setting;
 using HarmonyLib;
 using UnityEngine;
@@ -74,8 +76,11 @@ public static class FractionatorWindow {
     private static GameObject _fluidArrowParent;
     private static ProductSlot fluidSlot;
     private static Text fluidRightText;
-    private static Text lockStateText;
-    private static Text lockHintText;
+    private static Text recipeSelectorLabel;
+    private static MyComboBox recipeSelector;
+    private static List<int> selectableRecipeIds = [];
+    private static string selectableRecipeSignature = string.Empty;
+    private static bool suppressRecipeSelection;
 
     // 一次性记录的原版元素 localPosition
     private static Vector3 _itemBoxLocalPos;
@@ -84,9 +89,6 @@ public static class FractionatorWindow {
     private static float _layoutOffsetX;
 
     private static float currentAddHeight = -1f;
-
-    private static Image lockIconTemplateImage;
-    private static UIButton lockIconTemplateButton;
 
     /// <summary>
     /// 分馏塔窗口单个产物槽位的 UI 引用。
@@ -113,10 +115,6 @@ public static class FractionatorWindow {
         /// </summary>
         public Text probText;
         /// <summary>
-        /// 保存产物槽锁定图标。
-        /// </summary>
-        public Image lockIcon;
-        /// <summary>
         /// 保存产物槽增产点箭头图标数组。
         /// </summary>
         public Image[] incArrows;
@@ -128,10 +126,6 @@ public static class FractionatorWindow {
         /// 保存产物槽左键点击处理器。
         /// </summary>
         public Action<int> clickHandler;
-        /// <summary>
-        /// 保存产物槽右键点击处理器。
-        /// </summary>
-        public Action<int> rightClickHandler;
     }
 
     /// <summary>
@@ -150,17 +144,13 @@ public static class FractionatorWindow {
         foreach (var slot in mainSlots) {
             if (slot?.button != null) {
                 slot.clickHandler = itemId => OnSlotClick(slot, itemId);
-                slot.rightClickHandler = itemId => OnSlotRightClick(slot, itemId);
                 slot.button.onClick += slot.clickHandler;
-                slot.button.onRightClick += slot.rightClickHandler;
             }
         }
         foreach (var slot in sideSlots) {
             if (slot?.button != null) {
                 slot.clickHandler = itemId => OnSlotClick(slot, itemId);
-                slot.rightClickHandler = itemId => OnSlotRightClick(slot, itemId);
                 slot.button.onClick += slot.clickHandler;
-                slot.button.onRightClick += slot.rightClickHandler;
             }
         }
         if (fluidSlot?.button != null) {
@@ -175,34 +165,20 @@ public static class FractionatorWindow {
             return;
         }
         foreach (var slot in mainSlots) {
-            if (slot?.button != null) {
-                if (slot.clickHandler != null) {
-                    slot.button.onClick -= slot.clickHandler;
-                    slot.clickHandler = null;
-                }
-                if (slot.rightClickHandler != null) {
-                    slot.button.onRightClick -= slot.rightClickHandler;
-                    slot.rightClickHandler = null;
-                }
+            if (slot?.button != null && slot.clickHandler != null) {
+                slot.button.onClick -= slot.clickHandler;
+                slot.clickHandler = null;
             }
         }
         foreach (var slot in sideSlots) {
-            if (slot?.button != null) {
-                if (slot.clickHandler != null) {
-                    slot.button.onClick -= slot.clickHandler;
-                    slot.clickHandler = null;
-                }
-                if (slot.rightClickHandler != null) {
-                    slot.button.onRightClick -= slot.rightClickHandler;
-                    slot.rightClickHandler = null;
-                }
+            if (slot?.button != null && slot.clickHandler != null) {
+                slot.button.onClick -= slot.clickHandler;
+                slot.clickHandler = null;
             }
         }
-        if (fluidSlot?.button != null) {
-            if (fluidSlot.clickHandler != null) {
-                fluidSlot.button.onClick -= fluidSlot.clickHandler;
-                fluidSlot.clickHandler = null;
-            }
+        if (fluidSlot?.button != null && fluidSlot.clickHandler != null) {
+            fluidSlot.button.onClick -= fluidSlot.clickHandler;
+            fluidSlot.clickHandler = null;
         }
         slotClickBound = false;
     }
@@ -402,23 +378,33 @@ public static class FractionatorWindow {
             fluidRightText.supportRichText = true;
             fluidRightText.fontSize = 14;
             frGo.SetActive(false);
-
-            lockStateText = CreateLabel(window, fluidRightText, "主路锁定".Translate(),
-                new Vector3(_itemBoxLocalPos.x + 80f + _layoutOffsetX, FluidY - 38f, _itemBoxLocalPos.z));
-            if (lockStateText != null) {
-                lockStateText.fontSize = 14;
-                lockStateText.alignment = TextAnchor.UpperLeft;
-                lockStateText.supportRichText = true;
-            }
-
-            lockHintText = CreateLabel(window, fluidRightText, "右键设为主路目标".Translate(),
-                new Vector3(_itemBoxLocalPos.x + 80f + _layoutOffsetX, FluidY - 56f, _itemBoxLocalPos.z));
-            if (lockHintText != null) {
-                lockHintText.fontSize = 12;
-                lockHintText.alignment = TextAnchor.UpperLeft;
-                lockHintText.color = ProbColor;
-            }
         }
+
+        recipeSelectorLabel = CreateTopLabel(window, window.stateText, "配方选择".Translate(), 24f, 47f, 104f);
+        MyComboBox.InitBaseObject();
+        recipeSelector = MyComboBox.CreateComboBox(126f, 43f, window.GetComponent<RectTransform>())
+            .WithFontSize(14)
+            .WithSize(300f, 30f)
+            .WithItems("未选择配方")
+            .WithIndex(0)
+            .WithOnSelChanged(OnAdvancedRecipeSelected);
+        recipeSelector.gameObject.SetActive(false);
+    }
+
+    private static Text CreateTopLabel(UIFractionatorWindow window, Text reference, string text,
+        float left, float top, float width) {
+        GameObject go = Object.Instantiate(reference.gameObject, window.transform);
+        go.name = $"fe-label-{left:0}-{top:0}";
+        Text label = go.GetComponent<Text>();
+        label.text = text;
+        label.fontSize = 14;
+        label.alignment = TextAnchor.MiddleLeft;
+        label.horizontalOverflow = HorizontalWrapMode.Overflow;
+        label.supportRichText = true;
+        RectTransform rect = RectTransformUtils.NormalizeRectWithTopLeft(label, left, top, window.transform);
+        rect.sizeDelta = new Vector2(width, 30f);
+        go.SetActive(false);
+        return label;
     }
 
     private static void InitializeWindowResizeContext(UIFractionatorWindow window) {
@@ -539,27 +525,6 @@ public static class FractionatorWindow {
             fluidRightText.transform.localPosition = new Vector3(
                 _itemBoxLocalPos.x + 80f + _layoutOffsetX, fluidY, _itemBoxLocalPos.z);
         }
-        if (lockStateText != null) {
-            lockStateText.transform.localPosition = new Vector3(
-                _itemBoxLocalPos.x + 80f + _layoutOffsetX, fluidY - 38f, _itemBoxLocalPos.z);
-        }
-        if (lockHintText != null) {
-            lockHintText.transform.localPosition = new Vector3(
-                _itemBoxLocalPos.x + 80f + _layoutOffsetX, fluidY - 56f, _itemBoxLocalPos.z);
-        }
-    }
-
-    private static Text CreateLabel(UIFractionatorWindow window, Text reference, string text, Vector3 localPos) {
-        GameObject go = Object.Instantiate(reference.gameObject, window.transform);
-        go.name = "section-label-" + text;
-        go.transform.localPosition = localPos;
-        Text label = go.GetComponent<Text>();
-        label.text = text;
-        label.fontSize = reference.fontSize;
-        label.alignment = TextAnchor.MiddleLeft;
-        label.horizontalOverflow = HorizontalWrapMode.Overflow;
-        label.gameObject.SetActive(false);
-        return label;
     }
 
     private static ProductSlot CreateSlot(UIFractionatorWindow window, UIFractionatorWindow vanillaWindow,
@@ -610,21 +575,6 @@ public static class FractionatorWindow {
             RectTransform countRect = cloneCountText.GetComponent<RectTransform>();
             if (probRect != null && countRect != null)
                 probRect.anchoredPosition = countRect.anchoredPosition + new Vector2(0, -16f);
-        }
-
-        if (cloneIcon != null) {
-            GameObject lockGo = new("lock-icon");
-            lockGo.transform.SetParent(cloneIcon.transform, false);
-            slot.lockIcon = lockGo.AddComponent<Image>();
-            slot.lockIcon.raycastTarget = false;
-            ApplyLockIconStyle(slot.lockIcon);
-            RectTransform lockRect = slot.lockIcon.rectTransform;
-            lockRect.anchorMin = new Vector2(1f, 1f);
-            lockRect.anchorMax = new Vector2(1f, 1f);
-            lockRect.pivot = new Vector2(1f, 1f);
-            lockRect.anchoredPosition = new Vector2(8f, 6f);
-            lockRect.sizeDelta = new Vector2(14f, 14f);
-            lockGo.SetActive(false);
         }
 
         return slot;
@@ -883,18 +833,6 @@ public static class FractionatorWindow {
         return IsFluidSlot(fractionator, slot, itemId) ? fractionator.fluidOutputMax : fractionator.productOutputMax;
     }
 
-    private static bool BlockMainOutputLockManualInsert(UIFractionatorWindow window,
-        FractionatorComponent fractionator) {
-        if (window?.factory == null) {
-            return false;
-        }
-
-        int buildingId = window.factory.entityPool[fractionator.entityId].protoId;
-        ERecipe recipeType = FractionatorTowerCatalog.GetRecipeType(buildingId);
-        return TowerRuntimeModifierCache.IsMainOutputLockEnabled(recipeType)
-               && fractionator.GetNormalizedLockedOutput(window.factory) != 0;
-    }
-
     /// <summary>
     /// 处理模组分馏塔产物槽按钮点击。
     /// </summary>
@@ -915,6 +853,11 @@ public static class FractionatorWindow {
             return true;
         }
 
+        int buildingId = __instance.factory.entityPool[fractionator.entityId].protoId;
+        if (FractionatorTowerCatalog.IsAdvancedTower(buildingId)) {
+            return HandleAdvancedOutputSlotClick(__instance, itemId, slot);
+        }
+
         // 额外主产物/副产物复用了原版回调；如果不在这里完全接管，
         // 原版会把“非第一主产物”错误走到流体输出分支，导致错取和无限取。
         // 自定义槽位需要额外带上槽位身份，避免主路目标只靠 itemId 反查到错误缓存。
@@ -929,10 +872,6 @@ public static class FractionatorWindow {
         }
 
         if (player.inhandItemId > 0 && player.inhandItemCount > 0) {
-            // 主路锁定后的输出槽只允许取出/清空，不再作为手动塞回缓存入口。
-            if (BlockMainOutputLockManualInsert(__instance, fractionator)) {
-                return false;
-            }
             if (player.inhandItemId != itemId) {
                 return false;
             }
@@ -969,10 +908,10 @@ public static class FractionatorWindow {
         }
 
         int currentInc = isFluidSlot ? fractionator.fluidOutputInc : 0;
-        if (VFInput.control || VFInput.shift) {
-            int added = player.TryAddItemToPackage(itemId, currentCount, currentInc, throwTrash: false);
-            if (added > 0) UIItemup.Up(itemId, added);
-        } else {
+        int removedCount = currentCount;
+        int removedInc = currentInc;
+        bool quickMove = VFInput.control || VFInput.shift;
+        if (!quickMove) {
             player.SetHandItemId_Unsafe(itemId);
             player.SetHandItemCount_Unsafe(currentCount);
             player.SetHandItemInc_Unsafe(currentInc);
@@ -980,218 +919,221 @@ public static class FractionatorWindow {
         SetModSlotCount(ref fractionator, products, itemId, 0, slot);
         fractionator.GetExtraState(__instance.factory).InvalidateFullProductCache();
         if (isFluidSlot) {
-            fractionator.fluidOutputInc = 0;
+            fractionator.fluidOutputInc = Math.Max(0, fractionator.fluidOutputInc - removedInc);
+        }
+        if (quickMove) {
+            int addedToPackage = player.TryAddItemToPackage(
+                itemId, removedCount, removedInc, throwTrash: false);
+            if (addedToPackage > 0) {
+                UIItemup.Up(itemId, addedToPackage);
+            }
+        }
+        return false;
+    }
+
+    private static bool HandleAdvancedOutputSlotClick(UIFractionatorWindow window, int itemId, ProductSlot slot) {
+        if (slot == null || itemId <= 0 || window?.player == null || window.factory == null) {
+            return false;
+        }
+        if (FE.Compatibility.Nebula.NebulaMultiplayerModAPI.IsClient) {
+            UIRealtimeTip.Popup("高级塔客户端手动取出受限".Translate());
+            return false;
+        }
+
+        Player player = window.player;
+        if (player.inhandItemId > 0 || player.inhandItemCount > 0) {
+            return false;
+        }
+        AdvancedFractionatorState state = AdvancedFractionatorRuntime.GetState(window.factory, window.fractionatorId);
+        if (state == null) {
+            return false;
+        }
+        bool flowOutput = slot.kind != ProductSlotKind.Main;
+        int count;
+        lock (state) {
+            Dictionary<int, int> source = flowOutput ? state.FlowOutputs : state.Products;
+            count = source.TryGetValue(itemId, out int stored) ? stored : 0;
+        }
+        if (count <= 0) {
+            return false;
+        }
+
+        bool quickMove = VFInput.control || VFInput.shift;
+        int taken = AdvancedFractionatorRuntime.TakeOutput(
+            window.factory, window.fractionatorId, itemId, count, flowOutput, out int takenInc);
+        if (taken <= 0) {
+            return false;
+        }
+        if (quickMove) {
+            int addedToPackage = player.TryAddItemToPackage(itemId, taken, takenInc, throwTrash: false);
+            if (addedToPackage > 0) {
+                UIItemup.Up(itemId, addedToPackage);
+            }
+        } else {
+            player.SetHandItems(itemId, taken, takenInc);
         }
         return false;
     }
 
     #endregion
 
-    #region 主路/副产物交互
-
-    private static bool IsLockableOutput(BaseRecipe recipe, int itemId) {
-        if (recipe == null || itemId == 0 || !recipe.IsMainOutputLockCalibrated) {
-            return false;
-        }
-        return recipe.SupportsMainOutputLock(itemId);
-    }
-
-    private static void OnSlotRightClick(ProductSlot slot, int itemId) {
-        UIFractionatorWindow target = sourceWindow ?? modWindow;
-        if (slot == null || target == null || target.fractionatorId == 0 || target.factory == null) {
-            return;
-        }
-        FractionatorComponent fractionator = target.factorySystem.fractionatorPool[target.fractionatorId];
-        if (fractionator.id != target.fractionatorId || slot.kind == ProductSlotKind.Fluid) {
-            return;
-        }
-
-        int buildingId = target.factory.entityPool[fractionator.entityId].protoId;
-        BaseRecipe recipe = GetRecipeForBuilding(buildingId, fractionator.fluidId);
-        if (slot.kind == ProductSlotKind.Side) {
-            ToggleByproductDiscard(target, fractionator, recipe);
-            return;
-        }
-        ToggleLockedOutput(target, fractionator, recipe, itemId);
-    }
-
-    private static void ToggleLockedOutput(UIFractionatorWindow target, FractionatorComponent fractionator,
-        BaseRecipe recipe, int itemId) {
-        if (recipe == null || !TowerRuntimeModifierCache.IsMainOutputLockEnabled(recipe.RecipeType)
-            || !IsLockableOutput(recipe, itemId)) {
-            return;
-        }
-
-        int currentLockedItemId = fractionator.GetLockedOutput(target.factory);
-        if (currentLockedItemId == itemId) {
-            fractionator.SetLockedOutputAndSync(target.factory, 0, manual: true);
-            UIRealtimeTip.Popup("已清除主路目标".Translate());
-        } else {
-            fractionator.SetLockedOutputAndSync(target.factory, itemId, manual: true);
-            string itemName = LDB.items.Select(itemId)?.name ?? itemId.ToString();
-            UIRealtimeTip.Popup(string.Format("已设定主路目标：{0}".Translate(), itemName));
-        }
-
-        DoModWindowUpdate(target);
-    }
-
-    private static void ToggleByproductDiscard(UIFractionatorWindow target, FractionatorComponent fractionator,
-        BaseRecipe recipe) {
-        if (recipe == null || !TowerRuntimeModifierCache.IsByproductDiscardEnabled(recipe.RecipeType)
-            || recipe.OutputAppend.Count == 0 || !recipe.IsByproductDiscardCalibrated) {
-            return;
-        }
-
-        bool enabled = !fractionator.GetNormalizedByproductDiscard(target.factory);
-        fractionator.SetByproductDiscardAndSync(target.factory, enabled, manual: true);
-        UIRealtimeTip.Popup((enabled ? "已启用副产物弃置" : "已关闭副产物弃置").Translate());
-        DoModWindowUpdate(target);
-    }
-
-    private static void SetSlotLocked(ProductSlot slot, bool locked) {
-        if (slot?.lockIcon == null) {
-            return;
-        }
-        ApplyLockIconStyle(slot.lockIcon);
-        slot.lockIcon.gameObject.SetActive(locked);
-    }
-
-    private static Image GetLockIconTemplateImage() {
-        if (lockIconTemplateImage != null) {
-            return lockIconTemplateImage;
-        }
-
-        UIStationStorage[] storages = UIRoot.instance?.uiGame?.stationWindow?.storageUIs;
-        if (storages == null) {
-            return null;
-        }
-
-        foreach (UIStationStorage storage in storages) {
-            UIButton keepModeButton = storage?.keepModeButton;
-            if (keepModeButton == null) {
-                continue;
-            }
-
-            Image image = keepModeButton.GetComponent<Image>() ?? keepModeButton.GetComponentInChildren<Image>(true);
-            if (image != null && image.sprite != null) {
-                lockIconTemplateImage = image;
-                lockIconTemplateButton = keepModeButton;
-                return lockIconTemplateImage;
-            }
-        }
-
-        return null;
-    }
-
-    private static void ApplyLockIconStyle(Image target) {
-        Image template = GetLockIconTemplateImage();
-        if (target == null || template == null) {
-            return;
-        }
-
-        target.sprite = template.sprite;
-        target.type = template.type;
-        target.material = template.material;
-        target.preserveAspect = true;
-        target.color = GetLockIconHighlightedColor(template);
-    }
-
-    private static Color GetLockIconHighlightedColor(Image template) {
-        UIButton.Transition[] transitions = lockIconTemplateButton?.transitions;
-        if (transitions == null) {
-            return Color.white;
-        }
-
-        foreach (UIButton.Transition transition in transitions) {
-            if (transition?.target != template) {
-                continue;
-            }
-
-            Color color = transition.normalColor;
-            if (color.r == 0f && color.g == 0f && color.b == 0f && color.a == 0f) {
-                color = template.color;
-            }
-
-            return transition.highlightColorOverride.a > 0f
-                ? transition.highlightColorOverride
-                : color
-                  * new Color(transition.highlightColorMultiplier, transition.highlightColorMultiplier,
-                      transition.highlightColorMultiplier, transition.highlightAlphaMultiplier);
-        }
-
-        return Color.white;
-    }
-
-    private static void UpdateTargetStatusUI(BaseRecipe recipe, int lockedOutputId,
-        bool mainOutputLockUnlocked, bool byproductDiscardUnlocked, bool discardByproducts) {
-        if (lockStateText != null) {
-            lockStateText.gameObject.SetActive(true);
-            lockStateText.text = BuildMainOutputLockState(recipe, lockedOutputId, mainOutputLockUnlocked)
-                                 + "\r\n"
-                                 + BuildByproductDiscardState(recipe, byproductDiscardUnlocked, discardByproducts);
-        }
-        if (lockHintText != null) {
-            lockHintText.gameObject.SetActive(true);
-            lockHintText.text = BuildMainOutputLockHint(recipe, lockedOutputId, mainOutputLockUnlocked);
-            if (CanToggleByproductDiscard(recipe, byproductDiscardUnlocked)) {
-                lockHintText.text = $"{lockHintText.text}{(lockHintText.text.Length > 0 ? "\r\n" : string.Empty)}"
-                                    + "右键切换副产物弃置".Translate();
-            }
-        }
-    }
-
-    private static string BuildMainOutputLockState(BaseRecipe recipe, int lockedOutputId, bool unlocked) {
-        if (!unlocked) {
-            return $"{"主路锁定".Translate()}：{"未解锁".Translate()}";
-        }
-        if (recipe == null) {
-            return $"{"主路锁定".Translate()}：{"等待配方".Translate()}";
-        }
-        if (!recipe.IsMainOutputLockCalibrated) {
-            return $"{"主路锁定".Translate()}：{"未校准".Translate()} "
-                   + $"{recipe.TotalSuccessCount}/{recipe.MainOutputLockCalibrationThreshold}";
-        }
-        if (!recipe.OutputMain.Exists(output => recipe.SupportsMainOutputLock(output.OutputID))) {
-            return $"{"主路锁定".Translate()}：{"当前无可选主产物".Translate()}";
-        }
-        string targetName = lockedOutputId == 0
-            ? "未锁定".Translate()
-            : LDB.items.Select(lockedOutputId)?.name ?? lockedOutputId.ToString();
-        return $"{"主路目标".Translate()}：{targetName}";
-    }
-
-    private static string BuildMainOutputLockHint(BaseRecipe recipe, int lockedOutputId, bool unlocked) {
-        if (!unlocked || recipe == null || !recipe.IsMainOutputLockCalibrated
-            || !recipe.OutputMain.Exists(output => recipe.SupportsMainOutputLock(output.OutputID))) {
-            return string.Empty;
-        }
-        return lockedOutputId == 0 ? "右键设为主路目标".Translate() : "右键清除主路目标".Translate();
-    }
-
-    private static string BuildByproductDiscardState(BaseRecipe recipe, bool unlocked, bool enabled) {
-        if (!unlocked) {
-            return $"{"副产物弃置".Translate()}：{"未解锁".Translate()}";
-        }
-        if (recipe == null) {
-            return $"{"副产物弃置".Translate()}：{"等待配方".Translate()}";
-        }
-        if (!recipe.IsByproductDiscardCalibrated) {
-            return $"{"副产物弃置".Translate()}：{"未校准".Translate()} "
-                   + $"{recipe.TotalSuccessCount}/{recipe.ByproductDiscardCalibrationThreshold}";
-        }
-        if (recipe.OutputAppend.Count == 0) {
-            return $"{"副产物弃置".Translate()}：{"当前无副产物".Translate()}";
-        }
-        return $"{"副产物弃置".Translate()}：{(enabled ? "弃置" : "保留").Translate()}";
-    }
-
-    private static bool CanToggleByproductDiscard(BaseRecipe recipe, bool unlocked) {
-        return unlocked && recipe != null && recipe.IsByproductDiscardCalibrated && recipe.OutputAppend.Count > 0;
-    }
-
-    #endregion
-
     #region 渲染更新
+
+    private static void OnAdvancedRecipeSelected(int index) {
+        if (suppressRecipeSelection || sourceWindow?.factory == null || sourceWindow.fractionatorId <= 0
+            || index < 0 || index >= selectableRecipeIds.Count) {
+            return;
+        }
+        FractionatorComponent fractionator =
+            sourceWindow.factorySystem.fractionatorPool[sourceWindow.fractionatorId];
+        if (fractionator.id != sourceWindow.fractionatorId) {
+            return;
+        }
+        int recipeId = selectableRecipeIds[index];
+        AdvancedRecipeSelectionSync.SetSelectedRecipeAndSync(
+            sourceWindow.factory, fractionator.entityId, recipeId, manual: true);
+    }
+
+    private static void UpdateAdvancedControls(UIFractionatorWindow src, int buildingId,
+        AdvancedFractionatorState state) {
+        bool advanced = FractionatorTowerCatalog.IsAdvancedTower(buildingId);
+        recipeSelectorLabel?.gameObject.SetActive(advanced);
+        recipeSelector?.gameObject.SetActive(advanced);
+        if (!advanced || recipeSelector == null || state == null) {
+            return;
+        }
+
+        List<WorldviewRecipe> recipes = GetUnlockedRecipesForTower(buildingId);
+        string signature = $"{buildingId}:{string.Join(",", recipes.Select(recipe => recipe.PersistentId))}";
+        if (signature != selectableRecipeSignature) {
+            selectableRecipeSignature = signature;
+            selectableRecipeIds = [0, .. recipes.Select(recipe => recipe.PersistentId)];
+            string[] names = ["未选择配方", .. recipes.Select(recipe => recipe.DisplayName)];
+            suppressRecipeSelection = true;
+            recipeSelector.SetItems(names);
+            suppressRecipeSelection = false;
+        }
+
+        int selectedIndex = selectableRecipeIds.IndexOf(state.SelectedRecipeId);
+        if (selectedIndex < 0) {
+            selectedIndex = 0;
+        }
+        suppressRecipeSelection = true;
+        recipeSelector.SetIndex(selectedIndex);
+        suppressRecipeSelection = false;
+    }
+
+    private static void UpdateAdvancedPowerDisplay(UIFractionatorWindow src, AdvancedFractionatorState state) {
+        string text = string.Format("当前营养：{0} / {1}".Translate(),
+            state?.Nutrition.ToString("0.0") ?? "0.0", AdvancedFractionatorRuntime.MaximumNutrition.ToString("0"));
+        src.powerText.text = text;
+        src.powerText.color = state != null && state.Nutrition > 0f ? src.powerNormalColor : src.powerOffColor;
+        src.powerIcon.color = Color.clear;
+        if (_modPowerText != null) {
+            _modPowerText.text = text;
+            _modPowerText.color = src.powerText.color;
+        }
+        if (_modPowerIcon != null) {
+            _modPowerIcon.color = Color.clear;
+        }
+    }
+
+    private static void UpdateAdvancedStateText(AdvancedFractionatorState state, WorldviewRecipe recipe,
+        FractionatorComponent fractionator) {
+        if (recipe == null) {
+            modWindow.stateText.text = "等待配方".Translate();
+            modWindow.stateText.color = modWindow.idleColor;
+        } else if (state == null || state.Nutrition <= 0f) {
+            modWindow.stateText.text = "缺少营养".Translate();
+            modWindow.stateText.color = modWindow.workStoppedColor;
+        } else if (fractionator.isWorking) {
+            modWindow.stateText.text = "正常运转".Translate();
+            modWindow.stateText.color = modWindow.workNormalColor;
+        } else {
+            modWindow.stateText.text = "缺少原材料".Translate();
+            modWindow.stateText.color = modWindow.workStoppedColor;
+        }
+    }
+
+    private static void UpdateAdvancedUI(UIFractionatorWindow src, FractionatorComponent fractionator,
+        WorldviewRecipe recipe, AdvancedFractionatorState state) {
+        foreach (ProductSlot slot in mainSlots) {
+            slot?.go?.SetActive(false);
+        }
+        foreach (ProductSlot slot in sideSlots) {
+            slot?.go?.SetActive(false);
+        }
+        fluidSlot?.go.SetActive(false);
+        fluidRightText?.gameObject.SetActive(false);
+
+        int productCount = 0;
+        int flowCount = 0;
+        lock (state) {
+            if (recipe != null) {
+                foreach (WorldviewRecipeOutput output in recipe.Products) {
+                    if (productCount >= MaxMainSlots) {
+                        break;
+                    }
+                    int count = state.Products.TryGetValue(output.ItemId, out int stored) ? stored : 0;
+                    FillAdvancedSlot(mainSlots[productCount], output.ItemId, count,
+                        recipe.CycleSuccessProbability.FormatP(), ProductSlotKind.Main);
+                    productCount++;
+                }
+            }
+            foreach (KeyValuePair<int, int> output in state.FlowOutputs.OrderBy(pair => pair.Key)) {
+                if (flowCount >= MaxSideSlots || output.Value <= 0) {
+                    break;
+                }
+                FillAdvancedSlot(sideSlots[flowCount], output.Key, output.Value, string.Empty,
+                    ProductSlotKind.Side);
+                flowCount++;
+            }
+        }
+
+        if (_mainArrowText != null) {
+            _mainArrowText.gameObject.SetActive(productCount > 0);
+            _mainArrowText.text = "配方产物".Translate();
+            _mainArrowText.color = ProbColor;
+        }
+        if (_sideArrowText != null) {
+            _sideArrowText.gameObject.SetActive(flowCount > 0);
+            _sideArrowText.text = "流动输出".Translate();
+            _sideArrowText.color = ProbColor;
+        }
+        _fluidArrowText?.gameObject.SetActive(false);
+        SetArrowGroup(_mainArrows, productCount > 0,
+            fractionator.fractionSuccess ? modWindow.marqueeOnColor : modWindow.marqueeOffColor);
+        SetArrowGroup(_sideArrows, flowCount > 0, modWindow.marqueeOffColor);
+        SetArrowGroup(_fluidArrows, false, modWindow.marqueeOffColor);
+
+        int visibleCount = Math.Max(productCount, flowCount);
+        float width = Math.Max(AddWidth, Math.Max(0, visibleCount - 1) * SlotSpacing);
+        ApplyWindowSizeKeepingTopLeft(width, flowCount > 0 ? AddHeight : AddHeight - 60f);
+        RefreshLayoutX(flowCount > 0 ? FluidY : SideY);
+    }
+
+    private static void FillAdvancedSlot(ProductSlot slot, int itemId, int count, string probability,
+        ProductSlotKind kind) {
+        if (slot == null) {
+            return;
+        }
+        slot.go.SetActive(true);
+        slot.kind = kind;
+        if (slot.button != null) {
+            slot.button.data = itemId;
+        }
+        ItemProto item = LDB.items.Select(itemId);
+        if (slot.icon != null && item != null) {
+            slot.icon.sprite = item.iconSprite;
+        }
+        if (slot.countText != null) {
+            slot.countText.text = count.ToString();
+        }
+        if (slot.probText != null) {
+            slot.probText.text = probability;
+            slot.probText.color = ProbColor;
+        }
+    }
 
     private static void DoModWindowUpdate(UIFractionatorWindow src) {
         if (src.fractionatorId == 0 || src.factory == null) {
@@ -1205,25 +1147,38 @@ public static class FractionatorWindow {
             return;
         }
 
-        bool hasFluid = fractionator.fluidId > 0;
-
         int buildingID = src.factory.entityPool[fractionator.entityId].protoId;
         ItemProto building = LDB.items.Select(buildingID);
-        if (building == null) return;
+        if (building == null) {
+            return;
+        }
+        bool advanced = FractionatorTowerCatalog.IsAdvancedTower(buildingID);
+        AdvancedFractionatorState advancedState = advanced
+            ? AdvancedFractionatorRuntime.GetOrCreateState(src.factory, src.fractionatorId)
+            : null;
+        WorldviewRecipe advancedRecipe = advancedState == null
+            ? null
+            : RecipeManager.GetRecipe(advancedState.SelectedRecipeId);
+        bool hasFluid = advanced ? advancedRecipe != null : fractionator.fluidId > 0;
 
-        // 标题
         modWindow.titleText.text = building.name;
+        UpdateAdvancedControls(src, buildingID, advancedState);
 
-        // 电力
-        PowerConsumerComponent powerConsumer = src.powerSystem.consumerPool[fractionator.pcId];
-        int networkId = powerConsumer.networkId;
-        PowerNetwork powerNetwork = src.powerSystem.netPool[networkId];
-        float consumerRatio = powerNetwork != null && networkId > 0 ? (float)powerNetwork.consumerRatio : 0f;
-        UpdatePowerDisplay(src, powerConsumer, consumerRatio);
+        float consumerRatio;
+        if (advanced) {
+            consumerRatio = 1f;
+            UpdateAdvancedPowerDisplay(src, advancedState);
+        } else {
+            PowerConsumerComponent powerConsumer = src.powerSystem.consumerPool[fractionator.pcId];
+            int networkId = powerConsumer.networkId;
+            PowerNetwork powerNetwork = src.powerSystem.netPool[networkId];
+            consumerRatio = powerNetwork != null && networkId > 0 ? (float)powerNetwork.consumerRatio : 0f;
+            UpdatePowerDisplay(src, powerConsumer, consumerRatio);
+        }
 
-        // 输入侧
-        if (hasFluid) {
-            ItemProto needProto = LDB.items.Select(fractionator.fluidId);
+        int inputItemId = advancedRecipe?.Inputs.FirstOrDefault()?.ItemId ?? fractionator.fluidId;
+        if (hasFluid && inputItemId > 0) {
+            ItemProto needProto = LDB.items.Select(inputItemId);
             if (needProto != null) {
                 modWindow.needIcon.sprite = needProto.iconSprite;
                 ((Behaviour)modWindow.needIcon).enabled = true;
@@ -1237,33 +1192,41 @@ public static class FractionatorWindow {
                 ? fractionator.fluidInputInc / fractionator.fluidInputCount
                 : 0;
             int inputArrowLevel = Cargo.fastIncArrowTable[Math.Min(inputInc, 10)];
-            for (int i = 0; i < modWindow.needIncs.Length; i++)
-                ((Behaviour)modWindow.needIncs[i]).enabled = (inputArrowLevel == i + 1);
+            for (int i = 0; i < modWindow.needIncs.Length; i++) {
+                ((Behaviour)modWindow.needIncs[i]).enabled = inputArrowLevel == i + 1;
+            }
         } else {
             ((Behaviour)modWindow.needIcon).enabled = false;
-            for (int i = 0; i < modWindow.needIncs.Length; i++)
+            for (int i = 0; i < modWindow.needIncs.Length; i++) {
                 ((Behaviour)modWindow.needIncs[i]).enabled = false;
+            }
             ((Behaviour)modWindow.needCountText).enabled = false;
             ((Behaviour)modWindow.inputTitleText).enabled = false;
             ((Behaviour)modWindow.speedText).enabled = false;
         }
 
-        // 速率文字
-        double fluidInputCountPerCargo = 1.0;
-        if (fractionator.fluidInputCount == 0)
-            fractionator.fluidInputCargoCount = 0f;
-        else
-            fluidInputCountPerCargo = fractionator.fluidInputCargoCount > 1e-4
-                ? fractionator.fluidInputCount / (double)fractionator.fluidInputCargoCount
-                : 4.0;
-        double speed = consumerRatio
-                       * (fractionator.fluidInputCargoCount < MaxBeltSpeed
-                           ? fractionator.fluidInputCargoCount
-                           : MaxBeltSpeed)
-                       * fluidInputCountPerCargo
-                       * 60.0;
-        if (!fractionator.isWorking) speed = 0.0;
-        modWindow.speedText.text = string.Format("次分馏每分".Translate(), Math.Round(speed));
+        if (advanced) {
+            modWindow.speedText.text = fractionator.isWorking ? "生命反应中".Translate() : string.Empty;
+        } else {
+            double fluidInputCountPerCargo = 1.0;
+            if (fractionator.fluidInputCount == 0) {
+                fractionator.fluidInputCargoCount = 0f;
+            } else {
+                fluidInputCountPerCargo = fractionator.fluidInputCargoCount > 1e-4
+                    ? fractionator.fluidInputCount / (double)fractionator.fluidInputCargoCount
+                    : 4.0;
+            }
+            double speed = consumerRatio
+                           * (fractionator.fluidInputCargoCount < MaxBeltSpeed
+                               ? fractionator.fluidInputCargoCount
+                               : MaxBeltSpeed)
+                           * fluidInputCountPerCargo
+                           * 60.0;
+            if (!fractionator.isWorking) {
+                speed = 0.0;
+            }
+            modWindow.speedText.text = string.Format("次分馏每分".Translate(), Math.Round(speed));
+        }
 
         if (modWindow.productProbText != null) {
             ((Behaviour)modWindow.productProbText).enabled = false;
@@ -1273,12 +1236,22 @@ public static class FractionatorWindow {
             ((Behaviour)modWindow.oriProductProbText).enabled = false;
             modWindow.oriProductProbText.gameObject.SetActive(false);
         }
-
         if (modWindow.speedArrows != null) {
             for (int i = 0; i < modWindow.speedArrows.Length; i++) {
-                if (modWindow.speedArrows[i] == null) continue;
-                ((Behaviour)modWindow.speedArrows[i]).enabled = false;
+                if (modWindow.speedArrows[i] != null) {
+                    ((Behaviour)modWindow.speedArrows[i]).enabled = false;
+                }
             }
+        }
+
+        if (modWindow.sepLine0 != null) ((Behaviour)modWindow.sepLine0).enabled = hasFluid;
+        if (modWindow.sepLine1 != null) ((Behaviour)modWindow.sepLine1).enabled = hasFluid;
+        if (modWindow.remindText != null) ((Behaviour)modWindow.remindText).enabled = !hasFluid;
+
+        if (advanced) {
+            UpdateAdvancedStateText(advancedState, advancedRecipe, fractionator);
+            UpdateAdvancedUI(src, fractionator, advancedRecipe, advancedState);
+            return;
         }
 
         bool workingNow = hasFluid && fractionator.isWorking;
@@ -1286,34 +1259,21 @@ public static class FractionatorWindow {
         bool mainLit = workingNow && (outputFlags & OutputFlagMain) != 0;
         bool sideLit = workingNow && (outputFlags & OutputFlagSide) != 0;
         bool fluidLit = workingNow && ((outputFlags & OutputFlagFluid) != 0 || (!mainLit && !sideLit));
-
         SetArrowGroup(_mainArrows, hasFluid, mainLit ? modWindow.marqueeOnColor : modWindow.marqueeOffColor);
         SetArrowGroup(_sideArrows, hasFluid, sideLit ? modWindow.marqueeOnColor : modWindow.marqueeOffColor);
         SetArrowGroup(_fluidArrows, hasFluid, fluidLit ? modWindow.marqueeOnColor : modWindow.marqueeOffColor);
 
-        if (modWindow.sepLine0 != null) ((Behaviour)modWindow.sepLine0).enabled = hasFluid;
-        if (modWindow.sepLine1 != null) ((Behaviour)modWindow.sepLine1).enabled = hasFluid;
-        if (modWindow.remindText != null) ((Behaviour)modWindow.remindText).enabled = !hasFluid;
-
-        // 状态文字
         UpdateModStateText(src, fractionator, building, buildingID, consumerRatio);
-
-        // 配方和产物区
         BaseRecipe recipe = GetRecipeForBuilding(buildingID, fractionator.fluidId);
-        int lockedOutputId = fractionator.GetNormalizedLockedOutput(src.factory);
-
         int avgInc = fractionator.fluidInputCount > 0 ? fractionator.fluidInputInc / fractionator.fluidInputCount : 0;
         float pointsBonus = (float)MaxTableMilli(avgInc);
-
-        float recipeSuccessRatio = 0f, destroyRatio = 0f;
+        float recipeSuccessRatio = 0f;
+        float destroyRatio = 0f;
         if (recipe != null && RecipeAvailabilityStore.IsAvailable(recipe)) {
-            float successBoost = RecipeModifierCache.GetSuccessRateBonus(recipe);
-            recipeSuccessRatio = recipe.SuccessRatio * (1 + successBoost);
-            recipeSuccessRatio *= 1 + pointsBonus;
+            recipeSuccessRatio = recipe.SuccessRatio * (1 + pointsBonus);
             destroyRatio = recipe.DestroyRatio;
         }
-
-        UpdateUIElements(src, fractionator, recipe, recipeSuccessRatio, destroyRatio, hasFluid, lockedOutputId);
+        UpdateUIElements(src, fractionator, recipe, recipeSuccessRatio, destroyRatio, hasFluid);
     }
 
     private static void UpdateModStateText(UIFractionatorWindow src,
@@ -1322,15 +1282,26 @@ public static class FractionatorWindow {
         int fluidOutputMax = building.FluidOutputMax();
         int productOutputMax = building.ProductOutputMax();
         List<ProductOutputInfo> products = fractionator.products(src.factory);
+        bool interactionMode = FractionatorTowerCatalog.IsBasicTower(buildingID)
+                               && fractionator.belt0 > 0
+                               && !fractionator.isOutput0
+                               && fractionator.belt1 <= 0
+                               && fractionator.belt2 <= 0
+                               && products.All(product => product.count <= 0);
+        if (interactionMode) {
+            int rearItemId = src.factory.cargoTraffic.GetItemIdAtRear(fractionator.belt0);
+            int rearStack = GetRearCargoStack(src.factory.cargoTraffic, fractionator.belt0);
+            bool blocked = rearItemId > 0 && rearStack > 0
+                           && !DataCenterUploadRouter.CanUploadStack(rearItemId, rearStack);
+            modWindow.stateText.text = (blocked ? "栏位已满" : "交互模式").Translate();
+            modWindow.stateText.color = blocked
+                ? modWindow.workStoppedColor
+                : fractionator.isWorking ? modWindow.workNormalColor : modWindow.idleColor;
+            return;
+        }
 
         if (fractionator.isWorking) {
-            if (buildingID == IFE培养塔
-                && fractionator.belt0 > 0
-                && fractionator.belt1 <= 0
-                && fractionator.belt2 <= 0) {
-                modWindow.stateText.text = "交互模式".Translate();
-                modWindow.stateText.color = modWindow.workNormalColor;
-            } else if (fractionator.fluidInputCount > 0) {
+            if (fractionator.fluidInputCount > 0) {
                 if (consumerRatio == 1f) {
                     modWindow.stateText.text = "正常运转".Translate();
                     modWindow.stateText.color = modWindow.workNormalColor;
@@ -1395,44 +1366,24 @@ public static class FractionatorWindow {
 
     private static BaseRecipe GetRecipeForBuilding(int buildingID, int fluidId) {
         return buildingID switch {
-            IFE培养塔 => GetRecipe<CultivationRecipe>(ERecipe.Cultivation, fluidId),
-            IFE解析塔 => GetRecipe<AnalysisRecipe>(ERecipe.Analysis, fluidId),
-            IFE复制塔 => GetRecipe<ReplicationRecipe>(ERecipe.Replication, fluidId),
-            IFE转化塔 => GetRecipe<ConversionRecipe>(ERecipe.Conversion, fluidId),
+            IFE基础矿物塔 => GetRecipe<WorldviewRecipe>(ERecipe.BasicMineral, fluidId),
+            IFE基础解析塔 => GetRecipe<WorldviewRecipe>(ERecipe.BasicAnalysis, fluidId),
             _ => null
         };
     }
 
     private static void UpdateUIElements(UIFractionatorWindow src,
         FractionatorComponent fractionator, BaseRecipe recipe,
-        float recipeSuccessRatio, float destroyRatio, bool hasFluid, int lockedOutputId) {
+        float recipeSuccessRatio, float destroyRatio, bool hasFluid) {
 
         List<ProductOutputInfo> products = fractionator.products(src.factory);
         bool showCompleteRecipeInformation = GameMain.sandboxToolsEnabled
                                              || Miscellaneous.ShowFractionateRecipeDetails;
-        int buildingID = src.factory.entityPool[fractionator.entityId].protoId;
-        ERecipe recipeType = FractionatorTowerCatalog.GetRecipeType(buildingID);
-        bool mainOutputLockUnlocked = TowerRuntimeModifierCache.IsMainOutputLockEnabled(recipeType);
-        bool showLockControls = mainOutputLockUnlocked
-                                && recipe != null
-                                && recipe.IsMainOutputLockCalibrated;
-        bool byproductDiscardUnlocked = TowerRuntimeModifierCache.IsByproductDiscardEnabled(recipeType);
-        bool showDiscardControls = byproductDiscardUnlocked
-                                   && recipe != null
-                                   && recipe.OutputAppend.Count > 0
-                                   && recipe.IsByproductDiscardCalibrated;
-        bool discardByproducts = showDiscardControls && fractionator.GetNormalizedByproductDiscard(src.factory);
 
         foreach (var slot in mainSlots)
-            if (slot != null) {
-                slot.go.SetActive(false);
-                SetSlotLocked(slot, false);
-            }
+            slot?.go?.SetActive(false);
         foreach (var slot in sideSlots)
-            if (slot != null) {
-                slot.go.SetActive(false);
-                SetSlotLocked(slot, false);
-            }
+            slot?.go?.SetActive(false);
         if (fluidSlot != null) fluidSlot.go.SetActive(false);
 
         int fractionatorId = src.fractionatorId;
@@ -1444,8 +1395,6 @@ public static class FractionatorWindow {
             if (_sideArrowText != null) _sideArrowText.gameObject.SetActive(false);
             if (_fluidArrowText != null) _fluidArrowText.gameObject.SetActive(false);
             if (fluidRightText != null) fluidRightText.gameObject.SetActive(false);
-            UpdateTargetStatusUI(recipe, lockedOutputId, mainOutputLockUnlocked,
-                byproductDiscardUnlocked, discardByproducts);
             if (modWindow.oriProductBox != null) modWindow.oriProductBox.SetActive(false);
             if (modWindow.oriProductIcon != null) ((Behaviour)modWindow.oriProductIcon).enabled = false;
             if (modWindow.oriProductCountText != null) ((Behaviour)modWindow.oriProductCountText).enabled = false;
@@ -1459,34 +1408,25 @@ public static class FractionatorWindow {
 
         int mainCount = 0, sideCount = 0;
         float mainSuccessSum = 0f;
-        bool singleLockActive = showLockControls
-                                && lockedOutputId != 0
-                                && IsLockableOutput(recipe, lockedOutputId);
 
         if (recipe != null && RecipeAvailabilityStore.IsAvailable(recipe)) {
             foreach (var output in recipe.OutputMain) {
                 if (mainCount >= MaxMainSlots) break;
                 var pInfo = products.Find(p => p.itemId == output.OutputID && p.isMainOutput);
-                float ratio = singleLockActive
-                    ? (output.OutputID == lockedOutputId ? recipeSuccessRatio : 0f)
-                    : recipeSuccessRatio * output.SuccessRatio;
+                float ratio = recipeSuccessRatio * output.SuccessRatio;
                 FillSlot(mainSlots[mainCount], output, pInfo?.count ?? 0,
-                    ratio,
-                    singleLockActive || output.ShowSuccessRatio || showCompleteRecipeInformation,
+                    ratio, output.ShowSuccessRatio || showCompleteRecipeInformation,
                     ProductSlotKind.Main);
-                SetSlotLocked(mainSlots[mainCount], singleLockActive && output.OutputID == lockedOutputId);
                 mainSuccessSum += ratio;
                 mainCount++;
             }
             foreach (var output in recipe.OutputAppend) {
                 if (sideCount >= MaxSideSlots) break;
                 var pInfo = products.Find(p => p.itemId == output.OutputID && !p.isMainOutput);
-                float ratio = discardByproducts ? 0f : recipeSuccessRatio * output.SuccessRatio;
+                float ratio = recipeSuccessRatio * output.SuccessRatio;
                 FillSlot(sideSlots[sideCount], output, pInfo?.count ?? 0,
-                    ratio,
-                    discardByproducts || output.ShowSuccessRatio || showCompleteRecipeInformation,
+                    ratio, output.ShowSuccessRatio || showCompleteRecipeInformation,
                     ProductSlotKind.Side);
-                SetSlotLocked(sideSlots[sideCount], discardByproducts);
                 sideCount++;
             }
         }
@@ -1507,8 +1447,6 @@ public static class FractionatorWindow {
             _fluidArrowText.color = ProbColor;
         }
         if (modWindow.oriProductBox != null) modWindow.oriProductBox.SetActive(false);
-        UpdateTargetStatusUI(recipe, lockedOutputId, mainOutputLockUnlocked,
-            byproductDiscardUnlocked, discardByproducts);
 
         // 流体输出右侧信息
         if (fluidRightText != null) {

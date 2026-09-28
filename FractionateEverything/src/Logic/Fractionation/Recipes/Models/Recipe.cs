@@ -9,24 +9,29 @@ namespace FE.Logic.Fractionation.Recipes;
 /// </summary>
 public enum ERecipe {
     /// <summary>
-    /// 培养配方。
+    /// 高级交互配方。
     /// </summary>
-    Cultivation = 1,
+    AdvancedInteraction = 1,
 
     /// <summary>
-    /// 解析配方。
+    /// 基础解析配方。
     /// </summary>
-    Analysis = 2,
+    BasicAnalysis = 2,
 
     /// <summary>
-    /// 复制配方。
+    /// 基础矿物配方。
     /// </summary>
-    Replication = 3,
+    BasicMineral = 3,
 
     /// <summary>
-    /// 转化配方。
+    /// 高级转化配方。
     /// </summary>
-    Conversion = 4,
+    AdvancedConversion = 4,
+
+    /// <summary>
+    /// 高级矿物配方。
+    /// </summary>
+    AdvancedMineral = 5,
 }
 
 /// <summary>
@@ -38,25 +43,28 @@ public static class ERecipeExtension {
     /// </summary>
     public static void AddTranslations() {
         Register("未知", "Unknown");
-        Register("培养", "Cultivation");
-        Register("解析", "Analysis");
-        Register("复制", "Replication");
-        Register("转化", "Conversion");
+        Register("基础矿物", "Basic Mineral");
+        Register("基础解析", "Basic Analysis");
+        Register("高级矿物", "Advanced Mineral");
+        Register("高级交互", "Advanced Interaction");
+        Register("高级转化", "Advanced Conversion");
         Register("未知配方", "Unknown Recipe");
-        Register("培养配方", "Cultivation Recipe");
-        Register("解析配方", "Analysis Recipe");
-        Register("复制配方", "Replication Recipe");
-        Register("转化配方", "Conversion Recipe");
+        Register("基础矿物配方", "Basic Mineral Recipe");
+        Register("基础解析配方", "Basic Analysis Recipe");
+        Register("高级矿物配方", "Advanced Mineral Recipe");
+        Register("高级交互配方", "Advanced Interaction Recipe");
+        Register("高级转化配方", "Advanced Conversion Recipe");
     }
 
     /// <summary>
     /// 获取全部 FE 分馏配方类型。
     /// </summary>
     public static readonly ERecipe[] RecipeTypes = [
-        ERecipe.Cultivation,
-        ERecipe.Analysis,
-        ERecipe.Replication,
-        ERecipe.Conversion,
+        ERecipe.BasicMineral,
+        ERecipe.BasicAnalysis,
+        ERecipe.AdvancedMineral,
+        ERecipe.AdvancedInteraction,
+        ERecipe.AdvancedConversion,
     ];
 
     /// <summary>
@@ -69,10 +77,11 @@ public static class ERecipeExtension {
     /// </summary>
     public static string GetShortName(this ERecipe recipe) {
         return recipe switch {
-            ERecipe.Cultivation => "培养".Translate(),
-            ERecipe.Analysis => "解析".Translate(),
-            ERecipe.Replication => "复制".Translate(),
-            ERecipe.Conversion => "转化".Translate(),
+            ERecipe.BasicMineral => "基础矿物".Translate(),
+            ERecipe.BasicAnalysis => "基础解析".Translate(),
+            ERecipe.AdvancedMineral => "高级矿物".Translate(),
+            ERecipe.AdvancedInteraction => "高级交互".Translate(),
+            ERecipe.AdvancedConversion => "高级转化".Translate(),
             _ => "未知".Translate()
         };
     }
@@ -82,10 +91,11 @@ public static class ERecipeExtension {
     /// </summary>
     public static string GetName(this ERecipe recipe) {
         return recipe switch {
-            ERecipe.Cultivation => "培养配方".Translate(),
-            ERecipe.Analysis => "解析配方".Translate(),
-            ERecipe.Replication => "复制配方".Translate(),
-            ERecipe.Conversion => "转化配方".Translate(),
+            ERecipe.BasicMineral => "基础矿物配方".Translate(),
+            ERecipe.BasicAnalysis => "基础解析配方".Translate(),
+            ERecipe.AdvancedMineral => "高级矿物配方".Translate(),
+            ERecipe.AdvancedInteraction => "高级交互配方".Translate(),
+            ERecipe.AdvancedConversion => "高级转化配方".Translate(),
             _ => "未知配方".Translate()
         };
     }
@@ -95,10 +105,11 @@ public static class ERecipeExtension {
     /// </summary>
     public static int GetSpriteItemId(this ERecipe recipe) {
         return recipe switch {
-            ERecipe.Cultivation => IFE培养塔,
-            ERecipe.Analysis => IFE解析塔,
-            ERecipe.Replication => IFE复制塔,
-            ERecipe.Conversion => IFE转化塔,
+            ERecipe.BasicMineral => IFE基础矿物塔,
+            ERecipe.BasicAnalysis => IFE基础解析塔,
+            ERecipe.AdvancedMineral => IFE高级矿物塔,
+            ERecipe.AdvancedInteraction => IFE高级交互塔,
+            ERecipe.AdvancedConversion => IFE高级转化塔,
             _ => 0,
         };
     }

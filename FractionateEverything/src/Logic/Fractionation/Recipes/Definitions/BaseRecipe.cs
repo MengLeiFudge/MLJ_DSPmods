@@ -32,62 +32,11 @@ public abstract class BaseRecipe(
     public abstract ERecipe RecipeType { get; }
 
     /// <summary>
-    /// 保存当前工厂线程为塔实例选择的通用主产物目标。
-    /// </summary>
-    [ThreadStatic]
-    public static int CurrentMainOutputTargetId;
-
-    /// <summary>
-    /// 判断该配方是否存在可选择的多个主产物。
-    /// </summary>
-    public virtual bool SupportsMainOutputLock(int itemId) =>
-        OutputMain.Count > 1 && OutputMain.Exists(output => output.OutputID == itemId);
-
-    /// <summary>
-    /// 判断该配方是否需要正式解锁文明协议后才能运行。
-    /// 默认仅复制与转化进入付费协议目录。
-    /// </summary>
-    public virtual bool RequiresProtocolRecovery => RecipeType is ERecipe.Replication or ERecipe.Conversion;
-
-    /// <summary>
-    /// 判断当前存档是否已经满足该协议进入检索池的业务条件。
-    /// </summary>
-    public virtual bool IsProtocolEligible => true;
-
-    /// <summary>
-    /// 获取该配方累计成功结算次数，用于实例控制能力的配方校准。
+    /// 获取该配方累计成功结算次数。
     /// </summary>
     public long TotalSuccessCount => Interlocked.Read(ref totalSuccessCount);
 
     private long totalSuccessCount;
-
-    /// <summary>
-    /// 获取主路锁定校准基线；培养配方采用低频设备下限，其余按矩阵阶段翻倍。
-    /// </summary>
-    public int MainOutputLockCalibrationThreshold {
-        get {
-            if (RecipeType == ERecipe.Cultivation) {
-                return 20;
-            }
-            int stage = FE.Logic.Items.ItemManager.GetMatrixStageIndex(MatrixID);
-            return 200 << Math.Max(0, stage);
-        }
-    }
-
-    /// <summary>
-    /// 获取副产物弃置校准基线。
-    /// </summary>
-    public int ByproductDiscardCalibrationThreshold => MainOutputLockCalibrationThreshold * 5;
-
-    /// <summary>
-    /// 判断当前配方是否已经完成主路锁定校准。
-    /// </summary>
-    public bool IsMainOutputLockCalibrated => TotalSuccessCount >= MainOutputLockCalibrationThreshold;
-
-    /// <summary>
-    /// 判断当前配方是否已经完成副产物弃置校准。
-    /// </summary>
-    public bool IsByproductDiscardCalibrated => TotalSuccessCount >= ByproductDiscardCalibrationThreshold;
 
     /// <summary>
     /// 累计该配方的成功结算次数。
@@ -271,24 +220,19 @@ public abstract class BaseRecipe(
         int passThroughCount = aliveCount - rolledSuccessCount;
         int producedSuccessCount = 0;
 
-        OutputInfo directedMainOutput = GetDirectedMainOutput();
-        if (directedMainOutput != null) {
-            producedSuccessCount = AddRolledOutput(ref seed, outputs, directedMainOutput, true, rolledSuccessCount);
-        } else {
-            int remainingMainCount = rolledSuccessCount;
-            float remainingMainRatio = 1.0f;
-            for (int i = 0; i < OutputMain.Count && remainingMainCount > 0; i++) {
-                OutputInfo outputInfo = OutputMain[i];
-                int outputHits = i == OutputMain.Count - 1
-                    ? remainingMainCount
-                    : RollBinomialApprox(ref seed, remainingMainCount, outputInfo.SuccessRatio / remainingMainRatio);
-                remainingMainCount -= outputHits;
-                remainingMainRatio -= outputInfo.SuccessRatio;
-                if (remainingMainRatio <= 0f) {
-                    remainingMainRatio = 1.0f;
-                }
-                producedSuccessCount += AddRolledOutput(ref seed, outputs, outputInfo, true, outputHits);
+        int remainingMainCount = rolledSuccessCount;
+        float remainingMainRatio = 1.0f;
+        for (int i = 0; i < OutputMain.Count && remainingMainCount > 0; i++) {
+            OutputInfo outputInfo = OutputMain[i];
+            int outputHits = i == OutputMain.Count - 1
+                ? remainingMainCount
+                : RollBinomialApprox(ref seed, remainingMainCount, outputInfo.SuccessRatio / remainingMainRatio);
+            remainingMainCount -= outputHits;
+            remainingMainRatio -= outputInfo.SuccessRatio;
+            if (remainingMainRatio <= 0f) {
+                remainingMainRatio = 1.0f;
             }
+            producedSuccessCount += AddRolledOutput(ref seed, outputs, outputInfo, true, outputHits);
         }
 
         foreach (var outputInfo in OutputAppend) {
@@ -342,16 +286,7 @@ public abstract class BaseRecipe(
         return baseCount > 0 ? outputHits : totalCount;
     }
 
-    private OutputInfo GetDirectedMainOutput() => CurrentMainOutputTargetId == 0
-        ? null
-        : OutputMain.Find(output => output.OutputID == CurrentMainOutputTargetId);
-
     private OutputInfo SelectMainOutput(ref uint seed) {
-        OutputInfo directedOutput = GetDirectedMainOutput();
-        if (directedOutput != null) {
-            return directedOutput;
-        }
-
         double ratio = GetRandDouble(ref seed);
         float cumulativeRatio = 0f;
         foreach (OutputInfo outputInfo in OutputMain) {

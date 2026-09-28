@@ -1,12 +1,13 @@
 ﻿using System;
 using System.IO;
+using FE.Logic.Civilization;
 using FE.Logic.Fractionation.Fractionators;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Enhancements.Stacking;
 
 /// <summary>
-/// 统一堆叠系统。T1607 前维持 1，T1607 后由 FE 面板成长线统一控制所有相关系统。
+/// 统一堆叠系统。普通档在 T1607 前维持 1；已玩过档在首级 FE 成长科技前维持 1。
 /// </summary>
 public static class StackingManager {
     public const int LockedMaxStack = 1;
@@ -24,7 +25,10 @@ public static class StackingManager {
     private static int lastSyncedStack = -1;
     private static bool lastSyncedUnlocked;
 
-    public static bool IsUnlocked => GameMain.history != null && GameMain.history.TechUnlocked(T集装物流系统);
+    public static bool IsUnlocked => GameMain.history != null
+        && (GrowthTechnologyManager.UsesExperiencedStackProgression
+            ? GameMain.history.TechUnlocked(TFE分馏堆叠成长 + 1)
+            : GameMain.history.TechUnlocked(T集装物流系统));
 
     public static int ConfiguredMaxStack {
         get => configuredMaxStack;

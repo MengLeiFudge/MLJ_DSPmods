@@ -10,7 +10,7 @@ using static FE.Utils.Utils;
 namespace FE.Compatibility.LegacySave;
 
 /// <summary>
-/// 仅迁移 FE 2.2.3 仍有现役对应物的 Item/Model/Recipe 物理引用，并清理无对应旧 ID。
+/// 仅迁移 FE 2.2.10 仍有现役对应物的 Item/Model/Recipe 物理引用，并清理无对应旧 ID。
 /// 不迁移 Tech、不读写 FE 自有 DataCenter/Recipe 状态。
 /// 退休实体/预建筑必须延迟到 PlanetFactory.Import 完整消费外层 payload 后再 Remove*WithComponents。
 /// </summary>
@@ -32,22 +32,22 @@ public static class LegacyProtoMigration {
 
     [ThreadStatic]
     private static List<int> pendingRetiredPrebuildIds;
-    // v2.2.3 现役映射：仅保留有稳定 3.x 对应物的物理引用。
+    // v2.2.10 现役映射：仅保留有稳定 3.x 对应物的物理引用。
     private static readonly Dictionary<int, int> ItemIds = new() {
         [8016] = IFE通用原胚, // 8115
-        [8021] = IFE培养塔, // 8121
-        [8022] = IFE复制塔, // 8123
-        [8026] = IFE解析塔, // 8122
-        [8027] = IFE转化塔, // 8124
+        [8021] = IFE高级交互塔, // 8121
+        [8022] = IFE基础矿物塔, // 8123
+        [8026] = IFE基础解析塔, // 8122
+        [8027] = IFE高级转化塔, // 8124
         [8028] = IFE行星内物流交互站, // 8131
         [8029] = IFE星际物流交互站, // 8132
     };
 
     private static readonly Dictionary<int, int> ModelIds = new() {
-        [601] = MFE培养塔, // 651
-        [602] = MFE复制塔, // 653
-        [606] = MFE解析塔, // 652
-        [607] = MFE转化塔, // 654
+        [601] = MFE高级交互塔, // 651
+        [602] = MFE基础矿物塔, // 653
+        [606] = MFE基础解析塔, // 652
+        [607] = MFE高级转化塔, // 654
         [608] = MFE行星内物流交互站, // 661
         [609] = MFE星际物流交互站, // 662
     };
@@ -57,7 +57,7 @@ public static class LegacyProtoMigration {
         [929] = RFE星际物流交互站, // 1062
     };
 
-    // 仅枚举 v2.2.3 无现役对应物的旧 ID，不用 8000..8999 宽泛范围。
+    // 仅枚举 v2.2.10 无现役对应物的旧 ID，不用 8000..8999 宽泛范围。
     private static readonly HashSet<int> RetiredItemIds = [
         8001, 8002, 8003, 8004, 8005, 8006, 8007,
         8011, 8012, 8013, 8014, 8015,

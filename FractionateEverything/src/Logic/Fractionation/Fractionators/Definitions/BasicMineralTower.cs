@@ -9,15 +9,16 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Fractionation.Fractionators;
 
 /// <summary>
-/// 培养塔
+/// 基础矿物塔（沿用 2.x 复制塔的物理原型 ID）。
 /// </summary>
-public static class CultivationTower {
+public static class BasicMineralTower {
     private static ItemProto item;
+    private static RecipeProto recipe;
     private static ModelProto model;
     /// <summary>
     /// 保存该分馏塔原型使用的主题颜色。
     /// </summary>
-    public static Color color = new(0.8f, 0.3f, 0.6f);
+    public static Color color = new(0.22f, 0.9f, 0.38f);
 
     /// <summary>
     /// 读取该建筑当前允许的分馏处理堆叠上限。
@@ -49,22 +50,27 @@ public static class CultivationTower {
     /// 注册该分馏域对象需要的本地化文本。
     /// </summary>
     public static void AddTranslations() {
-        Register("培养塔", "Cultivation Tower");
-        Register("I培养塔",
-            "Cultivates tower protos into different fractionators. When a direct input enters the front port while neither side is connected, the input item is uploaded to the Fractionation Data Centre.",
-            "将分馏塔原胚培养为不同的分馏塔。当前方输入物品且两侧均未连接时，输入物品会上传至分馏数据中心。");
+        Register("复制塔", "Basic Mineral Tower", "基础矿物塔");
+        Register("I复制塔",
+            "Replicates one common natural resource at a time. Successful cycles produce two units from one input.",
+            "自动识别单一普通自然资源；成功时由 1 件输入产出 2 件同类资源。");
     }
 
     /// <summary>
     /// 创建并注册该分馏塔的物品、配方和模型原型。
     /// </summary>
     public static void Create() {
-        item = ProtoRegistry.RegisterItem(IFE培养塔, "培养塔", "I培养塔",
-            "Assets/fe/interaction-tower", tab分馏 * 1000 + 301, 30, EItemType.Production,
+        item = ProtoRegistry.RegisterItem(IFE基础矿物塔, "复制塔", "I复制塔",
+            "Assets/fe/mineral-copy-tower", tab分馏 * 1000 + 302, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
+        recipe = ProtoRegistry.RegisterRecipe(RFE基础矿物塔,
+            ERecipeType.Assemble, 240, [I分馏塔, I铁块, I电路板], [1, 10, 5], [IFE基础矿物塔], [1],
+            "I复制塔", TFE分馏数据中心, item.GridIndex, item.Name, item.IconPath);
+        recipe.IconPath = "";
+        recipe.NonProductive = true;
         item.UnlockKey = -1;
-        item.IconTag = "pyt";
-        model = ProtoRegistry.RegisterModel(MFE培养塔, item,
+        item.IconTag = "fzt";
+        model = ProtoRegistry.RegisterModel(MFE基础矿物塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(OrbitalRing.Enable ? 6 : 5, item.GridIndex % 10, true);
     }

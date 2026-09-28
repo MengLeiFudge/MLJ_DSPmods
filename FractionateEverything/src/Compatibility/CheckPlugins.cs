@@ -75,13 +75,13 @@ public class CheckPlugins : BaseUnityPlugin {
 
         Register("FE标题", "Fractionate Everything Mod Tips", "万物分馏提示");
         Register("FE内容",
-            "Thank you for using Fractionate Everything! This mod adds 4 fractionators (Cultivation, Analysis, Replication, Conversion), 2 interaction stations, and nearly 1,000 fractionation recipes.\n"
-            + $"After recovering the old-civilization starter kit, press {"Shift + F".WithColor(Orange)} (can be changed on the settings page) to call out the panel.\n"
+            "Thank you for using Fractionate Everything! FE 3.0 adds two craftable Basic Towers, three embryo-cultivated Advanced Living Towers, old-civilization research and exploration, a shared subspace inventory, and two Logistics Interaction Stations.\n"
+            + $"After recovering the first relic, press {"Shift + F".WithColor(Orange)} (configurable on the settings page) to open the panel.\n"
             + "This mod has been compatible with some large mods, such as Genesis Book, They Come From Void, and More Mega Structure.\n"
             + $"If you have any issues or ideas about the mod, please feedback to {"Github Issue".WithColor(Blue)}.\n"
             + "Have fun with fractionation!".WithColor(Orange),
-            "感谢你使用万物分馏！该Mod添加了培养、解析、复制、转化四种分馏塔，2个物流交互站，以及近千个分馏配方。\n"
-            + $"回收旧文明启动套件后，按下 {"Shift + F".WithColor(Orange)} （可在设置页面修改）即可呼出面板。\n"
+            "感谢你使用万物分馏！FE 3.0 包含两座可制造的基础塔、三座由原胚培育的高级生命塔，以及旧文明研究、遗物探索、共享亚空间和两种物流交互站。\n"
+            + $"回收首个遗物后，按下 {"Shift + F".WithColor(Orange)} （可在设置页面修改）即可呼出面板。\n"
             + $"该Mod已对部分大型Mod进行了兼容，例如创世之书（Genesis Book）、深空来敌（They Come From Void）、更多巨构（More Mega Structure）。\n"
             + $"如果你在游玩时遇到了任何问题，或者有宝贵的意见或建议，欢迎加入{"万物分馏MOD交流群".WithColor(Blue)}反馈。\n"
             + "尽情享受分馏的乐趣吧！".WithColor(Orange));

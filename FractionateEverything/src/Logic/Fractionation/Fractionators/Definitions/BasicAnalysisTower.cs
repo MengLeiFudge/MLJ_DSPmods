@@ -9,15 +9,16 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Fractionation.Fractionators;
 
 /// <summary>
-/// 转化塔
+/// 基础解析塔（沿用 2.x 解析塔的物理原型 ID）。
 /// </summary>
-public static class ConversionTower {
+public static class BasicAnalysisTower {
     private static ItemProto item;
+    private static RecipeProto recipe;
     private static ModelProto model;
     /// <summary>
     /// 保存该分馏塔原型使用的主题颜色。
     /// </summary>
-    public static Color color = new(0.58f, 0.38f, 0.95f);
+    public static Color color = new(0.18f, 0.46f, 1.0f);
 
     /// <summary>
     /// 读取该建筑当前允许的分馏处理堆叠上限。
@@ -49,22 +50,27 @@ public static class ConversionTower {
     /// 注册该分馏域对象需要的本地化文本。
     /// </summary>
     public static void AddTranslations() {
-        Register("转化塔", "Conversion Tower");
-        Register("I转化塔",
-            "Convert items into other related items after their civilization protocols have been fully recovered.",
-            "将物品转化为与其相关的其他物品。对应文明协议完整恢复后即可使用。");
+        Register("解析塔", "Basic Analysis Tower", "基础解析塔");
+        Register("I解析塔",
+            "Consumes one eligible item at a time to discover recipes and living-industry capabilities in its research direction.",
+            "消耗单一已取得解析资格的物品，沿该研究方向发现配方与生命工业能力。");
     }
 
     /// <summary>
     /// 创建并注册该分馏塔的物品、配方和模型原型。
     /// </summary>
     public static void Create() {
-        item = ProtoRegistry.RegisterItem(IFE转化塔, "转化塔", "I转化塔",
-            "Assets/fe/conversion-tower", tab分馏 * 1000 + 304, 30, EItemType.Production,
+        item = ProtoRegistry.RegisterItem(IFE基础解析塔, "解析塔", "I解析塔",
+            "Assets/fe/deconstruction-tower", tab分馏 * 1000 + 305, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
+        recipe = ProtoRegistry.RegisterRecipe(RFE基础解析塔,
+            ERecipeType.Assemble, 240, [I分馏塔, I棱镜, I电路板], [1, 10, 5], [IFE基础解析塔], [1],
+            "I解析塔", TFE分馏数据中心, item.GridIndex, item.Name, item.IconPath);
+        recipe.IconPath = "";
+        recipe.NonProductive = true;
         item.UnlockKey = -1;
-        item.IconTag = "zht";
-        model = ProtoRegistry.RegisterModel(MFE转化塔, item,
+        item.IconTag = "jlt";
+        model = ProtoRegistry.RegisterModel(MFE基础解析塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(OrbitalRing.Enable ? 6 : 5, item.GridIndex % 10, true);
     }

@@ -1,94 +1,94 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using BepInEx.Configuration;
-using CommonAPI.Systems;
-using FE.Logic.Civilization.Protocols;
-using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Civilization;
+using FE.Logic.Enhancements.Stacking;
 using FE.Logic.Fractionation.Fractionators;
+using FE.Logic.Fractionation.Recipes;
 using FE.UI.Controls;
 using FE.UI.Foundation.Window;
+using FE.UI.Layout;
 using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Fractionation.Recipes.ERecipeExtension;
-using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.UI.Layout.GridDsl;
 using static FE.Utils.Utils;
 
 namespace FE.UI.MainPanel.CoreOperate;
 
 /// <summary>
-/// 查看分馏配方的协议状态、产物结构和当前塔型运行参数。
+/// 查看 FE 3.0 当前可知的稳定配方、完整输入输出和运行边界。
 /// </summary>
 public static class FracRecipeOperate {
     private static RectTransform tab;
     private static PageLayout.HeaderRefs header;
-    private static ItemProto selectedItem = LDB.items.Select(I铁矿);
-    private static MyImageButton selectedItemButton;
-    private static Text selectedItemNameText;
     private static MyComboBox recipeTypeCombo;
+    private static MyComboBox recipeCombo;
     private static Text recipeText;
-    private static Text protocolText;
+    private static Text runtimeText;
     private static ConfigEntry<int> recipeTypeEntry;
+    private static List<WorldviewRecipe> visibleRecipes = [];
+    private static string visibleRecipeSignature = string.Empty;
+    private static int selectedRecipeId;
+    private static bool suppressSelection;
 
     private static ERecipe SelectedRecipeType => RecipeTypes[recipeTypeEntry.Value];
 
-    private static BaseRecipe SelectedRecipe => selectedItem == null
-        ? null
-        : GetRecipe<BaseRecipe>(SelectedRecipeType, selectedItem.ID);
-
+    /// <summary>
+    /// 注册稳定配方目录页面文本。
+    /// </summary>
     public static void AddTranslations() {
         Register("分馏配方", "Fractionation Recipes");
-        Register("分馏配方摘要", "View protocol status, recipe outputs, and current runtime parameters.",
-            "查看协议状态、配方产物结构与当前运行参数。");
-        Register("当前物品", "Current Item");
+        Register("分馏配方摘要",
+            "Inspect discovered stable recipes, all inputs and outputs, and their tower runtime boundaries.",
+            "查看已发现的稳定配方、全部输入输出与对应塔型运行边界。");
         Register("配方类型", "Recipe Type");
-        Register("分馏配方提示按钮说明1",
-            "Select any item that has at least one fractionation recipe. The recipe type automatically switches to a valid tower.",
-            "选择至少拥有一种分馏配方的物品；当前塔型不适用时会自动切换到有效塔型。");
-        Register("配方产物结构", "Recipe Outputs");
-        Register("协议与运行状态", "Protocol and Runtime Status");
-        Register("协议未发现", "Protocol not discovered");
-        Register("协议解析中", "Protocol analysis in progress");
-        Register("协议已恢复", "Protocol recovered");
-        Register("可购买", "Purchase ready");
-        Register("不由文明协议控制", "Not controlled by civilization protocols");
-        Register("尚未进入检索池", "Not yet eligible for retrieval");
-        Register("已经进入检索池", "Eligible for retrieval");
-        Register("当前不可运行", "Unavailable");
-        Register("当前可运行", "Available");
-        Register("协议未完整恢复，产物结构将在正式解锁后显示。",
-            "The output structure becomes visible after the protocol is formally unlocked.");
-        Register("无", "None");
-        Register("输入", "Input");
-        Register("基础成功率", "Base Success Rate");
-        Register("损毁率", "Destruction Rate");
-        Register("状态", "Status");
-        Register("协议状态", "Protocol Status");
-        Register("协议完整度", "Protocol Completeness");
-        Register("检索资格", "Retrieval Eligibility");
-        Register("运行塔型", "Runtime Tower");
-        Register("处理堆叠上限", "Processing Stack Limit");
-        Register("增产点倍率", "Proliferator Point Multiplier");
-        Register("全局成功率增幅", "Global Success Rate Bonus");
-        Register("流动输出堆叠", "Fluid Output Stacking");
-        Register("产物输出堆叠", "Product Output Stacking");
-        Register("已启用", "Enabled");
-        Register("未解锁", "Locked");
+        Register("当前配方", "Current Recipe");
+        Register("配方结构", "Recipe Structure");
+        Register("运行边界", "Runtime Boundaries");
+        Register("尚无可见配方", "No recipes in this category have been discovered yet.");
+        Register("稳定配方ID", "Stable Recipe ID");
+        Register("运行塔型", "Tower");
+        Register("成功率", "Success Rate");
+        Register("配方输入", "Inputs");
+        Register("配方输出", "Outputs");
+        Register("研究解析", "Research Analysis");
+        Register("每次成功消耗概率", "consumption chance per success");
+        Register("按回收率结算", "scaled by recovery ratio");
+        Register("输入缓存", "Input Buffer");
+        Register("产物缓存", "Product Buffer");
+        Register("流动输出缓存", "Flow Buffer");
+        Register("全局堆叠", "Global Stack");
+        Register("电网供能", "Power Grid");
+        Register("矩阵营养", "Matrix Nutrition");
+        Register("需要", "Required");
+        Register("不需要", "Not Required");
+        Register("配方目录基础塔说明",
+            "Basic towers use the power grid, global stacking, continuous processing, and fixed 20-item output buffers.",
+            "基础塔使用电网与全局堆叠，持续处理物品，并采用固定 20 件输出缓存。");
+        Register("配方目录高级塔说明",
+            "Advanced towers use matrix nutrition and durability. Every per-item input, product, and flow buffer is limited to 20.",
+            "高级塔使用矩阵营养与耐久；每种输入、产物和流动输出缓存均限制为 20 件。");
     }
 
+    /// <summary>
+    /// 读取配方类别选择。
+    /// </summary>
     public static void LoadConfig(ConfigFile configFile) {
-        recipeTypeEntry = configFile.Bind("Recipe Operate", "Recipe Type", 0, "想要查看的配方类型。");
-        if (recipeTypeEntry.Value < 0 || recipeTypeEntry.Value >= RecipeTypes.Length) {
-            recipeTypeEntry.Value = 0;
-        }
+        recipeTypeEntry = configFile.Bind("Recipe Operate", "Recipe Type", 0, "配方目录当前分类。");
+        recipeTypeEntry.Value = Mathf.Clamp(recipeTypeEntry.Value, 0, RecipeTypes.Length - 1);
     }
 
+    /// <summary>
+    /// 创建类别、稳定配方选择与详情区域。
+    /// </summary>
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         tab = trans;
-        selectedItem ??= LDB.items.Select(I铁矿);
-        EnsureValidRecipeType();
+        RefreshVisibleRecipes(force: true);
         BuildLayout(wnd, trans,
             Grid(
                 rows: [Px(PageLayout.HeaderHeight), Px(64f), 1],
@@ -97,205 +97,192 @@ public static class FracRecipeOperate {
                     Header("分馏配方", "分馏配方摘要", pos: (0, 0), objectName: "frac-recipe-header",
                         onBuilt: refs => header = refs),
                     ContentCard(pos: (1, 0), objectName: "frac-recipe-selector", strong: true,
-                        cols: [Px(90f), Px(44f), Px(28f), Fr(1), Px(90f), Px(210f)],
-                        columnGap: 8f,
-                        children: [
-                            TextNode("当前物品", 15, pos: (0, 0), objectName: "frac-recipe-current-item-label"),
-                            ImageButtonNode(selectedItem, 40f,
-                                onBuilt: button => selectedItemButton = button.WithClickEvent(OpenItemPicker, null),
-                                pos: (0, 1), objectName: "frac-recipe-current-item"),
-                            TipsButtonNode("提示", "分馏配方提示按钮说明1",
-                                pos: (0, 2), objectName: "frac-recipe-tip"),
-                            TextNode("", 13, onBuilt: text => selectedItemNameText = text,
-                                pos: (0, 3), objectName: "frac-recipe-current-item-name"),
-                            TextNode("配方类型", 15, pos: (0, 4), objectName: "frac-recipe-type-label"),
+                        cols: [Px(90f), Px(210f), Px(90f), 1], columnGap: 8f, children: [
+                            TextNode("配方类型", 15, pos: (0, 0), objectName: "frac-recipe-type-label"),
                             ComboBoxNode(onBuilt: combo => {
                                     recipeTypeCombo = combo.WithItems(RecipeTypeShortNames)
                                         .WithSize(200f, 0f)
                                         .WithConfigEntry(recipeTypeEntry)
-                                        .WithOnSelChanged(_ => EnsureValidRecipeType());
-                                },
-                                pos: (0, 5), objectName: "frac-recipe-type-combo"),
+                                        .WithOnSelChanged(_ => OnRecipeTypeChanged());
+                                }, pos: (0, 1), objectName: "frac-recipe-type-combo"),
+                            TextNode("当前配方", 15, pos: (0, 2), objectName: "frac-recipe-label"),
+                            ComboBoxNode(onBuilt: combo => {
+                                    recipeCombo = combo.WithSize(520f, 0f)
+                                        .WithOnSelChanged(OnRecipeSelected);
+                                    RefreshRecipeCombo();
+                                }, pos: (0, 3), objectName: "frac-recipe-combo"),
                         ]),
                     Grid(pos: (2, 0), cols: [1, 1], columnGap: PageLayout.Gap, children: [
-                        ContentCard(pos: (0, 0), objectName: "frac-recipe-output-card", strong: true,
+                        ContentCard(pos: (0, 0), objectName: "frac-recipe-structure-card", strong: true,
                             rows: [Px(28f), 1], rowGap: PageLayout.InnerGap, children: [
-                                CardTitleNode("配方产物结构", pos: (0, 0), objectName: "frac-recipe-output-title"),
+                                CardTitleNode("配方结构", pos: (0, 0), objectName: "frac-recipe-structure-title"),
                                 TextNode("", 13, White, wrap: true, anchor: TextAnchor.UpperLeft,
                                     onBuilt: text => {
                                         recipeText = text;
                                         text.supportRichText = true;
-                                    }, pos: (1, 0), objectName: "frac-recipe-output-text"),
+                                    }, pos: (1, 0), objectName: "frac-recipe-structure-text"),
                             ]),
-                        ContentCard(pos: (0, 1), objectName: "frac-recipe-protocol-card",
+                        ContentCard(pos: (0, 1), objectName: "frac-recipe-runtime-card",
                             rows: [Px(28f), 1], rowGap: PageLayout.InnerGap, children: [
-                                CardTitleNode("协议与运行状态", pos: (0, 0), objectName: "frac-recipe-protocol-title"),
+                                CardTitleNode("运行边界", pos: (0, 0), objectName: "frac-recipe-runtime-title"),
                                 TextNode("", 13, White, wrap: true, anchor: TextAnchor.UpperLeft,
                                     onBuilt: text => {
-                                        protocolText = text;
+                                        runtimeText = text;
                                         text.supportRichText = true;
-                                    }, pos: (1, 0), objectName: "frac-recipe-protocol-text"),
+                                    }, pos: (1, 0), objectName: "frac-recipe-runtime-text"),
                             ]),
                     ]),
                 ]));
         UpdateUI();
     }
 
-    private static void OpenItemPicker() {
-        float popupX = tab.anchoredPosition.x - tab.rect.width / 2f;
-        float popupY = tab.anchoredPosition.y + tab.rect.height / 2f - PageLayout.HeaderHeight;
-        UIItemPickerExtension.Popup(new Vector2(popupX, popupY), item => {
-            if (item == null) {
-                return;
-            }
-            selectedItem = item;
-            EnsureValidRecipeType();
-            UpdateUI();
-        }, true, item => item != null && HasAnyRecipe(item.ID));
-    }
-
-    private static bool HasAnyRecipe(int itemId) {
-        foreach (ERecipe recipeType in RecipeTypes) {
-            if (GetRecipe<BaseRecipe>(recipeType, itemId) != null) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static void EnsureValidRecipeType() {
-        if (recipeTypeEntry == null || selectedItem == null) {
-            return;
-        }
-
-        int selectedIndex = Mathf.Clamp(recipeTypeEntry.Value, 0, RecipeTypes.Length - 1);
-        if (GetRecipe<BaseRecipe>(RecipeTypes[selectedIndex], selectedItem.ID) != null) {
-            if (recipeTypeEntry.Value != selectedIndex) {
-                recipeTypeEntry.Value = selectedIndex;
-            }
-            return;
-        }
-
-        for (int i = 0; i < RecipeTypes.Length; i++) {
-            if (GetRecipe<BaseRecipe>(RecipeTypes[i], selectedItem.ID) == null) {
-                continue;
-            }
-            recipeTypeEntry.Value = i;
-            recipeTypeCombo?.SetIndex(i);
-            return;
-        }
-    }
-
+    /// <summary>
+    /// 刷新研究发现投影与配方详情。
+    /// </summary>
     public static void UpdateUI() {
         if (tab == null || !tab.gameObject.activeSelf) {
             return;
         }
-
-        EnsureValidRecipeType();
-        BaseRecipe recipe = SelectedRecipe;
-        selectedItemButton.Proto = selectedItem;
-        selectedItemNameText.text = selectedItem?.name ?? string.Empty;
+        RefreshVisibleRecipes();
+        WorldviewRecipe recipe = visibleRecipes.FirstOrDefault(candidate => candidate.PersistentId == selectedRecipeId);
         header.Title.text = "分馏配方".Translate().WithColor(Orange);
         header.Summary.text = "分馏配方摘要".Translate().WithColor(White);
         recipeText.text = BuildRecipeText(recipe);
-        protocolText.text = BuildProtocolText(recipe);
+        runtimeText.text = BuildRuntimeText(recipe);
     }
 
-    private static string BuildRecipeText(BaseRecipe recipe) {
-        if (recipe == null) {
-            return string.Empty;
-        }
-
-        bool available = RecipeAvailabilityStore.IsAvailable(recipe);
-        var text = new StringBuilder();
-        text.AppendLine(recipe.TypeNameWC);
-        text.AppendLine($"{"输入".Translate()}：1 × {GetItemName(recipe.InputID)}");
-        text.AppendLine($"{"基础成功率".Translate()}：{recipe.SuccessRatio:P3}");
-        text.AppendLine($"{"损毁率".Translate()}：{recipe.DestroyRatio:P3}");
-        text.AppendLine($"{"状态".Translate()}：{(available ? "当前可运行" : "当前不可运行").Translate()}");
-        text.AppendLine();
-        if (!available) {
-            text.Append("协议未完整恢复，产物结构将在正式解锁后显示。".Translate());
-            return text.ToString();
-        }
-
-        AppendOutputs(text, "主产物".Translate(), recipe.OutputMain);
-        text.AppendLine();
-        AppendOutputs(text, "副产物".Translate(), recipe.OutputAppend);
-        return text.ToString();
-    }
-
-    private static void AppendOutputs(StringBuilder text, string title, IReadOnlyList<OutputInfo> outputs) {
-        text.AppendLine(title.WithColor(Orange));
-        if (outputs.Count == 0) {
-            text.AppendLine($"- {"无".Translate()}");
+    private static void OnRecipeTypeChanged() {
+        if (suppressSelection) {
             return;
         }
-        foreach (OutputInfo output in outputs) {
-            text.AppendLine($"- {output}");
-        }
+        selectedRecipeId = 0;
+        RefreshVisibleRecipes(force: true);
+        UpdateUI();
     }
 
-    private static string BuildProtocolText(BaseRecipe recipe) {
+    private static void OnRecipeSelected(int index) {
+        if (suppressSelection || index < 0 || index >= visibleRecipes.Count) {
+            return;
+        }
+        selectedRecipeId = visibleRecipes[index].PersistentId;
+        UpdateUI();
+    }
+
+    private static void RefreshVisibleRecipes(bool force = false) {
+        visibleRecipes = GetVisibleRecipes(SelectedRecipeType);
+        string signature = $"{(int)SelectedRecipeType}:{string.Join(",", visibleRecipes.Select(recipe => recipe.PersistentId))}";
+        if (!force && signature == visibleRecipeSignature) {
+            return;
+        }
+        visibleRecipeSignature = signature;
+        if (visibleRecipes.All(recipe => recipe.PersistentId != selectedRecipeId)) {
+            selectedRecipeId = visibleRecipes.FirstOrDefault()?.PersistentId ?? 0;
+        }
+        RefreshRecipeCombo();
+    }
+
+    private static void RefreshRecipeCombo() {
+        if (recipeCombo == null) {
+            return;
+        }
+        string[] names = visibleRecipes.Count == 0
+            ? ["尚无可见配方"]
+            : visibleRecipes.Select(recipe => recipe.DisplayName).ToArray();
+        int index = Math.Max(0, visibleRecipes.FindIndex(recipe => recipe.PersistentId == selectedRecipeId));
+        suppressSelection = true;
+        recipeCombo.SetItems(names);
+        recipeCombo.SetIndex(index);
+        suppressSelection = false;
+    }
+
+    private static List<WorldviewRecipe> GetVisibleRecipes(ERecipe type) {
+        HashSet<int> eligibleDirections = new(ResearchManager.GetEligibleDirections());
+        return RecipeManager.WorldviewRecipes
+            .Where(recipe => recipe.RecipeType == type)
+            .Where(recipe => recipe.Kind == WorldviewRecipeKind.BasicAnalysis
+                ? recipe.InputID == IFE残片 || eligibleDirections.Contains(recipe.InputID)
+                : ResearchManager.IsContentUnlocked(recipe.StableId))
+            .OrderBy(recipe => recipe.PersistentId)
+            .ToList();
+    }
+
+    private static string BuildRecipeText(WorldviewRecipe recipe) {
         if (recipe == null) {
-            return string.Empty;
+            return "尚无可见配方".Translate().WithColor(Gray);
         }
 
         var text = new StringBuilder();
-        RecipeKey recipeKey = RecipeKey.FromRecipe(recipe);
-        ProtocolDefinition definition = ProtocolCatalog.Get(recipeKey);
-        if (definition == null) {
-            text.AppendLine($"{"协议状态".Translate()}：{"不由文明协议控制".Translate()}");
+        text.AppendLine(recipe.DisplayName.WithColor(Orange));
+        text.AppendLine($"{"稳定配方ID".Translate()}：{recipe.StableId}");
+        text.AppendLine($"{"运行塔型".Translate()}：{GetTowerName(recipe.RecipeType)}");
+        text.AppendLine($"{"成功率".Translate()}：{recipe.CycleSuccessProbability:P0}");
+        text.AppendLine();
+        text.AppendLine("配方输入".Translate().WithColor(Orange));
+        foreach (WorldviewRecipeInput input in recipe.Inputs) {
+            string probability = input.ConsumeProbability < 0.9999f
+                ? $"  ({input.ConsumeProbability:P0} {"每次成功消耗概率".Translate()})"
+                : string.Empty;
+            text.AppendLine($"- {input.Count} × {GetItemName(input.ItemId)}{probability}");
+        }
+        text.AppendLine();
+        text.AppendLine("配方输出".Translate().WithColor(Orange));
+        if (recipe.Kind == WorldviewRecipeKind.BasicAnalysis) {
+            text.AppendLine($"- {"研究解析".Translate()}");
         } else {
-            ProtocolProgressStore.ProtocolProgress progress = ProtocolProgressStore.GetOrCreate(recipeKey);
-            string protocolState = progress.FormallyUnlocked
-                ? "协议已恢复"
-                : progress.Completeness >= 100
-                    ? "可购买"
-                    : progress.Discovered ? "协议解析中" : "协议未发现";
-            text.AppendLine($"{"协议状态".Translate()}：{protocolState.Translate()}");
-            text.AppendLine($"{"协议完整度".Translate()}：{progress.Completeness}%");
-            text.AppendLine($"正式解锁：{(progress.FormallyUnlocked ? "是" : "否")}");
-            text.AppendLine($"{"检索资格".Translate()}：{(ProtocolEligibilityService.IsEligible(definition)
-                ? "已经进入检索池" : "尚未进入检索池").Translate()}");
+            foreach (WorldviewRecipeOutput output in recipe.Products) {
+                string recovery = output.ScalesWithRecovery ? $"  ({"按回收率结算".Translate()})" : string.Empty;
+                text.AppendLine($"- {output.Count:0.##} × {GetItemName(output.ItemId)}{recovery}");
+            }
+        }
+        return text.ToString();
+    }
+
+    private static string BuildRuntimeText(WorldviewRecipe recipe) {
+        if (recipe == null) {
+            return "尚无可见配方".Translate().WithColor(Gray);
         }
 
+        bool advanced = recipe.IsAdvanced;
+        var text = new StringBuilder();
+        text.AppendLine((advanced ? "配方目录高级塔说明" : "配方目录基础塔说明").Translate());
         text.AppendLine();
-        ItemProto building = LDB.items.Select(recipe.RecipeType.GetSpriteItemId());
-        if (building != null) {
-            text.AppendLine($"{"运行塔型".Translate()}：{building.name}");
-            text.AppendLine($"{"处理堆叠上限".Translate()}：{building.MaxStack()}");
-            text.AppendLine($"{"增产点倍率".Translate()}：{building.PlrRatio():P0}");
+        text.AppendLine($"{"电网供能".Translate()}：{(advanced ? "不需要" : "需要").Translate()}");
+        text.AppendLine($"{"矩阵营养".Translate()}：{(advanced ? "需要" : "不需要").Translate()}");
+        text.AppendLine($"{"全局堆叠".Translate()}：{StackingManager.CurrentMaxStack}");
+        if (advanced) {
+            text.AppendLine($"{"输入缓存".Translate()}：20 / item");
         }
-        text.AppendLine();
-        text.AppendLine($"{"流动输出堆叠".Translate()}：{GetSwitchText(
-            TowerRuntimeModifierCache.IsFluidOutputStackingEnabled(recipe.RecipeType))}");
-        text.AppendLine($"{"产物输出堆叠".Translate()}：{GetSwitchText(
-            TowerRuntimeModifierCache.IsProductOutputStackingEnabled(recipe.RecipeType))}");
-        text.AppendLine($"{"分馏永动".Translate()}：{GetSwitchText(
-            TowerRuntimeModifierCache.IsFractionationForeverEnabled(recipe.RecipeType))}");
-        text.AppendLine($"{"主路锁定".Translate()}：{GetSwitchText(
-            TowerRuntimeModifierCache.IsMainOutputLockEnabled(recipe.RecipeType))}");
-        text.AppendLine($"{"副产物弃置".Translate()}：{GetSwitchText(
-            TowerRuntimeModifierCache.IsByproductDiscardEnabled(recipe.RecipeType))}");
+        text.AppendLine($"{"产物缓存".Translate()}：20 / item");
+        text.AppendLine($"{"流动输出缓存".Translate()}：20 / item");
         return text.ToString();
+    }
+
+    private static string GetTowerName(ERecipe type) {
+        int itemId = type.GetSpriteItemId();
+        return GetItemName(itemId);
     }
 
     private static string GetItemName(int itemId) => LDB.items.Select(itemId)?.name ?? itemId.ToString();
 
-    private static string GetSwitchText(bool enabled) => (enabled ? "已启用" : "未解锁").Translate();
-
-    #region 模组存档接口实现
-
+    /// <summary>
+    /// 读取旧页面空块并保持块协议兼容。
+    /// </summary>
     public static void Import(BinaryReader r) {
         r.ReadBlocks();
     }
 
+    /// <summary>
+    /// 导出页面空块。
+    /// </summary>
     public static void Export(BinaryWriter w) {
         w.WriteBlocks();
     }
 
-    public static void IntoOtherSave() { }
-
-    #endregion
+    /// <summary>
+    /// 切档时重置仅用于显示的配方选择。
+    /// </summary>
+    public static void IntoOtherSave() {
+        selectedRecipeId = 0;
+        visibleRecipeSignature = string.Empty;
+    }
 }

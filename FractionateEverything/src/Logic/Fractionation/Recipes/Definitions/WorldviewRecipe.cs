@@ -1,0 +1,189 @@
+using System.Collections.Generic;
+using FE.Logic.Civilization;
+using static FE.Utils.Utils;
+
+namespace FE.Logic.Fractionation.Recipes;
+
+/// <summary>
+/// FE 3.0 配方的功能分类。
+/// </summary>
+public enum WorldviewRecipeKind {
+    BasicMineral,
+    BasicAnalysis,
+    RareCatalysis,
+    TowerCultivation,
+    EmbryoBreeding,
+    Replacement,
+}
+
+/// <summary>
+/// 定义一项高级配方输入。消耗概率只在成功轮次结算。
+/// </summary>
+public sealed class WorldviewRecipeInput(int itemId, int count, float consumeProbability = 1f) {
+    /// <summary>物品 ID。</summary>
+    public int ItemId { get; } = itemId;
+
+    /// <summary>每轮参与数量。</summary>
+    public int Count { get; } = count;
+
+    /// <summary>每个成功轮次的消耗概率。</summary>
+    public float ConsumeProbability { get; } = consumeProbability;
+}
+
+/// <summary>
+/// 定义一项高级配方产物。
+/// </summary>
+public sealed class WorldviewRecipeOutput(int itemId, float count, bool scalesWithRecovery = false) {
+    /// <summary>物品 ID。</summary>
+    public int ItemId { get; } = itemId;
+
+    /// <summary>每个成功轮次的平均数量。</summary>
+    public float Count { get; } = count;
+
+    /// <summary>是否按高级转化塔的置换回收比例结算。</summary>
+    public bool ScalesWithRecovery { get; } = scalesWithRecovery;
+}
+
+/// <summary>
+/// FE 3.0 稳定身份、多输入、多输出配方。
+/// </summary>
+public sealed class WorldviewRecipe : BaseRecipe {
+    /// <summary>跨存档、蓝图和联机稳定的配方字符串 ID。</summary>
+    public string StableId { get; }
+
+    /// <summary>跨存档、蓝图和联机稳定的配方整数 ID。</summary>
+    public int PersistentId { get; }
+
+    /// <summary>玩家可见配方名称。</summary>
+    public string DisplayName { get; }
+
+    /// <summary>配方类型。</summary>
+    public override ERecipe RecipeType { get; }
+
+    /// <summary>配方功能分类。</summary>
+    public WorldviewRecipeKind Kind { get; }
+
+    /// <summary>每轮成功率。</summary>
+    public float CycleSuccessProbability { get; }
+
+    /// <summary>全部反应输入。</summary>
+    public IReadOnlyList<WorldviewRecipeInput> Inputs { get; }
+
+    /// <summary>全部产物。</summary>
+    public IReadOnlyList<WorldviewRecipeOutput> Products { get; }
+
+    /// <summary>是否属于需要供养的高级配方。</summary>
+    public bool IsAdvanced => Kind is not WorldviewRecipeKind.BasicMineral and not WorldviewRecipeKind.BasicAnalysis;
+
+    /// <summary>基础塔失败物品只进入流动输出，不再沿用 2.x 的损毁判定。</summary>
+    public override float DestroyRatio => 0f;
+
+    /// <summary>
+    /// 创建一张 FE 3.0 配方。
+    /// </summary>
+    public WorldviewRecipe(string stableId, int persistentId, string displayName, ERecipe recipeType,
+        WorldviewRecipeKind kind, float successProbability,
+        IReadOnlyList<WorldviewRecipeInput> inputs, IReadOnlyList<WorldviewRecipeOutput> outputs)
+        : base(inputs.Count > 0 ? inputs[0].ItemId : 0, successProbability,
+            BuildBaseOutputs(outputs), []) {
+        StableId = stableId;
+        PersistentId = persistentId;
+        DisplayName = displayName;
+        RecipeType = recipeType;
+        Kind = kind;
+        CycleSuccessProbability = successProbability;
+        Inputs = inputs;
+        Products = outputs;
+    }
+
+    /// <summary>
+    /// 按基础矿物塔剩余产物空间限制本批轮数，确保一次成功的完整产物不会越过缓存上限。
+    /// </summary>
+    public int LimitBasicBatchCountByOutputRoom(int batchCount, int availableOutput,
+        float pointsBonus, float successBoost) {
+        if (Kind != WorldviewRecipeKind.BasicMineral || batchCount <= 0 || Products.Count == 0) {
+            return batchCount;
+        }
+        int outputPerSuccess = System.Math.Max(1, UnityEngine.Mathf.CeilToInt(Products[0].Count));
+        int maximumSuccesses = System.Math.Max(0, availableOutput) / outputPerSuccess;
+        if (maximumSuccesses <= 0) {
+            return 0;
+        }
+        float probability = System.Math.Min(1f,
+            CycleSuccessProbability * (1f + pointsBonus) * (1f + successBoost));
+        if (probability <= 0f) {
+            return batchCount;
+        }
+        int maximumRounds = UnityEngine.Mathf.FloorToInt(maximumSuccesses / probability);
+        return System.Math.Min(batchCount, System.Math.Max(0, maximumRounds));
+    }
+
+    /// <inheritdoc />
+    public override FractionationBatchResult GetOutputsBatchFast(ref uint seed, float pointsBonus,
+        float successBoost, int batchCount, int fluidInputIncAvg, ref int fluidInputInc,
+        ProductOutputBuffer outputs) {
+        outputs.Clear();
+        if (batchCount <= 0) {
+            return default;
+        }
+
+        if (Kind == WorldviewRecipeKind.BasicAnalysis) {
+            if (!ResearchManager.TryAnalyzeDirection(InputID, batchCount, ref seed)) {
+                fluidInputInc -= fluidInputIncAvg * batchCount;
+                return new FractionationBatchResult {
+                    InputRemoveCount = batchCount,
+                    PassThroughCount = batchCount,
+                    PassThroughInc = fluidInputIncAvg * batchCount,
+                };
+            }
+
+            fluidInputInc -= fluidInputIncAvg * batchCount;
+            return new FractionationBatchResult {
+                InputRemoveCount = batchCount,
+                ConsumedRegisterCount = batchCount,
+                DestroyedCount = batchCount,
+            };
+        }
+
+        int successCount = RollExpected(ref seed,
+            batchCount * CycleSuccessProbability * (1f + pointsBonus) * (1f + successBoost));
+        if (successCount > batchCount) {
+            successCount = batchCount;
+        }
+        int passThroughCount = batchCount - successCount;
+        if (successCount > 0) {
+            outputs.Add(true, InputID, successCount * 2);
+            OutputMain[0].AddOutputCount(successCount * 2);
+        }
+
+        fluidInputInc -= fluidInputIncAvg * batchCount;
+        return new FractionationBatchResult {
+            InputRemoveCount = batchCount,
+            ConsumedRegisterCount = successCount,
+            SuccessCount = successCount,
+            PassThroughCount = passThroughCount,
+            PassThroughInc = fluidInputIncAvg * passThroughCount,
+        };
+    }
+
+    /// <summary>
+    /// 按长期期望值和单个随机数结算一种结果数量。
+    /// </summary>
+    public static int RollExpected(ref uint seed, double expectedCount) {
+        if (expectedCount <= 0d) {
+            return 0;
+        }
+        if (expectedCount >= int.MaxValue) {
+            return int.MaxValue;
+        }
+        return (int)(expectedCount + GetRandDouble(ref seed));
+    }
+
+    private static List<OutputInfo> BuildBaseOutputs(IReadOnlyList<WorldviewRecipeOutput> outputs) {
+        List<OutputInfo> result = [];
+        foreach (WorldviewRecipeOutput output in outputs) {
+            result.Add(new OutputInfo(1f, output.ItemId, output.Count));
+        }
+        return result;
+    }
+}

@@ -85,11 +85,20 @@ public static class StorageSortPatch {
                     || ItemManager.itemValue[itemId] >= ItemManager.maxValue) {
                     continue;
                 }
-                DataCenterUploadRouter.Upload(itemId, package.grids[index].count, package.grids[index].inc,
-                    true);
-                package.grids[index].itemId = 0;
-                package.grids[index].count = 0;
-                package.grids[index].inc = 0;
+                int originalCount = package.grids[index].count;
+                int originalInc = package.grids[index].inc;
+                long accepted = DataCenterUploadRouter.Upload(itemId, originalCount, originalInc, true);
+                if (accepted <= 0) {
+                    continue;
+                }
+                int acceptedCount = (int)Math.Min(originalCount, accepted);
+                int acceptedInc = originalCount <= 0 ? 0 : originalInc * acceptedCount / originalCount;
+                package.grids[index].count -= acceptedCount;
+                package.grids[index].inc -= acceptedInc;
+                if (package.grids[index].count == 0) {
+                    package.grids[index].itemId = 0;
+                    package.grids[index].inc = 0;
+                }
             }
         }
         return true;

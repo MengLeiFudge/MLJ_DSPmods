@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using CommonAPI.Systems;
 using FE.Compatibility.Mods;
-using FE.Logic.Fractionation.Fractionators;
 using UnityEngine;
 using static FE.FractionateEverything;
 using static FE.Utils.Utils;
@@ -15,74 +14,21 @@ namespace FE.Logic.Items;
 /// </summary>
 public static class ItemManager {
     /// <summary>
-    /// 注册 Frag/Memory、运输包裹、黑雾样本、通用原胚与四种定向塔原胚的名称和说明本地化键。
+    /// 注册 FE 3.0 的 Frag、Memory 与通用原胚文本。
     /// </summary>
     public static void AddTranslations() {
-        Register("残片", "Frag", "残片");
+        Register("残片", "Frag", "Frag");
         Register("I残片",
-            "Base Frag balance unit. Analysis towers output it or larger Frag packages; upload packages normalize into this balance.",
-            "残片基础余额单位。解析塔会输出基础残片或更大面额包裹；包裹上传后会折算回该基础余额。");
-        RegisterCurrencyPackageTranslations("残片", "Frag");
-
-        Register("记忆源点", "Memory", "记忆源点");
+            "A dark-fog fragment. Analyzing each Frag has a small chance to reveal one permanent exploration signal.",
+            "黑雾掉落的残片。每件 Frag 经基础解析塔处理时，都有小概率发现一个永久探索信号。");
+        Register("记忆源点", "Memory", "Memory");
         Register("I记忆源点",
-            "Base Memory balance unit. Every 2000 Frag analyzed yields 1 Memory for formal protocol unlocks.",
-            "记忆源点基础余额单位。每累计解析 2000 残片确定性产出 1 记忆源点，用于正式协议解锁。");
-        RegisterCurrencyPackageTranslations("记忆源点", "Memory");
-
-        Register("黑雾样本A", "Dark Fog Sample A", "黑雾样本A");
-        Register("I黑雾样本A",
-            "A low-density dark-fog sample. Analyze it for Frag scaled by ground and space cognition.",
-            "低密度黑雾样本。送入解析塔可产出受地表与星域认知影响的残片。");
-        Register("黑雾样本B", "Dark Fog Sample B", "黑雾样本B");
-        Register("I黑雾样本B",
-            "A mid-density dark-fog sample. Analyze it for Frag scaled by ground and space cognition.",
-            "中密度黑雾样本。送入解析塔可产出受地表与星域认知影响的残片。");
-        Register("黑雾样本C", "Dark Fog Sample C", "黑雾样本C");
-        Register("I黑雾样本C",
-            "A high-density dark-fog sample. Analyze it for Frag scaled by ground and space cognition.",
-            "高密度黑雾样本。送入解析塔可产出受地表与星域认知影响的残片。");
-
-        Register("通用原胚", "Common Tower Proto", "通用原胚");
+            "A living-industry memory core obtained by sacrificing one advanced tower; consumed by high-value advanced recipes.",
+            "献祭一座高级塔所得的生命工业记忆核心，由高价值高级配方持续消耗。");
+        Register("通用原胚", "Universal Tower Embryo", "通用原胚");
         Register("I通用原胚",
-            "An active proto whose lineage is not fixed. Cultivating it in a Cultivation Tower produces a random tower type.",
-            "尚未固定谱系的活性原胚，可在培养塔中随机培养为任意一种分馏塔。");
-        RegisterTowerProtoTranslations("培养塔原胚", "Cultivation Tower Proto", "a Cultivation Tower", "培养塔");
-        RegisterTowerProtoTranslations("解析塔原胚", "Analysis Tower Proto", "an Analysis Tower", "解析塔");
-        RegisterTowerProtoTranslations("复制塔原胚", "Replication Tower Proto", "a Replication Tower", "复制塔");
-        RegisterTowerProtoTranslations("转化塔原胚", "Conversion Tower Proto", "a Conversion Tower", "转化塔");
-    }
-
-    /// <summary>
-    /// 注册 10/100/1000 运输包裹的名称与说明。
-    /// </summary>
-    private static void RegisterCurrencyPackageTranslations(string baseName, string englishBaseName) {
-        RegisterPackageTranslation(baseName, englishBaseName, 10);
-        RegisterPackageTranslation(baseName, englishBaseName, 100);
-        RegisterPackageTranslation(baseName, englishBaseName, 1000);
-    }
-
-    private static void RegisterPackageTranslation(string baseName, string englishBaseName, int faceValue) {
-        string name = $"{baseName}×{faceValue}";
-        Register(name, $"{englishBaseName} ×{faceValue}", name);
-        Register($"I{name}",
-            $"Upload-only {englishBaseName} package worth {faceValue}. Analysis towers create it; the data centre normalizes it into base {englishBaseName}.",
-            $"面额为 {faceValue} 的{baseName}单向运输包裹，仅由解析塔产出；上传到数据中心后折算为基础{baseName}余额。");
-    }
-
-    /// <summary>
-    /// 注册一种定向塔原胚的名称与说明，并保持名称键和 <c>I{name}</c> 说明键成对。
-    /// </summary>
-    /// <param name="name">中文名称键，同时作为中文显示名。</param>
-    /// <param name="englishName">英文原胚显示名。</param>
-    /// <param name="englishTowerName">插入英文培养结果说明的塔名短语。</param>
-    /// <param name="towerName">插入中文谱系与培养结果说明的塔名。</param>
-    private static void RegisterTowerProtoTranslations(string name, string englishName, string englishTowerName,
-        string towerName) {
-        Register(name, englishName, name);
-        Register($"I{name}",
-            $"A lineage-fixed proto. Cultivating it in a Cultivation Tower produces {englishTowerName}.",
-            $"已经固定为{towerName}谱系的原胚，在培养塔中培养后会稳定产出{towerName}。");
+            "A living embryo recovered from exploration and dark-fog combat, then used by advanced interaction recipes to cultivate advanced towers or breed more embryos.",
+            "从探索与黑雾战斗中回收的生命型通用原胚，在高级交互塔中用于培育高级塔或繁育更多原胚。");
     }
 
     #region 添加新物品
@@ -113,40 +59,9 @@ public static class ItemManager {
         // recipe.NonProductive = true 表示增产剂仅能加速，不能增产
         // RecipeUnlocked Patch 用于调整配方解锁状态（Item直接用UnlockKey=-1，就不需要patch item的）
 
-        RegisterInternalItem(IFE残片, "残片", "I残片", 101, 9999,
-            Color.gray, Color.black, "cpfragment");
+        RegisterFrag();
         RegisterInternalItem(IFE记忆源点, "记忆源点", "I记忆源点", 102, 100,
             new Color(0.55f, 0.82f, 1f), new Color(0.08f, 0.18f, 0.34f), "memory-core");
-        RegisterCurrencyPackage(IFE残片10, "残片×10", "I残片×10", 10,
-            Color.gray, new Color(0.12f, 0.12f, 0.12f), "frag-pack-10");
-        RegisterCurrencyPackage(IFE残片100, "残片×100", "I残片×100", 100,
-            Color.gray, new Color(0.18f, 0.18f, 0.18f), "frag-pack-100");
-        RegisterCurrencyPackage(IFE残片1000, "残片×1000", "I残片×1000", 1000,
-            Color.gray, new Color(0.24f, 0.24f, 0.24f), "frag-pack-1000");
-        RegisterCurrencyPackage(IFE记忆源点10, "记忆源点×10", "I记忆源点×10", 10,
-            new Color(0.55f, 0.82f, 1f), new Color(0.10f, 0.20f, 0.36f), "memory-pack-10");
-        RegisterCurrencyPackage(IFE记忆源点100, "记忆源点×100", "I记忆源点×100", 100,
-            new Color(0.55f, 0.82f, 1f), new Color(0.12f, 0.24f, 0.40f), "memory-pack-100");
-        RegisterCurrencyPackage(IFE记忆源点1000, "记忆源点×1000", "I记忆源点×1000", 1000,
-            new Color(0.55f, 0.82f, 1f), new Color(0.14f, 0.28f, 0.46f), "memory-pack-1000");
-        // 掉落区间在 InitEnemyDropTables 前写入 ItemProto；三段互不重叠且避开原版 0..0.300。
-        RegisterDarkFogSample(IFE黑雾样本A, "黑雾样本A", "I黑雾样本A", 103,
-            new Color(0.72f, 0.92f, 0.42f), new Color(0.10f, 0.18f, 0.04f), "dfs-sample-a",
-            enemyDropLevel: 1, enemyDropRange: new Vector2(0.300f, 0.018f), enemyDropCount: 1.2f);
-        RegisterDarkFogSample(IFE黑雾样本B, "黑雾样本B", "I黑雾样本B", 104,
-            new Color(0.42f, 0.86f, 0.72f), new Color(0.04f, 0.16f, 0.14f), "dfs-sample-b",
-            enemyDropLevel: 4, enemyDropRange: new Vector2(0.318f, 0.010f), enemyDropCount: 0.8f);
-        RegisterDarkFogSample(IFE黑雾样本C, "黑雾样本C", "I黑雾样本C", 105,
-            new Color(0.92f, 0.56f, 0.86f), new Color(0.18f, 0.06f, 0.16f), "dfs-sample-c",
-            enemyDropLevel: 7, enemyDropRange: new Vector2(0.328f, 0.004f), enemyDropCount: 0.4f);
-        RegisterTowerProto(IFE培养塔原胚, "培养塔原胚", "I培养塔原胚", 201,
-            "Assets/fe/frac-proto-normal", CultivationTower.color, "cultivation-proto");
-        RegisterTowerProto(IFE解析塔原胚, "解析塔原胚", "I解析塔原胚", 202,
-            "Assets/fe/frac-proto-legendary", AnalysisTower.color, "analysis-proto");
-        RegisterTowerProto(IFE复制塔原胚, "复制塔原胚", "I复制塔原胚", 203,
-            "Assets/fe/frac-proto-uncommon", ReplicationTower.color, "replication-proto");
-        RegisterTowerProto(IFE转化塔原胚, "转化塔原胚", "I转化塔原胚", 204,
-            "Assets/fe/frac-proto-epic", ConversionTower.color, "conversion-proto");
         RegisterTowerProto(IFE通用原胚, "通用原胚", "I通用原胚", 205,
             "Assets/fe/frac-proto-directional", Color.red, "common-proto");
     }
@@ -172,8 +87,16 @@ public static class ItemManager {
         return item;
     }
 
+    private static void RegisterFrag() {
+        ItemProto item = ProtoRegistry.RegisterItem(IFE残片, "残片", "I残片",
+            "Assets/fe/copy-essence", tab分馏 * 1000 + 101, 100, EItemType.DarkFog,
+            ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.black));
+        item.UnlockKey = -2;
+        item.IconTag = "cpfragment";
+    }
+
     /// <summary>
-    /// 注册 Frag/Memory 基础文明货币；类型为 Material，UnlockKey=-1。
+    /// 注册 Memory 内部资源；类型为 Material，UnlockKey=-1。
     /// </summary>
     private static void RegisterInternalItem(int itemId, string name, string description, int gridOffset,
         int stackSize, Color iconColor, Color iconBackgroundColor, string iconTag) {
@@ -184,40 +107,9 @@ public static class ItemManager {
         item.IconTag = iconTag;
     }
 
-    /// <summary>
-    /// 注册黑雾样本 A/B/C：EItemType.DarkFog、UnlockKey=-2、StackSize100，并配置地面掉落。
-    /// EnemyDropMask=0x1000000、EnemyDropMaskRatio=1；须在 ItemProto.InitEnemyDropTables 前调用。
-    /// </summary>
-    private static void RegisterDarkFogSample(int itemId, string name, string description, int gridOffset,
-        Color iconColor, Color iconBackgroundColor, string iconTag,
-        int enemyDropLevel, Vector2 enemyDropRange, float enemyDropCount) {
-        ItemProto item = ProtoRegistry.RegisterItem(itemId, name, description,
-            "Assets/fe/copy-essence", tab分馏 * 1000 + gridOffset, 100, EItemType.DarkFog,
-            ProtoRegistry.GetDefaultIconDesc(iconColor, iconBackgroundColor));
-        item.UnlockKey = -2;
-        item.IconTag = iconTag;
-        item.EnemyDropLevel = enemyDropLevel;
-        item.EnemyDropRange = enemyDropRange;
-        item.EnemyDropCount = enemyDropCount;
-        item.EnemyDropMask = 0x1000000;
-        item.EnemyDropMaskRatio = 1f;
-    }
-
-    /// <summary>
-    /// 注册仅由解析塔产出的单向货币包裹；GridIndex 无效，不可进入普通选择器。
-    /// </summary>
-    private static void RegisterCurrencyPackage(int itemId, string name, string description, int faceValue,
-        Color iconColor, Color iconBackgroundColor, string iconTag) {
-        ItemProto item = ProtoRegistry.RegisterItem(itemId, name, description,
-            "Assets/fe/copy-essence", 0, 100, EItemType.Material,
-            ProtoRegistry.GetDefaultIconDesc(iconColor, iconBackgroundColor));
-        item.UnlockKey = -1;
-        item.IconTag = iconTag;
-    }
-
     #endregion
 
-    #region 计算物品价值，以及培养塔可接受物品范围
+    #region 计算物品价值与基础塔正面上传候选
 
     public const float maxValue = float.MaxValue;
     /// <summary>
@@ -225,7 +117,7 @@ public static class ItemManager {
     /// </summary>
     public static readonly float[] itemValue = new float[12000];
     /// <summary>
-    /// 培养塔可接收的所有物品 ID。
+    /// 基础塔正面上传可接收的全部物品 ID。
     /// </summary>
     public static int[] needs = [];
 
@@ -289,15 +181,12 @@ public static class ItemManager {
         //设置分馏塔、分馏塔原胚价值
         float modFractionatorValue = 400.0f;
         float commonProtoValue = 2000.0f;
-        itemValue[IFE培养塔] = modFractionatorValue;
-        itemValue[IFE解析塔] = modFractionatorValue;
-        itemValue[IFE复制塔] = modFractionatorValue;
-        itemValue[IFE转化塔] = modFractionatorValue;
+        itemValue[IFE基础矿物塔] = modFractionatorValue;
+        itemValue[IFE基础解析塔] = modFractionatorValue;
+        itemValue[IFE高级矿物塔] = modFractionatorValue;
+        itemValue[IFE高级交互塔] = modFractionatorValue;
+        itemValue[IFE高级转化塔] = modFractionatorValue;
         itemValue[IFE通用原胚] = commonProtoValue;
-        itemValue[IFE培养塔原胚] = 0.96f * modFractionatorValue + 0.04f * commonProtoValue;
-        itemValue[IFE解析塔原胚] = 0.96f * modFractionatorValue + 0.04f * commonProtoValue;
-        itemValue[IFE复制塔原胚] = 0.96f * modFractionatorValue + 0.04f * commonProtoValue;
-        itemValue[IFE转化塔原胚] = 0.96f * modFractionatorValue + 0.04f * commonProtoValue;
         SetCivilizationResourceValues();
         //不存在的物品价值都设为特定值，这样也会将上面某些物品重置为maxValue（某些Mod未开启的情况下会有）
         for (int i = 0; i < itemValue.Length; i++) {
@@ -507,9 +396,9 @@ public static class ItemManager {
             itemValue[IMS多功能集成组件] = maxCalculatedValue;
         }
 
-        // 根据物品价值构建培养塔可接受物品列表。
+        // 基础塔正面上传可接收全部已注册实体物品；容量与高级塔献祭在上传路由中处理。
         needs = LDB.items.dataArray
-            .Where(item => itemValue[item.ID] < maxValue)
+            .Where(item => item != null && item.ID > 0 && item.ID < 12000 && !IsCurrencyPackageItem(item.ID))
             .Select(item => item.ID)
             .ToArray();
     }
@@ -530,78 +419,11 @@ public static class ItemManager {
     public static readonly int[] itemToMatrix = new int[12000];
 
     /// <summary>
-    /// Frag 基础与 10/100/1000 包裹 ID。
-    /// </summary>
-    public static readonly int[] FragItemIds = [
-        IFE残片,
-        IFE残片10,
-        IFE残片100,
-        IFE残片1000,
-    ];
-
-    /// <summary>
-    /// Memory 基础与 10/100/1000 包裹 ID。
-    /// </summary>
-    public static readonly int[] MemoryItemIds = [
-        IFE记忆源点,
-        IFE记忆源点10,
-        IFE记忆源点100,
-        IFE记忆源点1000,
-    ];
-
-    /// <summary>
-    /// 黑雾样本 A/B/C。
-    /// </summary>
-    public static readonly int[] DarkFogSampleItemIds = [
-        IFE黑雾样本A,
-        IFE黑雾样本B,
-        IFE黑雾样本C,
-    ];
-
-    /// <summary>
-    /// 判断是否为 Frag 基础余额物品。
-    /// </summary>
-    public static bool IsFragBaseItem(int itemId) => itemId == IFE残片;
-
-    /// <summary>
-    /// 判断是否为 Memory 基础余额物品。
-    /// </summary>
-    public static bool IsMemoryBaseItem(int itemId) => itemId == IFE记忆源点;
-
-    /// <summary>
-    /// 判断是否为 Frag/Memory 任一运输面额实体。
-    /// </summary>
-    public static bool IsCivilizationCurrencyItem(int itemId) =>
-        IsFragBaseItem(itemId) || IsMemoryBaseItem(itemId) || IsCurrencyPackageItem(itemId);
-
-    /// <summary>
-    /// 判断是否为仅上传的 10/100/1000 货币包裹。
+    /// 判断是否为 2.x 存档可能遗留的 Frag/Memory 面额包裹。
     /// </summary>
     public static bool IsCurrencyPackageItem(int itemId) =>
         itemId is IFE残片10 or IFE残片100 or IFE残片1000
             or IFE记忆源点10 or IFE记忆源点100 or IFE记忆源点1000;
-
-    /// <summary>
-    /// 判断是否为黑雾样本 A/B/C。
-    /// </summary>
-    public static bool IsDarkFogSampleItem(int itemId) =>
-        itemId is IFE黑雾样本A or IFE黑雾样本B or IFE黑雾样本C;
-
-    /// <summary>
-    /// 判断是否为文明货币、包裹或样本；这些物品不进入通用可估值候选。
-    /// </summary>
-    public static bool IsCivilizationResourceItem(int itemId) =>
-        IsCivilizationCurrencyItem(itemId) || IsDarkFogSampleItem(itemId);
-
-    /// <summary>
-    /// 读取货币包裹面额；非包裹返回 0。
-    /// </summary>
-    public static int GetCurrencyPackageFaceValue(int itemId) => itemId switch {
-        IFE残片10 or IFE记忆源点10 => 10,
-        IFE残片100 or IFE记忆源点100 => 100,
-        IFE残片1000 or IFE记忆源点1000 => 1000,
-        _ => 0,
-    };
 
     /// <summary>
     /// 将货币包裹解析为基础物品与面额；基础物品自身返回 faceValue=1。
@@ -770,35 +592,19 @@ public static class ItemManager {
     }
 
     /// <summary>
-    /// 文明货币、包裹与样本保持不可估值，避免进入培养/复制/转化候选。
+    /// Frag 与 Memory 不参与普通物品价值推导。
     /// </summary>
     private static void SetCivilizationResourceValues() {
-        foreach (int itemId in FragItemIds) {
-            itemValue[itemId] = maxValue;
-        }
-        foreach (int itemId in MemoryItemIds) {
-            itemValue[itemId] = maxValue;
-        }
-        foreach (int itemId in DarkFogSampleItemIds) {
-            itemValue[itemId] = maxValue;
-        }
+        itemValue[IFE残片] = maxValue;
+        itemValue[IFE记忆源点] = maxValue;
     }
 
     /// <summary>
-    /// 为文明资源指定矩阵分层，确保解析配方能够注册。
+    /// 为 Frag 与 Memory 指定基础矩阵阶段。
     /// </summary>
     private static void SetCivilizationResourceMatrixStages() {
         itemToMatrix[IFE残片] = I电磁矩阵;
-        itemToMatrix[IFE残片10] = I电磁矩阵;
-        itemToMatrix[IFE残片100] = I电磁矩阵;
-        itemToMatrix[IFE残片1000] = I电磁矩阵;
         itemToMatrix[IFE记忆源点] = I电磁矩阵;
-        itemToMatrix[IFE记忆源点10] = I电磁矩阵;
-        itemToMatrix[IFE记忆源点100] = I电磁矩阵;
-        itemToMatrix[IFE记忆源点1000] = I电磁矩阵;
-        itemToMatrix[IFE黑雾样本A] = I黑雾矩阵;
-        itemToMatrix[IFE黑雾样本B] = I黑雾矩阵;
-        itemToMatrix[IFE黑雾样本C] = I黑雾矩阵;
     }
 
     public static int GetTechTopMatrixID(TechProto tech) {

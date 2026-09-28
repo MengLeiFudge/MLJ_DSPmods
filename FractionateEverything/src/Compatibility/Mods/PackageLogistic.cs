@@ -5,7 +5,6 @@ using FE.Logic.DataCenter;
 using FE.UI.MainPanel.Setting;
 using HarmonyLib;
 using static FE.Logic.DataCenter.DataCenterInventory;
-using static FE.Utils.Utils;
 
 namespace FE.Compatibility.Mods;
 
@@ -69,23 +68,12 @@ public static class PackageLogistic {
             __result = [0, 0];
             return false;
         }
-        long modDataItemCount = GetModDataItemCount(itemId);
-        if (itemId is I氢 or I精炼油) {
-            DataCenterUploadRouter.Upload(itemId, count, inc);
-            __result = [count, inc];
-        } else if (modDataItemCount < 10000) {
-            int min = (int)Math.Min(count, 10000 - modDataItemCount);
-            if (min != count) {
-                int splitInc = split_inc(ref count, ref inc, min);
-                DataCenterUploadRouter.Upload(itemId, min, splitInc);
-                __result = [min, splitInc];
-            } else {
-                DataCenterUploadRouter.Upload(itemId, count, inc);
-                __result = [count, inc];
-            }
-        } else {
-            __result = [0, 0];
-        }
+        long accepted = DataCenterUploadRouter.Upload(itemId, count, inc, manual: true);
+        int acceptedCount = (int)Math.Min(count, accepted);
+        int acceptedInc = count <= 0
+            ? 0
+            : (int)Math.Min(int.MaxValue, (long)Math.Max(0, inc) * acceptedCount / count);
+        __result = [acceptedCount, acceptedInc];
         return false;
     }
 
@@ -97,7 +85,7 @@ public static class PackageLogistic {
             __result = [0, 0];
             return false;
         }
-        int expectCount = TakeItemFromModData(itemId, count, out int expectInc);
+        int expectCount = TakeItemFromModData(itemId, count, out int expectInc, manual: true);
         __result = [expectCount, expectInc];
         return false;
     }

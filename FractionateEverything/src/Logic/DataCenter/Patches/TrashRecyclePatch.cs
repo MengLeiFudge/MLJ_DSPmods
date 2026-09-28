@@ -8,11 +8,11 @@ namespace FE.Logic.DataCenter.Patches;
 /// </summary>
 public static class TrashRecyclePatch {
     /// <summary>
-    /// 扔掉的垃圾会自动回收到Mod背包
+    /// 将可接收部分回收到亚空间，容量不足的余量继续走原版垃圾路径。
     /// </summary>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(Player), nameof(Player.ThrowTrash))]
-    private static bool Player_ThrowTrash_Prefix(Player __instance, int itemId, int count, int inc) {
+    private static bool Player_ThrowTrash_Prefix(Player __instance, int itemId, ref int count, ref int inc) {
         if (!PackageAccessRules.TechItemInteractionUnlocked) {
             return true;
         }
@@ -21,13 +21,23 @@ public static class TrashRecyclePatch {
             || ItemManager.itemValue[itemId] >= ItemManager.maxValue) {
             return true;
         }
+        int originalCount = count;
+        long accepted = DataCenterUploadRouter.Upload(itemId, originalCount, inc, true);
+        int acceptedCount = (int)System.Math.Min(originalCount, accepted);
+        if (acceptedCount <= 0) {
+            return true;
+        }
         DataCenterInventory.RecordManualUpload();
-        DataCenterUploadRouter.Upload(itemId, count, inc, true);
-        return false;
+        int acceptedInc = originalCount <= 0
+            ? 0
+            : (int)System.Math.Min(int.MaxValue, (long)System.Math.Max(0, inc) * acceptedCount / originalCount);
+        count -= acceptedCount;
+        inc = System.Math.Max(0, inc - acceptedInc);
+        return count > 0;
     }
 
     /// <summary>
-    /// 扔掉的垃圾会自动回收到Mod背包
+    /// 将手持物中可接收部分回收到亚空间，余量仍由原版逻辑丢到地面。
     /// </summary>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(Player), nameof(Player.ThrowHandItems))]
@@ -41,13 +51,25 @@ public static class TrashRecyclePatch {
             || ItemManager.itemValue[itemId] >= ItemManager.maxValue) {
             return true;
         }
-        if (__instance.inhandItemId > 0 && __instance.inhandItemCount > 0) {
-            DataCenterInventory.RecordManualUpload();
-            DataCenterUploadRouter.Upload(__instance.inhandItemId, __instance.inhandItemCount,
-                __instance.inhandItemInc, true);
+        int originalCount = __instance.inhandItemCount;
+        int originalInc = __instance.inhandItemInc;
+        if (originalCount <= 0) {
+            return true;
+        }
+        long accepted = DataCenterUploadRouter.Upload(itemId, originalCount, originalInc, true);
+        int acceptedCount = (int)System.Math.Min(originalCount, accepted);
+        if (acceptedCount <= 0) {
+            return true;
+        }
+        DataCenterInventory.RecordManualUpload();
+        int acceptedInc = (int)System.Math.Min(int.MaxValue,
+            (long)System.Math.Max(0, originalInc) * acceptedCount / originalCount);
+        __instance.inhandItemCount = originalCount - acceptedCount;
+        __instance.inhandItemInc = System.Math.Max(0, originalInc - acceptedInc);
+        if (__instance.inhandItemCount > 0) {
+            return true;
         }
         __instance.inhandItemId = 0;
-        __instance.inhandItemCount = 0;
         __instance.inhandItemInc = 0;
         return false;
     }

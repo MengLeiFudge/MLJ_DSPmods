@@ -31,8 +31,8 @@ public static class InterstellarInteractionStation {
     public static void AddTranslations() {
         Register("星际物流交互站", "Interstellar Interaction Station");
         Register("I星际物流交互站",
-            "Interstellar logistics station that interacts with the fractionation data centre.\nTransfer Mode: Upload - uploads items exceeding the threshold to data centre; Download - downloads items from data centre when below threshold; Sync - both upload and download.\nCapacity Mode: Limited - upload limited by data centre target count; Infinite - unlimited upload.",
-            "可以与分馏数据中心进行物品交互的星际物流运输站。\n传输模式：仅上传-超过阈值时上传超出部分；仅下载-低于阈值时下载至阈值；双向同步-同时支持上传和下载。\n容量模式：有限上传-受数据中心目标数量限制；无限上传-不限制上传数量。");
+            "Interstellar logistics station that exchanges items with the fractionation subspace. Its original upload, download, synchronization, threshold and blueprint modes are retained; each transfer consumes station energy.",
+            "与分馏亚空间交换物品的星际物流运输站。保留原有上传、下载、双向同步、阈值与蓝图模式；每次传输消耗站内电量。");
     }
 
     public static void Create() {
@@ -40,7 +40,8 @@ public static class InterstellarInteractionStation {
             "Assets/fe/interstellar-interaction-station", tab分馏 * 1000 + 307, 10, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE星际物流交互站,
-            ERecipeType.Assemble, 1800, [I星际物流运输站, IFE培养塔], [1, 12], [IFE星际物流交互站], [1],
+            ERecipeType.Assemble, 1800, [I星际物流运输站, IFE基础矿物塔, IFE基础解析塔], [1, 4, 4],
+            [IFE星际物流交互站], [1],
             "I星际物流交互站", TFE星际物流交互, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;

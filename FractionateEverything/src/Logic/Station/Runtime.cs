@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using FE.Logic.Civilization;
 using FE.Logic.DataCenter;
 using FE.UI.MainPanel.Setting;
 using HarmonyLib;
@@ -226,7 +227,10 @@ public static partial class StationManager {
 
         ItemProto itemProto = LDB.items.Select(IFE行星内物流交互站);
         // 单件耗电（J）为物品价值的平方根乘以 10000 和交互耗电倍率。
-        double cost = Math.Sqrt(itemValue[store.itemId]) * 10000 * itemProto.InteractEnergyRatio();
+        double efficiencyMultiplier = Math.Max(0.5d,
+            1d - GrowthTechnologyManager.SubspaceEfficiencyLevel * 0.1d);
+        double cost = Math.Sqrt(itemValue[store.itemId]) * 10000
+                      * itemProto.InteractEnergyRatio() * efficiencyMultiplier;
         if (cost < 0 || double.IsNaN(cost) || double.IsInfinity(cost)) {
             return;
         }
@@ -247,11 +251,23 @@ public static partial class StationManager {
             store.count += count;
             store.inc += inc;
         } else {
-            // 将交互站的物品上传到数据中心。
-            int inc = store.count <= 0 ? 0 : split_inc(ref store.count, ref store.inc, count);
-            DataCenterUploadRouter.Upload(store.itemId, count, inc);
+            // 将交互站的物品上传到亚空间；容量竞争导致部分接收时把未接收部分放回槽位。
+            int offeredCount = count;
+            int offeredInc = store.count <= 0 ? 0 : split_inc(ref store.count, ref store.inc, offeredCount);
+            int acceptedCount = (int)Math.Min(offeredCount,
+                DataCenterUploadRouter.Upload(store.itemId, offeredCount, offeredInc));
+            if (acceptedCount < offeredCount) {
+                int rejectedCount = offeredCount - acceptedCount;
+                int acceptedInc = offeredCount <= 0 ? 0 : offeredInc * acceptedCount / offeredCount;
+                store.count += rejectedCount;
+                store.inc += offeredInc - acceptedInc;
+            }
+            count = acceptedCount;
         }
 
+        if (count <= 0) {
+            return;
+        }
         double spent = Math.Ceiling(cost * count);
         // 先限制预算再转 long，避免 long.MaxValue 转 double 后舍入到 2^63 导致溢出。
         stationComponent.energy -= spent >= budget ? budget : (long)spent;
@@ -267,12 +283,18 @@ public static partial class StationManager {
             return 0;
         }
 
+        int capacityItemId = DataCenterUploadRouter.GetUploadCapacityItemId(store.itemId);
+        long remainingCapacity = GetRemainingCapacity(capacityItemId);
+        if (remainingCapacity <= 0) {
+            return 0;
+        }
+        transferCount = (int)Math.Min(transferCount, Math.Min(int.MaxValue, remainingCapacity));
         if (capacityMode != ECapacityMode.Limited) {
             return transferCount;
         }
 
         int modTargetCount = itemModSaveCount[store.itemId];
-        long modCurrCount = GetModDataItemCount(store.itemId);
+        long modCurrCount = GetModDataItemCount(capacityItemId);
         if (modCurrCount >= modTargetCount) {
             return 0;
         }

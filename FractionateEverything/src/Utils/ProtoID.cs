@@ -444,10 +444,17 @@ public static partial class Utils {
     internal const int IFE复制塔原胚 = 8113;
     internal const int IFE转化塔原胚 = 8114;
     internal const int IFE通用原胚 = 8115;
-    internal const int IFE培养塔 = 8121;
-    internal const int IFE解析塔 = 8122;
-    internal const int IFE复制塔 = 8123;
-    internal const int IFE转化塔 = 8124;
+
+    // 3.0 五塔身份。8121..8124 保持旧实体一一映射，8125 为新增高级矿物塔。
+    internal const int IFE高级交互塔 = 8121;
+    internal const int IFE基础解析塔 = 8122;
+    internal const int IFE基础矿物塔 = 8123;
+    internal const int IFE高级转化塔 = 8124;
+    internal const int IFE高级矿物塔 = 8125;
+    internal const int IFE培养塔 = IFE高级交互塔;
+    internal const int IFE解析塔 = IFE基础解析塔;
+    internal const int IFE复制塔 = IFE基础矿物塔;
+    internal const int IFE转化塔 = IFE高级转化塔;
     internal const int IFE行星内物流交互站 = 8131;
     internal const int IFE星际物流交互站 = 8132;
     internal const int IFE残片 = 8161;
@@ -620,10 +627,15 @@ public static partial class Utils {
     internal const int M水 = 494;
     //不要使用>500且<520的id，这是创世旧版本所用的ModelID，为了与创世新版兼容会修改至+300
     //ID过大会导致OnAfterDeserialize越界，解决方法参考ModelLoadingPatch.cs
-    internal const int MFE培养塔 = 651;
-    internal const int MFE解析塔 = 652;
-    internal const int MFE复制塔 = 653;
-    internal const int MFE转化塔 = 654;
+    internal const int MFE高级交互塔 = 651;
+    internal const int MFE基础解析塔 = 652;
+    internal const int MFE基础矿物塔 = 653;
+    internal const int MFE高级转化塔 = 654;
+    internal const int MFE高级矿物塔 = 655;
+    internal const int MFE培养塔 = MFE高级交互塔;
+    internal const int MFE解析塔 = MFE基础解析塔;
+    internal const int MFE复制塔 = MFE基础矿物塔;
+    internal const int MFE转化塔 = MFE高级转化塔;
     internal const int MFE行星内物流交互站 = 661;
     internal const int MFE星际物流交互站 = 662;
     internal const int MBC插件效果分享塔 = 621;
@@ -986,6 +998,8 @@ public static partial class Utils {
     internal const int RGB海水淡化 = 801;
     internal const int RFE行星内物流交互站 = 1061;
     internal const int RFE星际物流交互站 = 1062;
+    internal const int RFE基础矿物塔 = 1063;
+    internal const int RFE基础解析塔 = 1064;
 
     internal const int T戴森球计划 = 1;
     internal const int T电磁学 = 1001;
@@ -1038,6 +1052,14 @@ public static partial class Utils {
     internal const int TFE转化塔 = 2056;
     internal const int TFE行星内物流交互 = 2061;
     internal const int TFE星际物流交互 = 2062;
+
+    internal const int TFE分馏堆叠成长 = 2080;
+    internal const int TFE亚空间扩容 = 2090;
+    internal const int TFE探索信号增幅 = 2150;
+    internal const int TFE高级矿物特质 = 2110;
+    internal const int TFE高级交互特质 = 2120;
+    internal const int TFE高级转化特质 = 2130;
+    internal const int TFE亚空间能效 = 2140;
     /// <summary>旧六阶段补给科技 ID，3.x 不注册/不复用。</summary>
     internal const int TFE阶段补给1 = 2071;
     /// <summary>旧六阶段补给科技 ID，3.x 不注册/不复用。</summary>

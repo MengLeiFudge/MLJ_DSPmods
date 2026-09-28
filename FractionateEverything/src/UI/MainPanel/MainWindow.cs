@@ -5,7 +5,6 @@ using CommonAPI.Systems;
 using FE.UI.MainPanel.Archive;
 using FE.UI.MainPanel.Civilization;
 using FE.UI.MainPanel.CoreOperate;
-using FE.UI.MainPanel.ProgressTask;
 using FE.UI.MainPanel.ResourceInteraction;
 using FE.UI.MainPanel.Setting;
 using FE.UI.MainPanel.Shell.Analysis;
@@ -42,26 +41,22 @@ public static class MainWindow {
     private static string currentPageSubpageName;
 
     public static void AddTranslations() {
-        Register("KEYOpenFracCentre", "[FE] Open Fractionation Data Centre", "[FE] 打开分馏数据中心");
-        Register("KEYSwitchFracCentreStyle", "[FE] Switch Fractionation Data Centre Style",
-            "[FE] 切换分馏数据中心界面风格");
-        Register("分馏数据中心", "Fractionation Data Centre");
+        Register("KEYOpenFracCentre", "[FE] Open Fractionation Subspace", "[FE] 打开分馏亚空间");
+        Register("KEYSwitchFracCentreStyle", "[FE] Switch Fractionation Subspace Interface Style",
+            "[FE] 切换分馏亚空间界面风格");
+        Register("分馏数据中心", "Fractionation Subspace", "分馏亚空间");
         Register("切换到分析主面板", "Switch to analysis main panel");
         Register("切换到旧版主面板", "Switch to legacy main panel");
         Register("生产管理", "Production Management");
         FracRecipeOperate.AddTranslations();
         VanillaRecipeOperate.AddTranslations();
+        Register("生命工业", "Living Industry");
         CivilizationOverviewPage.AddTranslations();
-        ProtocolRecoveryPage.AddTranslations();
-        AncientTechTreePage.AddTranslations();
+        ExplorationPage.AddTranslations();
         Register("资源管理", "Resource Management");
         ItemInteraction.AddTranslations();
-        Register("恢复指引", "Recovery Guide");
-        RecoveryGuide.AddTranslations();
-        AchievementPage.AddTranslations();
+        Register("开发档案", "Development Archive");
         DevelopmentDiary.AddTranslations();
-        Register("图鉴档案", "Gallery & Archive");
-        RecipeGallery.AddTranslations();
         Register("系统设置", "System Setting");
         Miscellaneous.AddTranslations();
     }
@@ -70,15 +65,10 @@ public static class MainWindow {
         FracRecipeOperate.LoadConfig(configFile);
         VanillaRecipeOperate.LoadConfig(configFile);
         CivilizationOverviewPage.LoadConfig(configFile);
-        ProtocolRecoveryPage.LoadConfig(configFile);
-        AncientTechTreePage.LoadConfig(configFile);
+        ExplorationPage.LoadConfig(configFile);
 
         ItemInteraction.LoadConfig(configFile);
-        RecoveryGuide.LoadConfig(configFile);
-        AchievementPage.LoadConfig(configFile);
         DevelopmentDiary.LoadConfig(configFile);
-
-        RecipeGallery.LoadConfig(configFile);
 
         Miscellaneous.LoadConfig(configFile);
     }
@@ -458,9 +448,7 @@ public static class MainWindow {
             ("FracRecipeOperate", FracRecipeOperate.Import),
             ("VanillaRecipeOperate", VanillaRecipeOperate.Import),
             ("ItemInteraction", ItemInteraction.Import),
-            ("RecoveryGuide", RecoveryGuide.Import),
             ("DevelopmentDiary", DevelopmentDiary.Import),
-            ("RecipeGallery", RecipeGallery.Import),
             ("Miscellaneous", Miscellaneous.Import)
         );
     }
@@ -471,9 +459,7 @@ public static class MainWindow {
             ("FracRecipeOperate", FracRecipeOperate.Export),
             ("VanillaRecipeOperate", VanillaRecipeOperate.Export),
             ("ItemInteraction", ItemInteraction.Export),
-            ("RecoveryGuide", RecoveryGuide.Export),
             ("DevelopmentDiary", DevelopmentDiary.Export),
-            ("RecipeGallery", RecipeGallery.Export),
             ("Miscellaneous", Miscellaneous.Export)
         );
     }
@@ -484,11 +470,7 @@ public static class MainWindow {
         VanillaRecipeOperate.IntoOtherSave();
 
         ItemInteraction.IntoOtherSave();
-
-        RecoveryGuide.IntoOtherSave();
         DevelopmentDiary.IntoOtherSave();
-
-        RecipeGallery.IntoOtherSave();
 
         Miscellaneous.IntoOtherSave();
     }

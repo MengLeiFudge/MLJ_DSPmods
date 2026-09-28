@@ -18,7 +18,7 @@ using static FE.Utils.Utils;
 namespace FE.UI.MainPanel.ResourceInteraction;
 
 /// <summary>
-/// 数据中心物品上传、下载和筛选分页页面。
+/// 亚空间物品上传、下载和筛选分页页面。
 /// </summary>
 public static class ItemInteraction {
     private const int RowCount = 8;
@@ -39,12 +39,11 @@ public static class ItemInteraction {
         (EItemType.Matrix, "科学矩阵"),
     ];
     private static readonly int[][] FractionateGroupItemIdGroups = [
-        [IFE培养塔原胚, IFE解析塔原胚, IFE复制塔原胚, IFE转化塔原胚, IFE通用原胚],
-        [IFE残片],
-        [IFE培养塔, IFE行星内物流交互站, IFE星际物流交互站],
-        [IFE解析塔, IFE复制塔, IFE转化塔],
+        [IFE通用原胚],
+        [IFE残片, IFE记忆源点],
+        [IFE基础矿物塔, IFE基础解析塔, IFE高级矿物塔, IFE高级交互塔, IFE高级转化塔],
+        [IFE行星内物流交互站, IFE星际物流交互站],
         [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵],
-        [I能量碎片, I黑雾矩阵, I物质重组器, I硅基神经元, I负熵奇点, I核心素],
     ];
     private static readonly HashSet<int> FractionateGroupItemIds =
         new(FractionateGroupItemIdGroups.SelectMany(group => group));
@@ -63,10 +62,14 @@ public static class ItemInteraction {
     private static UIButton _prevPageButton;
     private static UIButton _nextPageButton;
     private static Text _pageIndicator;
+    private static Text _capacityText;
     private static bool ShowNotStoredItem => ShowNotStoredItemEntry.Value;
 
     public static void AddTranslations() {
-        Register("物品交互", "Item Interaction");
+        Register("亚空间仓储", "Subspace Storage");
+        Register("亚空间仓储摘要", "Filter, inspect, and extract items stored in the fractionation subspace.",
+            "筛选、查看并提取分馏亚空间中存储的物品。");
+        Register("物品交互", "Subspace Storage");
 
         Register("显示未存储的物品", "Display items not stored");
         Register("查找指定物品", "Search for a specified item");
@@ -75,12 +78,16 @@ public static class ItemInteraction {
         Register("万物分馏", "Fractionate Everything");
         Register("按类型筛选可见物品", "Filter visible items by type");
 
-        Register("以下物品在分馏数据中心的存储量为：",
-            "The storage capacity of the following items in the Fractionation data centre are: ");
+        Register("以下物品在分馏亚空间的存储量为：",
+            "Stored items and their currently extractable quantities:",
+            "当前可提取的亚空间物品及数量：");
+        Register("亚空间容量说明",
+            "Each item normally holds {0} stacks. Exploration rewards may temporarily exceed this limit.",
+            "每种物品通常可存储 {0} 组；探索奖励可以暂时突破该上限。");
         Register("提取物品", "Extract Item");
         Register("提取物品说明",
-            "Left-click or right-click to extract items. The number of extraction groups can be adjusted on the settings page. This page shows the actual extractable data-centre stock.",
-            "左键单击、右键单击均可提取物品，提取组数可以在设置页面调整。本页面显示的是数据中心当前实际可提取库存。");
+            "Left-click or right-click to extract items. The number of extraction groups can be adjusted on the settings page. This page shows the actual extractable subspace stock.",
+            "左键单击、右键单击均可提取物品，提取组数可以在设置页面调整。本页面显示亚空间中当前实际可提取的库存。");
     }
 
     public static void LoadConfig(ConfigFile configFile) {
@@ -104,8 +111,7 @@ public static class ItemInteraction {
                 rows: [Px(PageLayout.HeaderHeight), Px(146f), 1, Px(PageLayout.FooterHeight)],
                 rowGap: PageLayout.Gap,
                 children: [
-                    Header("物品交互", objectName: "item-interaction-header", pos: (0, 0),
-                        onBuilt: refs => refs.Summary.text = "筛选、定位并直接从数据中心提取物品".WithColor(White)),
+                    Header("亚空间仓储", "亚空间仓储摘要", objectName: "item-interaction-header", pos: (0, 0)),
                     ContentCard(
                         pos: (1, 0),
                         objectName: "item-interaction-filter-card",
@@ -133,8 +139,11 @@ public static class ItemInteraction {
                                 cols: [1, Px(28f), 2],
                                 columnGap: 8f,
                                 children: [
-                                    TextNode("以下物品在分馏数据中心的存储量为：",
-                                        pos: (0, 0), objectName: "item-interaction-grid-summary"),
+                                    TextNode("以下物品在分馏亚空间的存储量为：",
+                                        onBuilt: text => {
+                                            _capacityText = text;
+                                            text.supportRichText = true;
+                                        }, pos: (0, 0), objectName: "item-interaction-grid-summary"),
                                     TipsButtonNode("提取物品", "提取物品说明",
                                         pos: (0, 1), objectName: "item-interaction-grid-tip"),
                                 ]),
@@ -257,6 +266,8 @@ public static class ItemInteraction {
             btnItems[row, col].gameObject.SetActive(false);
         }
 
+        _capacityText.text = string.Format("亚空间容量说明".Translate(),
+            CurrentCapacityGroups).WithColor(Gray);
         UpdatePagination(totalPages);
     }
 
