@@ -40,29 +40,29 @@ public static class CivilizationOverviewPage {
     public static void AddTranslations() {
         Register("文明研究", "Civilization Research");
         Register("文明研究摘要",
-            "Inspect item-direction eligibility, analysis progress, discovered recipes, and living-tower traits.",
-            "查看物品方向的解析资格、研究进度、已发现配方与生命塔特质。");
+            "Inspect concrete explored contents, shared item analysis slots, resolved recipes, and living-tower traits.",
+            "查看具体探索内容、物品共享解析槽，以及已经解析的配方、科技方向与生命塔特质。");
         Register("研究总览", "Research Overview");
         Register("研究方向", "Research Directions");
         Register("方向详情", "Direction Detail");
-        Register("已发现内容", "Discovered Content");
+        Register("已探索内容", "Explored Content");
         Register("切换研究方向", "Cycle Direction");
-        Register("解析资格", "Eligibility");
-        Register("已有资格", "Eligible");
-        Register("等待探索", "Awaiting Exploration");
+        Register("解析状态", "Analysis Status");
+        Register("等待解析", "Awaiting Analysis");
+        Register("等待新探索", "Awaiting Exploration");
         Register("当前进度", "Current Progress");
-        Register("方向内容", "Direction Content");
-        Register("已发现", "Discovered");
-        Register("尚无已发现内容", "No content has been discovered yet.");
+        Register("方向内容", "Pending Content", "待解析内容");
+        Register("已解析", "Resolved");
+        Register("尚无已探索内容", "No content has been explored yet.");
         Register("研究方向为空", "No research directions are currently available.");
-        Register("研究成果", "Research Results");
+        Register("已解析成果", "Resolved Results");
         Register("高级塔收集", "Advanced Towers");
         Register("传承准备", "Legacy Readiness");
         Register("已完成", "Complete");
         Register("未完成", "Incomplete");
         Register("研究页脚",
-            "Feed eligible items into a Basic Analysis Tower. Each successful analysis advances one lowest-tier undiscovered result in that direction.",
-            "将已取得资格的物品送入基础解析塔；每次解析成功会推进该方向当前最低未发现层级中的一项内容。");
+            "Exploration reveals one concrete content and its carrier item. Feed that item into a Basic Analysis Tower to advance its shared slot; a full slot selects one explored unresolved content.",
+            "探索每次发现一项具体内容及其承载物品；将该物品送入基础解析塔推进共享槽，槽满时从已探索且未解析的内容中选出一项。");
         Register("研究客户端说明", "Research state is settled and synchronized by the host.",
             "研究状态由主机结算并同步。");
     }
@@ -79,7 +79,7 @@ public static class CivilizationOverviewPage {
         tab = trans;
         ResearchDirectionSnapshot[] directions = ResearchManager.GetDirectionSnapshots();
         float directionHeight = Math.Max(360f, directions.Length * DirectionLineHeight + 20f);
-        int discoveredHeightUnits = ResearchManager.GetUnlockedContentDefinitions()
+        int discoveredHeightUnits = ResearchManager.GetKnownContentDefinitions()
             .Sum(definition => RecipeManager.GetRecipe(definition.Id) == null ? 1 : 5);
         float contentHeight = Math.Max(260f, Math.Max(1, discoveredHeightUnits) * ContentLineHeight + 20f);
 
@@ -131,7 +131,7 @@ public static class CivilizationOverviewPage {
                                         ]),
                                     ContentCard(pos: (1, 0), objectName: "research-content-card",
                                         rows: [Px(28f), 1], rowGap: 8f, children: [
-                                            CardTitleNode("已发现内容", pos: (0, 0),
+                                            CardTitleNode("已探索内容", pos: (0, 0),
                                                 objectName: "research-content-title"),
                                             ScrollableContentCard(contentHeight, pos: (1, 0),
                                                 objectName: "research-content-scroll",
@@ -186,7 +186,7 @@ public static class CivilizationOverviewPage {
     private static string BuildOverviewText() {
         string towers = (ResearchManager.HasAcquiredAllAdvancedTowers ? "已完成" : "未完成").Translate();
         string completion = (PermanentProfileStore.HasPlayedFractionation ? "已完成" : "未完成").Translate();
-        return $"{"研究成果".Translate()}：{ResearchManager.DiscoveredContentCount.ToString().WithColor(Blue)}    "
+        return $"{"已解析成果".Translate()}：{ResearchManager.DiscoveredContentCount.ToString().WithColor(Blue)}    "
                + $"{"高级塔收集".Translate()}：{towers}\n"
                + $"{"传承准备".Translate()}：{completion}";
     }
@@ -200,13 +200,16 @@ public static class CivilizationOverviewPage {
         foreach (ResearchDirectionSnapshot direction in directions) {
             bool selected = direction.ItemId == selectedDirectionItemId;
             string marker = selected ? ">".WithColor(Orange) : " ";
-            string eligibility = (direction.Eligible ? "已有资格" : "等待探索").Translate()
-                .WithColor(direction.Eligible ? Green : Gray);
+            string analysisStatus = GetAnalysisStatus(direction).Translate()
+                .WithColor(direction.HasPendingContent ? Green
+                    : direction.HasRemainingContent ? Gray : Blue);
             builder.Append(marker).Append(' ')
                 .Append(GetItemName(direction.ItemId))
-                .Append("  ").Append(eligibility)
-                .Append("  ").Append(direction.DiscoveredCount).Append('/').Append(direction.TotalCount)
-                .Append('\n');
+                .Append("  ").Append(analysisStatus);
+            if (direction.HasPendingContent) {
+                builder.Append("  ×").Append(direction.PendingContentCount);
+            }
+            builder.Append('\n');
         }
         return builder.ToString();
     }
@@ -218,27 +221,34 @@ public static class CivilizationOverviewPage {
             return "研究方向为空".Translate().WithColor(Gray);
         }
 
-        string eligibility = (direction.Eligible ? "已有资格" : "等待探索").Translate()
-            .WithColor(direction.Eligible ? Green : Gray);
+        string analysisStatus = GetAnalysisStatus(direction).Translate()
+            .WithColor(direction.HasPendingContent ? Green
+                : direction.HasRemainingContent ? Gray : Blue);
         float percentage = direction.Progress / 100f;
+        string pendingContent = direction.HasPendingContent
+            ? $"\n{"方向内容".Translate()}：{direction.PendingContentCount}"
+            : string.Empty;
         return $"{GetItemName(direction.ItemId).WithColor(Orange)}\n\n"
-               + $"{"解析资格".Translate()}：{eligibility}\n"
-               + $"{"当前进度".Translate()}：{percentage:0.##}%\n"
-               + $"{"方向内容".Translate()}：{direction.DiscoveredCount}/{direction.TotalCount}";
+               + $"{"解析状态".Translate()}：{analysisStatus}\n"
+               + $"{"当前进度".Translate()}：{percentage:0.##}%"
+               + pendingContent;
     }
 
     private static string BuildDiscoveredContent() {
-        ResearchContentDefinition[] definitions = ResearchManager.GetUnlockedContentDefinitions();
+        ResearchContentDefinition[] definitions = ResearchManager.GetKnownContentDefinitions();
         if (definitions.Length == 0) {
-            return "尚无已发现内容".Translate().WithColor(Gray);
+            return "尚无已探索内容".Translate().WithColor(Gray);
         }
 
         var builder = new StringBuilder();
         foreach (ResearchContentDefinition definition in definitions) {
+            bool resolved = ResearchManager.IsContentUnlocked(definition.Id);
             WorldviewRecipe recipe = RecipeManager.GetRecipe(definition.Id);
             builder.Append("T").Append(definition.Tier).Append("  ")
-                .Append(definition.DisplayName.WithColor(Orange)).Append('\n');
-            if (recipe == null) {
+                .Append(definition.DisplayName.WithColor(Orange)).Append("  ·  ")
+                .Append((resolved ? "已解析" : "等待解析").Translate()
+                    .WithColor(resolved ? Green : Blue)).Append('\n');
+            if (!resolved || recipe == null) {
                 builder.Append('\n');
                 continue;
             }
@@ -266,6 +276,13 @@ public static class CivilizationOverviewPage {
         return builder.ToString();
     }
 
+    private static string GetAnalysisStatus(ResearchDirectionSnapshot direction) {
+        if (direction.HasPendingContent) {
+            return "等待解析";
+        }
+        return direction.HasRemainingContent ? "等待新探索" : "已完成";
+    }
+
     private static void CycleDirection() {
         ResearchDirectionSnapshot[] directions = ResearchManager.GetDirectionSnapshots();
         if (directions.Length == 0) {
@@ -282,7 +299,7 @@ public static class CivilizationOverviewPage {
             return;
         }
         if (directions.All(direction => direction.ItemId != selectedDirectionItemId)) {
-            selectedDirectionItemId = directions.FirstOrDefault(direction => direction.Eligible)?.ItemId
+            selectedDirectionItemId = directions.FirstOrDefault(direction => direction.HasPendingContent)?.ItemId
                                       ?? directions[0].ItemId;
         }
     }

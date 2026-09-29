@@ -6,21 +6,13 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Civilization;
 
 /// <summary>
-/// 提供 FE 基础设施翻译与原版配方增强的矩阵阶段判定。
+/// 提供 FE 物流交互科技翻译与原版配方增强的矩阵阶段判定。
 /// </summary>
 public static class TechManager {
     /// <summary>
-    /// 注册隐藏通信根科技与物流交互科技使用的文本。
+    /// 注册物流交互科技使用的文本。
     /// </summary>
     public static void AddTranslations() {
-        Register("T分馏数据中心", "Fractionation Subspace Network", "分馏亚空间网络");
-        Register("分馏数据中心描述",
-            "A hidden communication anchor for the old-civilization subspace network. Recover the first relic to establish access.",
-            "古文明亚空间网络的隐藏通信锚点；回收首个遗物后建立访问连接。");
-        Register("分馏数据中心结果",
-            "Subspace communication established. Basic towers and starter resources are available.",
-            "亚空间通信已建立，基础塔与启动资源已经就绪。");
-
         Register("T行星内物流交互", "Planetary Subspace Interaction", "行星亚空间交互");
         Register("行星内物流交互描述",
             "Allows planetary logistics interaction stations to exchange items with the fractionation subspace.",
@@ -51,6 +43,7 @@ public static class TechManager {
         bool hasFiniteTech = false;
         foreach (TechProto tech in LDB.techs.dataArray) {
             if (tech == null || !tech.Published || tech.IsObsolete || tech.IsHiddenTech || tech.MaxLevel > 20
+                || GrowthTechnologyManager.TryGetTechnologyContentId(tech.ID, out _)
                 || ItemManager.GetTechTopMatrixID(tech) != matrixId) {
                 continue;
             }
@@ -94,7 +87,7 @@ public static class CivilizationRecoveryManager {
         starterKitRecovered || ExplorationManager.FirstRelicClaimed;
 
     /// <summary>
-    /// 完成首个遗物回收，解锁隐藏通信根并把启动物资写入亚空间。
+    /// 完成首个遗物回收，直接建立亚空间通信并把启动物资写入亚空间。
     /// </summary>
     /// <returns>本次是否首次完成恢复。</returns>
     public static bool CompleteFirstRelicRecovery() {
@@ -103,7 +96,8 @@ public static class CivilizationRecoveryManager {
         }
 
         starterKitRecovered = true;
-        UnlockCommunicationRoot();
+        GameMain.history.UnlockRecipe(RFE基础矿物塔);
+        GameMain.history.UnlockRecipe(RFE基础解析塔);
         ResearchManager.GrantStarterResearchState();
         DataCenterInventory.AddExplorationReward(IFE基础矿物塔, 10);
         DataCenterInventory.AddExplorationReward(IFE基础解析塔, 10);
@@ -129,14 +123,6 @@ public static class CivilizationRecoveryManager {
     /// 保留联机生命周期入口；探索认领已经不再使用旧请求节流。
     /// </summary>
     public static void ResetNetworkRequestThrottle() { }
-
-    private static void UnlockCommunicationRoot() {
-        if (!GameMain.history.TechUnlocked(TFE分馏数据中心, true)) {
-            GameMain.history.UnlockTechUnlimited(TFE分馏数据中心, true);
-        }
-        GameMain.history.UnlockRecipe(RFE基础矿物塔);
-        GameMain.history.UnlockRecipe(RFE基础解析塔);
-    }
 
     private static void GrantVeteranLogisticsSupply() {
         int[] logisticsTechs = [T基础物流系统, T改良物流系统, T高效物流系统, T集装物流系统];

@@ -65,7 +65,7 @@ public static class BasicMineralTower {
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE基础矿物塔,
             ERecipeType.Assemble, 240, [I分馏塔, I铁块, I电路板], [1, 10, 5], [IFE基础矿物塔], [1],
-            "I复制塔", TFE分馏数据中心, item.GridIndex, item.Name, item.IconPath);
+            "I复制塔", 0, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
         item.UnlockKey = -1;

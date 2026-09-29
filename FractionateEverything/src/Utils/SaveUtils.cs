@@ -10,6 +10,8 @@ namespace FE.Utils;
 /// 标签化存档块读写辅助方法。
 /// </summary>
 public static partial class Utils {
+    private const int MaximumSaveBlockCount = 4096;
+
     /// <summary>
     /// 将一个数据块包装成带 Tag 和长度的格式写入。
     /// </summary>
@@ -48,7 +50,18 @@ public static partial class Utils {
     private static void ReadBlock(this BinaryReader r, Action<string, BinaryReader> readAction) {
         string tag = r.ReadString();
         int length = r.ReadInt32();
+        if (length < 0) {
+            throw new InvalidDataException($"存档块 [{tag}] 的长度不能为负数：{length}。");
+        }
+        if (r.BaseStream.CanSeek && length > r.BaseStream.Length - r.BaseStream.Position) {
+            throw new InvalidDataException(
+                $"存档块 [{tag}] 声明长度 {length} 超过剩余数据 {r.BaseStream.Length - r.BaseStream.Position}。");
+        }
         byte[] data = r.ReadBytes(length);
+        if (data.Length != length) {
+            throw new EndOfStreamException(
+                $"存档块 [{tag}] 需要 {length} 字节，实际只读取到 {data.Length} 字节。");
+        }
         try {
             using var ms = new MemoryStream(data);
             using var br = new BinaryReader(ms);
@@ -68,6 +81,9 @@ public static partial class Utils {
         // 转换为字典以便快速匹配（Tag 顺序不一致也能正确处理）
         var handlerDict = readActions.ToDictionary(h => h.tag, h => h.action);
         int count = r.ReadInt32();
+        if (count < 0 || count > MaximumSaveBlockCount) {
+            throw new InvalidDataException($"存档块数量无效：{count}。");
+        }
         for (int i = 0; i < count; i++) {
             r.ReadBlock((tag, br) => {
                 if (handlerDict.TryGetValue(tag, out var action)) {

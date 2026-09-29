@@ -13,7 +13,7 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Civilization;
 
 /// <summary>
-/// 一项可由解析池发现的配方或塔特质。
+/// 一项可被探索点明确发现、再由对应物品共享解析槽解析的内容。
 /// </summary>
 public sealed class ResearchContentDefinition(string id, string displayName, int tier) {
     /// <summary>稳定内容 ID。</summary>
@@ -31,28 +31,27 @@ public sealed class ResearchContentDefinition(string id, string displayName, int
 /// </summary>
 public sealed class ResearchDirectionSnapshot(
     int itemId,
-    bool eligible,
-    int progress,
-    int discoveredCount,
-    int totalCount) {
+    int pendingContentCount,
+    bool hasRemainingContent,
+    int progress) {
     /// <summary>作为解析方向的物品 ID。</summary>
     public int ItemId { get; } = itemId;
 
-    /// <summary>是否已经取得该方向的解析资格。</summary>
-    public bool Eligible { get; } = eligible;
+    /// <summary>当前已经探索并等待该物品解析的内容数量。</summary>
+    public int PendingContentCount { get; } = pendingContentCount;
+
+    /// <summary>是否已有等待该物品解析的具体内容。</summary>
+    public bool HasPendingContent => PendingContentCount > 0;
+
+    /// <summary>目录中是否仍有尚未解析的内容，不包含具体数量。</summary>
+    public bool HasRemainingContent { get; } = hasRemainingContent;
 
     /// <summary>当前内容发现进度，范围 0..9999。</summary>
     public int Progress { get; } = progress;
-
-    /// <summary>该方向已经发现的内容数量。</summary>
-    public int DiscoveredCount { get; } = discoveredCount;
-
-    /// <summary>该方向的内容总数。</summary>
-    public int TotalCount { get; } = totalCount;
 }
 
 /// <summary>
-/// 随机配方研究、解析资格和高级塔取得状态。
+/// 具体内容探索、物品共享解析槽和高级塔取得状态。
 /// </summary>
 public static class ResearchManager {
     /// <summary>
@@ -77,10 +76,11 @@ public static class ResearchManager {
         }
     }
 
-    /// <summary>高级塔库存达到此数量后开放对应解析方向。</summary>
+    /// <summary>高级塔库存达到此数量后，对应特质可以进入探索候选。</summary>
     public const int AdvancedTowerEligibilityThreshold = 1000;
 
     private const int SacrificeWindowSeconds = 60;
+    private const int MaximumImportedCollectionCount = 12000;
     private const float SacrificeBoostStep = 0.05f;
     private const float MaximumSacrificeBoost = 0.75f;
 
@@ -99,6 +99,8 @@ public static class ResearchManager {
     private static readonly Dictionary<int, List<string>> RemainingDirectionPools = [];
     private static readonly Dictionary<string, List<int>> ContentDirections = [];
     private static readonly HashSet<int> EligibleDirections = [];
+    private static readonly HashSet<string> ExploredContents = [];
+    private static readonly Dictionary<string, int> ExploredContentDirections = [];
     private static readonly HashSet<string> UnlockedContents = [];
     private static readonly Dictionary<int, int> DirectionProgress = [];
     private static readonly HashSet<int> BootstrapTowerGrants = [];
@@ -193,6 +195,7 @@ public static class ResearchManager {
             AddToPool(IFE高级矿物塔, AdvancedMineralTraitId);
             AddToPool(IFE高级交互塔, AdvancedInteractionTraitId);
             AddToPool(IFE高级转化塔, AdvancedConversionTraitId);
+            AddTechnologyContentDefinitions();
             RebuildRemainingDirectionPoolsUnsafe();
             PublishAnalysisRuntimeSnapshotUnsafe();
         }
@@ -221,13 +224,10 @@ public static class ResearchManager {
     }
 
     /// <summary>
-    /// 首次取得遗物时授予初始解析资格与两张基础矿物配方。
+    /// 首次取得遗物时授予两张基础矿物配方。
     /// </summary>
     public static void GrantStarterResearchState() {
         lock (Sync) {
-            EligibleDirections.Add(I石矿);
-            EligibleDirections.Add(I铁矿);
-            EligibleDirections.Add(IFE通用原胚);
             UnlockWithoutReward($"mineral-basic:{I石矿}");
             UnlockWithoutReward($"mineral-basic:{I铁矿}");
             PublishAnalysisRuntimeSnapshotUnsafe();
@@ -247,7 +247,7 @@ public static class ResearchManager {
     }
 
     /// <summary>
-    /// 判断指定物品是否已取得解析资格且池内仍有内容。Frag 始终可解析。
+    /// 判断指定物品是否已有待解析具体内容。Frag 和高级塔仍保留各自的特殊消耗路径。
     /// </summary>
     public static bool CanAnalyzeDirection(int itemId) {
         if (itemId == IFE残片 || FractionatorTowerCatalog.IsAdvancedTowerItem(itemId)) {
@@ -266,7 +266,7 @@ public static class ResearchManager {
     }
 
     /// <summary>
-    /// 获取全部已取得资格的解析方向。
+    /// 获取全部已经进入研究记录的物品方向。
     /// </summary>
     public static int[] GetEligibleDirections() {
         lock (Sync) {
@@ -275,46 +275,91 @@ public static class ResearchManager {
     }
 
     /// <summary>
-    /// 获取仍有未发现内容的候选解析方向，供探索点生成资格时使用。
+    /// 获取尚未发现、且当前层级允许生成探索点的具体内容。
     /// </summary>
-    public static int[] GetPotentialDirections() {
+    public static string[] GetPotentialContentIds() {
         lock (Sync) {
             int currentTier = UnlockedContents
                 .Where(ContentDefinitions.ContainsKey)
                 .Select(contentId => ContentDefinitions[contentId].Tier)
                 .DefaultIfEmpty(0)
                 .Max();
-            return DirectionPools.Keys
-                .Where(itemId => !FractionatorTowerCatalog.IsAdvancedTowerItem(itemId))
-                .Where(itemId => !EligibleDirections.Contains(itemId))
-                .Where(itemId => {
-                    string[] candidates = GetCandidateIdsUnsafe(itemId);
-                    return candidates.Length > 0
-                           && candidates.Min(contentId => ContentDefinitions[contentId].Tier) <= currentTier;
-                })
-                .OrderBy(itemId => itemId)
+            return ContentDefinitions.Values
+                .Where(definition => !UnlockedContents.Contains(definition.Id)
+                                     && !ExploredContents.Contains(definition.Id)
+                                     && definition.Tier <= currentTier + 1
+                                     && IsContentExplorableUnsafe(definition.Id))
+                .OrderBy(definition => definition.Tier)
+                .ThenBy(definition => definition.Id, StringComparer.Ordinal)
+                .Select(definition => definition.Id)
                 .ToArray();
         }
     }
 
     /// <summary>
-    /// 取得一个物品方向的解析资格。
+    /// 获取一项内容可使用的解析物品。
     /// </summary>
-    public static bool GrantDirectionEligibility(int itemId, bool notify = true) {
+    public static int[] GetContentDirectionItemIds(string contentId) {
         lock (Sync) {
-            if (FractionatorTowerCatalog.IsAdvancedTowerItem(itemId)
-                && !AdvancedTowerInventoryMilestones.Contains(itemId)) {
+            return contentId != null
+                   && ContentDirections.TryGetValue(contentId, out List<int> directions)
+                ? directions
+                    .Where(itemId => IsExplorationDirectionUnsafe(contentId, itemId))
+                    .OrderBy(itemId => itemId)
+                    .ToArray()
+                : [];
+        }
+    }
+
+    /// <summary>
+    /// 判断具体内容当前能否由指定物品作为唯一承载方向进入研究记录。
+    /// </summary>
+    public static bool CanDiscoverContent(string contentId, int itemId) {
+        lock (Sync) {
+            return CanDiscoverContentUnsafe(contentId, itemId);
+        }
+    }
+
+    /// <summary>
+    /// 将探索点携带的具体内容加入对应物品的共享解析槽。
+    /// </summary>
+    public static bool DiscoverContent(string contentId, int itemId, bool notify = true) {
+        lock (Sync) {
+            if (!CanDiscoverContentUnsafe(contentId, itemId)) {
                 return false;
             }
-            if (itemId <= 0 || !DirectionPools.ContainsKey(itemId) || !EligibleDirections.Add(itemId)) {
-                return false;
-            }
+
+            ResearchContentDefinition definition = ContentDefinitions[contentId];
+            ExploredContents.Add(contentId);
+            ExploredContentDirections[contentId] = itemId;
+            EligibleDirections.Add(itemId);
             snapshotDirty = true;
             PublishAnalysisRuntimeSnapshotUnsafe();
             if (notify) {
-                QueueNotification(string.Format("已取得解析资格：{0}".Translate(), GetItemName(itemId)));
+                QueueNotification(string.Format(
+                    "探索发现研究内容：{0}".Translate(), definition.DisplayName));
             }
             return true;
+        }
+    }
+
+    /// <summary>
+    /// 为旧探索点选择该物品尚未发现的一项具体内容。
+    /// </summary>
+    public static string GetLegacyExplorationContentId(int itemId, ISet<string> excludedContentIds = null) {
+        lock (Sync) {
+            if (!DirectionPools.TryGetValue(itemId, out List<string> pool)) {
+                return null;
+            }
+            return pool
+                .Where(contentId => !UnlockedContents.Contains(contentId)
+                                    && !ExploredContents.Contains(contentId)
+                                    && (excludedContentIds == null || !excludedContentIds.Contains(contentId))
+                                    && IsExplorationDirectionUnsafe(contentId, itemId)
+                                    && IsContentExplorableUnsafe(contentId))
+                .OrderBy(contentId => ContentDefinitions[contentId].Tier)
+                .ThenBy(contentId => contentId, StringComparer.Ordinal)
+                .FirstOrDefault();
         }
     }
 
@@ -335,18 +380,38 @@ public static class ResearchManager {
             return DirectionPools
                 .Where(pair => EligibleDirections.Contains(pair.Key))
                 .OrderBy(pair => pair.Key)
-                .Select(pair => new ResearchDirectionSnapshot(
-                    pair.Key,
-                    true,
-                    GetDirectionProgressUnsafe(pair.Key),
-                    pair.Value.Count - GetRemainingDirectionCountUnsafe(pair.Key),
-                    pair.Value.Count))
+                .Select(pair => {
+                    string[] candidates = GetCandidateIdsUnsafe(pair.Key);
+                    return new ResearchDirectionSnapshot(
+                        pair.Key,
+                        candidates.Length,
+                        GetRemainingDirectionCountUnsafe(pair.Key) > 0,
+                        GetDirectionProgressUnsafe(pair.Key));
+                })
                 .ToArray();
         }
     }
 
     /// <summary>
-    /// 获取当前已发现内容定义。
+    /// 获取全部已探索内容定义；包含等待解析和已经解析的内容。
+    /// </summary>
+    public static ResearchContentDefinition[] GetKnownContentDefinitions() {
+        lock (Sync) {
+            return ExploredContents
+                .Concat(UnlockedContents)
+                .Distinct()
+                .Select(id => ContentDefinitions.TryGetValue(id, out ResearchContentDefinition definition)
+                    ? definition
+                    : null)
+                .Where(definition => definition != null)
+                .OrderBy(definition => definition.Tier)
+                .ThenBy(definition => definition.DisplayName)
+                .ToArray();
+        }
+    }
+
+    /// <summary>
+    /// 获取当前已经解析的内容定义。
     /// </summary>
     public static ResearchContentDefinition[] GetUnlockedContentDefinitions() {
         lock (Sync) {
@@ -457,7 +522,7 @@ public static class ResearchManager {
     }
 
     /// <summary>
-    /// 在亚空间中的同类高级塔首次达到门槛时，永久开放该塔的解析方向。
+    /// 在亚空间中的同类高级塔首次达到门槛时，永久开放对应特质的探索候选。
     /// </summary>
     public static void NotifyAdvancedTowerInventoryCount(int itemId, long inventoryCount) {
         if (NebulaMultiplayerModAPI.IsClient || inventoryCount < AdvancedTowerEligibilityThreshold
@@ -468,10 +533,8 @@ public static class ResearchManager {
             bool changed = AcquiredAdvancedTowers.Add(itemId);
             if (AdvancedTowerInventoryMilestones.Add(itemId)) {
                 changed = true;
-                if (DirectionPools.ContainsKey(itemId) && EligibleDirections.Add(itemId)) {
-                    QueueNotification(string.Format(
-                        "已取得解析资格：{0}".Translate(), GetItemName(itemId)));
-                }
+                QueueNotification(string.Format(
+                    "高级塔库存门槛".Translate(), GetItemName(itemId)));
             }
             if (changed) {
                 snapshotDirty = true;
@@ -481,7 +544,7 @@ public static class ResearchManager {
     }
 
     /// <summary>
-    /// 载入库存后补齐已经达到门槛的高级塔解析方向。
+    /// 载入库存后补齐已经达到门槛的高级塔探索条件。
     /// </summary>
     public static void RefreshAdvancedTowerInventoryMilestones() {
         if (NebulaMultiplayerModAPI.IsClient) {
@@ -522,20 +585,11 @@ public static class ResearchManager {
     }
 
     /// <summary>
-    /// 判断指定成长科技是否已经取得对应塔特质资格。
+    /// 判断指定 FE 科技是否已经完成对应方向的探索与解析。
     /// </summary>
-    public static bool CanResearchTraitTech(int techId) {
-        if (techId > TFE高级矿物特质 && techId <= TFE高级矿物特质 + 5) {
-            return IsContentUnlocked(AdvancedMineralTraitId);
-        }
-        if (techId > TFE高级交互特质 && techId <= TFE高级交互特质 + 5) {
-            return IsContentUnlocked(AdvancedInteractionTraitId);
-        }
-        if (techId > TFE高级转化特质 && techId <= TFE高级转化特质 + 5) {
-            return IsContentUnlocked(AdvancedConversionTraitId);
-        }
-        return true;
-    }
+    public static bool CanResearchTechnology(int techId) =>
+        !GrowthTechnologyManager.TryGetTechnologyContentId(techId, out _)
+        || GrowthTechnologyManager.IsTechnologyDiscovered(techId);
 
     /// <summary>
     /// 在主线程显示解析和探索结果，并返回是否需要广播联机快照。
@@ -567,13 +621,30 @@ public static class ResearchManager {
     /// </summary>
     public static void Import(BinaryReader r) {
         lock (Sync) {
+            belongsToGeneration3 = false;
+            EligibleDirections.Clear();
+            ExploredContents.Clear();
+            ExploredContentDirections.Clear();
+            UnlockedContents.Clear();
+            DirectionProgress.Clear();
+            BootstrapTowerGrants.Clear();
+            AcquiredAdvancedTowers.Clear();
             AdvancedTowerInventoryMilestones.Clear();
+            discoveredContentCount = 0;
+            pendingSignalAccelerations = 0;
             ResetSacrificeRates();
+            bool importedExploredContents = false;
             r.ReadBlocks(
                 ("Generation", br => belongsToGeneration3 = br.ReadBoolean()),
                 ("StackProgressionMode", br =>
                     GrowthTechnologyManager.SetStackProgressionMode(br.ReadBoolean())),
                 ("EligibleDirections", br => ReadIntSet(br, EligibleDirections)),
+                ("ExploredContents", br => {
+                    importedExploredContents = true;
+                    ReadStringIntDictionary(br, ExploredContentDirections);
+                    ExploredContents.Clear();
+                    ExploredContents.UnionWith(ExploredContentDirections.Keys);
+                }),
                 ("UnlockedContents", br => ReadStringSet(br, UnlockedContents)),
                 ("DirectionProgress", br => ReadIntDictionary(br, DirectionProgress)),
                 ("BootstrapTowerGrants", br => ReadIntSet(br, BootstrapTowerGrants)),
@@ -588,16 +659,57 @@ public static class ResearchManager {
                     UnlockedContents.Remove(contentId);
                 }
             }
-            AdvancedTowerInventoryMilestones.RemoveWhere(
-                itemId => !FractionatorTowerCatalog.IsAdvancedTowerItem(itemId));
-            foreach (int towerItemId in new[] { IFE高级矿物塔, IFE高级交互塔, IFE高级转化塔 }) {
-                if (AdvancedTowerInventoryMilestones.Contains(towerItemId)) {
-                    EligibleDirections.Add(towerItemId);
-                } else {
-                    EligibleDirections.Remove(towerItemId);
+            foreach (string contentId in ExploredContents.ToArray()) {
+                if (!ContentDefinitions.ContainsKey(contentId)
+                    || UnlockedContents.Contains(contentId)
+                    || !ExploredContentDirections.TryGetValue(contentId, out int itemId)
+                    || !ContentDirections.TryGetValue(contentId, out List<int> directions)
+                    || !directions.Contains(itemId)
+                    || !IsExplorationDirectionUnsafe(contentId, itemId)) {
+                    ExploredContents.Remove(contentId);
+                    ExploredContentDirections.Remove(contentId);
                 }
             }
-            discoveredContentCount = Math.Max(discoveredContentCount, UnlockedContents.Count);
+            AdvancedTowerInventoryMilestones.RemoveWhere(
+                itemId => !FractionatorTowerCatalog.IsAdvancedTowerItem(itemId));
+            EligibleDirections.RemoveWhere(itemId => !DirectionPools.ContainsKey(itemId));
+            BootstrapTowerGrants.RemoveWhere(
+                itemId => !FractionatorTowerCatalog.IsAdvancedTowerItem(itemId));
+            AcquiredAdvancedTowers.RemoveWhere(
+                itemId => !FractionatorTowerCatalog.IsAdvancedTowerItem(itemId));
+            foreach (int itemId in DirectionProgress.Keys.ToArray()) {
+                if (!DirectionPools.ContainsKey(itemId)) {
+                    DirectionProgress.Remove(itemId);
+                    continue;
+                }
+                DirectionProgress[itemId] = Math.Max(0, Math.Min(9999, DirectionProgress[itemId]));
+            }
+            if (!importedExploredContents) {
+                foreach (int towerItemId in AdvancedTowerInventoryMilestones) {
+                    EligibleDirections.Add(towerItemId);
+                }
+                foreach (int itemId in EligibleDirections.OrderBy(itemId => itemId).ToArray()) {
+                    if (!DirectionPools.TryGetValue(itemId, out List<string> pool)) {
+                        continue;
+                    }
+                    foreach (string contentId in pool) {
+                        if (IsExplorationDirectionUnsafe(contentId, itemId)
+                            && !UnlockedContents.Contains(contentId)
+                            && ExploredContents.Add(contentId)) {
+                            ExploredContentDirections[contentId] = itemId;
+                        }
+                    }
+                }
+            }
+            GrowthTechnologyManager.MigrateLegacyTechnologyStates();
+            if (!importedExploredContents) {
+                MigrateLegacyTechnologyDiscoveriesUnsafe();
+            }
+            foreach (KeyValuePair<string, int> pair in ExploredContentDirections) {
+                EligibleDirections.Add(pair.Value);
+            }
+            discoveredContentCount = Math.Min(ContentDefinitions.Count,
+                Math.Max(discoveredContentCount, UnlockedContents.Count));
             RebuildRemainingDirectionPoolsUnsafe();
             ClearCompletedDirectionProgress();
             PublishAnalysisRuntimeSnapshotUnsafe();
@@ -616,6 +728,8 @@ public static class ResearchManager {
                 ("StackProgressionMode", bw =>
                     bw.Write(GrowthTechnologyManager.UsesExperiencedStackProgression)),
                 ("EligibleDirections", bw => WriteIntSet(bw, EligibleDirections)),
+                ("ExploredContents", bw =>
+                    WriteStringIntDictionary(bw, ExploredContentDirections)),
                 ("UnlockedContents", bw => WriteStringSet(bw, UnlockedContents)),
                 ("DirectionProgress", bw => WriteIntDictionary(bw, DirectionProgress)),
                 ("BootstrapTowerGrants", bw => WriteIntSet(bw, BootstrapTowerGrants)),
@@ -635,6 +749,8 @@ public static class ResearchManager {
         lock (Sync) {
             GrowthTechnologyManager.SetStackProgressionMode(false);
             EligibleDirections.Clear();
+            ExploredContents.Clear();
+            ExploredContentDirections.Clear();
             UnlockedContents.Clear();
             DirectionProgress.Clear();
             BootstrapTowerGrants.Clear();
@@ -653,14 +769,13 @@ public static class ResearchManager {
     }
 
     /// <summary>
-    /// 阻止未发现塔特质时将其成长科技加入队列。
+    /// 阻止尚未完成探索与解析的 FE 科技加入研究队列。
     /// </summary>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(GameHistoryData), nameof(GameHistoryData.CanEnqueueTech))]
     [HarmonyPatch(typeof(GameHistoryData), nameof(GameHistoryData.CanEnqueueTechIgnoreFull))]
-    private static void GameHistoryData_CanEnqueueTraitTech_Postfix(int techId, ref bool __result) {
-        if (__result && (!CanResearchTraitTech(techId)
-                         || !GrowthTechnologyManager.CanResearchStackTech(techId))) {
+    private static void GameHistoryData_CanEnqueueTechnology_Postfix(int techId, ref bool __result) {
+        if (__result && !CanResearchTechnology(techId)) {
             __result = false;
         }
     }
@@ -672,17 +787,14 @@ public static class ResearchManager {
 
         discoveredContentCount++;
         pendingSignalAccelerations++;
+        ExploredContents.Remove(contentId);
+        ExploredContentDirections.Remove(contentId);
         RemoveUnlockedContentFromPoolsUnsafe(contentId);
         ClearCompletedDirectionProgress();
         ResearchContentDefinition definition = ContentDefinitions[contentId];
         QueueNotification(string.Format("解析发现：{0}".Translate(), definition.DisplayName));
         WorldviewRecipe recipe = RecipeManager.GetRecipe(contentId);
         if (recipe != null) {
-            foreach (WorldviewRecipeOutput output in recipe.Products) {
-                if (!FractionatorTowerCatalog.IsAdvancedTowerItem(output.ItemId)) {
-                    GrantDirectionEligibility(output.ItemId, false);
-                }
-            }
             GrantBootstrapTower(recipe);
         }
         RebuildRecipeAvailability();
@@ -712,6 +824,8 @@ public static class ResearchManager {
     private static void UnlockWithoutReward(string contentId) {
         if (ContentDefinitions.ContainsKey(contentId) && UnlockedContents.Add(contentId)) {
             discoveredContentCount++;
+            ExploredContents.Remove(contentId);
+            ExploredContentDirections.Remove(contentId);
             RemoveUnlockedContentFromPoolsUnsafe(contentId);
             ClearCompletedDirectionProgress();
             PublishAnalysisRuntimeSnapshotUnsafe();
@@ -724,6 +838,26 @@ public static class ResearchManager {
                      .Where(itemId => GetRemainingDirectionCountUnsafe(itemId) == 0)
                      .ToArray()) {
             DirectionProgress.Remove(itemId);
+        }
+    }
+
+    private static void MigrateLegacyTechnologyDiscoveriesUnsafe() {
+        GameHistoryData history = GameMain.history;
+        if (history == null || LDB.techs?.dataArray == null) {
+            return;
+        }
+
+        foreach (TechProto tech in LDB.techs.dataArray) {
+            if (tech == null
+                || !GrowthTechnologyManager.IsTechnologyNodeActive(tech.ID)
+                || !GrowthTechnologyManager.TryGetTechnologyContentId(tech.ID, out string contentId)
+                || !history.techStates.TryGetValue(tech.ID, out TechState state)
+                || !state.unlocked && state.hashUploaded <= 0L && state.curLevel <= tech.Level) {
+                continue;
+            }
+            UnlockedContents.Add(contentId);
+            ExploredContents.Remove(contentId);
+            ExploredContentDirections.Remove(contentId);
         }
     }
 
@@ -744,17 +878,11 @@ public static class ResearchManager {
             || remaining.Count == 0) {
             return Array.Empty<string>();
         }
-        int minimumTier = int.MaxValue;
-        foreach (string contentId in remaining) {
-            minimumTier = Math.Min(minimumTier, ContentDefinitions[contentId].Tier);
-        }
-        List<string> candidates = [];
-        foreach (string contentId in remaining) {
-            if (ContentDefinitions[contentId].Tier == minimumTier) {
-                candidates.Add(contentId);
-            }
-        }
-        return candidates.ToArray();
+        return remaining
+            .Where(contentId => ExploredContentDirections.TryGetValue(contentId, out int directionItemId)
+                                && directionItemId == itemId)
+            .OrderBy(contentId => contentId, StringComparer.Ordinal)
+            .ToArray();
     }
 
     private static int GetRemainingDirectionCountUnsafe(int itemId) =>
@@ -777,6 +905,64 @@ public static class ResearchManager {
 
     private static void AddContentDefinition(ResearchContentDefinition definition) {
         ContentDefinitions[definition.Id] = definition;
+    }
+
+    private static void AddTechnologyContentDefinitions() {
+        AddTechnologyContent(GrowthTechnologyManager.StackTechnologyContentId,
+            "FE分馏堆叠成长".Translate(), 0);
+        AddTechnologyContent(GrowthTechnologyManager.SubspaceCapacityTechnologyContentId,
+            "FE亚空间扩容".Translate(), 1);
+        AddTechnologyContent(GrowthTechnologyManager.ExplorationTechnologyContentId,
+            "FE探索信号增幅".Translate(), 1);
+        AddTechnologyContent(GrowthTechnologyManager.PlanetaryInteractionTechnologyContentId,
+            "T行星内物流交互".Translate(), 2);
+        AddTechnologyContent(GrowthTechnologyManager.SubspaceEfficiencyTechnologyContentId,
+            "FE亚空间能效".Translate(), 2);
+        AddTechnologyContent(GrowthTechnologyManager.InterstellarInteractionTechnologyContentId,
+            "T星际物流交互".Translate(), 3);
+    }
+
+    private static void AddTechnologyContent(string contentId, string displayName, int tier) {
+        AddContentDefinition(new ResearchContentDefinition(contentId, displayName, tier));
+        AddToPool(IFE记忆源点, contentId);
+    }
+
+    private static bool CanDiscoverContentUnsafe(string contentId, int itemId) =>
+        contentId != null
+        && ContentDefinitions.ContainsKey(contentId)
+        && ContentDirections.TryGetValue(contentId, out List<int> directions)
+        && directions.Contains(itemId)
+        && IsExplorationDirectionUnsafe(contentId, itemId)
+        && !UnlockedContents.Contains(contentId)
+        && !ExploredContents.Contains(contentId)
+        && IsContentExplorableUnsafe(contentId);
+
+    private static bool IsContentExplorableUnsafe(string contentId) {
+        if (!ContentDirections.ContainsKey(contentId)) {
+            return false;
+        }
+        return contentId switch {
+            AdvancedMineralTraitId =>
+                AdvancedTowerInventoryMilestones.Contains(IFE高级矿物塔),
+            AdvancedInteractionTraitId =>
+                AdvancedTowerInventoryMilestones.Contains(IFE高级交互塔),
+            AdvancedConversionTraitId =>
+                AdvancedTowerInventoryMilestones.Contains(IFE高级转化塔),
+            _ => ContentDirections[contentId].Any(itemId =>
+                IsExplorationDirectionUnsafe(contentId, itemId)),
+        };
+    }
+
+    private static bool IsExplorationDirectionUnsafe(string contentId, int itemId) {
+        if (!FractionatorTowerCatalog.IsAdvancedTowerItem(itemId)) {
+            return true;
+        }
+        return itemId switch {
+            IFE高级矿物塔 => contentId == AdvancedMineralTraitId,
+            IFE高级交互塔 => contentId == AdvancedInteractionTraitId,
+            IFE高级转化塔 => contentId == AdvancedConversionTraitId,
+            _ => false,
+        };
     }
 
     private static void AddToPool(int itemId, string contentId) {
@@ -975,9 +1161,18 @@ public static class ResearchManager {
         PendingNotifications.Enqueue(message);
     }
 
+    private static int ReadImportedCollectionCount(BinaryReader reader, string collectionName) {
+        int count = reader.ReadInt32();
+        if (count < 0 || count > MaximumImportedCollectionCount) {
+            throw new InvalidDataException(
+                $"研究存档集合 {collectionName} 的元素数量无效：{count}。");
+        }
+        return count;
+    }
+
     private static void ReadIntSet(BinaryReader reader, HashSet<int> target) {
         target.Clear();
-        int count = reader.ReadInt32();
+        int count = ReadImportedCollectionCount(reader, nameof(HashSet<int>));
         for (int i = 0; i < count; i++) {
             target.Add(reader.ReadInt32());
         }
@@ -992,7 +1187,7 @@ public static class ResearchManager {
 
     private static void ReadStringSet(BinaryReader reader, HashSet<string> target) {
         target.Clear();
-        int count = reader.ReadInt32();
+        int count = ReadImportedCollectionCount(reader, nameof(HashSet<string>));
         for (int i = 0; i < count; i++) {
             target.Add(reader.ReadString());
         }
@@ -1005,9 +1200,25 @@ public static class ResearchManager {
         }
     }
 
+    private static void ReadStringIntDictionary(BinaryReader reader, Dictionary<string, int> target) {
+        target.Clear();
+        int count = ReadImportedCollectionCount(reader, nameof(Dictionary<string, int>));
+        for (int i = 0; i < count; i++) {
+            target[reader.ReadString()] = reader.ReadInt32();
+        }
+    }
+
+    private static void WriteStringIntDictionary(BinaryWriter writer, Dictionary<string, int> source) {
+        writer.Write(source.Count);
+        foreach (KeyValuePair<string, int> pair in source.OrderBy(pair => pair.Key)) {
+            writer.Write(pair.Key);
+            writer.Write(pair.Value);
+        }
+    }
+
     private static void ReadIntDictionary(BinaryReader reader, Dictionary<int, int> target) {
         target.Clear();
-        int count = reader.ReadInt32();
+        int count = ReadImportedCollectionCount(reader, nameof(Dictionary<int, int>));
         for (int i = 0; i < count; i++) {
             target[reader.ReadInt32()] = reader.ReadInt32();
         }

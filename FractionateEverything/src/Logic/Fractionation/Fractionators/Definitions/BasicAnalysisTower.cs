@@ -52,8 +52,8 @@ public static class BasicAnalysisTower {
     public static void AddTranslations() {
         Register("解析塔", "Basic Analysis Tower", "基础解析塔");
         Register("I解析塔",
-            "Consumes one eligible item at a time to discover recipes and living-industry capabilities in its research direction.",
-            "消耗单一已取得解析资格的物品，沿该研究方向发现配方与生命工业能力。");
+            "Consumes an item with explored unresolved content and advances that item's shared analysis slot.",
+            "消耗已经探索到未解析内容的物品，并推进该物品的共享解析槽。");
     }
 
     /// <summary>
@@ -65,7 +65,7 @@ public static class BasicAnalysisTower {
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE基础解析塔,
             ERecipeType.Assemble, 240, [I分馏塔, I棱镜, I电路板], [1, 10, 5], [IFE基础解析塔], [1],
-            "I解析塔", TFE分馏数据中心, item.GridIndex, item.Name, item.IconPath);
+            "I解析塔", 0, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
         item.UnlockKey = -1;

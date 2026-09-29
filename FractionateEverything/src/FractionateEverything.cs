@@ -166,11 +166,11 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     public void Import(BinaryReader r) {
         FeatureSaveRegistry.IntoOtherSave();
         int version = r.ReadInt32();
-        if (version != 11) {
+        if (version is not (11 or 12)) {
             if (version < 11) {
                 ResearchManager.MarkLegacyGeneration();
             }
-            // 只解析当前版本（11）的存档数据。旧版本的建筑与物品迁移由 LegacyProtoMigration 单独处理，更高版本的数据也不尝试读取。
+            // 只解析版本 11/12 的标签化存档。旧版物理 Proto 迁移由 LegacyProtoMigration 单独处理，未来版本不猜读。
             if (r.BaseStream.CanSeek) {
                 r.BaseStream.Seek(0, SeekOrigin.End);
             }
@@ -189,7 +189,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     /// 导出存档时执行。
     /// </summary>
     public void Export(BinaryWriter w) {
-        w.Write(11);
+        w.Write(12);
         FeatureSaveRegistry.Export(w);
     }
 

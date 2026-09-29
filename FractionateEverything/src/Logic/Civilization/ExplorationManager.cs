@@ -34,7 +34,10 @@ public sealed class ExplorationMark {
     /// <summary>点位内容类型。</summary>
     public ExplorationMarkKind Kind;
 
-    /// <summary>资格物品或资源物品 ID。</summary>
+    /// <summary>具体研究内容的稳定 ID；资源点和首遗物为空。</summary>
+    public string ContentId;
+
+    /// <summary>解析物品或资源物品 ID。</summary>
     public int ItemId;
 
     /// <summary>资源数量。</summary>
@@ -47,6 +50,8 @@ public sealed class ExplorationMark {
 public static class ExplorationManager {
     private const long TicksPerMinute = 3600L;
     private const float TerrestrialArrivalDistance = 120f;
+    private const int MaximumImportedCollectionCount = 4096;
+    private const int MaximumImportedMarkId = 1000000000;
     private static readonly object Sync = new();
     private static readonly List<ExplorationMark> ActiveMarks = [];
     private static readonly Dictionary<int, int> GeneratedCountByPlanet = [];
@@ -117,8 +122,11 @@ public static class ExplorationManager {
             if (birthPlanet == null) {
                 return;
             }
+            if (!TryTakeNextMarkId(out int markId)) {
+                return;
+            }
             ActiveMarks.Add(new ExplorationMark {
-                Id = nextMarkId++,
+                Id = markId,
                 PlanetId = birthPlanet.id,
                 LocalPosition = CreateMarkPosition(birthPlanet),
                 Kind = ExplorationMarkKind.FirstRelic,
@@ -290,24 +298,34 @@ public static class ExplorationManager {
     /// </summary>
     public static void Import(BinaryReader r) {
         bool claimed;
+        var importedMarkContents = new Dictionary<int, string>();
         lock (Sync) {
+            ActiveMarks.Clear();
+            GeneratedCountByPlanet.Clear();
+            nextMarkId = 1;
+            nextTimedGenerationTick = 0L;
+            randomSeed = 0x8F3A51C7u;
+            firstRelicClaimed = false;
             r.ReadBlocks(
                 ("Header", br => {
-                    nextMarkId = Math.Max(1, br.ReadInt32());
-                    nextTimedGenerationTick = br.ReadInt64();
+                    nextMarkId = Math.Max(1, Math.Min(MaximumImportedMarkId, br.ReadInt32()));
+                    nextTimedGenerationTick = Math.Max(0L, br.ReadInt64());
                     randomSeed = br.ReadUInt32();
+                    if (randomSeed == 0u) {
+                        randomSeed = 0x8F3A51C7u;
+                    }
                     firstRelicClaimed = br.ReadBoolean();
                 }),
                 ("PlanetCounts", br => {
                     GeneratedCountByPlanet.Clear();
-                    int count = br.ReadInt32();
+                    int count = ReadImportedCollectionCount(br, "PlanetCounts");
                     for (int i = 0; i < count; i++) {
                         GeneratedCountByPlanet[br.ReadInt32()] = br.ReadInt32();
                     }
                 }),
                 ("Marks", br => {
                     ActiveMarks.Clear();
-                    int count = br.ReadInt32();
+                    int count = ReadImportedCollectionCount(br, "Marks");
                     for (int i = 0; i < count; i++) {
                         ActiveMarks.Add(new ExplorationMark {
                             Id = br.ReadInt32(),
@@ -318,8 +336,16 @@ public static class ExplorationManager {
                             Count = br.ReadInt32(),
                         });
                     }
+                }),
+                ("MarkContents", br => {
+                    importedMarkContents.Clear();
+                    int count = ReadImportedCollectionCount(br, "MarkContents");
+                    for (int i = 0; i < count; i++) {
+                        importedMarkContents[br.ReadInt32()] = br.ReadString();
+                    }
                 })
             );
+            SanitizeImportedStateUnsafe(importedMarkContents);
             snapshotDirty = true;
             claimed = firstRelicClaimed;
         }
@@ -359,6 +385,17 @@ public static class ExplorationManager {
                         bw.Write(mark.ItemId);
                         bw.Write(mark.Count);
                     }
+                }),
+                ("MarkContents", bw => {
+                    ExplorationMark[] contentMarks = ActiveMarks
+                        .Where(mark => mark.Kind == ExplorationMarkKind.DirectionEligibility
+                                       && !string.IsNullOrEmpty(mark.ContentId))
+                        .ToArray();
+                    bw.Write(contentMarks.Length);
+                    foreach (ExplorationMark mark in contentMarks) {
+                        bw.Write(mark.Id);
+                        bw.Write(mark.ContentId);
+                    }
                 })
             );
         }
@@ -382,6 +419,118 @@ public static class ExplorationManager {
         }
     }
 
+    private static void SanitizeImportedStateUnsafe(Dictionary<int, string> importedMarkContents) {
+        GalaxyData galaxy = GameMain.galaxy;
+        long currentTick = Math.Max(0L, GameMain.gameTick);
+        long maximumInterval = GetGenerationIntervalTicks();
+        long latestGenerationTick = currentTick > long.MaxValue - maximumInterval
+            ? long.MaxValue
+            : currentTick + maximumInterval;
+        nextTimedGenerationTick = Math.Min(nextTimedGenerationTick, latestGenerationTick);
+        foreach (int planetId in GeneratedCountByPlanet.Keys.ToArray()) {
+            PlanetData planet = galaxy?.PlanetById(planetId);
+            if (galaxy != null && planet == null) {
+                GeneratedCountByPlanet.Remove(planetId);
+                continue;
+            }
+            int maximumCount = planet == null ? int.MaxValue : GetPlanetQuota(planetId);
+            GeneratedCountByPlanet[planetId] = Math.Max(0,
+                Math.Min(maximumCount, GeneratedCountByPlanet[planetId]));
+        }
+
+        ActiveMarks.Sort((left, right) => left.Id.CompareTo(right.Id));
+        var markIds = new HashSet<int>();
+        var reservedContentIds = new HashSet<string>();
+        bool hasFirstRelic = false;
+        for (int index = 0; index < ActiveMarks.Count; index++) {
+            ExplorationMark mark = ActiveMarks[index];
+            PlanetData planet = galaxy?.PlanetById(mark.PlanetId);
+            if (mark.Id <= 0 || mark.Id >= MaximumImportedMarkId || !markIds.Add(mark.Id)
+                || galaxy != null && planet == null) {
+                ActiveMarks.RemoveAt(index--);
+                continue;
+            }
+            float markRadius = planet == null ? 0f : GetMarkRadius(planet);
+            float localDistance = mark.LocalPosition.magnitude;
+            bool invalidPosition = !IsFinite(mark.LocalPosition.x)
+                                   || !IsFinite(mark.LocalPosition.y)
+                                   || !IsFinite(mark.LocalPosition.z)
+                                   || !IsFinite(localDistance)
+                                   || planet != null && (localDistance < markRadius * 0.5f
+                                                         || localDistance > markRadius * 1.5f);
+            if (invalidPosition) {
+                if (planet == null) {
+                    ActiveMarks.RemoveAt(index--);
+                    continue;
+                }
+                mark.LocalPosition = CreateMarkPosition(planet);
+            }
+
+            switch (mark.Kind) {
+                case ExplorationMarkKind.FirstRelic:
+                    if (firstRelicClaimed || hasFirstRelic) {
+                        ActiveMarks.RemoveAt(index--);
+                        continue;
+                    }
+                    hasFirstRelic = true;
+                    mark.ContentId = null;
+                    mark.ItemId = 0;
+                    mark.Count = 0;
+                    break;
+                case ExplorationMarkKind.DirectionEligibility:
+                    bool hasValidImportedContent = importedMarkContents.TryGetValue(mark.Id,
+                            out string contentId)
+                        && !string.IsNullOrEmpty(contentId)
+                        && !reservedContentIds.Contains(contentId)
+                        && ResearchManager.CanDiscoverContent(contentId, mark.ItemId);
+                    if (!hasValidImportedContent) {
+                        contentId = ResearchManager.GetLegacyExplorationContentId(mark.ItemId,
+                            reservedContentIds);
+                    }
+                    mark.ContentId = contentId;
+                    if (!string.IsNullOrEmpty(contentId)) {
+                        reservedContentIds.Add(contentId);
+                    } else if (planet != null) {
+                        ConfigureResourceMark(mark, planet);
+                    } else {
+                        ActiveMarks.RemoveAt(index--);
+                    }
+                    break;
+                case ExplorationMarkKind.ResourceCache:
+                    mark.ContentId = null;
+                    if (mark.Count <= 0 || !LDB.items.Exist(mark.ItemId)) {
+                        if (planet != null) {
+                            ConfigureResourceMark(mark, planet);
+                        } else {
+                            ActiveMarks.RemoveAt(index--);
+                        }
+                    } else if (planet != null) {
+                        mark.Count = Math.Min(mark.Count, GetResourceRewardCount(mark.ItemId, planet));
+                    }
+                    break;
+                default:
+                    if (planet != null) {
+                        ConfigureResourceMark(mark, planet);
+                    } else {
+                        ActiveMarks.RemoveAt(index--);
+                    }
+                    break;
+            }
+        }
+
+        int maximumMarkId = ActiveMarks.Select(mark => mark.Id).DefaultIfEmpty(0).Max();
+        nextMarkId = Math.Max(nextMarkId, maximumMarkId + 1);
+    }
+
+    private static int ReadImportedCollectionCount(BinaryReader reader, string collectionName) {
+        int count = reader.ReadInt32();
+        if (count < 0 || count > MaximumImportedCollectionCount) {
+            throw new InvalidDataException(
+                $"探索存档集合 {collectionName} 的元素数量无效：{count}。");
+        }
+        return count;
+    }
+
     private static bool TryGenerateMark() {
         List<PlanetData> candidates = GetReachablePlanets()
             .Where(planet => GetGeneratedCount(planet.id) < GetPlanetQuota(planet.id))
@@ -394,15 +543,24 @@ public static class ExplorationManager {
         bool eligibility = GetRandDouble(ref randomSeed) < GetEligibilityProbability();
         int itemId = 0;
         int count = 0;
+        string contentId = null;
         ExplorationMarkKind kind;
         if (eligibility) {
-            int[] potentialDirections = ResearchManager.GetPotentialDirections()
-                .Where(directionId => !ActiveMarks.Any(mark =>
-                    mark.Kind == ExplorationMarkKind.DirectionEligibility && mark.ItemId == directionId))
+            string[] potentialContents = ResearchManager.GetPotentialContentIds()
+                .Where(candidateId => !ActiveMarks.Any(mark =>
+                    mark.Kind == ExplorationMarkKind.DirectionEligibility
+                    && mark.ContentId == candidateId))
                 .ToArray();
-            if (potentialDirections.Length > 0) {
-                itemId = potentialDirections[NextInt(potentialDirections.Length)];
-                kind = ExplorationMarkKind.DirectionEligibility;
+            if (potentialContents.Length > 0) {
+                contentId = potentialContents[NextInt(potentialContents.Length)];
+                int[] directionItems = ResearchManager.GetContentDirectionItemIds(contentId);
+                if (directionItems.Length > 0) {
+                    itemId = directionItems[NextInt(directionItems.Length)];
+                    kind = ExplorationMarkKind.DirectionEligibility;
+                } else {
+                    contentId = null;
+                    kind = ExplorationMarkKind.ResourceCache;
+                }
             } else {
                 kind = ExplorationMarkKind.ResourceCache;
             }
@@ -410,22 +568,22 @@ public static class ExplorationManager {
             kind = ExplorationMarkKind.ResourceCache;
         }
 
-        if (kind == ExplorationMarkKind.ResourceCache) {
-            itemId = SelectResourceCandidate(planet);
-            ItemProto item = LDB.items.Select(itemId);
-            int stackSize = Math.Max(1, item?.StackSize ?? 1);
-            long resourceCount = 5L * stackSize * GetDistanceValueMultiplier(planet.id);
-            count = resourceCount > int.MaxValue ? int.MaxValue : (int)resourceCount;
+        if (!TryTakeNextMarkId(out int markId)) {
+            return false;
         }
-
-        ActiveMarks.Add(new ExplorationMark {
-            Id = nextMarkId++,
+        var mark = new ExplorationMark {
+            Id = markId,
             PlanetId = planet.id,
             LocalPosition = CreateMarkPosition(planet),
             Kind = kind,
+            ContentId = contentId,
             ItemId = itemId,
             Count = count,
-        });
+        };
+        if (kind == ExplorationMarkKind.ResourceCache) {
+            ConfigureResourceMark(mark, planet);
+        }
+        ActiveMarks.Add(mark);
         GeneratedCountByPlanet[planet.id] = GetGeneratedCount(planet.id) + 1;
         snapshotDirty = true;
         return true;
@@ -455,7 +613,7 @@ public static class ExplorationManager {
                 QueueTip("已接入古文明亚空间网络".Translate());
                 break;
             case ExplorationMarkKind.DirectionEligibility:
-                ResearchManager.GrantDirectionEligibility(mark.ItemId);
+                ResearchManager.DiscoverContent(mark.ContentId, mark.ItemId);
                 break;
             case ExplorationMarkKind.ResourceCache:
                 DataCenterInventory.AddExplorationReward(mark.ItemId, mark.Count);
@@ -521,6 +679,29 @@ public static class ExplorationManager {
 
     private static int GetGeneratedCount(int planetId) =>
         GeneratedCountByPlanet.TryGetValue(planetId, out int count) ? count : 0;
+
+    private static void ConfigureResourceMark(ExplorationMark mark, PlanetData planet) {
+        mark.Kind = ExplorationMarkKind.ResourceCache;
+        mark.ContentId = null;
+        mark.ItemId = SelectResourceCandidate(planet);
+        mark.Count = GetResourceRewardCount(mark.ItemId, planet);
+    }
+
+    private static int GetResourceRewardCount(int itemId, PlanetData planet) {
+        ItemProto item = LDB.items.Select(itemId);
+        int stackSize = Math.Max(1, item?.StackSize ?? 1);
+        long resourceCount = 5L * stackSize * GetDistanceValueMultiplier(planet.id);
+        return resourceCount > int.MaxValue ? int.MaxValue : (int)resourceCount;
+    }
+
+    private static bool TryTakeNextMarkId(out int markId) {
+        if (nextMarkId <= 0 || nextMarkId >= MaximumImportedMarkId) {
+            markId = 0;
+            return false;
+        }
+        markId = nextMarkId++;
+        return true;
+    }
 
     private static int SelectResourceCandidate(PlanetData planet) {
         if (NextInt(100) < 10) {
@@ -696,6 +877,7 @@ public static class ExplorationManager {
         PlanetId = mark.PlanetId,
         LocalPosition = mark.LocalPosition,
         Kind = mark.Kind,
+        ContentId = mark.ContentId,
         ItemId = mark.ItemId,
         Count = mark.Count,
     };

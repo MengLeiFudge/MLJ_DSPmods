@@ -74,27 +74,27 @@ public static class TutorialManager {
 
             回收后按 [Shift + F] 打开亚空间面板。“生命工业”页面展示研究方向和遗物信号，“亚空间仓储”页面用于查看与提取已接入网络的物品。
 
-            两座基础塔构成生产起点。后续通过物品方向研究发现高级内容，再由通用原胚培育三类高级生命塔。持续探索资源藏点或击杀黑雾可以取得更多原胚，首批补给不是唯一来源。随时可以按 [G] 重新查看这些指引。
+            两座基础塔构成生产起点。后续通过实地探索具体内容、再用对应物品完成解析来发现高级能力，并由通用原胚培育三类高级生命塔。持续探索资源藏点或击杀黑雾可以取得更多原胚，首批补给不是唯一来源。随时可以按 [G] 重新查看这些指引。
             """);
 
-        RegisterTutorial("分馏亚空间网络", "Fractionation Subspace Network", "分馏亚空间网络",
+        RegisterTutorial("亚空间与研究", "Subspace and Research", "亚空间与研究",
             """
-            The first relic establishes access to a shared subspace inventory. Each item normally has an independent capacity of ten stacks; growth technologies can raise it to one hundred stacks. Relic rewards may temporarily exceed the normal limit.
+            The first relic directly establishes a shared subspace inventory. Each item starts with an independent capacity of ten stacks; Subspace Capacity can add ten stacks per level through level 10,000. Relic rewards may temporarily exceed the normal limit.
 
-            Feed items into the front port of either Basic Tower to upload them. Logistics Interaction Stations can exchange items automatically at an energy cost. Advanced Towers are stored normally; when one type first reaches 1,000 stored towers, its analysis direction becomes permanently eligible.
+            Exploration signals reveal one concrete recipe, tower trait, or technology direction at a time. The signal also identifies which item carries it. Every item has one shared analysis-progress slot; when that slot fills, one of that item's explored but unresolved contents is selected. Resolving a technology direction reveals its entire upgrade row, which then uses matrices for normal research.
 
-            Feed an eligible item into a Basic Analysis Tower to advance a random undiscovered result in that direction. An Advanced Tower with no remaining result is sacrificed instead, with a 2% chance to produce Memory. The average sacrifice rate over the latest 60 seconds raises the same tower type's success rate in 5% steps, up to +75%. Analysing Frag may reveal an additional permanent exploration signal. Every discovered result also brings the next timed signal closer, while preserving a minimum interval.
+            Feed items into the front port of either Basic Tower to upload them. Logistics Interaction Stations can exchange items automatically at an energy cost. Advanced Towers are stored normally; when one type first reaches 1,000 stored towers, its trait becomes eligible to appear in exploration but is not granted directly.
 
-            The second technology page contains deterministic global growth: stacking, subspace capacity and transfer efficiency, exploration-signal amplification, and one trait chain for each Advanced Tower.
+            An Advanced Tower with no explored result remaining is sacrificed instead, with a 2% chance to produce Memory. The average sacrifice rate over the latest 60 seconds raises the same tower type's success rate in 5% steps, up to +75%. Memory carries technology directions; analysing Frag may reveal an additional permanent exploration signal.
             """,
             """
-            首个遗物会建立共享亚空间库存。每种物品通常拥有独立的 10 组容量，成长科技可以逐步扩展到 100 组；遗物奖励允许暂时突破常规上限。
+            首个遗物会直接建立共享亚空间库存。每种物品初始拥有独立的 10 组容量；“亚空间扩容”每级增加 10 组，最高可研究至 10000 级。遗物奖励允许暂时突破常规上限。
 
-            将物品送入任一基础塔的正面端口即可上传。物流交互站可以消耗电力自动存取物品。高级塔也会正常入库；某类高级塔首次达到 1000 座库存时，会永久开放对应解析方向。
+            探索信号每次发现一项具体配方、塔特质或科技方向，并同时确定承载它的解析物品。每种物品只有一个共享解析进度槽；槽满时，从该物品已经探索但尚未解析的内容中选出一项。科技方向解析完成后，整条升级行同时显现，再使用矩阵进行正常研究。
 
-            将已取得解析资格的物品送入基础解析塔，会在该方向当前最低未完成层级中随机推进一项内容。某类高级塔没有剩余可研究内容时，才会改为献祭，并以 2% 概率产出 Memory。最近 60 秒内同类高级塔的平均献祭速率会以 5% 为一档提高该类塔的成功率，最多提高 75%。解析 Frag 可能发现一个额外的永久探索信号。每次发现内容还会提前下一次定时信号，但不会突破最低间隔。
+            将物品送入任一基础塔的正面端口即可上传。物流交互站可以消耗电力自动存取物品。高级塔也会正常入库；某类高级塔首次达到 1000 座库存时，只会让对应特质进入探索候选，不会直接授予解析资格。
 
-            科技第二页提供确定性的全局成长：堆叠、亚空间容量与存取能效、探索信号增幅，以及三类高级塔各自的特质链。
+            某类高级塔没有已探索的剩余研究内容时，继续输入会转为献祭，并以 2% 概率产出 Memory。最近 60 秒内同类高级塔的平均献祭速率会以 5% 为一档提高该类塔的成功率，最多提高 75%。Memory 承载科技方向；解析 Frag 可能发现一个额外的永久探索信号。
             """);
 
         RegisterTutorial("基础分馏塔使用指南", "Basic Fractionator Guide", "基础分馏塔使用指南",
@@ -103,18 +103,18 @@ public static class TutorialManager {
             Feed a supported ordinary resource through a side input. A successful 5% cycle consumes one item and outputs two of the same item; failed items continue through the flow output. The front port uploads items when the tower is not processing a side input.
 
             [Basic Analysis Tower]
-            Feed an eligible item through a side input to consume it for research. Each item has a 2% discovery roll; ordinary discoveries add 5% progress per success, while the Advanced Tower trait stage adds 1%. An Advanced Tower cannot be researched before 1,000 of that type have first been stored; after its remaining results are exhausted, further inputs become sacrifices. Frag instead rolls for exploration signals. Ineligible items pass through unchanged.
+            Feed an item with explored unresolved content through a side input. Each item has one shared progress slot and a 2% progress roll per unit; ordinary discoveries add 5% per success, while Advanced Tower traits add 1%. When the slot fills, one explored unresolved result is selected. Storing 1,000 towers of one type only allows its trait to appear in exploration; that trait must still be explored and analysed. After no explored result remains, further Advanced Tower inputs become sacrifices. Frag instead rolls for exploration signals. Other items pass through unchanged.
 
-            Both Basic Towers use the power grid, process global cargo stacks, continue while one output is blocked, and expose 20-item flow and product buffers.
+            Both Basic Towers use the power grid, process global cargo stacks, continue while one output is blocked, and expose flow and product buffers of 20 current cargo stacks.
             """,
             """
             【基础矿物塔】
             从侧面输入受支持的普通资源。每轮有 5% 成功率；成功时消耗 1 件并产出 2 件同种物品，失败物品从流动输出继续离开。未从侧面处理物品时，正面端口用于上传物品。
 
             【基础解析塔】
-            从侧面输入已取得资格的物品并将其消耗用于研究。每件物品进行一次 2% 的发现判定；普通内容每次成功增加 5% 进度，进入高级塔特质层后每次成功增加 1%。某类高级塔必须先在亚空间中达到 1000 座库存，之后才能用于研究；该类塔没有剩余研究内容后，继续输入才会转为献祭。Frag 则用于判定探索信号。没有资格的物品会原样流出。
+            从侧面输入已经探索到未解析内容的物品。每种物品共用一个进度槽，每件物品进行一次 2% 的进度判定；普通内容每次成功增加 5%，高级塔特质每次成功增加 1%。槽满时，从已经探索但尚未解析的结果中选出一项。某类高级塔达到 1000 座库存只会让特质进入探索候选，该特质仍需完成探索和解析；没有已探索的剩余内容后，继续输入高级塔才会转为献祭。Frag 则用于判定探索信号，其他物品会原样流出。
 
-            两座基础塔接入电网，按全局堆叠处理货物，在一路输出阻塞时仍可继续工作，流动与产物缓存均为 20 件。
+            两座基础塔接入电网，按全局堆叠处理货物，在一路输出阻塞时仍可继续工作，流动与产物缓存均为当前货物堆叠的 20 堆。
             """);
 
         RegisterTutorial("高级生命塔使用指南", "Advanced Living Tower Guide", "高级生命塔使用指南",
@@ -137,12 +137,12 @@ public static class TutorialManager {
             """
             Logistics Interaction Stations exchange ordinary station inventory with the fractionation subspace. Supply and demand lock modes determine upload or download direction; storage modes maintain their configured target quantities.
 
-            Every transfer consumes station energy according to item value. Subspace Transfer Efficiency reduces this cost by 10% per level, to a maximum reduction of 50%. Normal uploads stop at each item's current subspace capacity; relic rewards remain extractable even when they exceed that limit.
+            Every transfer consumes station energy according to item value. Subspace Transfer Efficiency reduces this cost by 10% per level, to a maximum reduction of 60%. Normal uploads stop at each item's current subspace capacity; relic rewards remain extractable even when they exceed that limit.
             """,
             """
             物流交互站会在普通物流槽位与分馏亚空间之间交换物品。供应、需求的锁定状态决定上传或下载方向，仓储模式则维持相应的目标数量。
 
-            每次传输都会按物品价值消耗物流站电力。“亚空间存取能效”每级降低 10% 消耗，最多降低 50%。普通上传会在对应物品达到当前亚空间容量时停止；超过上限的遗物奖励仍然可以正常提取。
+            每次传输都会按物品价值消耗物流站电力。“亚空间存取能效”每级降低 10% 消耗，最多降低 60%。普通上传会在对应物品达到当前亚空间容量时停止；超过上限的遗物奖励仍然可以正常提取。
             """);
     }
 
@@ -150,7 +150,7 @@ public static class TutorialManager {
         int nextId = FirstTutorialId;
         return [
             new(nextId++, "万物分馏简介", "TOR_GameSecond", [10]),
-            new(nextId++, "分馏亚空间网络", "TOR_TechUnlocked", [TFE分馏数据中心, 4]),
+            new(nextId++, "亚空间与研究", "TOR_OnBuild", [IFE基础解析塔]),
             new(nextId++, "基础分馏塔使用指南", "TOR_OnBuild", [IFE基础矿物塔, IFE基础解析塔]),
             new(nextId++, "高级生命塔使用指南", "TOR_OnBuild",
                 [IFE高级矿物塔, IFE高级交互塔, IFE高级转化塔]),

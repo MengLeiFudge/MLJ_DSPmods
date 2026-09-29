@@ -44,7 +44,7 @@ public static class GenesisBook {
     [HarmonyPatch(typeof(FastStartOptionPatches), nameof(FastStartOptionPatches.SetForNewGame))]
     private static IEnumerable<CodeInstruction> FastStartOptionPatches_SetForNewGame_Transpiler(
         IEnumerable<CodeInstruction> instructions, ILGenerator generator) {
-        // 创世之书只对非 FE 科技执行快速解锁；FE 隐藏恢复科技由自身流程管理。
+        // 创世之书只对非 FE 科技执行快速解锁；FE 发现科技由自身流程管理。
         var matcher = new CodeMatcher(instructions);
         //寻找: GameMain.data.history.TechUnlocked(proto.ID)
         matcher.MatchForward(false,
@@ -77,14 +77,13 @@ public static class GenesisBook {
     }
 
     private static bool IsFracTech(int id) {
-        return id is >= TFE分馏数据中心 and <= TFE转化塔
-            or >= TFE行星内物流交互 and <= TFE星际物流交互
+        return id is >= TFE行星内物流交互 and <= TFE星际物流交互
             or >= TFE分馏堆叠成长 + 1 and <= TFE分馏堆叠成长 + 5
             or >= TFE亚空间扩容 + 1 and <= TFE亚空间扩容 + 9
-            or >= TFE高级矿物特质 + 1 and <= TFE高级矿物特质 + 5
-            or >= TFE高级交互特质 + 1 and <= TFE高级交互特质 + 5
-            or >= TFE高级转化特质 + 1 and <= TFE高级转化特质 + 5
-            or >= TFE亚空间能效 + 1 and <= TFE亚空间能效 + 5
-            or >= TFE探索信号增幅 + 1 and <= TFE探索信号增幅 + 5;
+            or >= TFE高级矿物特质 + 1 and <= TFE高级矿物特质 + 6
+            or >= TFE高级交互特质 + 1 and <= TFE高级交互特质 + 6
+            or >= TFE高级转化特质 + 1 and <= TFE高级转化特质 + 6
+            or >= TFE亚空间能效 + 1 and <= TFE亚空间能效 + 6
+            or >= TFE探索信号增幅 + 1 and <= TFE探索信号增幅 + 6;
     }
 }

@@ -47,7 +47,7 @@ public static class ExplorationPage {
         Register("尚未建立", "Not Established");
         Register("首个遗物", "First Relic");
         Register("古文明信号", "Old-Civilization Signal");
-        Register("解析资格信号", "Research Eligibility");
+        Register("研究内容信号", "Research Content");
         Register("资源遗存", "Resource Cache");
         Register("目标星球", "Target Planet");
         Register("尚未抵达目标星球", "Land on the target planet to read signal strength.",
@@ -57,8 +57,8 @@ public static class ExplorationPage {
         Register("已回收", "Recovered");
         Register("待回收", "Pending");
         Register("探索页脚",
-            "Signals never expire. Approach within 120 metres to recover the relic, eligibility, or resource cache automatically.",
-            "信号不会过期；接近至 120 米内时，会自动回收遗物、解析资格或资源遗存。");
+            "Signals never expire. Approach within 120 metres to recover the relic, concrete research content, or resource cache automatically.",
+            "信号不会过期；接近至 120 米内时，会自动回收遗物、具体研究内容或资源遗存。");
         Register("探索客户端说明", "Arrival is verified and settled by the host.",
             "抵达状态由主机验证并结算。");
     }

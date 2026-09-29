@@ -20,7 +20,10 @@ public static class CivilizationModule {
     /// </summary>
     public static void AddTranslations() {
         GrowthTechnologyManager.AddTranslations();
-        Register("已取得解析资格：{0}", "Research eligibility acquired: {0}");
+        Register("探索发现研究内容：{0}", "Exploration discovered research content: {0}");
+        Register("高级塔库存门槛",
+            "{0} reached 1,000 units in subspace; its trait can now appear in exploration.",
+            "{0} 在亚空间库存中首次达到 1000 座，对应特质现可进入探索候选。");
         Register("解析发现：{0}", "Analysis discovered: {0}");
         Register("已恢复一座原型：{0}", "Prototype recovered: {0}");
         Register("生命工业传承已记录",

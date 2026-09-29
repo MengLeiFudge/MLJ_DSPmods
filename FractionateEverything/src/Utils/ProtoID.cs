@@ -1048,6 +1048,7 @@ public static partial class Utils {
     internal const int TGB标准制造单元 = 1202;
     internal const int T量子打印 = 1203;
     internal const int TGB高精度加工 = 1203;
+    /// <summary>旧亚空间网络科技 ID，仅用于识别历史状态；当前版本不注册。</summary>
     internal const int TFE分馏数据中心 = 2051;
     internal const int TFE分馏塔原胚 = 2052;
     internal const int TFE培养塔 = 2053;

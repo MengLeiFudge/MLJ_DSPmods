@@ -18,4 +18,4 @@ Items/
 - `itemValue` 是物流交互耗能、兼容路径和候选过滤的共享静态数据；业务状态不得写入 Items。
 - `itemToMatrix` / 矩阵阶段 helper 只表达原版进度分类，不决定随机研究是否已解锁。
 - `needs` 覆盖全部已注册实体物品并排除旧货币包裹，用于基础塔正面上传候选。
-- 图标和选择窗口 patch 放 `Presentation`；亚空间库存放 `Logic/DataCenter`，研究资格放 `Logic/Civilization`。
+- 图标和选择窗口 patch 放 `Presentation`；亚空间库存放 `Logic/DataCenter`，具体内容探索与解析状态放 `Logic/Civilization`。

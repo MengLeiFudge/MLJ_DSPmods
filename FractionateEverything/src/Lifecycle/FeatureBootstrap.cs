@@ -39,7 +39,7 @@ public static class FeatureBootstrap {
         FractionatorManager.AddFractionators();
         // 初步添加物流交互站
         StationManager.AddStations();
-        // 添加隐藏亚空间根节点、物流交互科技与第二页成长科技。
+        // 添加第一页物流交互科技与第二页成长科技。
         GrowthTechnologyManager.AddTechs();
         // 添加指引手册
         TutorialManager.AddTutorials();
