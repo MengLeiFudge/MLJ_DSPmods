@@ -1317,7 +1317,7 @@ public static partial class ProcessManager {
         }
         CargoPath path = cargoTraffic.GetCargoPath(cargoTraffic.beltPool[beltId].segPathId);
         int cargoId = path?.GetCargoIdAtRear() ?? -1;
-        if (cargoId <= 0 || cargoId >= cargoTraffic.container.cargoPool.Length) {
+        if (cargoId < 0 || cargoId >= cargoTraffic.container.cargoPool.Length) {
             return 0;
         }
         return cargoTraffic.container.cargoPool[cargoId].stack;
