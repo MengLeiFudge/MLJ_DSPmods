@@ -25,7 +25,7 @@ public static class BasicAnalysisTower {
     /// </summary>
     public static int MaxStack => StackingManager.GetFractionatorMaxStack();
     /// <summary>
-    /// 读取当前固定能耗倍率；后续增幅只由文明科技运行投影提供。
+    /// 相对原版分馏塔的能耗倍率。基础塔与原版一致，固定为 1。
     /// </summary>
     public const float EnergyRatio = 1.0f;
     /// <summary>

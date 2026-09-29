@@ -830,7 +830,8 @@ public static class FractionatorWindow {
     }
 
     private static int GetModSlotMax(FractionatorComponent fractionator, int itemId, ProductSlot slot = null) {
-        return IsFluidSlot(fractionator, slot, itemId) ? fractionator.fluidOutputMax : fractionator.productOutputMax;
+        // 缓存上限随全局堆叠变化，已放置塔的原版字段可能是旧值，所以读当前上限。
+        return IsFluidSlot(fractionator, slot, itemId) ? BaseFracFluidOutputMax : BaseFracProductOutputMax;
     }
 
     /// <summary>

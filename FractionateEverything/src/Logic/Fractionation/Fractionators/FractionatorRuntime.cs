@@ -1,4 +1,4 @@
-﻿// 分馏塔运行时：热路径、配置、功耗、扩展状态、科技投影与单塔同步边界。
+﻿// 分馏塔运行时：逐帧处理、配置、功耗、扩展状态、科技效果与单塔同步。
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -27,6 +27,14 @@ public static partial class ProcessManager {
 
     // partial 类跨文件静态字段初始化顺序不稳定，不能用另一个文件里的 handler 数组决定长度。
     private const int FractionatorBuildingTypeCount = 5;
+    /// <summary>
+    /// 每个缓存区能放的堆数。
+    /// </summary>
+    public const int BufferStackCount = 20;
+    /// <summary>
+    /// 逐帧处理使用的当前全局最大堆叠快照，随 <see cref="RefreshFractionatorRuntimeConfig"/> 更新。
+    /// </summary>
+    private static int globalMaxStack = 1;
     private static double[] incTableFixedRatio = [];
     /// <summary>
     /// 定义分馏塔流动输出缓存的基础上限。
@@ -96,9 +104,15 @@ public static partial class ProcessManager {
     }
 
     /// <summary>
-    /// 刷新两座基础塔使用的运行参数。
+    /// 刷新两座基础塔使用的运行参数，并按当前全局堆叠重算缓存上限。
     /// </summary>
+    /// <remarks>缓存以“堆”为单位：输入、流动输出、产物输出都是 20 堆，一堆的件数等于当前全局堆叠。</remarks>
     public static void RefreshFractionatorRuntimeConfig() {
+        globalMaxStack = Math.Max(1, BasicMineralTower.MaxStack);
+        int cacheCount = BufferStackCount * globalMaxStack;
+        BaseFracFluidInputCargoMax = cacheCount;
+        BaseFracProductOutputMax = cacheCount;
+        BaseFracFluidOutputMax = cacheCount;
         SetRuntimeConfig(IFE基础矿物塔, BasicMineralTower.MaxStack, BasicMineralTower.PlrRatio);
         SetRuntimeConfig(IFE基础解析塔, BasicAnalysisTower.MaxStack, BasicAnalysisTower.PlrRatio);
     }
@@ -692,13 +706,125 @@ public static partial class ProcessManager {
             }
         }
 
-        // 原版分馏塔不做处理。
+        // 原版分馏塔先走原版逻辑，再按堆叠补放输出，避免高堆叠传送带被原版的单件输出限流。
         try {
-            return fractionator.InternalUpdate(factory, power, signPool, productRegister, consumeRegister);
+            int fluidOutputStack = GetVanillaFluidOutputStack(in fractionator);
+            uint state = fractionator.InternalUpdate(factory, power, signPool, productRegister, consumeRegister);
+            // 原版在电力不足时直接返回，不做任何传送带交互，这里保持一致。
+            return power < 0.1f ? state : TopUpVanillaOutputs(ref fractionator, factory.cargoTraffic, fluidOutputStack);
         }
         finally {
             RecordFractionatorPerf(FractionatorPerfUpdateVanilla, buildingID, GetFractionatorPerfElapsed(perfStart));
         }
+    }
+
+    /// <summary>
+    /// 按原版规则计算原版分馏塔流动输出的堆叠：输入货物的平均堆叠，向上取整。
+    /// </summary>
+    /// <param name="fractionator">原版更新前的分馏塔状态；原版也在处理前取这个值。</param>
+    /// <returns>流动输出单个货物允许的最大件数，至少为 1。</returns>
+    private static int GetVanillaFluidOutputStack(in FractionatorComponent fractionator) {
+        double averageStack = fractionator.fluidInputCount == 0
+            ? 1.0
+            : fractionator.fluidInputCargoCount > 0.0001f
+                ? fractionator.fluidInputCount / fractionator.fluidInputCargoCount
+                : 4.0;
+        return Math.Max(1, Mathf.CeilToInt((float)(averageStack - 0.1)));
+    }
+
+    /// <summary>
+    /// 原版分馏塔更新后，把流动输出和产物继续叠到输出带头部的货物上。
+    /// </summary>
+    /// <remarks>
+    /// <para>原版每帧每条流动输出带最多放 2 件、产物每帧放 1 件且不叠堆，高堆叠满带时会让输出缓存堆满而停机。</para>
+    /// <para>流动输出沿用原版堆叠规则，产物堆叠等于当前全局最大堆叠。只填充带头货物，不等待凑满；带子堵住时带头货物停留会被一直填到满堆。</para>
+    /// </remarks>
+    /// <param name="fractionator">原版分馏塔组件。</param>
+    /// <param name="cargoTraffic">所属星球的传送带系统。</param>
+    /// <param name="fluidOutputStack">流动输出单个货物的最大件数。</param>
+    /// <returns>补放后重新计算的工作状态码。</returns>
+    private static uint TopUpVanillaOutputs(ref FractionatorComponent fractionator, CargoTraffic cargoTraffic,
+        int fluidOutputStack) {
+        if (fractionator.fluidId > 0) {
+            if (fractionator.isOutput1) {
+                TopUpVanillaFluidOutput(ref fractionator, cargoTraffic, fractionator.belt1, fluidOutputStack);
+            }
+            if (fractionator.isOutput2) {
+                TopUpVanillaFluidOutput(ref fractionator, cargoTraffic, fractionator.belt2, fluidOutputStack);
+            }
+        }
+        if (fractionator.belt0 > 0 && fractionator.isOutput0 && fractionator.productOutputCount > 0) {
+            CargoPath path = cargoTraffic.GetCargoPath(cargoTraffic.beltPool[fractionator.belt0].segPathId);
+            fractionator.productOutputCount -= TryStackAtBeltHead(path, fractionator.productId, globalMaxStack,
+                fractionator.productOutputCount, 0, out _);
+        }
+
+        // 补放后计数可能变化，按原版规则重新判断清空与工作状态。
+        if (fractionator.fluidInputCount == 0 && fractionator.fluidOutputCount == 0
+            && fractionator.productOutputCount == 0) {
+            fractionator.fluidId = 0;
+        }
+        fractionator.isWorking = fractionator.fluidInputCount > 0
+                                 && fractionator.productOutputCount < fractionator.productOutputMax
+                                 && fractionator.fluidOutputCount < fractionator.fluidOutputMax;
+        return fractionator.isWorking ? 1U : 0U;
+    }
+
+    private static void TopUpVanillaFluidOutput(ref FractionatorComponent fractionator, CargoTraffic cargoTraffic,
+        int beltId, int maxStack) {
+        if (beltId <= 0 || fractionator.fluidOutputCount <= 0) {
+            return;
+        }
+        CargoPath path = cargoTraffic.GetCargoPath(cargoTraffic.beltPool[beltId].segPathId);
+        int moved = TryStackAtBeltHead(path, fractionator.fluidId, maxStack, fractionator.fluidOutputCount,
+            fractionator.fluidOutputInc, out int movedInc);
+        fractionator.fluidOutputCount -= moved;
+        fractionator.fluidOutputInc -= movedInc;
+    }
+
+    /// <summary>
+    /// 把物品叠到传送带头部的同种货物上；头部有空位时新建一个货物。
+    /// </summary>
+    /// <param name="path">输出带所在的货物路径；为空时不处理。</param>
+    /// <param name="itemId">要输出的物品。</param>
+    /// <param name="maxStack">带头货物允许达到的最大件数。</param>
+    /// <param name="count">塔内待输出的件数。</param>
+    /// <param name="inc">待输出物品的增产点总数；产物没有增产点时传 0。</param>
+    /// <param name="movedInc">实际随物品输出的增产点。</param>
+    /// <returns>实际输出的件数；带头是别的物品或已满堆时为 0。</returns>
+    private static int TryStackAtBeltHead(CargoPath path, int itemId, int maxStack, int count, int inc,
+        out int movedInc) {
+        movedInc = 0;
+        if (path == null || itemId <= 0 || count <= 0) {
+            return 0;
+        }
+        // 带头状态只用来估算可叠数量；真正写入时 TryUpdateItemAtHeadAndFillBlank 会在锁内重新校验。
+        int room = maxStack;
+        if (path.TestBlankAtHead() < 0) {
+            int cargoId = path.GetCargoIdAtIndex(0, 10);
+            if (cargoId < 0 || cargoId >= path.cargoContainer.cargoPool.Length) {
+                return 0;
+            }
+            Cargo headCargo = path.cargoContainer.cargoPool[cargoId];
+            if (headCargo.item != itemId) {
+                return 0;
+            }
+            room = maxStack - headCargo.stack;
+        }
+        int moved = Math.Min(Math.Min(count, room), byte.MaxValue);
+        if (moved <= 0) {
+            return 0;
+        }
+        int remainingCount = count;
+        int remainingInc = Math.Max(0, inc);
+        int splitInc = remainingInc > 0 ? split_inc(ref remainingCount, ref remainingInc, moved) : 0;
+        // 货物增产点是 byte，超出部分留在塔内，避免账面扣减多于实际随物品离开的数量。
+        byte cargoInc = (byte)Math.Min(byte.MaxValue, splitInc);
+        if (!path.TryUpdateItemAtHeadAndFillBlank(itemId, maxStack, (byte)moved, cargoInc)) {
+            return 0;
+        }
+        movedInc = cargoInc;
+        return moved;
     }
 
     /// <summary>
@@ -1860,7 +1986,7 @@ public static class FractionatorOutputState {
 #region 蓝图/复制粘贴/Nebula 边界
 
 /// <summary>
-/// 在实体移除前清理基础塔的多产物缓存投影。
+/// 拆除或销毁基础塔前，清掉它的多产物缓存记录。
 /// </summary>
 public static class FractionatorStateCleanup {
     [HarmonyPrefix]

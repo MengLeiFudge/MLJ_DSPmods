@@ -343,7 +343,7 @@ public class CivilizationStatePacketProcessor : BasePacketProcessor<Civilization
         }
         StackingManager.ConfiguredMaxStack = packet.configuredMaxStack;
         StackingManager.SyncRuntimeState();
-        // 保留绝对 Frag/Memory 字段作为与稀疏块一致的权威覆盖。
+        // Frag 与 Memory 以快照里的绝对值为准，直接覆盖本地余额，和上面导入的库存块保持一致。
         lock (centerItemCount) {
             long fragmentCount = Math.Max(0L, packet.fragments);
             long fragmentMaxInc = fragmentCount > long.MaxValue / 10L ? long.MaxValue : fragmentCount * 10L;

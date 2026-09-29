@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using HarmonyLib;
 using static FE.Logic.Fractionation.Fractionators.ProcessManager;
 using static FE.Utils.Utils;
@@ -48,43 +49,95 @@ public static class FractionatorManager {
     }
 
     /// <summary>
-    /// 调整分馏塔缓存区大小（实际运行不使用此值，该方法只对原版分馏塔生效）
+    /// 原版分馏塔的输入缓存上限，单位是堆（原版按输入货物数计，不按件数）。
     /// </summary>
+    /// <remarks>原版处理速度取 min(输入堆数, 30) × 平均堆叠，至少缓存 30 堆才能跑满传送带，40 堆留出余量。</remarks>
+    public const int VanillaFluidInputCargoMax = 40;
+
+    /// <summary>
+    /// 按当前全局堆叠刷新分馏塔原型和已放置分馏塔的缓存上限。
+    /// </summary>
+    /// <remarks>
+    /// <para>五座 FE 塔的三项上限都是 20 堆；原版分馏塔输入固定 40 堆，两项输出为 20 堆。</para>
+    /// <para>FE 塔运行时直接读当前上限，这些原版字段供原版逻辑、窗口和生产统计读取。</para>
+    /// </remarks>
     public static void SetFractionatorCacheSize() {
         foreach (ModelProto modelProto in LDB.models.dataArray) {
             if (modelProto.prefabDesc.isFractionator) {
-                modelProto.prefabDesc.fracFluidInputMax = BaseFracFluidInputCargoMax;
+                modelProto.prefabDesc.fracFluidInputMax =
+                    GetFluidInputMax(FractionatorTowerCatalog.IsActiveFractionatorModel(modelProto.ID));
                 modelProto.prefabDesc.fracProductOutputMax = BaseFracProductOutputMax;
                 modelProto.prefabDesc.fracFluidOutputMax = BaseFracFluidOutputMax;
             }
         }
+
+        // 原型只影响新建的塔；已放置的塔在建造或读档时复制过旧值，需要逐个同步。
+        GameData data = GameMain.data;
+        if (data?.factories == null) {
+            return;
+        }
+        for (int i = 0; i < data.factoryCount; i++) {
+            SyncPlacedFractionatorCaches(data.factories[i]?.factorySystem);
+        }
     }
 
     /// <summary>
-    /// 调整已放置的分馏塔缓存区大小（实际运行不使用此值，该方法只对原版分馏塔生效）
+    /// 读档后按塔型写入已放置分馏塔的缓存上限。
     /// </summary>
+    /// <remarks>实体池先于分馏组件读入，此时已能按建筑 ID 区分 FE 塔与原版塔。</remarks>
     [HarmonyPostfix]
-    [HarmonyPatch(typeof(FractionatorComponent), nameof(FractionatorComponent.Import))]
-    public static void FractionatorComponent_Import_Postfix(ref FractionatorComponent __instance) {
-        __instance.fluidInputMax = BaseFracFluidInputCargoMax;
-        __instance.productOutputMax = BaseFracProductOutputMax;
-        __instance.fluidOutputMax = BaseFracFluidOutputMax;
+    [HarmonyPatch(typeof(FactorySystem), nameof(FactorySystem.Import))]
+    public static void FactorySystem_Import_Postfix(FactorySystem __instance) {
+        SyncPlacedFractionatorCaches(__instance);
     }
 
     /// <summary>
-    /// 返回基础塔流动输入缓存上限，固定为 20 件。
+    /// 同步一个星球上所有已放置分馏塔的缓存上限。
+    /// </summary>
+    /// <param name="factorySystem">星球的工厂系统；为空时不处理。</param>
+    private static void SyncPlacedFractionatorCaches(FactorySystem factorySystem) {
+        FractionatorComponent[] pool = factorySystem?.fractionatorPool;
+        EntityData[] entityPool = factorySystem?.factory?.entityPool;
+        if (pool == null || entityPool == null) {
+            return;
+        }
+        int cursor = Math.Min(factorySystem.fractionatorCursor, pool.Length);
+        for (int i = 1; i < cursor; i++) {
+            ref FractionatorComponent fractionator = ref pool[i];
+            if (fractionator.id != i) {
+                continue;
+            }
+            int entityId = fractionator.entityId;
+            bool activeFractionator = entityId > 0 && entityId < entityPool.Length
+                && FractionatorTowerCatalog.IsActiveFractionator(entityPool[entityId].protoId);
+            fractionator.fluidInputMax = GetFluidInputMax(activeFractionator);
+            fractionator.productOutputMax = BaseFracProductOutputMax;
+            fractionator.fluidOutputMax = BaseFracFluidOutputMax;
+        }
+    }
+
+    /// <summary>
+    /// 返回原版字段 fluidInputMax 应写入的值。
+    /// </summary>
+    /// <param name="activeFractionator">是否为五座 FE 塔之一。</param>
+    /// <returns>FE 塔为件数上限（20 堆），原版塔为堆数上限（40 堆）。</returns>
+    private static int GetFluidInputMax(bool activeFractionator) =>
+        activeFractionator ? BaseFracFluidInputCargoMax : VanillaFluidInputCargoMax;
+
+    /// <summary>
+    /// 返回流动输入缓存上限：20 堆 × 当前全局堆叠。
     /// </summary>
     public static int FluidInputCargoMax(this ItemProto fractionator) {
         return BaseFracFluidInputCargoMax;
     }
 
     /// <summary>
-    /// 返回分馏塔产物输出缓存最大数目，由于输入的物品堆叠数可能超过塔的MaxStack，所以直接按照最高的来
+    /// 返回产物输出缓存上限：20 堆 × 当前全局堆叠。
     /// </summary>
     public static int ProductOutputMax(this ItemProto fractionator) => BaseFracProductOutputMax;
 
     /// <summary>
-    /// 返回分馏塔流动输出缓存最大数目，由于输出仅由塔的MaxStack决定，所以根据当前MaxStack动态变化
+    /// 返回流动输出缓存上限：20 堆 × 当前全局堆叠。
     /// </summary>
     public static int FluidOutputMax(this ItemProto fractionator) => BaseFracFluidOutputMax;
 

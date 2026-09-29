@@ -68,7 +68,8 @@ public static class AdvancedFractionatorRuntime {
     private const float WorkingNutritionPerRound = 0.02f;
     private const float IdleNutritionPerSecond = 0.002f;
     private const int ProgressPerSecond = 60000;
-    private const int BufferCapacity = 20;
+    /// <summary>读档时允许的最大缓存件数，按堆叠上限计算；读档时全局堆叠可能尚未同步，不能用当前值裁剪。</summary>
+    private const int MaximumBufferCapacity = ProcessManager.BufferStackCount * StackingManager.AbsoluteMaxStack;
     private const int MaximumStateCount = 1000000;
     private const int MaximumDictionaryEntryCount = 12000;
     private static readonly ConcurrentDictionary<(int planetId, int fractionatorId), AdvancedFractionatorState>
@@ -281,13 +282,13 @@ public static class AdvancedFractionatorRuntime {
                 LastFoodTier = Math.Max(0, Math.Min(5, r.ReadInt32())),
                 OutputCursor = Math.Max(0, r.ReadInt32()),
             };
-            ReadDictionary(r, state.Inputs, BufferCapacity);
-            ReadDictionary(r, state.InputInc, BufferCapacity * 10);
-            ReadDictionary(r, state.Foods, BufferCapacity);
-            ReadDictionary(r, state.FoodInc, BufferCapacity * 10);
-            ReadDictionary(r, state.Products, BufferCapacity);
-            ReadDictionary(r, state.FlowOutputs, BufferCapacity);
-            ReadDictionary(r, state.FlowOutputInc, BufferCapacity * 10);
+            ReadDictionary(r, state.Inputs, MaximumBufferCapacity);
+            ReadDictionary(r, state.InputInc, MaximumBufferCapacity * 10);
+            ReadDictionary(r, state.Foods, MaximumBufferCapacity);
+            ReadDictionary(r, state.FoodInc, MaximumBufferCapacity * 10);
+            ReadDictionary(r, state.Products, MaximumBufferCapacity);
+            ReadDictionary(r, state.FlowOutputs, MaximumBufferCapacity);
+            ReadDictionary(r, state.FlowOutputInc, MaximumBufferCapacity * 10);
             ClampIncDictionary(state.InputInc, state.Inputs);
             RemoveNonFoodEntries(state.Foods, state.FoodInc);
             ClampIncDictionary(state.FoodInc, state.Foods);
@@ -355,7 +356,7 @@ public static class AdvancedFractionatorRuntime {
             }
             int remainingCount = stack;
             int remainingInc = inc;
-            int foodRoom = IsFoodItem(itemId)
+            int foodRoom = CanTakeFood(state, itemId)
                 ? Math.Max(0, BufferCapacity - GetCount(state.Foods, itemId))
                 : 0;
             MoveIncoming(ref remainingCount, ref remainingInc,
@@ -393,7 +394,7 @@ public static class AdvancedFractionatorRuntime {
         if (incomingCount <= 0) {
             return false;
         }
-        int availableRoom = IsFoodItem(itemId)
+        int availableRoom = CanTakeFood(state, itemId)
             ? Math.Max(0, BufferCapacity - GetCount(state.Foods, itemId))
             : 0;
         WorldviewRecipeInput input = null;
@@ -429,10 +430,13 @@ public static class AdvancedFractionatorRuntime {
             int itemId = I电磁矩阵 + tier;
             float nutritionPerItem = FoodNutrition[tier];
             int available = GetCount(state.Foods, itemId);
+            if (available <= 0) {
+                continue;
+            }
             int consumed = Math.Min(available,
                 Mathf.FloorToInt((MaximumNutrition - state.Nutrition) / nutritionPerItem));
             if (consumed <= 0) {
-                // 已缓存的高层矩阵优先等待足够营养空间，避免低层矩阵持续填补小缺口。
+                // 营养空间装不下一件时等待，不拿低层矩阵填小缺口。
                 break;
             }
             TakeCount(state.Foods, state.FoodInc, itemId, consumed);
@@ -445,6 +449,24 @@ public static class AdvancedFractionatorRuntime {
         }
         state.Nutrition = Mathf.Min(MaximumNutrition, state.Nutrition);
     }
+
+    /// <summary>
+    /// 食物槽只有一个位置：槽内已有某种矩阵时只接收同种，空槽时传送带先来哪种就收哪种。
+    /// </summary>
+    private static bool CanTakeFood(AdvancedFractionatorState state, int itemId) {
+        if (!IsFoodItem(itemId)) {
+            return false;
+        }
+        foreach (KeyValuePair<int, int> pair in state.Foods) {
+            if (pair.Value > 0 && pair.Key != itemId) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /// <summary>当前缓存区上限：20 堆 × 当前全局堆叠。</summary>
+    private static int BufferCapacity => ProcessManager.BaseFracFluidInputCargoMax;
 
     private static bool IsFoodItem(int itemId) {
         int tier = itemId - I电磁矩阵;

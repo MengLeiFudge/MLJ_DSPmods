@@ -48,14 +48,8 @@ public static class DataCenterUploadRouter {
             return 0;
         }
 
-        long acceptedCount = DataCenterInventory.AddItemToModData(
-            storeItemId, storeCount, storeInc, manual);
-        if (acceptedCount > 0 && FractionatorTowerCatalog.IsAdvancedTowerItem(storeItemId)) {
-            ResearchManager.NotifyAdvancedTowerObtained(storeItemId);
-            ResearchManager.NotifyAdvancedTowerInventoryCount(storeItemId,
-                DataCenterInventory.GetModDataItemCount(storeItemId));
-        }
-        return acceptedCount;
+        // 高级塔入库后的取得记录与 1000 座门槛由 DataCenterInventory 统一处理。
+        return DataCenterInventory.AddItemToModData(storeItemId, storeCount, storeInc, manual);
     }
 
     /// <summary>

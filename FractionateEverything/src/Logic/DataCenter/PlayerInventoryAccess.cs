@@ -83,7 +83,7 @@ public static class PlayerInventoryAccess {
 
     /// <summary>
     /// 非负 long 饱和加法：任一项为负按 0 处理；和超过 long.MaxValue 时夹到上界，避免 unchecked 回绕。
-    /// 用于跨容器数量/增产点汇总，不改变各来源扫描合同。
+    /// 用于汇总多个容器里的数量和增产点，不影响各容器自身的扫描方式。
     /// </summary>
     private static long AddNonNegativeSaturated(long a, long b) {
         if (a < 0) {

@@ -55,8 +55,13 @@ public sealed class ResearchDirectionSnapshot(
 /// 随机配方研究、解析资格和高级塔取得状态。
 /// </summary>
 public static class ResearchManager {
-    private sealed class AnalysisRuntimeSnapshot(Dictionary<int, string[]> candidatesByItemId) {
+    /// <summary>
+    /// 供逐帧路径无锁读取的研究状态副本；研究状态每次变化后整体替换。
+    /// </summary>
+    private sealed class AnalysisRuntimeSnapshot(Dictionary<int, string[]> candidatesByItemId,
+        HashSet<string> unlockedContents) {
         public readonly Dictionary<int, string[]> CandidatesByItemId = candidatesByItemId;
+        public readonly HashSet<string> UnlockedContents = unlockedContents;
     }
 
     private sealed class SacrificeRateState {
@@ -103,7 +108,7 @@ public static class ResearchManager {
     private static readonly SacrificeRateState AdvancedInteractionSacrificeRate = new();
     private static readonly SacrificeRateState AdvancedConversionSacrificeRate = new();
     private static readonly Queue<string> PendingNotifications = [];
-    private static AnalysisRuntimeSnapshot analysisRuntimeSnapshot = new([]);
+    private static AnalysisRuntimeSnapshot analysisRuntimeSnapshot = new([], []);
     private static int discoveredContentCount;
     private static int pendingSignalAccelerations;
     private static bool belongsToGeneration3;
@@ -317,9 +322,9 @@ public static class ResearchManager {
     /// 判断一项稳定内容是否已经发现。
     /// </summary>
     public static bool IsContentUnlocked(string contentId) {
-        lock (Sync) {
-            return contentId != null && UnlockedContents.Contains(contentId);
-        }
+        // 高级塔每帧都会查询，读无锁副本，不进全局锁。
+        return contentId != null
+               && Volatile.Read(ref analysisRuntimeSnapshot).UnlockedContents.Contains(contentId);
     }
 
     /// <summary>
@@ -825,7 +830,8 @@ public static class ResearchManager {
                 candidatesByItemId[itemId] = candidates;
             }
         }
-        Volatile.Write(ref analysisRuntimeSnapshot, new AnalysisRuntimeSnapshot(candidatesByItemId));
+        Volatile.Write(ref analysisRuntimeSnapshot,
+            new AnalysisRuntimeSnapshot(candidatesByItemId, [.. UnlockedContents]));
     }
 
     private static int GetRecipeTier(WorldviewRecipe recipe) {

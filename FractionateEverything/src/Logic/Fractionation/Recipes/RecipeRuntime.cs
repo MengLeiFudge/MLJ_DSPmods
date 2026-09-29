@@ -4,7 +4,7 @@ using System.Threading;
 namespace FE.Logic.Fractionation.Recipes;
 
 /// <summary>
-/// 将研究域的稳定内容解锁状态投影为基础分馏热路径可查询的配方可用性。
+/// 把研究中已解锁的内容整理成配方可用表，供基础塔逐帧快速查询。
 /// </summary>
 public static class RecipeAvailabilityStore {
     private sealed class AvailabilitySnapshot(
@@ -17,12 +17,12 @@ public static class RecipeAvailabilityStore {
     private static AvailabilitySnapshot snapshot = new([], []);
 
     /// <summary>
-    /// 清空当前存档的研究投影。
+    /// 切换存档时清空配方可用表。
     /// </summary>
     public static void Reset() => Volatile.Write(ref snapshot, new([], []));
 
     /// <summary>
-    /// 原子替换由研究域管理的完整配方可用性投影。
+    /// 用研究系统给出的最新结果整体替换配方可用表；替换是原子的，逐帧查询不会读到一半的数据。
     /// </summary>
     public static void ReplaceManaged(IEnumerable<KeyValuePair<RecipeKey, bool>> recipes) {
         HashSet<RecipeKey> managedRecipes = [];

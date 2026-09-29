@@ -170,7 +170,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
             if (version < 11) {
                 ResearchManager.MarkLegacyGeneration();
             }
-            // 只读取当前自有合同；旧实体迁移仍由独立版本门禁处理，未来版本也不得向后误读。
+            // 只解析当前版本（11）的存档数据。旧版本的建筑与物品迁移由 LegacyProtoMigration 单独处理，更高版本的数据也不尝试读取。
             if (r.BaseStream.CanSeek) {
                 r.BaseStream.Seek(0, SeekOrigin.End);
             }

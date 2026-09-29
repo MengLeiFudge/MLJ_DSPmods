@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using FE.Compatibility.Nebula;
 using FE.Logic.Civilization;
+using FE.Logic.Fractionation.Fractionators;
 using FE.UI.MainPanel.Setting;
 using NebulaAPI;
 using static FE.Logic.Items.ItemManager;
@@ -232,9 +233,11 @@ public static class DataCenterInventory {
             inc = 0;
         }
 
+        long accepted;
+        long newCount;
         lock (centerItemCount) {
             long remaining = GetRemainingCapacityUnsafe(itemId);
-            long accepted = Math.Min(count, remaining);
+            accepted = Math.Min(count, remaining);
             if (accepted <= 0) {
                 return 0;
             }
@@ -248,8 +251,22 @@ public static class DataCenterInventory {
                 centerItemInc[itemId] = maxInc;
             }
             snapshotDirty = true;
-            return accepted;
+            newCount = centerItemCount[itemId];
         }
+        OnItemCountIncreased(itemId, newCount);
+        return accepted;
+    }
+
+    /// <summary>
+    /// 亚空间库存增加后的统一处理点。所有入库路径都经过这里，高级塔的 1000 座门槛只在此检测。
+    /// </summary>
+    /// <remarks>必须在释放库存锁之后调用，避免与研究锁形成锁顺序冲突。</remarks>
+    private static void OnItemCountIncreased(int itemId, long newCount) {
+        if (!FractionatorTowerCatalog.IsAdvancedTowerItem(itemId)) {
+            return;
+        }
+        ResearchManager.NotifyAdvancedTowerObtained(itemId);
+        ResearchManager.NotifyAdvancedTowerInventoryCount(itemId, newCount);
     }
 
     /// <summary>
@@ -263,10 +280,13 @@ public static class DataCenterInventory {
             GameMain.mainPlayer.sandCount = SaturatingAddNonNegative(GameMain.mainPlayer.sandCount, count);
             return;
         }
+        long newCount;
         lock (centerItemCount) {
             centerItemCount[itemId] = SaturatingAddNonNegative(centerItemCount[itemId], count);
             snapshotDirty = true;
+            newCount = centerItemCount[itemId];
         }
+        OnItemCountIncreased(itemId, newCount);
     }
 
     /// <summary>

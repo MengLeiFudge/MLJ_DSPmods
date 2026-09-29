@@ -37,6 +37,12 @@ public static class FractionatorTowerCatalog {
     }
 
     /// <summary>
+    /// 判断模型是否属于五座活动分馏塔；其他分馏模型（如原版分馏塔）按原版缓存语义处理。
+    /// </summary>
+    public static bool IsActiveFractionatorModel(int modelId) =>
+        modelId is MFE基础矿物塔 or MFE基础解析塔 or MFE高级矿物塔 or MFE高级交互塔 or MFE高级转化塔;
+
+    /// <summary>
     /// 获取活动分馏塔对应的配方分支；未知建筑返回零值。
     /// </summary>
     public static ERecipe GetRecipeType(int buildingId) {

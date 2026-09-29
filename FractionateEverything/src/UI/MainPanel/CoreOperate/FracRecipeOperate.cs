@@ -137,7 +137,7 @@ public static class FracRecipeOperate {
     }
 
     /// <summary>
-    /// 刷新研究发现投影与配方详情。
+    /// 刷新研究发现进度与配方详情。
     /// </summary>
     public static void UpdateUI() {
         if (tab == null || !tab.gameObject.activeSelf) {

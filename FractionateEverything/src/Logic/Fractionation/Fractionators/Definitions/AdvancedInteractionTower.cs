@@ -24,7 +24,7 @@ public static class AdvancedInteractionTower {
     /// </summary>
     public static int MaxStack => StackingManager.GetFractionatorMaxStack();
     /// <summary>
-    /// 读取当前固定能耗倍率；后续增幅只由文明科技运行投影提供。
+    /// 相对原版分馏塔的能耗倍率。高级塔以矩阵为食物、不耗电，固定为 0。
     /// </summary>
     public const float EnergyRatio = 0.0f;
     /// <summary>
