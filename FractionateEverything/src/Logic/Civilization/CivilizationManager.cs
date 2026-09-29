@@ -7,7 +7,7 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Civilization;
 
 /// <summary>
-/// FE 3.0 文明域聚合入口：随机研究、探索信号和确定性成长科技。
+/// 汇总随机研究、探索信号和确定性成长科技的生命周期。
 /// </summary>
 public static class CivilizationModule {
     private static readonly object NotificationSync = new();
@@ -23,8 +23,8 @@ public static class CivilizationModule {
         Register("已取得解析资格：{0}", "Research eligibility acquired: {0}");
         Register("解析发现：{0}", "Analysis discovered: {0}");
         Register("已恢复一座原型：{0}", "Prototype recovered: {0}");
-        Register("已完成 FE 3.0 生命工业成长线",
-            "FE 3.0 living-industry progression completed.");
+        Register("生命工业传承已记录",
+            "Living-industry legacy recorded for future saves.");
         Register("检测到母星上的古文明遗物信号",
             "An old-civilization relic signal was detected on the birth planet.");
         Register("{0}发现 {1} 个探索信号", "{0} revealed {1} exploration signal(s).");
@@ -46,7 +46,7 @@ public static class CivilizationModule {
     }
 
     /// <summary>
-    /// 在 Unity 主线程推进探索、成长投影和联机广播。
+    /// 在 Unity 主线程推进探索、同步成长效果并发送联机状态。
     /// </summary>
     public static void Tick() {
         if (!GameMain.isRunning || GameMain.mainPlayer == null) {
@@ -60,13 +60,17 @@ public static class CivilizationModule {
         lastProcessedGameTick = gameTick;
 
         ExplorationManager.GameTick(gameTick);
+        bool secondBoundary = gameTick % 60L == 0L;
+        if (secondBoundary) {
+            ResearchManager.UpdateSacrificeBoosts(gameTick);
+        }
         bool dirty = ResearchManager.FlushMainThreadNotifications();
         dirty |= ExplorationManager.TakeSnapshotDirty();
         dirty |= DataCenterInventory.TakeSnapshotDirty();
         civilizationSnapshotPending |= dirty;
         FlushNotifications();
 
-        if (gameTick % 60L == 0L) {
+        if (secondBoundary) {
             if (!ExplorationManager.FirstRelicClaimed) {
                 ExplorationManager.EnsureFirstRelicMark();
                 ExplorationManager.EnsureFirstRelicGuidance();
@@ -114,9 +118,10 @@ public static class CivilizationModule {
     }
 
     /// <summary>
-    /// 导入后重建运行投影。
+    /// 导入后恢复所有会影响运行的状态。
     /// </summary>
     public static void AfterImport() {
+        ResearchManager.RefreshAdvancedTowerInventoryMilestones();
         GrowthTechnologyManager.SyncRuntimeEffects();
         if (!ExplorationManager.FirstRelicClaimed) {
             ExplorationManager.EnsureFirstRelicMark();

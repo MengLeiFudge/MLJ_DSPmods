@@ -9,7 +9,7 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Fractionation.Recipes;
 
 /// <summary>
-/// FE 3.0 配方创建、稳定身份索引和存档聚合入口。
+/// 配方创建、稳定身份索引和存档聚合入口。
 /// </summary>
 public static class RecipeManager {
     private static readonly List<BaseRecipe> RecipeList = [];
@@ -37,7 +37,7 @@ public static class RecipeManager {
 #endif
 
     /// <summary>
-    /// 注册 FE 3.0 配方名称模板。
+    /// 注册配方名称模板。
     /// </summary>
     public static void AddTranslations() {
         Register("{0}解析", "Analyze {0}");
@@ -57,7 +57,7 @@ public static class RecipeManager {
     public static IReadOnlyList<BaseRecipe> AllRecipes => RecipeList;
 
     /// <summary>
-    /// 获取全部 FE 3.0 稳定配方。
+    /// 获取全部当前稳定配方。
     /// </summary>
     public static IEnumerable<WorldviewRecipe> WorldviewRecipes => StableRecipeIndex.Values;
 
@@ -81,13 +81,13 @@ public static class RecipeManager {
             RecipeTypeArr[i] = new BaseRecipe[12000];
         }
 
-        AddAnalysisDirections();
         AddBasicMineralRecipes();
         AddRareCatalysisRecipes();
         AddInteractionRecipes();
         AddReplacementRecipes();
         ResearchManager.BuildResearchCatalog();
-        LogInfo($"Added {RecipeList.Count} FE 3.0 fractionation recipes.");
+        AddAnalysisDirections();
+        LogInfo($"Added {RecipeList.Count} fractionation recipes.");
     }
 
     /// <summary>
@@ -246,13 +246,19 @@ public static class RecipeManager {
     }
 
     private static void AddAnalysisDirections() {
-        foreach (ItemProto item in LDB.items.dataArray) {
+        foreach (int itemId in ResearchManager.GetAnalyzableItemIds()) {
+            ItemProto item = LDB.items.Select(itemId);
             if (item == null || item.ID <= 0 || item.ID >= 12000) {
                 continue;
             }
+            IReadOnlyList<WorldviewRecipeOutput> outputs =
+                Fractionators.FractionatorTowerCatalog.IsAdvancedTowerItem(itemId)
+                    ? [new WorldviewRecipeOutput(IFE记忆源点, 1f)]
+                    : [];
             AddRecipe(new WorldviewRecipe($"analysis:{item.ID}", 100000 + item.ID,
-                string.Format("{0}解析".Translate(), item.name), ERecipe.BasicAnalysis, WorldviewRecipeKind.BasicAnalysis, 0.02f,
-                [new WorldviewRecipeInput(item.ID, 1)], []));
+                string.Format("{0}解析".Translate(), item.name), ERecipe.BasicAnalysis,
+                WorldviewRecipeKind.BasicAnalysis, 0.02f,
+                [new WorldviewRecipeInput(item.ID, 1)], outputs));
         }
     }
 

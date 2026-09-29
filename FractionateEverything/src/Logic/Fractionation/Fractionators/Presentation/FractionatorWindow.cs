@@ -1043,8 +1043,11 @@ public static class FractionatorWindow {
         if (recipe == null) {
             modWindow.stateText.text = "等待配方".Translate();
             modWindow.stateText.color = modWindow.idleColor;
-        } else if (state == null || state.Nutrition <= 0f) {
+        } else if (state == null) {
             modWindow.stateText.text = "缺少营养".Translate();
+            modWindow.stateText.color = modWindow.workStoppedColor;
+        } else if (state.Nutrition <= 0f && fractionator.isWorking) {
+            modWindow.stateText.text = "饥饿运行".Translate();
             modWindow.stateText.color = modWindow.workStoppedColor;
         } else if (fractionator.isWorking) {
             modWindow.stateText.text = "正常运转".Translate();
@@ -1076,7 +1079,7 @@ public static class FractionatorWindow {
                     }
                     int count = state.Products.TryGetValue(output.ItemId, out int stored) ? stored : 0;
                     FillAdvancedSlot(mainSlots[productCount], output.ItemId, count,
-                        recipe.CycleSuccessProbability.FormatP(), ProductSlotKind.Main);
+                        fractionator.produceProb.FormatP(), ProductSlotKind.Main);
                     productCount++;
                 }
             }
@@ -1176,7 +1179,7 @@ public static class FractionatorWindow {
             UpdatePowerDisplay(src, powerConsumer, consumerRatio);
         }
 
-        int inputItemId = advancedRecipe?.Inputs.FirstOrDefault()?.ItemId ?? fractionator.fluidId;
+        int inputItemId = advancedRecipe?.PrimaryInputId ?? fractionator.fluidId;
         if (hasFluid && inputItemId > 0) {
             ItemProto needProto = LDB.items.Select(inputItemId);
             if (needProto != null) {

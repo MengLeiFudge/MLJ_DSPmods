@@ -9,7 +9,7 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Civilization;
 
 /// <summary>
-/// FE 3.0 第二页成长科技定义与运行效果投影。
+/// 定义科技树第二页的成长科技，并把完成状态应用到运行规则。
 /// </summary>
 public static class GrowthTechnologyManager {
     private static readonly int[] MatrixItems = [

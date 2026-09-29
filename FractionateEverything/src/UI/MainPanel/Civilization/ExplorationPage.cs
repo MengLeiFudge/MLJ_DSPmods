@@ -14,11 +14,10 @@ using static FE.Utils.Utils;
 namespace FE.UI.MainPanel.Civilization;
 
 /// <summary>
-/// 展示 FE 3.0 永久探索信号，并提供不含方向提示的现场信号强度读数。
+/// 展示永久探索信号，并提供不含方向提示的现场信号强度读数。
 /// </summary>
 public static class ExplorationPage {
     private const float MarkLineHeight = 26f;
-    private const float ClaimDistance = 120f;
 
     private static RectTransform tab;
     private static PageLayout.HeaderRefs header;
@@ -197,11 +196,8 @@ public static class ExplorationPage {
             .Append("目标星球".Translate()).Append("：").Append(GetPlanetName(mark.PlanetId)).Append('\n');
 
         Player player = GameMain.mainPlayer;
-        if (player != null && player.planetId == mark.PlanetId) {
-            PlanetData planet = GameMain.galaxy?.PlanetById(mark.PlanetId);
-            float maximumDistance = Math.Max(ClaimDistance + 1f, (planet?.realRadius ?? 200f) * 2f);
-            float distance = Vector3.Distance(player.position, mark.LocalPosition);
-            float strength = 1f - Mathf.Clamp01((distance - ClaimDistance) / (maximumDistance - ClaimDistance));
+        if (player != null && ExplorationManager.TryGetSignalStrength(
+                mark, player.uPosition, out float strength)) {
             builder.Append("现场信号强度".Translate()).Append("：")
                 .Append($"{Mathf.RoundToInt(strength * 100f)}%".WithColor(Blue));
         } else {

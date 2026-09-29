@@ -10,7 +10,7 @@ using static FE.Utils.Utils;
 namespace FE.Compatibility.LegacySave;
 
 /// <summary>
-/// 仅迁移 FE 2.2.10 仍有现役对应物的 Item/Model/Recipe 物理引用，并清理无对应旧 ID。
+/// 仅迁移 FE 2.2.10 仍有当前对应物的 Item/Model/Recipe 物理引用，并清理无对应旧 ID。
 /// 不迁移 Tech、不读写 FE 自有 DataCenter/Recipe 状态。
 /// 退休实体/预建筑必须延迟到 PlanetFactory.Import 完整消费外层 payload 后再 Remove*WithComponents。
 /// </summary>
@@ -32,7 +32,7 @@ public static class LegacyProtoMigration {
 
     [ThreadStatic]
     private static List<int> pendingRetiredPrebuildIds;
-    // v2.2.10 现役映射：仅保留有稳定 3.x 对应物的物理引用。
+    // v2.2.10 映射：仅保留当前仍有对应物的物理引用。
     private static readonly Dictionary<int, int> ItemIds = new() {
         [8016] = IFE通用原胚, // 8115
         [8021] = IFE高级交互塔, // 8121
@@ -57,7 +57,7 @@ public static class LegacyProtoMigration {
         [929] = RFE星际物流交互站, // 1062
     };
 
-    // 仅枚举 v2.2.10 无现役对应物的旧 ID，不用 8000..8999 宽泛范围。
+    // 仅枚举 v2.2.10 当前无对应物的旧 ID，不用 8000..8999 宽泛范围。
     private static readonly HashSet<int> RetiredItemIds = [
         8001, 8002, 8003, 8004, 8005, 8006, 8007,
         8011, 8012, 8013, 8014, 8015,
@@ -89,7 +89,7 @@ public static class LegacyProtoMigration {
     public static bool IsRetiredRecipeId(int id) => RetiredRecipeIds.Contains(id);
 
     /// <summary>
-    /// 导入映射：2.x 存档及独立导入执行现役映射/退休清零，3.x GameData 导入原样返回。
+    /// 导入物品 ID：2.x 存档及独立导入执行当前映射或退休清零，当前格式的 GameData 导入原样返回。
     /// </summary>
     public static int MapItemId(int id) {
         if (!ShouldMapImportedId) {
@@ -102,7 +102,7 @@ public static class LegacyProtoMigration {
     }
 
     /// <summary>
-    /// 导入映射：2.x 存档及独立导入执行现役映射/退休清零，3.x GameData 导入原样返回。
+    /// 导入模型 ID：2.x 存档及独立导入执行当前映射或退休清零，当前格式的 GameData 导入原样返回。
     /// </summary>
     public static int MapModelId(int id) {
         if (!ShouldMapImportedId) {
@@ -115,7 +115,7 @@ public static class LegacyProtoMigration {
     }
 
     /// <summary>
-    /// 导入映射：2.x 存档及独立导入执行现役映射/退休清零，3.x GameData 导入原样返回。
+    /// 导入配方 ID：2.x 存档及独立导入执行当前映射或退休清零，当前格式的 GameData 导入原样返回。
     /// </summary>
     public static int MapRecipeId(int id) {
         if (!ShouldMapImportedId) {
@@ -171,7 +171,7 @@ public static class LegacyProtoMigration {
     }
 
     /// <summary>
-    /// 在原版 GameData 导入前识别 FE moddsv 代际，避免把 version 10 的 3.x 存档或其他模组 ID 当作 2.x 内容。
+    /// 在原版 GameData 导入前识别 FE moddsv 格式，避免把 version 10 的过渡存档或其他模组 ID 当作 2.x 内容。
     /// </summary>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(GameSave), nameof(GameSave.LoadCurrentGame))]

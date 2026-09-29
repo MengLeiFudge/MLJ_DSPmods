@@ -193,6 +193,7 @@ public static partial class Utils {
     internal const int IGB物质重组工厂 = 2318;
     internal const int IOR物质重组工厂 = 2318;
     internal const int I负熵熔炉 = 2319;
+    internal const int I全息信标 = 2401;
     internal const int I矩阵研究站 = 2901;
     internal const int I自演化研究站 = 2902;
     internal const int I高斯机枪塔 = 3001;
@@ -445,7 +446,7 @@ public static partial class Utils {
     internal const int IFE转化塔原胚 = 8114;
     internal const int IFE通用原胚 = 8115;
 
-    // 3.0 五塔身份。8121..8124 保持旧实体一一映射，8125 为新增高级矿物塔。
+    // 五塔身份。8121..8124 保持旧实体一一映射，8125 为新增高级矿物塔。
     internal const int IFE高级交互塔 = 8121;
     internal const int IFE基础解析塔 = 8122;
     internal const int IFE基础矿物塔 = 8123;
@@ -458,17 +459,17 @@ public static partial class Utils {
     internal const int IFE行星内物流交互站 = 8131;
     internal const int IFE星际物流交互站 = 8132;
     internal const int IFE残片 = 8161;
-    /// <summary>旧六阶段解析数据 ID，3.x 不再注册为 active 资源。</summary>
+    /// <summary>旧六阶段解析数据 ID，当前版本不再注册为资源。</summary>
     internal const int IFE电磁解析数据 = 8162;
-    /// <summary>旧六阶段解析数据 ID，3.x 不再注册为 active 资源。</summary>
+    /// <summary>旧六阶段解析数据 ID，当前版本不再注册为资源。</summary>
     internal const int IFE能量解析数据 = 8163;
-    /// <summary>旧六阶段解析数据 ID，3.x 不再注册为 active 资源。</summary>
+    /// <summary>旧六阶段解析数据 ID，当前版本不再注册为资源。</summary>
     internal const int IFE结构解析数据 = 8164;
-    /// <summary>旧六阶段解析数据 ID，3.x 不再注册为 active 资源。</summary>
+    /// <summary>旧六阶段解析数据 ID，当前版本不再注册为资源。</summary>
     internal const int IFE信息解析数据 = 8165;
-    /// <summary>旧六阶段解析数据 ID，3.x 不再注册为 active 资源。</summary>
+    /// <summary>旧六阶段解析数据 ID，当前版本不再注册为资源。</summary>
     internal const int IFE引力解析数据 = 8166;
-    /// <summary>旧六阶段解析数据 ID，3.x 不再注册为 active 资源。</summary>
+    /// <summary>旧六阶段解析数据 ID，当前版本不再注册为资源。</summary>
     internal const int IFE宇宙解析数据 = 8167;
     internal const int IFE残片10 = 8168;
     internal const int IFE残片100 = 8169;
@@ -638,6 +639,7 @@ public static partial class Utils {
     internal const int MFE转化塔 = MFE高级转化塔;
     internal const int MFE行星内物流交互站 = 661;
     internal const int MFE星际物流交互站 = 662;
+    internal const int M全息信标 = 664;
     internal const int MBC插件效果分享塔 = 621;
     internal const int MBC插件效果分享站 = 622;
     internal const int MGB量子储液罐 = 801;
@@ -846,6 +848,7 @@ public static partial class Utils {
     internal const int R干扰胶囊 = 158;
     internal const int R压制胶囊 = 159;
     internal const int R集装分拣器 = 160;
+    internal const int R全息信标 = 161;
     //↓创世会将部分配方的ID减200↓
     internal const int RMS引力发生装置 = 530;
     internal const int RMS位面约束环 = 531;
@@ -1009,6 +1012,7 @@ public static partial class Utils {
     internal const int TX射线裂解 = 1103;
     internal const int T重整精炼 = 1104;
     internal const int TGB先进有机合成技术 = 1104;
+    internal const int T全息信标 = 1105;
     internal const int T能量矩阵 = 1111;
     internal const int T氢燃料棒 = 1112;
     internal const int TGB气体冷凝 = 1112;
@@ -1060,17 +1064,17 @@ public static partial class Utils {
     internal const int TFE高级交互特质 = 2120;
     internal const int TFE高级转化特质 = 2130;
     internal const int TFE亚空间能效 = 2140;
-    /// <summary>旧六阶段补给科技 ID，3.x 不注册/不复用。</summary>
+    /// <summary>旧六阶段补给科技 ID，当前版本不注册也不复用。</summary>
     internal const int TFE阶段补给1 = 2071;
-    /// <summary>旧六阶段补给科技 ID，3.x 不注册/不复用。</summary>
+    /// <summary>旧六阶段补给科技 ID，当前版本不注册也不复用。</summary>
     internal const int TFE阶段补给2 = 2072;
-    /// <summary>旧六阶段补给科技 ID，3.x 不注册/不复用。</summary>
+    /// <summary>旧六阶段补给科技 ID，当前版本不注册也不复用。</summary>
     internal const int TFE阶段补给3 = 2073;
-    /// <summary>旧六阶段补给科技 ID，3.x 不注册/不复用。</summary>
+    /// <summary>旧六阶段补给科技 ID，当前版本不注册也不复用。</summary>
     internal const int TFE阶段补给4 = 2074;
-    /// <summary>旧六阶段补给科技 ID，3.x 不注册/不复用。</summary>
+    /// <summary>旧六阶段补给科技 ID，当前版本不注册也不复用。</summary>
     internal const int TFE阶段补给5 = 2075;
-    /// <summary>旧六阶段补给科技 ID，3.x 不注册/不复用。</summary>
+    /// <summary>旧六阶段补给科技 ID，当前版本不注册也不复用。</summary>
     internal const int TFE阶段补给6 = 2076;
     internal const int T处理器 = 1302;
     internal const int T量子芯片 = 1303;

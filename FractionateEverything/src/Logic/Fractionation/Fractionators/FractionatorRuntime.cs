@@ -561,6 +561,7 @@ public static partial class ProcessManager {
         Register("等待配方", "Waiting for a recipe");
         Register("当前营养：{0} / {1}", "Nutrition: {0} / {1}");
         Register("缺少营养", "Insufficient nutrition");
+        Register("饥饿运行", "Running while starving");
         Register("生命反应中", "Living reaction active");
         Register("配方产物", "Recipe products");
         Register("高级塔客户端手动取出受限",
@@ -852,7 +853,7 @@ public static partial class ProcessManager {
                     if (__instance.fluidInputInc < 0) __instance.fluidInputInc = 0;
                 } else {
                     float pointsBonus = (float)MaxTableMilli(fluidInputIncAvg) * plrRatio;
-                    // 两座基础塔只使用配方自身概率与增产剂加成；3.0 不再修改基础成功率。
+                    // 两座基础塔只使用配方自身概率与增产剂加成，不再叠加额外成功率。
                     float successBoost = 0f;
                     if (recipe is WorldviewRecipe worldviewRecipe) {
                         int availableOutput = productOutputMax - (product0?.count ?? __instance.productOutputCount);
@@ -1081,7 +1082,6 @@ public static partial class ProcessManager {
         perfStageStart = GetFractionatorPerfTimestamp();
         bool interactionMode = false;
         bool interactionTransferred = false;
-        int sacrificedTowerId = 0;
         if (__instance.belt0 > 0) {
             if (__instance.isOutput0) {
                 if (products.Count > 0) {
@@ -1132,16 +1132,8 @@ public static partial class ProcessManager {
                             null, out stack, out inc);
                     }
                     if (interactionItemId > 0) {
-                        if (FractionatorTowerCatalog.IsAdvancedTowerItem(interactionItemId)) {
-                            accepted = DataCenterInventory.AddItemToModData(IFE记忆源点, stack);
-                            sacrificedTowerId = accepted > 0 ? interactionItemId : 0;
-                        } else {
-                            accepted = DataCenterUploadRouter.Upload(interactionItemId, stack, inc);
-                        }
+                        accepted = DataCenterUploadRouter.Upload(interactionItemId, stack, inc);
                     }
-                }
-                if (sacrificedTowerId > 0) {
-                    ResearchManager.NotifyAdvancedTowerObtained(sacrificedTowerId);
                 }
                 interactionTransferred = interactionItemId > 0 && accepted == stack;
                 if (interactionTransferred) {
@@ -1422,19 +1414,6 @@ public static partial class ProcessManager {
                 (byte)Math.Min(255, incAvg * outputStack))) {
             return true;
         }
-
-        if (outputStack <= 1) {
-            insertedStack = 0;
-            return false;
-        }
-
-        // 循环带头部可能已有同类半堆；整组写入失败时，退回单个填充以打破无空位卡死。
-        insertedStack = 1;
-        if (cargoPath.TryUpdateItemAtHeadAndFillBlank(itemId, maxStack, 1,
-                (byte)Math.Min(255, incAvg))) {
-            return true;
-        }
-
         insertedStack = 0;
         return false;
     }

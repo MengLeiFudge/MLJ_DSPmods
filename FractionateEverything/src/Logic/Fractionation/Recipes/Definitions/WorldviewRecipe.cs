@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using FE.Logic.Civilization;
 using static FE.Utils.Utils;
@@ -5,7 +6,7 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Fractionation.Recipes;
 
 /// <summary>
-/// FE 3.0 配方的功能分类。
+/// 配方的功能分类。
 /// </summary>
 public enum WorldviewRecipeKind {
     BasicMineral,
@@ -45,7 +46,7 @@ public sealed class WorldviewRecipeOutput(int itemId, float count, bool scalesWi
 }
 
 /// <summary>
-/// FE 3.0 稳定身份、多输入、多输出配方。
+/// 使用稳定身份的多输入、多输出配方。
 /// </summary>
 public sealed class WorldviewRecipe : BaseRecipe {
     /// <summary>跨存档、蓝图和联机稳定的配方字符串 ID。</summary>
@@ -66,11 +67,26 @@ public sealed class WorldviewRecipe : BaseRecipe {
     /// <summary>每轮成功率。</summary>
     public float CycleSuccessProbability { get; }
 
+    private readonly Dictionary<int, WorldviewRecipeInput> inputByItemId = [];
+    private readonly HashSet<int> productItemIds = [];
+
+    /// <summary>全部反应输入的固定顺序数组。</summary>
+    internal WorldviewRecipeInput[] InputArray { get; }
+
+    /// <summary>全部产物的固定顺序数组。</summary>
+    internal WorldviewRecipeOutput[] ProductArray { get; }
+
     /// <summary>全部反应输入。</summary>
-    public IReadOnlyList<WorldviewRecipeInput> Inputs { get; }
+    public IReadOnlyList<WorldviewRecipeInput> Inputs => InputArray;
 
     /// <summary>全部产物。</summary>
-    public IReadOnlyList<WorldviewRecipeOutput> Products { get; }
+    public IReadOnlyList<WorldviewRecipeOutput> Products => ProductArray;
+
+    /// <summary>第一个输入的物品 ID；没有输入时为 0。</summary>
+    public int PrimaryInputId => InputArray.Length > 0 ? InputArray[0].ItemId : 0;
+
+    /// <summary>第一个产物的物品 ID；没有产物时为 0。</summary>
+    public int PrimaryProductId => ProductArray.Length > 0 ? ProductArray[0].ItemId : 0;
 
     /// <summary>是否属于需要供养的高级配方。</summary>
     public bool IsAdvanced => Kind is not WorldviewRecipeKind.BasicMineral and not WorldviewRecipeKind.BasicAnalysis;
@@ -79,7 +95,7 @@ public sealed class WorldviewRecipe : BaseRecipe {
     public override float DestroyRatio => 0f;
 
     /// <summary>
-    /// 创建一张 FE 3.0 配方。
+    /// 创建一张稳定配方。
     /// </summary>
     public WorldviewRecipe(string stableId, int persistentId, string displayName, ERecipe recipeType,
         WorldviewRecipeKind kind, float successProbability,
@@ -92,9 +108,31 @@ public sealed class WorldviewRecipe : BaseRecipe {
         RecipeType = recipeType;
         Kind = kind;
         CycleSuccessProbability = successProbability;
-        Inputs = inputs;
-        Products = outputs;
+        InputArray = CopyToArray(inputs);
+        ProductArray = CopyToArray(outputs);
+        foreach (WorldviewRecipeInput input in InputArray) {
+            inputByItemId[input.ItemId] = input;
+        }
+        foreach (WorldviewRecipeOutput output in ProductArray) {
+            productItemIds.Add(output.ItemId);
+        }
     }
+
+    /// <summary>
+    /// 查询物品是否为本配方输入，并返回固定输入定义。
+    /// </summary>
+    internal bool TryGetInput(int itemId, out WorldviewRecipeInput input) =>
+        inputByItemId.TryGetValue(itemId, out input);
+
+    /// <summary>
+    /// 判断物品是否属于本配方输入。
+    /// </summary>
+    internal bool ContainsInput(int itemId) => inputByItemId.ContainsKey(itemId);
+
+    /// <summary>
+    /// 判断物品是否属于本配方产物。
+    /// </summary>
+    internal bool ContainsProduct(int itemId) => productItemIds.Contains(itemId);
 
     /// <summary>
     /// 按基础矿物塔剩余产物空间限制本批轮数，确保一次成功的完整产物不会越过缓存上限。
@@ -128,7 +166,8 @@ public sealed class WorldviewRecipe : BaseRecipe {
         }
 
         if (Kind == WorldviewRecipeKind.BasicAnalysis) {
-            if (!ResearchManager.TryAnalyzeDirection(InputID, batchCount, ref seed)) {
+            if (!ResearchManager.TryAnalyzeDirection(InputID, batchCount, ref seed,
+                    out int sacrificeOutputCount)) {
                 fluidInputInc -= fluidInputIncAvg * batchCount;
                 return new FractionationBatchResult {
                     InputRemoveCount = batchCount,
@@ -137,10 +176,15 @@ public sealed class WorldviewRecipe : BaseRecipe {
                 };
             }
 
+            if (sacrificeOutputCount > 0) {
+                outputs.Add(true, IFE记忆源点, sacrificeOutputCount);
+                OutputMain[0].AddOutputCount(sacrificeOutputCount);
+            }
             fluidInputInc -= fluidInputIncAvg * batchCount;
             return new FractionationBatchResult {
                 InputRemoveCount = batchCount,
                 ConsumedRegisterCount = batchCount,
+                SuccessCount = sacrificeOutputCount,
                 DestroyedCount = batchCount,
             };
         }
@@ -177,6 +221,17 @@ public sealed class WorldviewRecipe : BaseRecipe {
             return int.MaxValue;
         }
         return (int)(expectedCount + GetRandDouble(ref seed));
+    }
+
+    private static T[] CopyToArray<T>(IReadOnlyList<T> source) {
+        if (source == null || source.Count == 0) {
+            return Array.Empty<T>();
+        }
+        T[] result = new T[source.Count];
+        for (int i = 0; i < source.Count; i++) {
+            result[i] = source[i];
+        }
+        return result;
     }
 
     private static List<OutputInfo> BuildBaseOutputs(IReadOnlyList<WorldviewRecipeOutput> outputs) {

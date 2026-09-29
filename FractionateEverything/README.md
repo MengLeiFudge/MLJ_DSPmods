@@ -5,16 +5,16 @@
 
 # 万物分馏 Fractionate Everything
 
-万物分馏 3.0 将分馏扩展为一套需要探索、解析和供养的古文明生命工业。你会从出生星上的首个遗物开始，建立宇宙通用的分馏亚空间，研究未知物品方向，并用五种分馏塔搭建普通资源增殖、珍奇催化、生命塔繁育和工业置换产线。
+万物分馏将分馏扩展为一套需要探索、解析和供养的古文明生命工业。首次生产电磁矩阵后，你会从出生星上的首个遗物开始，建立宇宙通用的分馏亚空间，研究未知物品方向，并用五种分馏塔搭建普通资源增殖、珍奇催化、生命塔繁育和工业置换产线。
 
-Fractionate Everything 3.0 turns fractionation into an old-civilization living industry built around exploration, analysis, and sustained automation. Recover the first relic, establish a galaxy-wide subspace inventory, discover unknown recipe directions, and operate five specialized fractionators.
+Fractionate Everything turns fractionation into an old-civilization living industry built around exploration, analysis, and sustained automation. After producing your first Electromagnetic Matrix, recover the first relic, establish a galaxy-wide subspace inventory, discover unknown recipe directions, and operate five specialized fractionators.
 
 ## 主要内容 Features
 
 ### 五种分馏塔 Five Fractionators
 
 - **基础矿物塔 Basic Mineral Tower**：自动识别普通自然资源。每轮有机会消耗 1 件并产出 2 件同种物品；失败物继续流出。
-- **基础解析塔 Basic Analysis Tower**：消耗已经取得解析资格的物品，随机推进该方向中的配方或高级塔特质。无资格或已完成方向会原样流出。
+- **基础解析塔 Basic Analysis Tower**：消耗已经取得解析资格的物品，随机推进该方向中的配方或高级塔特质。普通无资格或已完成方向会原样流出；高级塔在不能解析时改为献祭。
 - **高级矿物塔 Advanced Mineral Tower**：以少量珍奇矿物作催化物，把普通资源增殖为对应珍奇资源。
 - **高级交互塔 Advanced Interaction Tower**：将通用原胚培育成三类高级塔，也能用高级塔模板繁育更多通用原胚。
 - **高级转化塔 Advanced Conversion Tower**：重构燃料棒、采矿机和熔炉，并回收被替换的部件。
@@ -27,9 +27,11 @@ Basic towers are craftable, grid-powered, single-input machines. Advanced towers
 
 高级塔必须先在窗口中选择一张已发现配方。所有输入口都可以接收反应物或矩阵，塔会保留两轮底料，把多余或无关物品送回流动输出。
 
-矩阵层次越高，提供的营养越多，反应速度越快。工作时营养消耗较快，待机时缓慢消耗；营养充足会修复耐久，完全断粮则持续损失耐久。建造无人机不能维修生命塔，损毁会丢失塔内缓存，主动拆除则返还缓存物品。
+六种矩阵每件分别提供 `1 / 2 / 4 / 8 / 16 / 32` 营养，速度档依次为 `1.0 / 1.1 / 1.2 / 1.3 / 1.4 / 1.5`。每个等效加工轮消耗 0.02 营养，待机每秒消耗 0.002 营养；营养充足会修复耐久。完全断粮后，塔会按当前耐久比例越来越慢地继续加工，同时持续损失耐久，直至损毁。建造无人机不能维修生命塔，损毁会丢失塔内缓存，主动拆除则返还缓存物品。
 
-Advanced towers keep real input, food, product, and passthrough buffers. Higher-tier matrices provide more nutrition and faster processing. Starvation damages the building; dismantling returns cached items, while destruction does not.
+正常运行时，产物和失败物会等待凑满当前全局堆叠后输出；切换配方后的无关物会优先排空，输入全部用完后也会释放不足整堆的尾料。
+
+Advanced towers keep real input, food, product, and passthrough buffers. Their six matrix speed tiers range from 1.0x to 1.5x; each equivalent processing round consumes 0.02 nutrition and idling consumes 0.002 per second. A starving tower keeps processing at a speed set by its remaining durability while taking damage; dismantling returns cached items, while destruction does not.
 
 ### 解析研究 Analysis Research
 
@@ -38,16 +40,17 @@ Advanced towers keep real input, food, product, and passthrough buffers. Higher-
 - 同一方向可以包含多张配方。
 - 同一配方可以从多个相关方向发现。
 - 已发现内容会从所有方向移除，不会重复。
-- 配方产物会开放新的关联方向。
-- 取得高级塔后，可投入大量该塔解析其核心特质。
+- 配方中的普通产物会开放新的关联方向；高级塔方向不走这条捷径。
+- 同类高级塔在亚空间库存中首次达到 1000 座后，永久开放对应解析方向。高级塔初始容量为 300 座，因此至少需要三级亚空间扩容。高级塔方向尚未开放或已经完成时，基础解析塔会改为献祭，并以每件 2% 的成功率从正面产出 Memory。
+- 最近 60 秒内同类高级塔的实际献祭速率会提高该类高级塔的配方成功率：按 5% 分档，每秒更新，最高 `+75%`；三类塔分别计算。
 
 文明研究页只显示已经取得资格的方向、真实进度和已发现内容。配方图鉴也在该页面中，不需要领取奖励或购买解锁。
 
-Exploration unlocks item directions, not individual recipes. Analyze an eligible item to progress the lowest unfinished tier, then discover one unknown result from that direction. Results are globally unique and can open further directions through their products.
+Exploration unlocks item directions, not individual recipes. Analyze an eligible item to progress the lowest unfinished tier, then discover one unknown result from that direction. Results are globally unique. Advanced-Tower directions unlock permanently when 1,000 towers of that type are first stored; subsequent sacrifices can raise only that tower type's production success rate.
 
 ### 遗物探索 Relic Exploration
 
-首个遗物固定出现在出生星，并提供一次自动导航。回收后获得：
+首个遗物会在首次生产电磁矩阵后出现在出生星，并提供一次自动导航。回收后获得：
 
 - 基础矿物塔 x10
 - 基础解析塔 x10
@@ -56,11 +59,11 @@ Exploration unlocks item directions, not individual recipes. Analyze an eligible
 - 石矿与铁矿基础复制配方
 - 分馏亚空间和主面板访问能力
 
-后续信号会随航行能力扩展到出生星系和其他星系。普通信号只显示目标星球；抵达后，面板才显示现场信号强度。它不会给出精确坐标、方向箭头或自动导航，信号也不会过期。
+后续信号会随航行能力扩展到出生星系和其他星系。普通信号只显示目标星球；接近目标星球后，面板才显示现场信号强度。探索点使用球形范围，固态星球的点贴近地表，气态巨星的点位于外层空间。它不会给出精确坐标、方向箭头或自动导航，信号也不会过期。
 
-探索点可能提供新的解析资格，也可能提供资源或通用原胚。奖励直接进入亚空间，并允许暂时超过常规容量。每次发现研究内容会提前下一次定时信号；解析 Frag 也可能立即生成额外信号。
+探索点可能提供新的解析资格，也可能提供目标星球实际拥有的资源或通用原胚。通用原胚固定占资源奖励的 10%；其余权重为火山/沙漠 `80% 矿脉 + 10% 流体`、海洋 `55% + 35%`、冰原 `60% + 30%`、气态巨星 `90% 气体`。缺失资源类别的权重转给该星球其他实际资源，原胚权重不变。奖励直接进入亚空间，并允许暂时超过常规容量。每次发现研究内容会提前下一次定时信号；解析 Frag 也可能立即生成额外信号。
 
-The first relic is guided and guaranteed. Later signals reveal only a target planet and local signal strength, so you must search the surface yourself. Signals never expire and may contain research eligibility or physical resources.
+The first relic appears after your first Electromagnetic Matrix and includes one guided navigation. Later signals reveal only a target planet and nearby signal strength. Search a spherical area near the planet; gas-giant signals remain reachable in outer space. Signals never expire and may contain research eligibility or physical resources.
 
 ### 黑雾补给 Dark-Fog Drops
 
@@ -79,7 +82,7 @@ Ground and space Dark Fog can independently drop Frag and Universal Tower Embryo
 - `Shift + F` 打开 FE 主面板，在“亚空间仓储”中手动存取。
 - 两座基础塔在正面输入、两侧不连接时上传物品；容量不足时整批拒收，不会丢货。
 - 行星和星际物流交互站自动存取，并保留槽位模式、阈值、增产点、复制粘贴和蓝图设置。
-- 上传高级塔会献祭塔体并得到 1 个 Memory；高级塔不会作为普通库存入库。
+- 高级塔与其他物品一样正常进入亚空间；同类库存首次达到 1000 座时永久开放对应解析方向，需要献祭时再把该塔送入基础解析塔。
 
 物流交互站按物品价值与实际搬运数量消耗站内电量。能量不足时只传输可支付的数量；亚空间存取能效科技最多把耗能降低一半。
 
@@ -95,20 +98,20 @@ Subspace is a galaxy-wide inventory with independent per-item limits. Access it 
 - **探索信号增幅**：缩短定时信号周期并提高 Frag 掉落率。
 - **三类高级塔特质**：降低催化损耗、提高原胚繁育产出、提高置换回收量。
 
-第一次完整体验 3.0 时，堆叠成长从原版集装物流阶段接入。某个 3.0 存档取得三类高级塔并达到 20 堆叠后，未来新存档会采用更早开始的五档堆叠路线，并从首遗物获得物流补给。
+第一次完整体验生命工业时，堆叠成长从原版集装物流阶段接入。某个当前格式的存档取得三类高级塔并达到 20 堆叠后，未来新存档会采用更早开始的五档堆叠路线，并从首遗物获得物流补给。
 
 The second technology page provides known, matrix-funded upgrades for stacking, subspace capacity and efficiency, exploration, and each advanced tower's core trait.
 
 ## 高级配方 Advanced Recipes
 
-3.0.0 的高级目录刻意保持精简：
+当前高级目录刻意保持精简：
 
 - 光栅石、分形硅石、金伯利矿石、可燃冰、刺笋结晶和单极磁石催化增殖。
 - 三种高级塔的原胚培育与原胚繁育。
 - 液氢燃料棒到氘核燃料棒、氘核燃料棒到反物质燃料棒的置换回收。
 - 采矿机到大型采矿机、电弧熔炉到位面熔炉的置换重构。
 
-所有高级配方都有 20% 成功率。失败轮的普通反应物会从流动输出返回，催化物只在成功轮按低概率消耗。多个产物按实际积压公平输出，不会因为一种副产物量少而永久饿死。
+所有高级配方的基础成功率都是 20%，再乘以同类高级塔最近一分钟献祭形成的加成。失败轮的普通反应物会从流动输出返回，催化物只在成功轮按低概率消耗。多个产物按实际积压公平输出，不会因为一种副产物量少而永久饿死。
 
 The initial advanced catalog focuses on rare-resource catalysis, tower cultivation and breeding, two fuel replacements, and two high-value machine reconstructions. Failed ordinary inputs pass through; low-consumption catalysts remain until actually consumed.
 
@@ -120,13 +123,13 @@ The initial advanced catalog focuses on rare-resource catalysis, tower cultivati
 | 在两种主面板外壳间切换 | `Ctrl + Shift + F`，面板打开时 |
 | 查看教程 | `G` |
 
-按键可在游戏设置中修改。主面板现役页面为“文明研究”“遗物探索”“亚空间仓储”“开发日记”和“杂项设置”。高级塔配方在原版分馏塔窗口中选择。
+按键可在游戏设置中修改。主面板页面为“文明研究”“遗物探索”“亚空间仓储”“开发日记”和“杂项设置”。高级塔配方在原版分馏塔窗口中选择。
 
 Controls are configurable in the game settings. Advanced recipes are selected directly in the standard fractionator window.
 
 ## 联机 Multiplayer
 
-3.0.0 支持 Nebula。研究、探索、亚空间库存、高级塔反应、营养与耐久均由主机结算；中途加入玩家会收到当前快照。客户端认领探索点时，主机使用该连接对应玩家的真实星球和位置验证距离。
+万物分馏支持 Nebula。研究、探索、亚空间库存、高级塔反应、营养与耐久均由主机结算；中途加入玩家会收到当前状态。客户端认领探索点时，主机使用该连接对应玩家的真实宇宙坐标验证球形距离。
 
 多人游戏要求主机与客户端使用相同 FE 版本。Nebula 客户端不能直接从高级塔窗口手动取出产物，请使用传送带输出。
 
@@ -134,14 +137,14 @@ Nebula multiplayer is host-authoritative for research, exploration, subspace sto
 
 ## 存档兼容 Save Compatibility
 
-FE 3.0 使用全新的自有存档格式，存档版本为 11。
+当前 FE 自有存档格式版本为 11。
 
 - FE 2.x 存档会迁移能够对应的塔、建筑、模型、配方和蓝图物理引用。
-- 2.x 的协议、成就、远古科技点、塔等级及其他 FE 自有进度不会转换为 3.0 研究进度。
-- 过渡存档版本 10 不执行 2.x 物理迁移，也不会被解释为正式 3.0 状态。
+- 2.x 的协议、成就、远古科技点、塔等级及其他 FE 自有进度不会转换为当前研究进度。
+- 过渡存档版本 10 不执行 2.x 物理迁移，也不会被解释为当前格式状态。
 - 建议升级前保留原存档备份。
 
-FE 3.0 uses save format 11. Physical references from FE 2.x are migrated where a stable counterpart exists, but removed progression systems are intentionally not converted. Keep a backup before upgrading an existing save.
+The current FE save format is version 11. Physical references from FE 2.x are migrated where a stable counterpart exists, but removed progression systems are intentionally not converted. Keep a backup before upgrading an existing save.
 
 ## 安装 Installation
 

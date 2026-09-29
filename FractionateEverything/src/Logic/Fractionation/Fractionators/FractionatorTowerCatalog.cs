@@ -4,7 +4,7 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Fractionation.Fractionators;
 
 /// <summary>
-/// FE 3.0 五座活动分馏塔及其稳定物理原型映射目录。
+/// 五座活动分馏塔及其稳定物理原型映射目录。
 /// </summary>
 public static class FractionatorTowerCatalog {
     /// <summary>

@@ -10,9 +10,9 @@
 | 生命工业 | 遗物探索 | `ExplorationManager` |
 | 资源管理 | 亚空间仓储 | `DataCenterInventory` |
 | 开发档案 | 开发日记 | 静态档案内容 |
-| 系统设置 | 杂项设置 | BepInEx 配置与现役交互设置 |
+| 系统设置 | 杂项设置 | BepInEx 配置与当前交互设置 |
 
-`CoreOperate/FracRecipeOperate.cs`、`VanillaRecipeOperate.cs` 的兼容配置/存档钩子可继续存在，但不注册为 3.0 页面。旧协议恢复、远古科技树、恢复手册、成就和独立配方图鉴不得重新注册。
+`CoreOperate/FracRecipeOperate.cs`、`VanillaRecipeOperate.cs` 的兼容配置/存档钩子可继续存在，但不注册为页面。旧协议恢复、远古科技树、恢复手册、成就和独立配方图鉴不得重新注册。
 
 ## Entry And Routing
 
@@ -37,7 +37,7 @@ Import/Export/IntoOtherSave();
 
 不是每个页面都必须拥有配置或存档；空钩子只用于保持统一接线。
 
-## 3.0 Presentation Rules
+## Presentation Rules
 
 - 文明研究页只列已取得资格的方向，并动态展示进度、已发现内容和合并后的配方图鉴。
 - 遗物探索页对首遗物显示明确身份；其他点位统一显示“古文明信号”，只提供目标星球和同星现场强度。

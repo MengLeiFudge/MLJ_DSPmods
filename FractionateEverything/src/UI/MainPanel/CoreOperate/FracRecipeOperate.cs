@@ -21,7 +21,7 @@ using static FE.Utils.Utils;
 namespace FE.UI.MainPanel.CoreOperate;
 
 /// <summary>
-/// 查看 FE 3.0 当前可知的稳定配方、完整输入输出和运行边界。
+/// 查看当前已知的稳定配方、完整输入输出和运行边界。
 /// </summary>
 public static class FracRecipeOperate {
     private static RectTransform tab;

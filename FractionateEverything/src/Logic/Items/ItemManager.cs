@@ -14,7 +14,7 @@ namespace FE.Logic.Items;
 /// </summary>
 public static class ItemManager {
     /// <summary>
-    /// 注册 FE 3.0 的 Frag、Memory 与通用原胚文本。
+    /// 注册 Frag、Memory 与通用原胚的玩家可见文本。
     /// </summary>
     public static void AddTranslations() {
         Register("残片", "Frag", "Frag");
@@ -396,7 +396,7 @@ public static class ItemManager {
             itemValue[IMS多功能集成组件] = maxCalculatedValue;
         }
 
-        // 基础塔正面上传可接收全部已注册实体物品；容量与高级塔献祭在上传路由中处理。
+        // 基础塔正面上传可接收全部已注册实体物品；上传路由负责容量和历史包裹规范化。
         needs = LDB.items.dataArray
             .Where(item => item != null && item.ID > 0 && item.ID < 12000 && !IsCurrencyPackageItem(item.ID))
             .Select(item => item.ID)

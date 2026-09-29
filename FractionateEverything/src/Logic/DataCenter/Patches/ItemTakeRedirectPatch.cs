@@ -88,7 +88,8 @@ public static class PlayerInventoryItemAccessPatches {
             yield return AccessTools.Method(typeof(BuildTool_Click), nameof(BuildTool_Click.CreatePrebuilds));
             yield return AccessTools.Method(typeof(BuildTool_Inserter), nameof(BuildTool_Inserter.CreatePrebuilds));
             yield return AccessTools.Method(typeof(BuildTool_Path), nameof(BuildTool_Path.CreatePrebuilds));
-            yield return AccessTools.Method(typeof(BuildTool_Reform), nameof(BuildTool_Reform.ReformAction));
+            yield return AccessTools.Method(typeof(BuildTool_Reform),
+                nameof(BuildTool_Reform.ConsumeItemsAndRegisterStats));
             yield return AccessTools.Method(typeof(BuildTool_Reform), nameof(BuildTool_Reform.RemoveBasePit));
             yield return AccessTools.Method(typeof(ConstructionModuleComponent),
                 nameof(ConstructionModuleComponent.PlaceItems));

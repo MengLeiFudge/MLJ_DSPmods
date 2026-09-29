@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -51,36 +52,36 @@ public sealed class AdvancedFractionatorState {
 
     /// <summary>按比例轮询产物的游标。</summary>
     public int OutputCursor;
+
+    /// <summary>按配方输入顺序轮询流动输出的游标。</summary>
+    public int FlowOutputCursor;
+
+    /// <summary>按配方输入顺序轮询多余底料的游标。</summary>
+    public int InputOutputCursor;
 }
 
 /// <summary>
-/// 三类高级塔的主机权威运行时。
+/// 三类高级塔的多输入反应运行时。
 /// </summary>
 public static class AdvancedFractionatorRuntime {
     public const float MaximumNutrition = 1000f;
-    private const float WorkingNutritionPerSecond = 0.2f;
-    private const float IdleNutritionPerSecond = 0.02f;
+    private const float WorkingNutritionPerRound = 0.02f;
+    private const float IdleNutritionPerSecond = 0.002f;
     private const int ProgressPerSecond = 60000;
     private const int BufferCapacity = 20;
     private const int MaximumStateCount = 1000000;
     private const int MaximumDictionaryEntryCount = 12000;
-    private static readonly object Sync = new();
-    private static readonly Dictionary<(int planetId, int fractionatorId), AdvancedFractionatorState> States = [];
+    private static readonly ConcurrentDictionary<(int planetId, int fractionatorId), AdvancedFractionatorState>
+        States = [];
     private static readonly float[] FoodNutrition = [1f, 2f, 4f, 8f, 16f, 32f];
-    private static readonly float[] FoodSpeed = [1f, 1.5f, 2f, 2.5f, 3f, 4f];
+    private static readonly float[] FoodSpeed = [1f, 1.1f, 1.2f, 1.3f, 1.4f, 1.5f];
 
     /// <summary>
     /// 获取指定实例状态；不存在时创建。
     /// </summary>
     public static AdvancedFractionatorState GetOrCreateState(PlanetFactory factory, int fractionatorId) {
         int planetId = factory?.planetId ?? 0;
-        lock (Sync) {
-            if (!States.TryGetValue((planetId, fractionatorId), out AdvancedFractionatorState state)) {
-                state = new AdvancedFractionatorState();
-                States[(planetId, fractionatorId)] = state;
-            }
-            return state;
-        }
+        return States.GetOrAdd((planetId, fractionatorId), _ => new AdvancedFractionatorState());
     }
 
     /// <summary>
@@ -90,11 +91,9 @@ public static class AdvancedFractionatorRuntime {
         if (factory == null) {
             return null;
         }
-        lock (Sync) {
-            return States.TryGetValue((factory.planetId, fractionatorId), out AdvancedFractionatorState state)
-                ? state
-                : null;
-        }
+        return States.TryGetValue((factory.planetId, fractionatorId), out AdvancedFractionatorState state)
+            ? state
+            : null;
     }
 
     /// <summary>
@@ -155,18 +154,14 @@ public static class AdvancedFractionatorRuntime {
 
         AdvancedFractionatorState state = GetOrCreateState(factory, fractionatorId);
         lock (state) {
-            HashSet<int> retainedInputs = recipe == null
-                ? []
-                : recipe.Inputs.Select(input => input.ItemId).ToHashSet();
             MoveNonTargetEntries(state.Inputs, state.InputInc, state.FlowOutputs, state.FlowOutputInc,
-                retainedInputs);
-            HashSet<int> retainedProducts = recipe == null
-                ? []
-                : recipe.Products.Select(output => output.ItemId).ToHashSet();
+                recipe, retainInputs: true);
             MoveNonTargetEntries(state.Products, null, state.FlowOutputs, state.FlowOutputInc,
-                retainedProducts);
+                recipe, retainInputs: false);
             state.SelectedRecipeId = persistentRecipeId;
             state.OutputCursor = 0;
+            state.FlowOutputCursor = 0;
+            state.InputOutputCursor = 0;
             fractionator.progress = 0;
         }
         return true;
@@ -184,7 +179,7 @@ public static class AdvancedFractionatorRuntime {
         int buildingId = factory.entityPool[entityId].protoId;
         AdvancedFractionatorState state = GetOrCreateState(factory, fractionator.id);
         if (NebulaMultiplayerModAPI.IsClient) {
-            MirrorVanillaFields(ref fractionator, state, signPool, entityId);
+            MirrorVanillaFields(ref fractionator, state, signPool, entityId, buildingId);
             return fractionator.isWorking ? 1U : 0U;
         }
 
@@ -194,6 +189,8 @@ public static class AdvancedFractionatorRuntime {
                 || !ResearchManager.IsContentUnlocked(recipe.StableId)) {
                 state.SelectedRecipeId = 0;
                 state.OutputCursor = 0;
+                state.FlowOutputCursor = 0;
+                state.InputOutputCursor = 0;
                 recipe = null;
             }
 
@@ -206,26 +203,31 @@ public static class AdvancedFractionatorRuntime {
                 fractionator.isOutput2, consumeRegister);
             ConvertFoodToNutrition(state, consumeRegister);
 
-            bool canWork = recipe != null && state.Nutrition > 0f && HasReactionInputs(state, recipe)
-                           && HasOutputRoom(state, recipe);
+            int availableRounds = recipe == null ? 0 : GetAvailableRounds(state, recipe);
+            float sacrificeBoost = ResearchManager.GetAdvancedTowerSacrificeBoost(buildingId);
+            int executableRounds = recipe == null
+                ? 0
+                : LimitRoundsByOutputRoom(state, recipe, availableRounds, sacrificeBoost);
+            float durabilityEfficiency = GetDurabilityEfficiency(factory, entityId, state);
+            bool canWork = recipe != null && executableRounds > 0 && durabilityEfficiency > 0f;
+            float processingRate = 0f;
             int successfulRounds = 0;
             if (canWork) {
                 float speed = FoodSpeed[Math.Max(0, Math.Min(FoodSpeed.Length - 1, state.LastFoodTier))];
-                fractionator.progress += Mathf.RoundToInt(ProgressPerSecond / 60f * speed);
-                int rounds = Math.Min(fractionator.progress / ProgressPerSecond,
-                    GetAvailableRounds(state, recipe));
-                rounds = LimitRoundsByOutputRoom(state, recipe, rounds);
+                processingRate = executableRounds * speed * durabilityEfficiency;
+                fractionator.progress += Mathf.RoundToInt(ProgressPerSecond / 60f * processingRate);
+                int rounds = Math.Min(fractionator.progress / ProgressPerSecond, executableRounds);
                 if (rounds > 0) {
                     fractionator.progress -= rounds * ProgressPerSecond;
                     successfulRounds = SettleRounds(ref fractionator.seed, state, recipe, rounds, buildingId,
-                        productRegister, consumeRegister);
+                        sacrificeBoost, productRegister, consumeRegister);
                 }
             }
 
             fractionator.fractionSuccess = successfulRounds > 0;
-            fractionator.isWorking = canWork && state.Nutrition > 0f;
-            ConsumeNutritionAndApplyDurability(factory, entityId, state, fractionator.isWorking);
-            MirrorVanillaFields(ref fractionator, state, signPool, entityId);
+            fractionator.isWorking = canWork;
+            ConsumeNutritionAndApplyDurability(factory, entityId, state, processingRate);
+            MirrorVanillaFields(ref fractionator, state, signPool, entityId, buildingId);
             return fractionator.isWorking ? 1U : 0U;
         }
     }
@@ -238,12 +240,8 @@ public static class AdvancedFractionatorRuntime {
         if (factory == null || fractionatorId <= 0) {
             return;
         }
-        AdvancedFractionatorState state;
-        lock (Sync) {
-            if (!States.TryGetValue((factory.planetId, fractionatorId), out state)) {
-                return;
-            }
-            States.Remove((factory.planetId, fractionatorId));
+        if (!States.TryRemove((factory.planetId, fractionatorId), out AdvancedFractionatorState state)) {
+            return;
         }
         if (!returnContents) {
             return;
@@ -260,44 +258,42 @@ public static class AdvancedFractionatorRuntime {
     /// 读取全部高级塔实例状态。
     /// </summary>
     public static void Import(BinaryReader r) {
-        lock (Sync) {
-            States.Clear();
-            int count = r.ReadInt32();
-            if (count < 0 || count > MaximumStateCount) {
-                throw new InvalidDataException($"Invalid advanced fractionator state count: {count}");
+        States.Clear();
+        int count = r.ReadInt32();
+        if (count < 0 || count > MaximumStateCount) {
+            throw new InvalidDataException($"Invalid advanced fractionator state count: {count}");
+        }
+        for (int i = 0; i < count; i++) {
+            int planetId = r.ReadInt32();
+            int fractionatorId = r.ReadInt32();
+            int selectedRecipeId = r.ReadInt32();
+            WorldviewRecipe selectedRecipe = RecipeManager.GetRecipe(selectedRecipeId);
+            if (selectedRecipeId != 0 && selectedRecipe?.IsAdvanced != true) {
+                selectedRecipeId = 0;
             }
-            for (int i = 0; i < count; i++) {
-                int planetId = r.ReadInt32();
-                int fractionatorId = r.ReadInt32();
-                int selectedRecipeId = r.ReadInt32();
-                WorldviewRecipe selectedRecipe = RecipeManager.GetRecipe(selectedRecipeId);
-                if (selectedRecipeId != 0 && selectedRecipe?.IsAdvanced != true) {
-                    selectedRecipeId = 0;
-                }
-                float nutrition = r.ReadSingle();
-                if (float.IsNaN(nutrition) || float.IsInfinity(nutrition)) {
-                    nutrition = 0f;
-                }
-                AdvancedFractionatorState state = new() {
-                    SelectedRecipeId = selectedRecipeId,
-                    Nutrition = Mathf.Clamp(nutrition, 0f, MaximumNutrition),
-                    LastFoodTier = Math.Max(0, Math.Min(5, r.ReadInt32())),
-                    OutputCursor = Math.Max(0, r.ReadInt32()),
-                };
-                ReadDictionary(r, state.Inputs, BufferCapacity);
-                ReadDictionary(r, state.InputInc, BufferCapacity * 10);
-                ReadDictionary(r, state.Foods, BufferCapacity);
-                ReadDictionary(r, state.FoodInc, BufferCapacity * 10);
-                ReadDictionary(r, state.Products, BufferCapacity);
-                ReadDictionary(r, state.FlowOutputs, BufferCapacity);
-                ReadDictionary(r, state.FlowOutputInc, BufferCapacity * 10);
-                ClampIncDictionary(state.InputInc, state.Inputs);
-                RemoveNonFoodEntries(state.Foods, state.FoodInc);
-                ClampIncDictionary(state.FoodInc, state.Foods);
-                ClampIncDictionary(state.FlowOutputInc, state.FlowOutputs);
-                if (planetId > 0 && fractionatorId > 0) {
-                    States[(planetId, fractionatorId)] = state;
-                }
+            float nutrition = r.ReadSingle();
+            if (float.IsNaN(nutrition) || float.IsInfinity(nutrition)) {
+                nutrition = 0f;
+            }
+            AdvancedFractionatorState state = new() {
+                SelectedRecipeId = selectedRecipeId,
+                Nutrition = Mathf.Clamp(nutrition, 0f, MaximumNutrition),
+                LastFoodTier = Math.Max(0, Math.Min(5, r.ReadInt32())),
+                OutputCursor = Math.Max(0, r.ReadInt32()),
+            };
+            ReadDictionary(r, state.Inputs, BufferCapacity);
+            ReadDictionary(r, state.InputInc, BufferCapacity * 10);
+            ReadDictionary(r, state.Foods, BufferCapacity);
+            ReadDictionary(r, state.FoodInc, BufferCapacity * 10);
+            ReadDictionary(r, state.Products, BufferCapacity);
+            ReadDictionary(r, state.FlowOutputs, BufferCapacity);
+            ReadDictionary(r, state.FlowOutputInc, BufferCapacity * 10);
+            ClampIncDictionary(state.InputInc, state.Inputs);
+            RemoveNonFoodEntries(state.Foods, state.FoodInc);
+            ClampIncDictionary(state.FoodInc, state.Foods);
+            ClampIncDictionary(state.FlowOutputInc, state.FlowOutputs);
+            if (planetId > 0 && fractionatorId > 0) {
+                States[(planetId, fractionatorId)] = state;
             }
         }
     }
@@ -306,27 +302,28 @@ public static class AdvancedFractionatorRuntime {
     /// 写入全部高级塔实例状态。
     /// </summary>
     public static void Export(BinaryWriter w) {
-        lock (Sync) {
-            w.Write(States.Count);
-            foreach (KeyValuePair<(int planetId, int fractionatorId), AdvancedFractionatorState> pair
-                     in States.OrderBy(pair => pair.Key.planetId).ThenBy(pair => pair.Key.fractionatorId)) {
-                (int planetId, int fractionatorId) key = pair.Key;
-                AdvancedFractionatorState state = pair.Value;
-                lock (state) {
-                    w.Write(key.planetId);
-                    w.Write(key.fractionatorId);
-                    w.Write(state.SelectedRecipeId);
-                    w.Write(state.Nutrition);
-                    w.Write(state.LastFoodTier);
-                    w.Write(state.OutputCursor);
-                    WriteDictionary(w, state.Inputs);
-                    WriteDictionary(w, state.InputInc);
-                    WriteDictionary(w, state.Foods);
-                    WriteDictionary(w, state.FoodInc);
-                    WriteDictionary(w, state.Products);
-                    WriteDictionary(w, state.FlowOutputs);
-                    WriteDictionary(w, state.FlowOutputInc);
-                }
+        KeyValuePair<(int planetId, int fractionatorId), AdvancedFractionatorState>[] statePairs = States
+            .OrderBy(pair => pair.Key.planetId)
+            .ThenBy(pair => pair.Key.fractionatorId)
+            .ToArray();
+        w.Write(statePairs.Length);
+        foreach (KeyValuePair<(int planetId, int fractionatorId), AdvancedFractionatorState> pair in statePairs) {
+            (int planetId, int fractionatorId) key = pair.Key;
+            AdvancedFractionatorState state = pair.Value;
+            lock (state) {
+                w.Write(key.planetId);
+                w.Write(key.fractionatorId);
+                w.Write(state.SelectedRecipeId);
+                w.Write(state.Nutrition);
+                w.Write(state.LastFoodTier);
+                w.Write(state.OutputCursor);
+                WriteDictionary(w, state.Inputs);
+                WriteDictionary(w, state.InputInc);
+                WriteDictionary(w, state.Foods);
+                WriteDictionary(w, state.FoodInc);
+                WriteDictionary(w, state.Products);
+                WriteDictionary(w, state.FlowOutputs);
+                WriteDictionary(w, state.FlowOutputInc);
             }
         }
     }
@@ -334,11 +331,7 @@ public static class AdvancedFractionatorRuntime {
     /// <summary>
     /// 切档时清除全部高级塔实例状态。
     /// </summary>
-    public static void IntoOtherSave() {
-        lock (Sync) {
-            States.Clear();
-        }
-    }
+    public static void IntoOtherSave() => States.Clear();
 
     private static void HandlePort(ref FractionatorComponent fractionator, AdvancedFractionatorState state,
         WorldviewRecipe recipe, CargoTraffic cargoTraffic, int beltId, bool isOutput, int[] consumeRegister) {
@@ -371,7 +364,10 @@ public static class AdvancedFractionatorRuntime {
                 continue;
             }
 
-            WorldviewRecipeInput input = recipe?.Inputs.FirstOrDefault(candidate => candidate.ItemId == itemId);
+            WorldviewRecipeInput input = null;
+            if (recipe != null) {
+                recipe.TryGetInput(itemId, out input);
+            }
             if (input != null) {
                 int retainedCount = Math.Min(BufferCapacity, Math.Max(input.Count, input.Count * 2));
                 int reserveRoom = Math.Max(0, retainedCount - GetCount(state.Inputs, itemId));
@@ -400,7 +396,10 @@ public static class AdvancedFractionatorRuntime {
         int availableRoom = IsFoodItem(itemId)
             ? Math.Max(0, BufferCapacity - GetCount(state.Foods, itemId))
             : 0;
-        WorldviewRecipeInput input = recipe?.Inputs.FirstOrDefault(candidate => candidate.ItemId == itemId);
+        WorldviewRecipeInput input = null;
+        if (recipe != null) {
+            recipe.TryGetInput(itemId, out input);
+        }
         if (input != null) {
             availableRoom += Math.Max(0, BufferCapacity - GetCount(state.Inputs, itemId));
         }
@@ -453,12 +452,14 @@ public static class AdvancedFractionatorRuntime {
     }
 
     private static int SettleRounds(ref uint seed, AdvancedFractionatorState state, WorldviewRecipe recipe,
-        int rounds, int buildingId, int[] productRegister, int[] consumeRegister) {
-        int successCount = WorldviewRecipe.RollExpected(ref seed, rounds * recipe.CycleSuccessProbability);
+        int rounds, int buildingId, float sacrificeBoost, int[] productRegister, int[] consumeRegister) {
+        float successProbability = Math.Min(1f,
+            recipe.CycleSuccessProbability * (1f + sacrificeBoost));
+        int successCount = WorldviewRecipe.RollExpected(ref seed, rounds * successProbability);
         successCount = Math.Min(successCount, rounds);
         int failedCount = rounds - successCount;
 
-        foreach (WorldviewRecipeInput input in recipe.Inputs) {
+        foreach (WorldviewRecipeInput input in recipe.InputArray) {
             if (input.ConsumeProbability >= 0.9999f) {
                 int removed = rounds * input.Count;
                 int removedInc = TakeCount(state.Inputs, state.InputInc, input.ItemId, removed);
@@ -491,7 +492,7 @@ public static class AdvancedFractionatorRuntime {
             return 0;
         }
 
-        foreach (WorldviewRecipeOutput output in recipe.Products) {
+        foreach (WorldviewRecipeOutput output in recipe.ProductArray) {
             float outputPerSuccess = GetOutputPerSuccess(recipe, output);
             int outputCount = WorldviewRecipe.RollExpected(ref seed, successCount * outputPerSuccess);
             if (outputCount <= 0) {
@@ -508,18 +509,9 @@ public static class AdvancedFractionatorRuntime {
         return successCount;
     }
 
-    private static bool HasReactionInputs(AdvancedFractionatorState state, WorldviewRecipe recipe) {
-        foreach (WorldviewRecipeInput input in recipe.Inputs) {
-            if (GetCount(state.Inputs, input.ItemId) < input.Count) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     private static int GetAvailableRounds(AdvancedFractionatorState state, WorldviewRecipe recipe) {
         int rounds = int.MaxValue;
-        foreach (WorldviewRecipeInput input in recipe.Inputs) {
+        foreach (WorldviewRecipeInput input in recipe.InputArray) {
             int count = GetCount(state.Inputs, input.ItemId);
             if (input.ConsumeProbability >= 0.9999f) {
                 rounds = Math.Min(rounds, count / input.Count);
@@ -530,16 +522,13 @@ public static class AdvancedFractionatorRuntime {
         return rounds == int.MaxValue ? 0 : Math.Max(0, rounds);
     }
 
-    private static bool HasOutputRoom(AdvancedFractionatorState state, WorldviewRecipe recipe) =>
-        LimitRoundsByOutputRoom(state, recipe, 1) > 0;
-
     private static int LimitRoundsByOutputRoom(AdvancedFractionatorState state, WorldviewRecipe recipe,
-        int rounds) {
+        int rounds, float sacrificeBoost) {
         if (rounds <= 0) {
             return 0;
         }
         int outputCapacity = GetOutputCapacity();
-        foreach (WorldviewRecipeInput input in recipe.Inputs) {
+        foreach (WorldviewRecipeInput input in recipe.InputArray) {
             if (input.ConsumeProbability < 0.9999f) {
                 continue;
             }
@@ -550,7 +539,7 @@ public static class AdvancedFractionatorRuntime {
             return 0;
         }
         int maxSuccesses = int.MaxValue;
-        foreach (WorldviewRecipeOutput output in recipe.Products) {
+        foreach (WorldviewRecipeOutput output in recipe.ProductArray) {
             int maximumPerSuccess = Math.Max(1, Mathf.CeilToInt(GetOutputPerSuccess(recipe, output)));
             int available = outputCapacity - GetCount(state.Products, output.ItemId);
             maxSuccesses = Math.Min(maxSuccesses, Math.Max(0, available / maximumPerSuccess));
@@ -558,7 +547,8 @@ public static class AdvancedFractionatorRuntime {
         if (maxSuccesses <= 0) {
             return 0;
         }
-        float successProbability = Math.Max(0.0001f, recipe.CycleSuccessProbability);
+        float successProbability = Math.Max(0.0001f,
+            Math.Min(1f, recipe.CycleSuccessProbability * (1f + sacrificeBoost)));
         int maximumRoundsByProducts = Mathf.FloorToInt(maxSuccesses / successProbability);
         return Math.Min(rounds, maximumRoundsByProducts);
     }
@@ -566,141 +556,184 @@ public static class AdvancedFractionatorRuntime {
     private static void TryOutput(AdvancedFractionatorState state, WorldviewRecipe recipe,
         CargoTraffic cargoTraffic, int beltId) {
         int stackLimit = Math.Max(1, StackingManager.CurrentMaxStack);
-        HashSet<int> currentInputIds = recipe?.Inputs.Select(input => input.ItemId).ToHashSet() ?? [];
-        HashSet<int> currentProductIds = recipe?.Products.Select(output => output.ItemId).ToHashSet() ?? [];
 
-        // 换配方后的旧物和完全无关物品优先排空。
-        if (TryOutputDictionary(state.FlowOutputs, state.FlowOutputInc, cargoTraffic, beltId,
-                stackLimit, requireFullStack: false, itemId => !currentInputIds.Contains(itemId))) {
-            return;
-        }
-        if (TryOutputDictionary(state.Inputs, state.InputInc, cargoTraffic, beltId,
-                stackLimit, requireFullStack: false, itemId => !currentInputIds.Contains(itemId))) {
-            return;
-        }
-        if (TryOutputDictionary(state.Products, null, cargoTraffic, beltId,
-                stackLimit, requireFullStack: false, itemId => !currentProductIds.Contains(itemId))) {
+        // 换配方后的旧物和完全无关物品优先排空，不等待集装。
+        if (TryOutputNonTarget(state.FlowOutputs, state.FlowOutputInc, recipe, currentInput: true,
+                cargoTraffic, beltId, stackLimit)
+            || TryOutputNonTarget(state.Inputs, state.InputInc, recipe, currentInput: true,
+                cargoTraffic, beltId, stackLimit)
+            || TryOutputNonTarget(state.Products, null, recipe, currentInput: false,
+                cargoTraffic, beltId, stackLimit)) {
             return;
         }
 
+        bool requireFullStack = stackLimit > 1 && !AreCurrentInputsEmpty(state, recipe);
         if (state.PreferFlowOutput) {
-            if (TryOutputCurrentFlow(state, recipe, cargoTraffic, beltId, stackLimit)) {
+            if (TryOutputCurrentFlow(state, recipe, cargoTraffic, beltId, stackLimit, requireFullStack)) {
                 state.PreferFlowOutput = false;
                 return;
             }
-            if (TryOutputProducts(state, recipe, cargoTraffic, beltId, stackLimit)) {
+            if (TryOutputProducts(state, recipe, cargoTraffic, beltId, stackLimit, requireFullStack)) {
                 state.PreferFlowOutput = true;
             }
             return;
         }
 
-        if (TryOutputProducts(state, recipe, cargoTraffic, beltId, stackLimit)) {
+        if (TryOutputProducts(state, recipe, cargoTraffic, beltId, stackLimit, requireFullStack)) {
             state.PreferFlowOutput = true;
             return;
         }
-        if (TryOutputCurrentFlow(state, recipe, cargoTraffic, beltId, stackLimit)) {
+        if (TryOutputCurrentFlow(state, recipe, cargoTraffic, beltId, stackLimit, requireFullStack)) {
             state.PreferFlowOutput = false;
         }
     }
 
     private static bool TryOutputCurrentFlow(AdvancedFractionatorState state, WorldviewRecipe recipe,
-        CargoTraffic cargoTraffic, int beltId, int stackLimit) {
-        return TryOutputDictionary(state.FlowOutputs, state.FlowOutputInc, cargoTraffic, beltId,
-                   stackLimit, requireFullStack: false)
-               || TryOutputExcessInputs(state, recipe, cargoTraffic, beltId, stackLimit);
+        CargoTraffic cargoTraffic, int beltId, int stackLimit, bool requireFullStack) {
+        if (recipe == null || recipe.InputArray.Length == 0) {
+            return false;
+        }
+        int inputCount = recipe.InputArray.Length;
+        int startIndex = state.FlowOutputCursor % inputCount;
+        for (int offset = 0; offset < inputCount; offset++) {
+            int index = (startIndex + offset) % inputCount;
+            int itemId = recipe.InputArray[index].ItemId;
+            if (!TryOutputItem(state.FlowOutputs, state.FlowOutputInc, itemId,
+                    cargoTraffic, beltId, stackLimit, requireFullStack)) {
+                continue;
+            }
+            state.FlowOutputCursor = (index + 1) % inputCount;
+            return true;
+        }
+        return TryOutputExcessInputs(state, recipe, cargoTraffic, beltId, stackLimit, requireFullStack);
     }
 
     private static bool TryOutputProducts(AdvancedFractionatorState state, WorldviewRecipe recipe,
-        CargoTraffic cargoTraffic, int beltId, int stackLimit) {
-        if (state.Products.Count == 0) {
+        CargoTraffic cargoTraffic, int beltId, int stackLimit, bool requireFullStack) {
+        if (recipe == null || recipe.ProductArray.Length == 0 || state.Products.Count == 0) {
             return false;
         }
 
-        IEnumerable<int> preferredOutputIds = recipe?.Products.Select(output => output.ItemId) ?? [];
-        List<int> outputOrder = preferredOutputIds
-            .Concat(state.Products.Keys.OrderBy(id => id))
-            .Distinct()
-            .Where(itemId => GetCount(state.Products, itemId) > 0)
-            .ToList();
-        if (outputOrder.Count == 0) {
-            return false;
+        int totalWeight = 0;
+        foreach (WorldviewRecipeOutput output in recipe.ProductArray) {
+            int count = GetCount(state.Products, output.ItemId);
+            if (count <= 0 || requireFullStack && count < stackLimit) {
+                continue;
+            }
+            totalWeight += (count + stackLimit - 1) / stackLimit;
         }
-        int totalWeight = outputOrder.Sum(itemId =>
-            (GetCount(state.Products, itemId) + stackLimit - 1) / stackLimit);
         if (totalWeight <= 0) {
             return false;
         }
+
         int ticket = state.OutputCursor % totalWeight;
         state.OutputCursor = state.OutputCursor == int.MaxValue ? 0 : state.OutputCursor + 1;
-        int selectedItemId = outputOrder[0];
-        foreach (int itemId in outputOrder) {
-            int itemWeight = (GetCount(state.Products, itemId) + stackLimit - 1) / stackLimit;
+        int selectedItemId = 0;
+        foreach (WorldviewRecipeOutput output in recipe.ProductArray) {
+            int count = GetCount(state.Products, output.ItemId);
+            if (count <= 0 || requireFullStack && count < stackLimit) {
+                continue;
+            }
+            int itemWeight = (count + stackLimit - 1) / stackLimit;
             if (ticket < itemWeight) {
-                selectedItemId = itemId;
+                selectedItemId = output.ItemId;
                 break;
             }
             ticket -= itemWeight;
         }
-        int selectedCount = GetCount(state.Products, selectedItemId);
-        int outputCount = Math.Min(stackLimit, selectedCount);
-        if (outputCount <= 0
-            || !cargoTraffic.TryInsertItemAtHead(beltId, selectedItemId, (byte)outputCount, 0)) {
-            return false;
-        }
-        AddCount(state.Products, selectedItemId, -outputCount);
-        return true;
+        return selectedItemId > 0
+               && TryOutputItem(state.Products, null, selectedItemId,
+                   cargoTraffic, beltId, stackLimit, requireFullStack);
     }
 
     private static bool TryOutputExcessInputs(AdvancedFractionatorState state, WorldviewRecipe recipe,
-        CargoTraffic cargoTraffic, int beltId, int stackLimit) {
-        if (recipe == null) {
-            return false;
-        }
-        foreach (WorldviewRecipeInput input in recipe.Inputs) {
+        CargoTraffic cargoTraffic, int beltId, int stackLimit, bool requireFullStack) {
+        int inputCount = recipe.InputArray.Length;
+        int startIndex = state.InputOutputCursor % inputCount;
+        for (int offset = 0; offset < inputCount; offset++) {
+            int index = (startIndex + offset) % inputCount;
+            WorldviewRecipeInput input = recipe.InputArray[index];
             int count = GetCount(state.Inputs, input.ItemId);
-            int retainedCount = Math.Min(BufferCapacity, Math.Max(input.Count, input.Count * 2));
-            int outputCount = Math.Min(stackLimit, Math.Max(0, count - retainedCount));
-            if (outputCount <= 0) {
+            int retainedCount = Math.Min(BufferCapacity, input.Count * 2);
+            int excessCount = Math.Max(0, count - retainedCount);
+            if (excessCount <= 0 || requireFullStack && excessCount < stackLimit) {
                 continue;
             }
-            int outputInc = count <= 0 ? 0 : GetCount(state.InputInc, input.ItemId) * outputCount / count;
-            if (!cargoTraffic.TryInsertItemAtHead(
-                    beltId, input.ItemId, (byte)outputCount, (byte)outputInc)) {
+            int outputLimit = Math.Min(stackLimit, excessCount);
+            if (!TryOutputItem(state.Inputs, state.InputInc, input.ItemId,
+                    cargoTraffic, beltId, outputLimit, requireFullStack: false)) {
                 continue;
             }
-            AddCount(state.Inputs, input.ItemId, -outputCount);
-            AddCount(state.InputInc, input.ItemId, -outputInc);
+            state.InputOutputCursor = (index + 1) % inputCount;
             return true;
         }
         return false;
     }
 
-    private static bool TryOutputDictionary(Dictionary<int, int> counts, Dictionary<int, int> incs,
-        CargoTraffic cargoTraffic, int beltId, int stackLimit, bool requireFullStack,
-        Func<int, bool> itemFilter = null) {
-        foreach (int itemId in counts.Keys.OrderBy(id => id).ToArray()) {
-            if (itemFilter != null && !itemFilter(itemId)) {
-                continue;
+    private static bool TryOutputNonTarget(Dictionary<int, int> counts, Dictionary<int, int> incs,
+        WorldviewRecipe recipe, bool currentInput, CargoTraffic cargoTraffic, int beltId, int stackLimit) {
+        int selectedItemId = 0;
+        foreach (KeyValuePair<int, int> pair in counts) {
+            bool belongsToCurrentRecipe = recipe != null && (currentInput
+                ? recipe.ContainsInput(pair.Key)
+                : recipe.ContainsProduct(pair.Key));
+            if (!belongsToCurrentRecipe && pair.Value > 0) {
+                selectedItemId = pair.Key;
+                break;
             }
-            int count = GetCount(counts, itemId);
-            if (count <= 0 || requireFullStack && count < stackLimit) {
-                continue;
-            }
-            int outputCount = Math.Min(stackLimit, count);
-            int outputInc = count <= 0 ? 0 : GetCount(incs, itemId) * outputCount / count;
-            if (!cargoTraffic.TryInsertItemAtHead(beltId, itemId, (byte)outputCount, (byte)outputInc)) {
-                continue;
-            }
-            AddCount(counts, itemId, -outputCount);
-            AddCount(incs, itemId, -outputInc);
+        }
+        return selectedItemId > 0
+               && TryOutputItem(counts, incs, selectedItemId,
+                   cargoTraffic, beltId, stackLimit, requireFullStack: false);
+    }
+
+    private static bool TryOutputItem(Dictionary<int, int> counts, Dictionary<int, int> incs,
+        int itemId, CargoTraffic cargoTraffic, int beltId, int stackLimit, bool requireFullStack) {
+        int count = GetCount(counts, itemId);
+        if (count <= 0 || requireFullStack && count < stackLimit) {
+            return false;
+        }
+        int outputCount = Math.Min(stackLimit, count);
+        int outputInc = count <= 0 ? 0 : GetCount(incs, itemId) * outputCount / count;
+        if (!cargoTraffic.TryInsertItemAtHead(
+                beltId, itemId, (byte)outputCount, (byte)Math.Min(byte.MaxValue, outputInc))) {
+            return false;
+        }
+        AddCount(counts, itemId, -outputCount);
+        AddCount(incs, itemId, -outputInc);
+        return true;
+    }
+
+    private static bool AreCurrentInputsEmpty(AdvancedFractionatorState state, WorldviewRecipe recipe) {
+        if (recipe == null) {
             return true;
         }
-        return false;
+        foreach (WorldviewRecipeInput input in recipe.InputArray) {
+            if (GetCount(state.Inputs, input.ItemId) > 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static float GetDurabilityEfficiency(PlanetFactory factory, int entityId,
+        AdvancedFractionatorState state) {
+        if (state.Nutrition > 0f) {
+            return 1f;
+        }
+        int combatStatId = factory.entityPool[entityId].combatStatId;
+        if (combatStatId <= 0 || combatStatId >= factory.skillSystem.combatStats.buffer.Length) {
+            return 1f;
+        }
+        CombatStat combatStat = factory.skillSystem.combatStats.buffer[combatStatId];
+        return combatStat.hpMax <= 0 ? 1f : Mathf.Clamp01(combatStat.hp / (float)combatStat.hpMax);
     }
 
     private static void ConsumeNutritionAndApplyDurability(PlanetFactory factory, int entityId,
-        AdvancedFractionatorState state, bool working) {
-        float drain = (working ? WorkingNutritionPerSecond : IdleNutritionPerSecond) / 60f;
+        AdvancedFractionatorState state, float processingRate) {
+        float drain = processingRate > 0f
+            ? WorkingNutritionPerRound * processingRate / 60f
+            : IdleNutritionPerSecond / 60f;
         state.Nutrition = Mathf.Max(0f, state.Nutrition - drain);
 
         int combatStatId = factory.entityPool[entityId].combatStatId;
@@ -739,17 +772,20 @@ public static class AdvancedFractionatorRuntime {
     }
 
     private static void MirrorVanillaFields(ref FractionatorComponent fractionator,
-        AdvancedFractionatorState state, SignData[] signPool, int entityId) {
+        AdvancedFractionatorState state, SignData[] signPool, int entityId, int buildingId) {
         WorldviewRecipe recipe = RecipeManager.GetRecipe(state.SelectedRecipeId);
-        int inputItemId = recipe?.Inputs.FirstOrDefault()?.ItemId ?? 0;
-        int productItemId = recipe?.Products.FirstOrDefault()?.ItemId ?? 0;
+        int inputItemId = recipe?.PrimaryInputId ?? 0;
+        int productItemId = recipe?.PrimaryProductId ?? 0;
         fractionator.fluidId = inputItemId;
         fractionator.fluidInputCount = GetCount(state.Inputs, inputItemId);
         fractionator.fluidInputInc = GetCount(state.InputInc, inputItemId);
         fractionator.fluidInputCargoCount = fractionator.fluidInputCount;
         fractionator.productId = productItemId;
         fractionator.productOutputCount = GetCount(state.Products, productItemId);
-        fractionator.produceProb = recipe?.CycleSuccessProbability ?? 0f;
+        fractionator.produceProb = recipe == null
+            ? 0f
+            : Math.Min(1f, recipe.CycleSuccessProbability
+                           * (1f + ResearchManager.GetAdvancedTowerSacrificeBoost(buildingId)));
         if (entityId > 0 && entityId < signPool.Length) {
             signPool[entityId].iconId0 = (uint)(fractionator.fluidId > 0 ? fractionator.fluidId : 0);
             signPool[entityId].iconType = fractionator.fluidId > 0 ? 1U : 0U;
@@ -759,9 +795,13 @@ public static class AdvancedFractionatorRuntime {
     private static int GetOutputCapacity() => BufferCapacity;
 
     private static void MoveNonTargetEntries(Dictionary<int, int> source, Dictionary<int, int> sourceInc,
-        Dictionary<int, int> target, Dictionary<int, int> targetInc, HashSet<int> retainedIds) {
+        Dictionary<int, int> target, Dictionary<int, int> targetInc, WorldviewRecipe recipe,
+        bool retainInputs) {
         foreach (int itemId in source.Keys.ToArray()) {
-            if (retainedIds.Contains(itemId)) {
+            bool retained = recipe != null && (retainInputs
+                ? recipe.ContainsInput(itemId)
+                : recipe.ContainsProduct(itemId));
+            if (retained) {
                 continue;
             }
             int sourceCount = GetCount(source, itemId);

@@ -25,7 +25,7 @@ public static class ItemCountRedirectPatch {
     private static class GetItemCountPatch {
         [HarmonyTargetMethods]
         private static IEnumerable<MethodBase> TargetMethods() {
-            yield return AccessTools.Method(typeof(BuildTool_Reform), nameof(BuildTool_Reform.ReformAction));
+            yield return AccessTools.Method(typeof(BuildTool_Reform), nameof(BuildTool_Reform.DoFlattenExecute));
             yield return AccessTools.Method(typeof(BuildTool_Reform), nameof(BuildTool_Reform.RemoveBasePit));
             yield return AccessTools.Method(typeof(PlanetFactory),
                 nameof(PlanetFactory.EntityAutoReplenishIfNeeded));

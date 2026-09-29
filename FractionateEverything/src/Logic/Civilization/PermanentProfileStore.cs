@@ -4,14 +4,14 @@ using FE.Logic.Enhancements.Stacking;
 namespace FE.Logic.Civilization;
 
 /// <summary>
-/// 保存跨存档的“已完整玩过 FE 3.0”标记。
+/// 保存跨存档的生命工业成长线完成标记。
 /// </summary>
 public static class PermanentProfileStore {
     private static ConfigFile configFile;
     private static ConfigEntry<bool> hasPlayedFractionation;
 
     /// <summary>
-    /// 获取该本地配置是否已完成过 FE 3.0 成长线。
+    /// 获取该本地配置是否已经完整走过生命工业成长线。
     /// </summary>
     public static bool HasPlayedFractionation => hasPlayedFractionation?.Value == true;
 
@@ -21,7 +21,7 @@ public static class PermanentProfileStore {
     public static void Bind(ConfigFile config) {
         configFile = config;
         hasPlayedFractionation = config.Bind("Progression", "HasPlayedFractionation3", false,
-            "仅由 3.0 存档在取得全部三类高级塔并达到 20 堆叠后写入；旧版存档不会触发。");
+            "仅由当前格式存档在取得全部三类高级塔并达到 20 堆叠后写入；旧版存档不会触发。");
     }
 
     /// <summary>
@@ -37,6 +37,6 @@ public static class PermanentProfileStore {
 
         hasPlayedFractionation.Value = true;
         configFile?.Save();
-        CivilizationModule.QueueNotification("已完成 FE 3.0 生命工业成长线".Translate());
+        CivilizationModule.QueueNotification("生命工业传承已记录".Translate());
     }
 }

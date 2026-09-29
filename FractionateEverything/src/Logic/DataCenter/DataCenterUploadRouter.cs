@@ -2,14 +2,13 @@
 using FE.Compatibility.Nebula;
 using FE.Logic.Civilization;
 using FE.Logic.Fractionation.Fractionators;
-using NebulaAPI;
 using static FE.Logic.Items.ItemManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.DataCenter;
 
 /// <summary>
-/// 处理玩家和建筑发起的实体上传：货币包裹规范化为基础余额，其他物品进入数据中心库存。
+/// 处理玩家和建筑发起的实体上传：货币包裹规范化为基础余额，其他物品按原物进入亚空间。
 /// </summary>
 public static class DataCenterUploadRouter {
 
@@ -27,16 +26,6 @@ public static class DataCenterUploadRouter {
     public static long Upload(int itemId, long count, long inc = 0, bool manual = false) {
         if (count <= 0 || (itemId == I沙土 && NebulaMultiplayerModAPI.IsMultiplayerActive)) {
             return 0;
-        }
-
-        if (FractionatorTowerCatalog.IsAdvancedTowerItem(itemId)) {
-            ResearchManager.NotifyAdvancedTowerObtained(itemId);
-            long accepted = DataCenterInventory.AddItemToModData(IFE记忆源点, count, 0);
-            if (NebulaMultiplayerModAPI.IsMultiplayerActive && manual && accepted > 0) {
-                NebulaModAPI.MultiplayerSession.Network.SendPacket(
-                    new CenterItemChangeLongPacket(itemId, accepted));
-            }
-            return accepted;
         }
 
         if (IsCurrencyPackageItem(itemId)
@@ -59,14 +48,20 @@ public static class DataCenterUploadRouter {
             return 0;
         }
 
-        return DataCenterInventory.AddItemToModData(storeItemId, storeCount, storeInc, manual);
+        long acceptedCount = DataCenterInventory.AddItemToModData(
+            storeItemId, storeCount, storeInc, manual);
+        if (acceptedCount > 0 && FractionatorTowerCatalog.IsAdvancedTowerItem(storeItemId)) {
+            ResearchManager.NotifyAdvancedTowerObtained(storeItemId);
+            ResearchManager.NotifyAdvancedTowerInventoryCount(storeItemId,
+                DataCenterInventory.GetModDataItemCount(storeItemId));
+        }
+        return acceptedCount;
     }
 
     /// <summary>
-    /// 获取上传后实际占用容量的物品 ID；高级塔献祭统一写入 Memory。
+    /// 获取上传后实际占用容量的物品 ID。
     /// </summary>
-    public static int GetUploadCapacityItemId(int itemId) =>
-        FractionatorTowerCatalog.IsAdvancedTowerItem(itemId) ? IFE记忆源点 : itemId;
+    public static int GetUploadCapacityItemId(int itemId) => itemId;
 
     /// <summary>
     /// 判断一整份带上货物能否由基础塔安全上传；只有全部可接收时才允许先从传送带取走。

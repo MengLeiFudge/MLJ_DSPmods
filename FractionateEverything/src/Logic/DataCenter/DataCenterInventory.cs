@@ -270,7 +270,7 @@ public static class DataCenterInventory {
     }
 
     /// <summary>
-    /// 返回并清除亚空间权威快照脏标记。
+    /// 返回并清除亚空间待同步标记。
     /// </summary>
     public static bool TakeSnapshotDirty() {
         lock (centerItemCount) {

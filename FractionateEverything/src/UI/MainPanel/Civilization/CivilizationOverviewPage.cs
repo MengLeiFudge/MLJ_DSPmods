@@ -16,7 +16,7 @@ using static FE.Utils.Utils;
 namespace FE.UI.MainPanel.Civilization;
 
 /// <summary>
-/// 展示 FE 3.0 物品方向研究、内容发现和生命工业完成状态。
+/// 展示物品方向研究、内容发现和生命工业传承状态。
 /// </summary>
 public static class CivilizationOverviewPage {
     private const float DirectionLineHeight = 24f;
@@ -55,11 +55,9 @@ public static class CivilizationOverviewPage {
         Register("已发现", "Discovered");
         Register("尚无已发现内容", "No content has been discovered yet.");
         Register("研究方向为空", "No research directions are currently available.");
-        Register("本存档代际", "Save Generation");
-        Register("三点零代际", "FE 3.0");
-        Register("旧代际兼容", "Legacy Compatibility");
+        Register("研究成果", "Research Results");
         Register("高级塔收集", "Advanced Towers");
-        Register("跨存档完成", "Cross-save Completion");
+        Register("传承准备", "Legacy Readiness");
         Register("已完成", "Complete");
         Register("未完成", "Incomplete");
         Register("研究页脚",
@@ -186,14 +184,11 @@ public static class CivilizationOverviewPage {
     }
 
     private static string BuildOverviewText() {
-        string generation = (ResearchManager.BelongsToGeneration3 ? "三点零代际" : "旧代际兼容")
-            .Translate();
         string towers = (ResearchManager.HasAcquiredAllAdvancedTowers ? "已完成" : "未完成").Translate();
         string completion = (PermanentProfileStore.HasPlayedFractionation ? "已完成" : "未完成").Translate();
-        return $"{"本存档代际".Translate()}：{generation.WithColor(Orange)}    "
-               + $"{"已发现内容".Translate()}：{ResearchManager.DiscoveredContentCount.ToString().WithColor(Blue)}\n"
-               + $"{"高级塔收集".Translate()}：{towers}    "
-               + $"{"跨存档完成".Translate()}：{completion}";
+        return $"{"研究成果".Translate()}：{ResearchManager.DiscoveredContentCount.ToString().WithColor(Blue)}    "
+               + $"{"高级塔收集".Translate()}：{towers}\n"
+               + $"{"传承准备".Translate()}：{completion}";
     }
 
     private static string BuildDirectionList(ResearchDirectionSnapshot[] directions) {

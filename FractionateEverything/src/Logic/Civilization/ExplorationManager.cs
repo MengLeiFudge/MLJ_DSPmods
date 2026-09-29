@@ -42,23 +42,24 @@ public sealed class ExplorationMark {
 }
 
 /// <summary>
-/// FE 3.0 探索信号生成、导航、星球额度和抵达结算。
+/// 探索信号生成、导航、星球额度和抵达结算。
 /// </summary>
 public static class ExplorationManager {
     private const long TicksPerMinute = 3600L;
-    private const float ArrivalDistance = 120f;
+    private const float TerrestrialArrivalDistance = 120f;
     private static readonly object Sync = new();
     private static readonly List<ExplorationMark> ActiveMarks = [];
     private static readonly Dictionary<int, int> GeneratedCountByPlanet = [];
-    private static readonly int[] ResourceCandidates = [
+    private static readonly int[] FallbackResourceCandidates = [
         I铁矿, I铜矿, I硅石, I钛石, I石矿, I煤矿, I原油, I水, I氢, I重氢,
-        IFE通用原胚,
     ];
     private static int nextMarkId = 1;
     private static long nextTimedGenerationTick;
     private static uint randomSeed = 0x8F3A51C7u;
     private static bool firstRelicClaimed;
     private static bool snapshotDirty;
+    private static int electromagneticMatrixMilestoneId = int.MinValue;
+    private static bool milestoneLookupWarningLogged;
     private static int guidedFirstRelicId;
     private static int guidedFirstRelicPlanetId;
     private static Vector3 guidedFirstRelicPosition;
@@ -99,6 +100,15 @@ public static class ExplorationManager {
         if (NebulaMultiplayerModAPI.IsClient || GameMain.galaxy == null) {
             return;
         }
+        if (!IsElectromagneticMatrixMilestoneUnlocked()) {
+            lock (Sync) {
+                int removed = ActiveMarks.RemoveAll(mark => mark.Kind == ExplorationMarkKind.FirstRelic);
+                if (removed > 0) {
+                    snapshotDirty = true;
+                }
+            }
+            return;
+        }
         lock (Sync) {
             if (firstRelicClaimed || ActiveMarks.Any(mark => mark.Kind == ExplorationMarkKind.FirstRelic)) {
                 return;
@@ -110,7 +120,7 @@ public static class ExplorationManager {
             ActiveMarks.Add(new ExplorationMark {
                 Id = nextMarkId++,
                 PlanetId = birthPlanet.id,
-                LocalPosition = CreateSurfacePosition(birthPlanet),
+                LocalPosition = CreateMarkPosition(birthPlanet),
                 Kind = ExplorationMarkKind.FirstRelic,
             });
             snapshotDirty = true;
@@ -122,6 +132,9 @@ public static class ExplorationManager {
     /// 为尚未解锁面板的玩家设置一次首遗物导航；普通探索点不会调用该入口。
     /// </summary>
     public static void EnsureFirstRelicGuidance() {
+        if (!IsElectromagneticMatrixMilestoneUnlocked()) {
+            return;
+        }
         ExplorationMark relic;
         lock (Sync) {
             if (firstRelicClaimed) {
@@ -216,20 +229,20 @@ public static class ExplorationManager {
     }
 
     /// <summary>
-    /// 主机依据连接对应玩家的权威位置结算探索点位。
+    /// 主机依据连接对应玩家的宇宙坐标结算探索点位。
     /// </summary>
-    public static bool TryClaimFromClient(int markId, int planetId, float x, float y, float z) {
+    public static bool TryClaimFromClient(int markId, double x, double y, double z) {
         if (NebulaMultiplayerModAPI.IsClient || !IsFinite(x) || !IsFinite(y) || !IsFinite(z)) {
             return false;
         }
+        VectorLF3 playerPosition = new(x, y, z);
         lock (Sync) {
             int index = ActiveMarks.FindIndex(mark => mark.Id == markId);
             if (index < 0) {
                 return false;
             }
             ExplorationMark mark = ActiveMarks[index];
-            if (mark.PlanetId != planetId
-                || Vector3.Distance(new Vector3(x, y, z), mark.LocalPosition) > ArrivalDistance) {
+            if (!IsWithinArrivalSphere(mark, playerPosition)) {
                 return false;
             }
             ActiveMarks.RemoveAt(index);
@@ -237,6 +250,28 @@ public static class ExplorationManager {
             snapshotDirty = true;
             return true;
         }
+    }
+
+    /// <summary>
+    /// 在玩家接近目标星球后计算现场信号强度，不暴露目标方向。
+    /// </summary>
+    public static bool TryGetSignalStrength(ExplorationMark mark, VectorLF3 playerPosition,
+        out float strength) {
+        strength = 0f;
+        if (mark == null || GameMain.galaxy?.PlanetById(mark.PlanetId) is not PlanetData planet) {
+            return false;
+        }
+        float markRadius = GetMarkRadius(planet);
+        float arrivalDistance = GetArrivalDistance(planet);
+        double centerDistance = (playerPosition - planet.uPosition).magnitude;
+        if (centerDistance > markRadius + arrivalDistance) {
+            return false;
+        }
+        double distance = (playerPosition - GetMarkUniversalPosition(mark, planet)).magnitude;
+        double maximumDistance = Math.Max(arrivalDistance + 1d, markRadius * 2d);
+        strength = 1f - Mathf.Clamp01((float)((distance - arrivalDistance)
+                                               / (maximumDistance - arrivalDistance)));
+        return true;
     }
 
     /// <summary>
@@ -376,7 +411,7 @@ public static class ExplorationManager {
         }
 
         if (kind == ExplorationMarkKind.ResourceCache) {
-            itemId = ResourceCandidates[NextInt(ResourceCandidates.Length)];
+            itemId = SelectResourceCandidate(planet);
             ItemProto item = LDB.items.Select(itemId);
             int stackSize = Math.Max(1, item?.StackSize ?? 1);
             long resourceCount = 5L * stackSize * GetDistanceValueMultiplier(planet.id);
@@ -386,7 +421,7 @@ public static class ExplorationManager {
         ActiveMarks.Add(new ExplorationMark {
             Id = nextMarkId++,
             PlanetId = planet.id,
-            LocalPosition = CreateSurfacePosition(planet),
+            LocalPosition = CreateMarkPosition(planet),
             Kind = kind,
             ItemId = itemId,
             Count = count,
@@ -398,14 +433,10 @@ public static class ExplorationManager {
 
     private static void ResolveArrivals() {
         Player player = GameMain.mainPlayer;
-        if (player.planetId <= 0) {
-            return;
-        }
-        Vector3 playerPosition = player.position;
+        VectorLF3 playerPosition = player.uPosition;
         for (int i = ActiveMarks.Count - 1; i >= 0; i--) {
             ExplorationMark mark = ActiveMarks[i];
-            if (mark.PlanetId != player.planetId
-                || Vector3.Distance(playerPosition, mark.LocalPosition) > ArrivalDistance) {
+            if (!IsWithinArrivalSphere(mark, playerPosition)) {
                 continue;
             }
 
@@ -491,15 +522,119 @@ public static class ExplorationManager {
     private static int GetGeneratedCount(int planetId) =>
         GeneratedCountByPlanet.TryGetValue(planetId, out int count) ? count : 0;
 
-    private static Vector3 CreateSurfacePosition(PlanetData planet) {
+    private static int SelectResourceCandidate(PlanetData planet) {
+        if (NextInt(100) < 10) {
+            return IFE通用原胚;
+        }
+
+        HashSet<int> veinItems = [];
+        HashSet<int> fluidItems = [];
+        if (planet.type == EPlanetType.Gas && planet.gasItems != null) {
+            foreach (int itemId in planet.gasItems) {
+                if (itemId > 0 && LDB.items.Exist(itemId)) {
+                    fluidItems.Add(itemId);
+                }
+            }
+        } else if (planet.waterItemId > 0 && LDB.items.Exist(planet.waterItemId)) {
+            fluidItems.Add(planet.waterItemId);
+        }
+        lock (planet.veinGroupsLock) {
+            if (planet.veinGroups != null) {
+                foreach (VeinGroup group in planet.veinGroups) {
+                    if (group.type == EVeinType.None || group.count <= 0 || group.amount <= 0) {
+                        continue;
+                    }
+                    int miningItemId = LDB.veins.Select((int)group.type)?.MiningItem ?? 0;
+                    if (miningItemId > 0 && LDB.items.Exist(miningItemId)) {
+                        veinItems.Add(miningItemId);
+                    }
+                }
+            }
+        }
+
+        (int veinWeight, int fluidWeight) = planet.type switch {
+            EPlanetType.Ocean => (55, 35),
+            EPlanetType.Ice => (60, 30),
+            EPlanetType.Gas => (0, 90),
+            EPlanetType.Vocano or EPlanetType.Desert => (80, 10),
+            _ => (80, 10),
+        };
+        if (veinItems.Count == 0 && fluidItems.Count == 0) {
+            return FallbackResourceCandidates[NextInt(FallbackResourceCandidates.Length)];
+        }
+        if (veinItems.Count == 0) {
+            fluidWeight += veinWeight;
+            veinWeight = 0;
+        } else if (fluidItems.Count == 0) {
+            veinWeight += fluidWeight;
+            fluidWeight = 0;
+        }
+
+        bool selectVein = NextInt(veinWeight + fluidWeight) < veinWeight;
+        int[] candidates = (selectVein ? veinItems : fluidItems).OrderBy(itemId => itemId).ToArray();
+        return candidates[NextInt(candidates.Length)];
+    }
+
+    private static Vector3 CreateMarkPosition(PlanetData planet) {
         double y = GetRandDouble(ref randomSeed) * 2d - 1d;
         double angle = GetRandDouble(ref randomSeed) * Math.PI * 2d;
         double horizontal = Math.Sqrt(Math.Max(0d, 1d - y * y));
-        float radius = planet.realRadius + 1.5f;
+        float radius = GetMarkRadius(planet);
         return new Vector3(
             (float)(Math.Cos(angle) * horizontal * radius),
             (float)(y * radius),
             (float)(Math.Sin(angle) * horizontal * radius));
+    }
+
+    private static float GetMarkRadius(PlanetData planet) => planet.type == EPlanetType.Gas
+        ? planet.realRadius + Math.Max(40f, planet.realRadius * 0.25f)
+        : planet.realRadius + 1.5f;
+
+    private static float GetArrivalDistance(PlanetData planet) => planet.type == EPlanetType.Gas
+        ? Math.Max(TerrestrialArrivalDistance, planet.realRadius * 0.25f)
+        : TerrestrialArrivalDistance;
+
+    private static VectorLF3 GetMarkUniversalPosition(ExplorationMark mark, PlanetData planet) =>
+        planet.uPosition + Maths.QRotateLF(planet.runtimeRotation, mark.LocalPosition);
+
+    private static bool IsWithinArrivalSphere(ExplorationMark mark, VectorLF3 playerPosition) {
+        PlanetData planet = GameMain.galaxy?.PlanetById(mark.PlanetId);
+        if (planet == null) {
+            return false;
+        }
+        double distance = (playerPosition - GetMarkUniversalPosition(mark, planet)).magnitude;
+        return distance <= GetArrivalDistance(planet);
+    }
+
+    private static bool IsElectromagneticMatrixMilestoneUnlocked() {
+        MilestoneSystem milestoneSystem = GameMain.data?.milestoneSystem;
+        if (milestoneSystem == null) {
+            return false;
+        }
+        int milestoneId = ResolveElectromagneticMatrixMilestoneId();
+        return milestoneId > 0 && milestoneSystem.MilestoneUnlocked(milestoneId);
+    }
+
+    private static int ResolveElectromagneticMatrixMilestoneId() {
+        if (electromagneticMatrixMilestoneId != int.MinValue) {
+            return electromagneticMatrixMilestoneId;
+        }
+        electromagneticMatrixMilestoneId = 0;
+        foreach (MilestoneProto milestone in LDB.milestones.dataArray) {
+            if (milestone?.DeterminatorParams == null || milestone.DeterminatorParams.Length == 0
+                || milestone.DeterminatorParams[0] != I电磁矩阵
+                || !string.Equals(milestone.DeterminatorName, nameof(MST_ItemFirstProduction),
+                    StringComparison.Ordinal)) {
+                continue;
+            }
+            electromagneticMatrixMilestoneId = milestone.ID;
+            break;
+        }
+        if (electromagneticMatrixMilestoneId <= 0 && !milestoneLookupWarningLogged) {
+            milestoneLookupWarningLogged = true;
+            LogWarning("未找到首次生产电磁矩阵的里程碑，首遗物信号暂不生成。");
+        }
+        return electromagneticMatrixMilestoneId;
     }
 
     private static int NextInt(int count) {
@@ -510,21 +645,16 @@ public static class ExplorationManager {
     }
 
     private static void RequestNearbyClientClaims() {
-        Player player = GameMain.mainPlayer;
-        if (player.planetId <= 0) {
-            return;
-        }
-        Vector3 position = player.position;
+        VectorLF3 position = GameMain.mainPlayer.uPosition;
         ExplorationMark[] marks = GetActiveMarks();
         foreach (ExplorationMark mark in marks) {
-            if (mark.PlanetId == player.planetId
-                && Vector3.Distance(position, mark.LocalPosition) <= ArrivalDistance) {
+            if (IsWithinArrivalSphere(mark, position)) {
                 NebulaMultiplayerModAPI.RequestExplorationClaim(mark.Id);
             }
         }
     }
 
-    private static bool IsFinite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
+    private static bool IsFinite(double value) => !double.IsNaN(value) && !double.IsInfinity(value);
 
     private static void ClearFirstRelicGuidance() {
         int planetId;

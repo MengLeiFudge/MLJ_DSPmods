@@ -74,7 +74,7 @@ public static class NebulaMultiplayerModAPI {
     }
 
     /// <summary>
-    /// 广播 3.0 研究、探索、配方统计、亚空间库存与过程统计的权威快照。
+    /// 广播研究、探索、配方统计、亚空间库存与过程统计的主机状态。
     /// </summary>
     public static void BroadcastCivilizationState() {
         if (!NebulaModAPI.IsMultiplayerActive
@@ -91,7 +91,7 @@ public static class NebulaMultiplayerModAPI {
                 ("Recipes", RecipeManager.Export),
                 // 亚空间快照覆盖完整稀疏库存，避免仅同步 Frag/Memory 时遗漏普通物资。
                 ("DataCenter", Export),
-                // 分馏成功计数等过程统计仅主机权威，客户端 Import 覆盖本地显示。
+                // 过程统计只由主机累计，客户端通过 Import 刷新显示。
                 ("Process", ProcessManager.Export)
             );
             stateData = provider.CloseAndGetBytes();
@@ -141,14 +141,13 @@ public static class NebulaMultiplayerModAPI {
     }
 
     /// <summary>
-    /// 从主机连接表读取发包玩家的权威本地星球位置。
+    /// 从主机连接表读取发包玩家的宇宙坐标。
     /// </summary>
-    public static bool TryGetAuthoritativePlayerPosition(INebulaConnection connection,
-        out int planetId, out float x, out float y, out float z) {
-        planetId = 0;
-        x = 0f;
-        y = 0f;
-        z = 0f;
+    public static bool TryGetAuthoritativePlayerUPosition(INebulaConnection connection,
+        out double x, out double y, out double z) {
+        x = 0d;
+        y = 0d;
+        z = 0d;
         object network = NebulaModAPI.MultiplayerSession?.Network;
         if (connection == null || network == null) {
             return false;
@@ -161,13 +160,12 @@ public static class NebulaMultiplayerModAPI {
         }
         INebulaPlayer player = players.Get(connection);
         IPlayerData data = player?.Data;
-        if (data == null || data.LocalPlanetId <= 0) {
+        if (data == null) {
             return false;
         }
-        planetId = data.LocalPlanetId;
-        x = data.LocalPlanetPosition.x;
-        y = data.LocalPlanetPosition.y;
-        z = data.LocalPlanetPosition.z;
+        x = data.UPosition.x;
+        y = data.UPosition.y;
+        z = data.UPosition.z;
         return true;
     }
 
@@ -362,7 +360,7 @@ public class CivilizationStatePacketProcessor : BasePacketProcessor<Civilization
 }
 
 /// <summary>
-/// 高级塔多输入缓存、产物、营养与选定配方的主机权威快照。
+/// 同步高级塔的多输入缓存、产物、营养与选定配方。
 /// </summary>
 public class AdvancedFractionatorStatePacket {
     public byte[] data { get; set; }
@@ -409,7 +407,7 @@ public class CivilizationActionPacket {
 }
 
 /// <summary>
-/// 仅在主机执行客户端提交的文明动作，并在状态改变后广播权威快照。
+/// 只允许主机执行客户端提交的文明动作，并在状态改变后同步给所有玩家。
 /// </summary>
 [RegisterPacketProcessor]
 public class CivilizationActionPacketProcessor : BasePacketProcessor<CivilizationActionPacket> {
@@ -420,9 +418,9 @@ public class CivilizationActionPacketProcessor : BasePacketProcessor<Civilizatio
 
         switch (packet.actionType) {
             case CivilizationActionPacket.ClaimExploration:
-                if (NebulaMultiplayerModAPI.TryGetAuthoritativePlayerPosition(conn,
-                        out int planetId, out float x, out float y, out float z)) {
-                    ExplorationManager.TryClaimFromClient(packet.markId, planetId, x, y, z);
+                if (NebulaMultiplayerModAPI.TryGetAuthoritativePlayerUPosition(conn,
+                        out double x, out double y, out double z)) {
+                    ExplorationManager.TryClaimFromClient(packet.markId, x, y, z);
                 }
                 break;
         }

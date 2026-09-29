@@ -126,7 +126,7 @@ public static class CivilizationRecoveryManager {
     }
 
     /// <summary>
-    /// 保留联机生命周期调用合同；3.0 探索认领不再使用旧请求节流。
+    /// 保留联机生命周期入口；探索认领已经不再使用旧请求节流。
     /// </summary>
     public static void ResetNetworkRequestThrottle() { }
 
