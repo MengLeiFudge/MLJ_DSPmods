@@ -134,9 +134,11 @@ public static class MainWindow {
             || !GameMain.isRunning
             || GameMain.isFullscreenPaused
             || GameMain.mainPlayer == null) {
+            ExplorationSignalHud.Update();
             CloseAllMainPanels();
             return;
         }
+        ExplorationSignalHud.Update();
         if (VFInput.inputing) {
             return;
         }
@@ -443,8 +445,20 @@ public static class MainWindow {
     #region 模组存档接口实现
 
     public static void Import(BinaryReader r) {
+        ExplorationSignalHud.SetSaveState(null, 0);
         r.ReadBlocks(
             (MainPanelSelectionBlockTag, ImportMainPanelSelection),
+            ("PinnedExplorationSignals", br => {
+                int count = br.ReadInt32();
+                if (count < 0 || count > 4) {
+                    throw new InvalidDataException($"探索信号 HUD 槽位数量无效：{count}。");
+                }
+                int[] slots = new int[count];
+                for (int index = 0; index < count; index++) {
+                    slots[index] = br.ReadInt32();
+                }
+                ExplorationSignalHud.SetSaveState(slots, br.ReadInt32());
+            }),
             ("FracRecipeOperate", FracRecipeOperate.Import),
             ("VanillaRecipeOperate", VanillaRecipeOperate.Import),
             ("ItemInteraction", ItemInteraction.Import),
@@ -454,8 +468,16 @@ public static class MainWindow {
     }
 
     public static void Export(BinaryWriter w) {
+        (int[] pinnedSlots, int lastObservedMarkId) = ExplorationSignalHud.GetSaveState();
         w.WriteBlocks(
             (MainPanelSelectionBlockTag, ExportMainPanelSelection),
+            ("PinnedExplorationSignals", bw => {
+                bw.Write(pinnedSlots.Length);
+                foreach (int markId in pinnedSlots) {
+                    bw.Write(markId);
+                }
+                bw.Write(lastObservedMarkId);
+            }),
             ("FracRecipeOperate", FracRecipeOperate.Export),
             ("VanillaRecipeOperate", VanillaRecipeOperate.Export),
             ("ItemInteraction", ItemInteraction.Export),
@@ -466,6 +488,7 @@ public static class MainWindow {
 
     public static void IntoOtherSave() {
         IntoOtherSaveMainPanelSelection();
+        ExplorationSignalHud.IntoOtherSave();
         FracRecipeOperate.IntoOtherSave();
         VanillaRecipeOperate.IntoOtherSave();
 

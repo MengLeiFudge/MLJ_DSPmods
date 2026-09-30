@@ -16,10 +16,11 @@ public enum ExplorationMarkKind {
     FirstRelic = 1,
     DirectionEligibility = 2,
     ResourceCache = 3,
+    PlanetDetector = 4,
 }
 
 /// <summary>
-/// 星球表面的一个永久探索信号，抵达前没有时限。
+/// 一个永久探索信号，抵达前没有时限。
 /// </summary>
 public sealed class ExplorationMark {
     /// <summary>存档内稳定点位 ID。</summary>
@@ -34,7 +35,7 @@ public sealed class ExplorationMark {
     /// <summary>点位内容类型。</summary>
     public ExplorationMarkKind Kind;
 
-    /// <summary>具体研究内容的稳定 ID；资源点和首遗物为空。</summary>
+    /// <summary>具体研究内容的稳定 ID；仅研究内容信号使用。</summary>
     public string ContentId;
 
     /// <summary>解析物品或资源物品 ID。</summary>
@@ -45,11 +46,12 @@ public sealed class ExplorationMark {
 }
 
 /// <summary>
-/// 探索信号生成、导航、星球额度和抵达结算。
+/// 探索信号生成、双尺度探测、星球额度和抵达结算。
 /// </summary>
 public static class ExplorationManager {
     private const long TicksPerMinute = 3600L;
     private const float TerrestrialArrivalDistance = 120f;
+    private const float PlanetLocalDetectionAltitude = 900f;
     private const int MaximumImportedCollectionCount = 4096;
     private const int MaximumImportedMarkId = 1000000000;
     private static readonly object Sync = new();
@@ -62,12 +64,13 @@ public static class ExplorationManager {
     private static long nextTimedGenerationTick;
     private static uint randomSeed = 0x8F3A51C7u;
     private static bool firstRelicClaimed;
+    private static bool planetDetectorUnlocked;
     private static bool snapshotDirty;
     private static int electromagneticMatrixMilestoneId = int.MinValue;
     private static bool milestoneLookupWarningLogged;
-    private static int guidedFirstRelicId;
-    private static int guidedFirstRelicPlanetId;
-    private static Vector3 guidedFirstRelicPosition;
+    private static int cachedGalaxySeed = int.MinValue;
+    private static int cachedGalaxyStarCount;
+    private static double cachedGalaxyMaximumDistance;
 
     /// <summary>
     /// 判断首个遗物是否已经取得。
@@ -78,6 +81,39 @@ public static class ExplorationManager {
                 return firstRelicClaimed;
             }
         }
+    }
+
+    /// <summary>
+    /// 判断遗物探测器是否已经由首次电磁矩阵脉冲解锁。
+    /// </summary>
+    public static bool RelicDetectorUnlocked => FirstRelicClaimed || IsElectromagneticMatrixMilestoneUnlocked();
+
+    /// <summary>
+    /// 判断星球探测器是否已经从第二个关键信号恢复。
+    /// </summary>
+    public static bool PlanetDetectorUnlocked {
+        get {
+            lock (Sync) {
+                return planetDetectorUnlocked;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 判断点位是否属于始终固定显示的主线关键信号。
+    /// </summary>
+    public static bool IsKeySignal(ExplorationMark mark) =>
+        mark?.Kind is ExplorationMarkKind.FirstRelic or ExplorationMarkKind.PlanetDetector;
+
+    /// <summary>
+    /// 获取由稳定点位 ID 构成的信号名称。
+    /// </summary>
+    public static string GetSignalName(ExplorationMark mark) {
+        if (mark == null) {
+            return string.Empty;
+        }
+        string format = (IsKeySignal(mark) ? "关键信号{0}" : "信号{0}").Translate();
+        return string.Format(format, mark.Id);
     }
 
     /// <summary>
@@ -125,47 +161,47 @@ public static class ExplorationManager {
             if (!TryTakeNextMarkId(out int markId)) {
                 return;
             }
-            ActiveMarks.Add(new ExplorationMark {
+            var mark = new ExplorationMark {
                 Id = markId,
                 PlanetId = birthPlanet.id,
                 LocalPosition = CreateMarkPosition(birthPlanet),
                 Kind = ExplorationMarkKind.FirstRelic,
-            });
+            };
+            ActiveMarks.Add(mark);
             snapshotDirty = true;
-            QueueTip("检测到母星上的古文明遗物信号".Translate());
+            QueueTip(string.Format("强烈脉冲：遗物探测器已启用，{0}位于{1}".Translate(),
+                GetSignalName(mark), birthPlanet.displayName));
         }
     }
 
     /// <summary>
-    /// 为尚未解锁面板的玩家设置一次首遗物导航；普通探索点不会调用该入口。
+    /// 清理由旧版本为首遗物启动的自动导航；不会触碰玩家自行设置的其他目标。
     /// </summary>
-    public static void EnsureFirstRelicGuidance() {
-        if (!IsElectromagneticMatrixMilestoneUnlocked()) {
-            return;
-        }
+    public static void ClearLegacyFirstRelicNavigation() {
         ExplorationMark relic;
         lock (Sync) {
-            if (firstRelicClaimed) {
-                return;
-            }
             relic = ActiveMarks.FirstOrDefault(mark => mark.Kind == ExplorationMarkKind.FirstRelic);
-            if (relic == null || relic.Id == guidedFirstRelicId) {
+            if (relic == null) {
                 return;
             }
             relic = CloneMark(relic);
         }
 
-        Player player = GameMain.mainPlayer;
-        if (player?.navigation == null) {
+        PlayerNavigation navigation = GameMain.mainPlayer?.navigation;
+        if (navigation == null || !navigation.navigating || navigation.naviAstroId != relic.PlanetId) {
             return;
         }
-        player.navigation.Navigate(relic.PlanetId,
-            new VectorLF3(relic.LocalPosition.x, relic.LocalPosition.y, relic.LocalPosition.z));
-        player.navigation.indicatorAstroId = relic.PlanetId;
-        lock (Sync) {
-            guidedFirstRelicId = relic.Id;
-            guidedFirstRelicPlanetId = relic.PlanetId;
-            guidedFirstRelicPosition = relic.LocalPosition;
+        VectorLF3 target = navigation.naviTarget;
+        bool targetsRelic = Math.Abs(target.x - relic.LocalPosition.x) < 0.01d
+                            && Math.Abs(target.y - relic.LocalPosition.y) < 0.01d
+                            && Math.Abs(target.z - relic.LocalPosition.z) < 0.01d;
+        if (!targetsRelic) {
+            return;
+        }
+
+        navigation.Abort();
+        if (navigation.indicatorAstroId == relic.PlanetId) {
+            navigation.indicatorAstroId = 0;
         }
     }
 
@@ -178,6 +214,9 @@ public static class ExplorationManager {
         }
         int generated = 0;
         lock (Sync) {
+            if (!planetDetectorUnlocked) {
+                return;
+            }
             for (int i = 0; i < count; i++) {
                 if (TryGenerateMark()) {
                     generated++;
@@ -224,13 +263,18 @@ public static class ExplorationManager {
         }
 
         lock (Sync) {
-            if (nextTimedGenerationTick <= 0L) {
-                nextTimedGenerationTick = gameTick + GetGenerationIntervalTicks();
-            }
-            if (gameTick >= nextTimedGenerationTick && TryGenerateMark()) {
-                QueueTip("古文明网络发现了新的探索信号".Translate());
-                nextTimedGenerationTick = gameTick + GetGenerationIntervalTicks();
-                snapshotDirty = true;
+            EnsurePlanetDetectorMarkUnsafe();
+            if (planetDetectorUnlocked) {
+                if (nextTimedGenerationTick <= 0L) {
+                    nextTimedGenerationTick = gameTick + GetGenerationIntervalTicks();
+                }
+                if (gameTick >= nextTimedGenerationTick && TryGenerateMark()) {
+                    QueueTip("古文明网络发现了新的探索信号".Translate());
+                    nextTimedGenerationTick = gameTick + GetGenerationIntervalTicks();
+                    snapshotDirty = true;
+                }
+            } else {
+                nextTimedGenerationTick = 0L;
             }
             ResolveArrivals();
         }
@@ -261,24 +305,35 @@ public static class ExplorationManager {
     }
 
     /// <summary>
-    /// 在玩家接近目标星球后计算现场信号强度，不暴露目标方向。
+    /// 计算当前点位的星球级和遗物级量化强度；两个读数都不包含方向或真实距离。
     /// </summary>
-    public static bool TryGetSignalStrength(ExplorationMark mark, VectorLF3 playerPosition,
-        out float strength) {
-        strength = 0f;
+    public static bool TryGetDetectorStrengths(ExplorationMark mark, VectorLF3 playerPosition,
+        out float planetStrength, out float relicStrength) {
+        planetStrength = 0f;
+        relicStrength = 0f;
         if (mark == null || GameMain.galaxy?.PlanetById(mark.PlanetId) is not PlanetData planet) {
             return false;
         }
-        float markRadius = GetMarkRadius(planet);
-        float arrivalDistance = GetArrivalDistance(planet);
-        double centerDistance = (playerPosition - planet.uPosition).magnitude;
-        if (centerDistance > markRadius + arrivalDistance) {
-            return false;
+
+        Player player = GameMain.mainPlayer;
+        bool onTargetPlanet = player?.planetId == mark.PlanetId;
+        if (PlanetDetectorUnlocked) {
+            double minimumPlanetDistance = planet.realRadius + PlanetLocalDetectionAltitude;
+            double maximumPlanetDistance = GetGalaxyMaximumDistance();
+            double centerDistance = (playerPosition - planet.uPosition).magnitude;
+            float rawPlanetStrength = onTargetPlanet
+                ? 1f
+                : NormalizeLogStrength(centerDistance, minimumPlanetDistance, maximumPlanetDistance);
+            planetStrength = QuantizeStrength(rawPlanetStrength);
         }
-        double distance = (playerPosition - GetMarkUniversalPosition(mark, planet)).magnitude;
-        double maximumDistance = Math.Max(arrivalDistance + 1d, markRadius * 2d);
-        strength = 1f - Mathf.Clamp01((float)((distance - arrivalDistance)
-                                               / (maximumDistance - arrivalDistance)));
+
+        if (onTargetPlanet) {
+            float arrivalDistance = GetArrivalDistance(planet);
+            double maximumRelicDistance = Math.Max(arrivalDistance + 1d, GetMarkRadius(planet) * 2d);
+            double relicDistance = (playerPosition - GetMarkUniversalPosition(mark, planet)).magnitude;
+            relicStrength = QuantizeStrength(
+                NormalizeLogStrength(relicDistance, arrivalDistance, maximumRelicDistance));
+        }
         return true;
     }
 
@@ -297,7 +352,6 @@ public static class ExplorationManager {
     /// 读取探索状态。
     /// </summary>
     public static void Import(BinaryReader r) {
-        bool claimed;
         var importedMarkContents = new Dictionary<int, string>();
         lock (Sync) {
             ActiveMarks.Clear();
@@ -306,6 +360,8 @@ public static class ExplorationManager {
             nextTimedGenerationTick = 0L;
             randomSeed = 0x8F3A51C7u;
             firstRelicClaimed = false;
+            planetDetectorUnlocked = false;
+            ResetGalaxyDistanceCache();
             r.ReadBlocks(
                 ("Header", br => {
                     nextMarkId = Math.Max(1, Math.Min(MaximumImportedMarkId, br.ReadInt32()));
@@ -343,14 +399,11 @@ public static class ExplorationManager {
                     for (int i = 0; i < count; i++) {
                         importedMarkContents[br.ReadInt32()] = br.ReadString();
                     }
-                })
+                }),
+                ("DetectorState", br => planetDetectorUnlocked = br.ReadBoolean())
             );
             SanitizeImportedStateUnsafe(importedMarkContents);
             snapshotDirty = true;
-            claimed = firstRelicClaimed;
-        }
-        if (claimed) {
-            ClearFirstRelicGuidance();
         }
     }
 
@@ -396,7 +449,8 @@ public static class ExplorationManager {
                         bw.Write(mark.Id);
                         bw.Write(mark.ContentId);
                     }
-                })
+                }),
+                ("DetectorState", bw => bw.Write(planetDetectorUnlocked))
             );
         }
     }
@@ -412,21 +466,25 @@ public static class ExplorationManager {
             nextTimedGenerationTick = 0L;
             randomSeed = 0x8F3A51C7u;
             firstRelicClaimed = false;
+            planetDetectorUnlocked = false;
             snapshotDirty = false;
-            guidedFirstRelicId = 0;
-            guidedFirstRelicPlanetId = 0;
-            guidedFirstRelicPosition = Vector3.zero;
+            ResetGalaxyDistanceCache();
         }
     }
 
     private static void SanitizeImportedStateUnsafe(Dictionary<int, string> importedMarkContents) {
         GalaxyData galaxy = GameMain.galaxy;
+        if (!firstRelicClaimed) {
+            planetDetectorUnlocked = false;
+        }
         long currentTick = Math.Max(0L, GameMain.gameTick);
         long maximumInterval = GetGenerationIntervalTicks();
         long latestGenerationTick = currentTick > long.MaxValue - maximumInterval
             ? long.MaxValue
             : currentTick + maximumInterval;
-        nextTimedGenerationTick = Math.Min(nextTimedGenerationTick, latestGenerationTick);
+        nextTimedGenerationTick = planetDetectorUnlocked
+            ? Math.Min(nextTimedGenerationTick, latestGenerationTick)
+            : 0L;
         foreach (int planetId in GeneratedCountByPlanet.Keys.ToArray()) {
             PlanetData planet = galaxy?.PlanetById(planetId);
             if (galaxy != null && planet == null) {
@@ -442,6 +500,7 @@ public static class ExplorationManager {
         var markIds = new HashSet<int>();
         var reservedContentIds = new HashSet<string>();
         bool hasFirstRelic = false;
+        bool hasPlanetDetectorMark = false;
         for (int index = 0; index < ActiveMarks.Count; index++) {
             ExplorationMark mark = ActiveMarks[index];
             PlanetData planet = galaxy?.PlanetById(mark.PlanetId);
@@ -473,6 +532,16 @@ public static class ExplorationManager {
                         continue;
                     }
                     hasFirstRelic = true;
+                    mark.ContentId = null;
+                    mark.ItemId = 0;
+                    mark.Count = 0;
+                    break;
+                case ExplorationMarkKind.PlanetDetector:
+                    if (!firstRelicClaimed || planetDetectorUnlocked || hasPlanetDetectorMark) {
+                        ActiveMarks.RemoveAt(index--);
+                        continue;
+                    }
+                    hasPlanetDetectorMark = true;
                     mark.ContentId = null;
                     mark.ItemId = 0;
                     mark.Count = 0;
@@ -531,8 +600,39 @@ public static class ExplorationManager {
         return count;
     }
 
+    private static void EnsurePlanetDetectorMarkUnsafe() {
+        if (!firstRelicClaimed || planetDetectorUnlocked
+            || (GameMain.mainPlayer?.mecha?.thrusterLevel ?? 0) < 3
+            || ActiveMarks.Any(mark => mark.Kind == ExplorationMarkKind.PlanetDetector)) {
+            return;
+        }
+
+        GalaxyData galaxy = GameMain.galaxy;
+        StarData birthStar = galaxy?.StarById(galaxy.birthStarId);
+        PlanetData target = birthStar?.planets?.Where(planet =>
+                planet != null && planet.id != galaxy.birthPlanetId)
+            .OrderBy(planet => planet.type == EPlanetType.Gas ? 1 : 0)
+            .ThenByDescending(planet => planet.sunDistance)
+            .FirstOrDefault()
+            ?? galaxy?.PlanetById(galaxy.birthPlanetId);
+        if (target == null || !TryTakeNextMarkId(out int markId)) {
+            return;
+        }
+
+        var mark = new ExplorationMark {
+            Id = markId,
+            PlanetId = target.id,
+            LocalPosition = CreateMarkPosition(target),
+            Kind = ExplorationMarkKind.PlanetDetector,
+        };
+        ActiveMarks.Add(mark);
+        snapshotDirty = true;
+        QueueTip(string.Format("检测到{0}：{1}".Translate(),
+            GetSignalName(mark), target.displayName));
+    }
+
     private static bool TryGenerateMark() {
-        List<PlanetData> candidates = GetReachablePlanets()
+        List<PlanetData> candidates = GetOrdinarySignalCandidatePlanets()
             .Where(planet => GetGeneratedCount(planet.id) < GetPlanetQuota(planet.id))
             .ToList();
         if (candidates.Count == 0) {
@@ -608,9 +708,13 @@ public static class ExplorationManager {
         switch (mark.Kind) {
             case ExplorationMarkKind.FirstRelic:
                 firstRelicClaimed = true;
-                ClearFirstRelicGuidance();
                 CivilizationRecoveryManager.CompleteFirstRelicRecovery();
                 QueueTip("已接入古文明亚空间网络".Translate());
+                break;
+            case ExplorationMarkKind.PlanetDetector:
+                planetDetectorUnlocked = true;
+                nextTimedGenerationTick = GameMain.gameTick + GetGenerationIntervalTicks();
+                QueueTip("星球探测器已恢复".Translate());
                 break;
             case ExplorationMarkKind.DirectionEligibility:
                 ResearchManager.DiscoverContent(mark.ContentId, mark.ItemId);
@@ -623,19 +727,9 @@ public static class ExplorationManager {
         }
     }
 
-    private static List<PlanetData> GetReachablePlanets() {
-        GalaxyData galaxy = GameMain.galaxy;
-        int thrusterLevel = GameMain.mainPlayer?.mecha?.thrusterLevel ?? 0;
-        if (thrusterLevel < 2) {
-            PlanetData birthPlanet = galaxy.PlanetById(galaxy.birthPlanetId);
-            return birthPlanet == null ? [] : [birthPlanet];
-        }
-        if (thrusterLevel < 3) {
-            StarData birthStar = galaxy.StarById(galaxy.birthStarId);
-            return birthStar?.planets?.Where(planet => planet != null).ToList() ?? [];
-        }
+    private static List<PlanetData> GetOrdinarySignalCandidatePlanets() {
         List<PlanetData> planets = [];
-        foreach (StarData star in galaxy.stars) {
+        foreach (StarData star in GameMain.galaxy.stars) {
             if (star?.planets == null) {
                 continue;
             }
@@ -662,14 +756,7 @@ public static class ExplorationManager {
         return planet?.star?.id == galaxy.birthStarId ? 3 : 10;
     }
 
-    private static double GetEligibilityProbability() {
-        int thrusterLevel = GameMain.mainPlayer?.mecha?.thrusterLevel ?? 0;
-        return thrusterLevel switch {
-            < 2 => 0.70d,
-            < 3 => 0.50d,
-            _ => 0.30d,
-        };
-    }
+    private static double GetEligibilityProbability() => 0.30d;
 
     private static long GetGenerationIntervalTicks() {
         int growthLevel = GrowthTechnologyManager.ExplorationLevel;
@@ -787,6 +874,68 @@ public static class ExplorationManager {
         return distance <= GetArrivalDistance(planet);
     }
 
+    private static double GetGalaxyMaximumDistance() {
+        GalaxyData galaxy = GameMain.galaxy;
+        if (galaxy?.stars == null || galaxy.stars.Length == 0) {
+            return 1d;
+        }
+        if (cachedGalaxySeed == galaxy.seed && cachedGalaxyStarCount == galaxy.starCount
+            && cachedGalaxyMaximumDistance > 0d) {
+            return cachedGalaxyMaximumDistance;
+        }
+
+        double maximumDistance = 1d;
+        for (int i = 0; i < galaxy.starCount; i++) {
+            StarData left = galaxy.stars[i];
+            if (left == null) {
+                continue;
+            }
+            double leftSystemRadius = left.systemRadius * GalaxyData.AU;
+            maximumDistance = Math.Max(maximumDistance, leftSystemRadius * 2d);
+            for (int j = i + 1; j < galaxy.starCount; j++) {
+                StarData right = galaxy.stars[j];
+                if (right == null) {
+                    continue;
+                }
+                double systemMargins = leftSystemRadius + right.systemRadius * GalaxyData.AU;
+                maximumDistance = Math.Max(maximumDistance,
+                    (left.uPosition - right.uPosition).magnitude + systemMargins);
+            }
+        }
+
+        cachedGalaxySeed = galaxy.seed;
+        cachedGalaxyStarCount = galaxy.starCount;
+        cachedGalaxyMaximumDistance = maximumDistance;
+        return maximumDistance;
+    }
+
+    private static float NormalizeLogStrength(double distance, double minimumDistance,
+        double maximumDistance) {
+        if (distance <= minimumDistance) {
+            return 1f;
+        }
+        if (distance >= maximumDistance || maximumDistance <= minimumDistance) {
+            return 0f;
+        }
+        double range = Math.Log(maximumDistance / minimumDistance);
+        return Mathf.Clamp01((float)(Math.Log(maximumDistance / distance) / range));
+    }
+
+    private static float QuantizeStrength(float strength) {
+        strength = Mathf.Clamp01(strength);
+        if (strength >= 1f) {
+            return 1f;
+        }
+        float step = GrowthTechnologyManager.ExplorationSignalPrecisionPercent / 100f;
+        return Mathf.Floor(strength / step) * step;
+    }
+
+    private static void ResetGalaxyDistanceCache() {
+        cachedGalaxySeed = int.MinValue;
+        cachedGalaxyStarCount = 0;
+        cachedGalaxyMaximumDistance = 0d;
+    }
+
     private static bool IsElectromagneticMatrixMilestoneUnlocked() {
         MilestoneSystem milestoneSystem = GameMain.data?.milestoneSystem;
         if (milestoneSystem == null) {
@@ -836,37 +985,6 @@ public static class ExplorationManager {
     }
 
     private static bool IsFinite(double value) => !double.IsNaN(value) && !double.IsInfinity(value);
-
-    private static void ClearFirstRelicGuidance() {
-        int planetId;
-        Vector3 position;
-        lock (Sync) {
-            if (guidedFirstRelicId == 0) {
-                return;
-            }
-            planetId = guidedFirstRelicPlanetId;
-            position = guidedFirstRelicPosition;
-            guidedFirstRelicId = 0;
-            guidedFirstRelicPlanetId = 0;
-            guidedFirstRelicPosition = Vector3.zero;
-        }
-
-        PlayerNavigation navigation = GameMain.mainPlayer?.navigation;
-        if (navigation == null) {
-            return;
-        }
-        VectorLF3 target = navigation.naviTarget;
-        bool stillGuidingRelic = navigation.naviAstroId == planetId
-            && Math.Abs(target.x - position.x) < 0.01d
-            && Math.Abs(target.y - position.y) < 0.01d
-            && Math.Abs(target.z - position.z) < 0.01d;
-        if (stillGuidingRelic) {
-            navigation.Arrive();
-            if (navigation.indicatorAstroId == planetId) {
-                navigation.indicatorAstroId = 0;
-            }
-        }
-    }
 
     private static void QueueTip(string text) {
         CivilizationModule.QueueNotification(text);

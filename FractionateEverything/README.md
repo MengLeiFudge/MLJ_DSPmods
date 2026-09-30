@@ -50,7 +50,7 @@ Each signal reveals one concrete result and its carrier item. Every item has one
 
 ### 遗物探索 Relic Exploration
 
-首个遗物会在首次生产电磁矩阵后出现在出生星，并提供一次自动导航。回收后获得：
+首次生产电磁矩阵会触发一次强烈脉冲，解锁遗物探测器，并在出生星生成“关键信号1”。左侧 HUD 会持续显示无方向的遗物强度；FE 不会替你启动导航、设置位置标记或控制机甲。找到并回收首遗物后获得：
 
 - 基础矿物塔 x10
 - 基础解析塔 x10
@@ -58,15 +58,19 @@ Each signal reveals one concrete result and its carrier item. Every item has one
 - 石矿与铁矿基础复制配方
 - 分馏亚空间和主面板访问能力
 
-后续信号会随航行能力扩展到出生星系和其他星系。普通信号只显示目标星球；接近目标星球后，面板才显示现场信号强度。探索点使用球形范围，固态星球的点贴近地表，气态巨星的点位于外层空间。它不会给出精确坐标、方向箭头或自动导航，信号也不会过期。
+取得曲速飞行能力后，出生星系另一颗星球会出现第二个关键信号并直接公开星球名称；回收后解锁星球探测器，普通未知广播才会开始由定时网络或 Frag 产生。
 
-探索点可能提供一项具体配方、塔特质或科技方向，也可能提供目标星球实际拥有的资源或通用原胚。研究内容和承载物品只在抵达后揭示。通用原胚固定占资源奖励的 10%；其余权重为火山/沙漠 `80% 矿脉 + 10% 流体`、海洋 `55% + 35%`、冰原 `60% + 30%`、气态巨星 `90% 气体`。缺失资源类别的权重转给该星球其他实际资源，原胚权重不变。奖励直接进入亚空间，并允许暂时超过常规容量。每次解析完成研究内容会提前下一次定时信号；解析 Frag 也可能立即生成额外信号。
+普通广播统一命名为“信号{编号}”，只给出量化后的百分比强度，不公开目标星系、星球、方向、距离、内容或坐标。星球探测器用于寻找宿主星球，进入目标星球后固定为 100%；遗物探测器在目标星球外为 0%，进入后才用于寻找具体点位。两个读数共用“探索信号增幅”的 `20% / 10% / 5% / 2% / 1% / 0.5%` 精度成长。
 
-The first relic appears after your first Electromagnetic Matrix and includes one guided navigation. Later signals reveal only a target planet and nearby signal strength. Search a spherical area near the planet; gas-giant signals remain reachable in outer space. Signals never expire and may contain one concrete research result or physical resources.
+左侧 HUD 第 1 行固定当前关键信号，另外 4 行由普通信号占用。新信号只在有空槽时自动固定，满槽时不会替换；全部信号仍保留在探索面板，可手动固定或取消。成长科技最终级会在面板中开放“标注位置”，由玩家点击后复用原版目的地标记和指引线，但不会创建移动命令。
+
+探索点使用球形认领范围，固态星球的点贴近地表，气态巨星的点位于外层空间，且所有信号都不会过期。点位可能提供一项具体配方、塔特质或科技方向，也可能提供宿主星球实际拥有的资源或通用原胚；研究内容和承载物品只在抵达后揭示。通用原胚固定占资源奖励的 10%；其余权重为火山/沙漠 `80% 矿脉 + 10% 流体`、海洋 `55% + 35%`、冰原 `60% + 30%`、气态巨星 `90% 气体`。缺失资源类别的权重转给该星球其他实际资源，原胚权重不变。奖励直接进入亚空间，并允许暂时超过常规容量。
+
+The first Electromagnetic Matrix unlocks a directionless Relic Detector and creates Key Signal 1 on the birth planet; FE never starts navigation or controls the mecha. Warp capability later reveals Key Signal 2 on another planet in the birth system, and recovering it unlocks the Planet Detector. Ordinary broadcasts reveal only quantized planet and relic strength percentages. The left HUD keeps one mandatory key signal plus four player-pinned ordinary signals. At the final amplification level, players may explicitly create a vanilla location marker without issuing any movement command.
 
 ### 黑雾补给 Dark-Fog Drops
 
-地面和太空黑雾均有机会分别掉落 Frag 和通用原胚。Frag 送入基础解析塔后可能生成探索信号；通用原胚用于高级塔培育和繁育。
+地面和太空黑雾均有机会分别掉落 Frag 和通用原胚。星球探测器恢复后，Frag 送入基础解析塔可能生成普通广播；恢复前 Frag 会原样流出。通用原胚用于高级塔培育和繁育。
 
 黑雾不是主线门槛。关闭战斗时，定时探索信号和资源点仍能提供完整进度与持续原胚来源。
 
@@ -93,9 +97,10 @@ Subspace is a galaxy-wide inventory with independent per-item limits. Access it 
 
 - **超级压缩技术**：全局堆叠提高到 20，同时按 `4 / 当前堆叠` 缩短全部原版配方耗时。普通档由原版集装物流提供 4 堆叠，再研究 8/12/16/20 四级；已玩过档研究 4/8/12/16/20 五级，不增加 24 堆叠档。
 - **亚空间扩容**：前八级逐步投入累计矩阵；第九级起只消耗宇宙矩阵，最高 10000 级，每级增加所有物品 10 组容量。
-- **亚空间存取能效**、**探索信号增幅**和**三类高级塔特质**：完整六级。前五级逐层累计电磁至引力矩阵，第六级只消耗宇宙矩阵。
+- **亚空间存取能效**和**三类高级塔特质**：完整六级。前五级逐层累计电磁至引力矩阵，第六级只消耗宇宙矩阵。
+- **探索信号增幅**：同样为完整六级，同时缩短普通信号周期、提高 Frag 掉落并把显示精度从 20% 逐级提高到 0.5%；第六级开放玩家主动位置标注。
 
-解析一个科技方向后会同时显示整条同名等级行，但不会免费完成任何一级。每级仍按原版科技研究；行内连线只连接前一级，不从其他科技页拉出悬空长线。
+解析一个科技方向后会同时显示整条同名等级行，但不会免费完成任何一级。每级仍按原版科技研究；行内连线只连接前一级，不从其他科技页拉出悬空长线。沙盒“一键解锁科技”也只处理已经完成探索解析而显现的 FE 科技，不会跳过隐藏门槛。
 
 第一次完整体验生命工业时，超级压缩技术从原版集装物流阶段接入。某个当前格式的存档取得三类高级塔并达到 20 堆叠后，未来新存档会采用更早开始的五档路线，并从首遗物获得物流补给。
 
@@ -128,7 +133,7 @@ Controls are configurable in the game settings. Advanced recipes are selected di
 
 ## 联机 Multiplayer
 
-万物分馏支持 Nebula。研究、探索、亚空间库存、高级塔反应、营养与耐久均由主机结算；中途加入玩家会收到当前状态。客户端认领探索点时，主机使用该连接对应玩家的真实宇宙坐标验证球形距离。
+万物分馏支持 Nebula。研究、探索、探测器状态、亚空间库存、高级塔反应、营养与耐久均由主机结算；中途加入玩家会收到当前状态。客户端认领探索点时，主机使用该连接对应玩家的真实宇宙坐标验证球形距离。普通信号的四个 HUD 固定槽属于各玩家本地 UI 偏好，不会互相覆盖。
 
 多人游戏要求主机与客户端使用相同 FE 版本。Nebula 客户端不能直接从高级塔窗口手动取出产物，请使用传送带输出。
 

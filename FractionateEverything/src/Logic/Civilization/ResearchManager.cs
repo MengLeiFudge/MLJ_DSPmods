@@ -442,6 +442,9 @@ public static class ResearchManager {
         }
 
         if (itemId == IFE残片) {
+            if (!ExplorationManager.PlanetDetectorUnlocked) {
+                return false;
+            }
             int pointCount = WorldviewRecipe.RollExpected(ref seed, count * 0.02d);
             if (pointCount > 0) {
                 ExplorationManager.AddExplorationPoints(pointCount, "Frag 解析");

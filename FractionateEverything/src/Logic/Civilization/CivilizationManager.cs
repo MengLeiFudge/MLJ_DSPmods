@@ -28,14 +28,18 @@ public static class CivilizationModule {
         Register("已恢复一座原型：{0}", "Prototype recovered: {0}");
         Register("生命工业传承已记录",
             "Living-industry legacy recorded for future saves.");
-        Register("检测到母星上的古文明遗物信号",
-            "An old-civilization relic signal was detected on the birth planet.");
+        Register("关键信号{0}", "Key Signal {0}");
+        Register("信号{0}", "Signal {0}");
+        Register("检测到{0}：{1}", "Detected {0}: {1}");
+        Register("强烈脉冲：遗物探测器已启用，{0}位于{1}",
+            "Strong pulse: Relic Detector online; {0} is on {1}.");
         Register("{0}发现 {1} 个探索信号", "{0} revealed {1} exploration signal(s).");
         Register("Frag 解析", "Frag analysis");
         Register("古文明网络发现了新的探索信号",
             "The old-civilization network revealed a new exploration signal.");
         Register("已接入古文明亚空间网络",
             "Connected to the old-civilization subspace network.");
+        Register("星球探测器已恢复", "Planet detector restored.");
         Register("探索取得：{0} × {1}", "Exploration recovered: {0} x {1}");
         Register("首个遗物已恢复：基础塔与亚空间访问已就绪",
             "First relic recovered: basic towers and subspace access are ready.");
@@ -76,8 +80,8 @@ public static class CivilizationModule {
         if (secondBoundary) {
             if (!ExplorationManager.FirstRelicClaimed) {
                 ExplorationManager.EnsureFirstRelicMark();
-                ExplorationManager.EnsureFirstRelicGuidance();
             }
+            ExplorationManager.ClearLegacyFirstRelicNavigation();
             GrowthTechnologyManager.SyncRuntimeEffects();
             PermanentProfileStore.TryRecordCompletion();
             NebulaMultiplayerModAPI.BroadcastAdvancedFractionatorState();
@@ -128,8 +132,8 @@ public static class CivilizationModule {
         GrowthTechnologyManager.SyncRuntimeEffects();
         if (!ExplorationManager.FirstRelicClaimed) {
             ExplorationManager.EnsureFirstRelicMark();
-            ExplorationManager.EnsureFirstRelicGuidance();
         }
+        ExplorationManager.ClearLegacyFirstRelicNavigation();
     }
 
     /// <summary>

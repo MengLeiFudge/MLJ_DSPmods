@@ -8,9 +8,13 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Civilization;
 
 /// <summary>
-/// 让 FE 科技按解析状态显现，并把两个物流交互科技归入科技树第一页。
+/// 让 FE 科技按解析状态显现、保护沙盒探索门槛，并把两个物流交互科技归入科技树第一页。
 /// </summary>
 public static class TechnologyTreePatch {
+    private static readonly FieldInfo PublishedField = AccessTools.Field(
+        typeof(TechProto), nameof(TechProto.Published));
+    private static readonly MethodInfo IsSandboxUnlockEligibleMethod = AccessTools.Method(
+        typeof(TechnologyTreePatch), nameof(IsSandboxUnlockEligible));
     private static readonly MethodInfo IsUpgradePageTechMethod = AccessTools.Method(
         typeof(TechnologyTreePatch), nameof(IsUpgradePageTech));
 
@@ -89,6 +93,41 @@ public static class TechnologyTreePatch {
         }
         return codes;
     }
+
+    /// <summary>
+    /// 沙盒批量解锁和对应完成状态只计算已完成探索解析的 FE 科技；原版科技保持原行为。
+    /// </summary>
+    [HarmonyTranspiler]
+    [HarmonyPatch(typeof(UITechTree), nameof(UITechTree._OnUpdate))]
+    [HarmonyPatch(typeof(UITechTree), nameof(UITechTree.Do1KeyUnlock))]
+    [HarmonyPatch(typeof(GoalLogic), nameof(GoalLogic.CheckIsSanboxAllTechUnlocked))]
+    [HarmonyPatch(typeof(GoalTools), nameof(GoalTools.CheckSandbox1KeyUnlockTech))]
+    private static IEnumerable<CodeInstruction> SandboxUnlockEligibility_Transpiler(
+        IEnumerable<CodeInstruction> instructions, MethodBase __originalMethod) {
+        List<CodeInstruction> codes = instructions.ToList();
+        List<int> matches = [];
+        for (int index = 0; index < codes.Count; index++) {
+            if (codes[index].LoadsField(PublishedField)) {
+                matches.Add(index);
+            }
+        }
+        if (matches.Count != 1) {
+            LogError($"沙盒科技资格补丁 {__originalMethod.Name} 预期匹配 1 处，实际 {matches.Count} 处。");
+            return codes;
+        }
+
+        int match = matches[0];
+        CodeInstruction replacement = new(OpCodes.Call, IsSandboxUnlockEligibleMethod);
+        replacement.labels.AddRange(codes[match].labels);
+        replacement.blocks.AddRange(codes[match].blocks);
+        codes[match] = replacement;
+        return codes;
+    }
+
+    private static bool IsSandboxUnlockEligible(TechProto tech) =>
+        tech.Published
+        && (!GrowthTechnologyManager.TryGetTechnologyContentId(tech.ID, out _)
+            || GrowthTechnologyManager.IsTechnologyDiscovered(tech.ID));
 
     private static bool IsUpgradePageTech(int techId) =>
         techId >= 2000 && techId is not TFE行星内物流交互 and not TFE星际物流交互;

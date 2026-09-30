@@ -84,6 +84,19 @@ public static class GrowthTechnologyManager {
     /// <summary>获取探索信号成长科技等级，范围 0..6。</summary>
     public static int ExplorationLevel => GetUnlockedLevel(TFE探索信号增幅, FiniteGrowthLevelCount);
 
+    /// <summary>获取探测器显示强度的量化步长，单位为百分点。</summary>
+    public static float ExplorationSignalPrecisionPercent => ExplorationLevel switch {
+        <= 0 => 20f,
+        1 => 10f,
+        2 => 5f,
+        3 => 2f,
+        4 => 1f,
+        _ => 0.5f,
+    };
+
+    /// <summary>判断玩家是否已经解锁主动位置标注。</summary>
+    public static bool ExplorationLocationTrackingUnlocked => ExplorationLevel >= FiniteGrowthLevelCount;
+
     /// <summary>获取高级矿物塔特质科技等级，范围 0..6。</summary>
     public static int AdvancedMineralTraitLevel => GetUnlockedLevel(TFE高级矿物特质, FiniteGrowthLevelCount);
 
@@ -189,8 +202,8 @@ public static class GrowthTechnologyManager {
             "每级使物流交互站存取亚空间的耗能降低 10%。");
         Register("FE探索信号增幅", "Exploration Signal Amplification", "探索信号增幅");
         Register("FE探索信号增幅描述",
-            "Raises Frag drop chance and reduces the guaranteed exploration-signal interval by 10%.",
-            "提高 Frag 掉落率，并使探索信号定时保底间隔缩短 10%。");
+            "Improves detector precision, raises Frag discovery chance, and shortens the guaranteed signal interval.",
+            "提高探测器显示精度和 Frag 发现概率，并缩短探索信号定时保底间隔；最终级解锁主动位置标注。");
         Register("FE高级矿物特质", "Rare Catalyst Stability", "珍奇催化稳定性");
         Register("FE高级矿物特质描述",
             "Reduces rare-catalyst consumption in every advanced mineral tower.",

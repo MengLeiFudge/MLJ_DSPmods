@@ -8,9 +8,9 @@
 Civilization/
 ├── CivilizationManager.cs       # CivilizationModule 聚合、tick、提示队列、文明子块
 ├── ResearchManager.cs           # 具体内容探索映射、物品共享槽、解析和献祭状态
-├── ExplorationManager.cs        # 首遗物、具体内容/资源信号、额度、抵达和奖励
+├── ExplorationManager.cs        # 两节点主线、未知广播、双探测器、额度、抵达和奖励
 ├── GrowthTechnologyManager.cs   # 第一页物流科技、第二页等级链与运行效果
-├── TechnologyTreePatch.cs       # FE 科技整行显现与 2061/2062 第一页分类
+├── TechnologyTreePatch.cs       # FE 科技显现、沙盒资格过滤与 2061/2062 第一页分类
 ├── Recovery.cs                  # 亚空间通信、基础塔配方和首遗物启动补给
 ├── FragDropPatch.cs             # 地面/太空黑雾 Frag 与通用原胚掉落
 ├── PermanentProfileStore.cs     # HasPlayedFractionation3 本地跨存档标记
@@ -20,7 +20,7 @@ Civilization/
 ## State Contracts
 
 - `ResearchManager` 是具体内容到承载物品的探索映射、已解析稳定内容、物品共享进度、高级塔取得/库存门槛、献祭窗口和当前存档堆叠路线的唯一真源。
-- `ExplorationManager` 是点位 ID、位置、内容、星球额度、定时器和首遗物认领状态的唯一真源。
+- `ExplorationManager` 是点位 ID、位置、内容、星球额度、定时器、两个主线认领状态和星球探测器状态的唯一真源。
 - `GrowthTechnologyManager` 从原版 `GameHistoryData` 读取确定性科技完成状态，不另存科技等级。
 - `PermanentProfileStore` 只保存“已经完整走过生命工业成长线”的本机标记；路线选择仍写入每个存档并由主机同步。
 - `Civilization3` 块只含 `Research` 与 `Exploration`；不要复用旧文明块名或读取旧协议状态。
@@ -38,13 +38,16 @@ Civilization/
 
 ## Exploration Rules
 
-- 首遗物只在首次生产电磁矩阵的原版里程碑完成后生成；只有首遗物可自动导航，导航清理必须验证仍是 FE 设置的同一目标。
-- 普通信号永久存在，只向 UI 暴露目标星球和现场强度；具体内容、承载物品和坐标都不提前显示。
-- 定时器仅在成功生成点位后重置；可达星球无额度时保留到期状态。
-- 研究发现只提前当前下一次信号；探索成长科技通过固定倍率改变新周期。
+- 首次生产电磁矩阵只启用遗物探测器并在出生星生成关键信号；FE 不得启动导航、创建移动命令或改变机甲运动状态。兼容清理只能终止仍精确匹配旧首遗物的遗留导航。
+- 首遗物回收且曲速推进可用后，在出生星系另一颗星球生成第二个关键信号；回收后恢复星球探测器，普通信号定时器和 Frag 生成路径才启动。
+- 关键信号使用 `关键信号{ID}` 并公开目标星球；普通信号使用 `信号{ID}`，不得向 UI 暴露恒星系、星球、内容、承载物品、坐标、真实距离或方向。
+- 星球探测器使用远场对数强度，进入目标星球后固定 100%；遗物探测器只在目标星球内使用近场对数强度。两者按同一成长等级量化。
+- 普通信号永久存在；定时器仅在成功生成点位后重置，有额度候选为空时保留到期状态。
+- 研究发现只提前当前下一次信号；探索成长科技改变新周期、Frag 掉率、探测精度，并在最终级开放玩家主动位置标注。
 - 探索资源使用 `DataCenterInventory.AddExplorationReward`，这是唯一正式超容量写入路径。
 - 点位按宇宙坐标球形范围认领；气态巨星点位放在外层空间，资源按星球类型从当地实际矿脉、流体或气体中加权选择，并固定保留 10% 原胚权重。
-- Nebula 认领由主机使用连接对应玩家的 `UPosition` 验证。
+- Nebula 认领由主机使用连接对应玩家的 `UPosition` 验证；普通 HUD 固定槽是本地 UI 偏好，不进入文明快照。
+- 沙盒批量解锁只允许已经满足 `IsTechnologyDiscovered` 的 FE 科技，原版科技保持原资格。
 
 ## Prohibited Legacy Paths
 

@@ -63,18 +63,18 @@ public static class TutorialManager {
     public static void AddTranslations() {
         RegisterTutorial("万物分馏简介", "Fractionate Everything", "万物分馏简介",
             """
-            After the first Electromagnetic Matrix is produced, an old-civilization relic signal will remain on the birth planet with a one-time navigation marker. Reach it to establish the fractionation subspace and receive ten Basic Mineral Towers, ten Basic Analysis Towers, and twenty Universal Tower Embryos.
+            Producing the first Electromagnetic Matrix triggers a strong pulse, unlocks the Relic Detector, and creates Key Signal 1 on the birth planet. Follow the directionless percentage on the left HUD; FE does not start navigation or control the mecha. Reach the signal to establish the fractionation subspace and receive ten Basic Mineral Towers, ten Basic Analysis Towers, and twenty Universal Tower Embryos.
 
-            Press [Shift + F] after recovery to open the subspace panel. The Living Industry pages show research directions and relic signals; Subspace Storage exposes the items already connected to the network.
+            After warp flight is available, Key Signal 2 names another planet in the birth system. Recover it to restore the Planet Detector. Ordinary broadcasts then show separate planet and relic percentages without revealing their star system, planet, direction, distance, contents, or coordinates. The HUD keeps one mandatory key signal and four ordinary pinned slots; manage ordinary pins in Relic Exploration.
 
-            Basic towers begin the production loop. Advanced living towers are later discovered through item-direction research and cultivated from Universal Tower Embryos. Continue exploring resource caches or fighting the Dark Fog to recover more embryos; the starter supply is not the only source. Press [G] at any time to revisit these guides.
+            Press [Shift + F] after the first recovery to open the subspace panel. Advanced living towers are later discovered through item-direction research and cultivated from Universal Tower Embryos. Continue exploring resource caches or fighting the Dark Fog to recover more embryos; the starter supply is not the only source. Press [G] at any time to revisit these guides.
             """,
             """
-            首次生产电磁矩阵后，出生星上会永久保留一个古文明遗物信号，并提供一次性的开局导航标记。抵达信号点即可建立分馏亚空间，并获得 10 座基础矿物塔、10 座基础解析塔和 20 个通用原胚。
+            首次生产电磁矩阵会触发一次强烈脉冲，解锁遗物探测器，并在出生星生成“关键信号1”。根据左侧 HUD 中无方向的百分比寻找信号；FE 不会启动导航或控制机甲。抵达后即可建立分馏亚空间，并获得 10 座基础矿物塔、10 座基础解析塔和 20 个通用原胚。
 
-            回收后按 [Shift + F] 打开亚空间面板。“生命工业”页面展示研究方向和遗物信号，“亚空间仓储”页面用于查看与提取已接入网络的物品。
+            取得曲速飞行能力后，“关键信号2”会公开出生星系内另一颗目标星球。回收后恢复星球探测器，普通广播才开始分别显示星球与遗物百分比，且不会公开星系、星球、方向、距离、内容或坐标。HUD 保留 1 个不可取消的主线槽和 4 个普通固定槽；普通信号可在“遗物探索”页固定或取消。
 
-            两座基础塔构成生产起点。后续通过实地探索具体内容、再用对应物品完成解析来发现高级能力，并由通用原胚培育三类高级生命塔。持续探索资源藏点或击杀黑雾可以取得更多原胚，首批补给不是唯一来源。随时可以按 [G] 重新查看这些指引。
+            首次回收后按 [Shift + F] 打开亚空间面板。后续通过实地探索具体内容、再用对应物品完成解析来发现高级能力，并由通用原胚培育三类高级生命塔。持续探索资源藏点或击杀黑雾可以取得更多原胚，首批补给不是唯一来源。随时可以按 [G] 重新查看这些指引。
             """);
 
         RegisterTutorial("亚空间与研究", "Subspace and Research", "亚空间与研究",
@@ -85,7 +85,7 @@ public static class TutorialManager {
 
             Feed items into the front port of either Basic Tower to upload them. Logistics Interaction Stations can exchange items automatically at an energy cost. Advanced Towers are stored normally; when one type first reaches 1,000 stored towers, its trait becomes eligible to appear in exploration but is not granted directly.
 
-            An Advanced Tower with no explored result remaining is sacrificed instead, with a 2% chance to produce Memory. The average sacrifice rate over the latest 60 seconds raises the same tower type's success rate in 5% steps, up to +75%. Memory carries technology directions; analysing Frag may reveal an additional permanent exploration signal.
+            An Advanced Tower with no explored result remaining is sacrificed instead, with a 2% chance to produce Memory. The average sacrifice rate over the latest 60 seconds raises the same tower type's success rate in 5% steps, up to +75%. Memory carries technology directions; after the Planet Detector is restored, analysing Frag may reveal an additional permanent broadcast.
             """,
             """
             首个遗物会直接建立共享亚空间库存。每种物品初始拥有独立的 10 组容量；“亚空间扩容”每级增加 10 组，最高可研究至 10000 级。遗物奖励允许暂时突破常规上限。
@@ -94,7 +94,7 @@ public static class TutorialManager {
 
             将物品送入任一基础塔的正面端口即可上传。物流交互站可以消耗电力自动存取物品。高级塔也会正常入库；某类高级塔首次达到 1000 座库存时，只会让对应特质进入探索候选，不会直接授予解析资格。
 
-            某类高级塔没有已探索的剩余研究内容时，继续输入会转为献祭，并以 2% 概率产出 Memory。最近 60 秒内同类高级塔的平均献祭速率会以 5% 为一档提高该类塔的成功率，最多提高 75%。Memory 承载科技方向；解析 Frag 可能发现一个额外的永久探索信号。
+            某类高级塔没有已探索的剩余研究内容时，继续输入会转为献祭，并以 2% 概率产出 Memory。最近 60 秒内同类高级塔的平均献祭速率会以 5% 为一档提高该类塔的成功率，最多提高 75%。Memory 承载科技方向；星球探测器恢复后，解析 Frag 可能发现一个额外的永久广播。
             """);
 
         RegisterTutorial("基础分馏塔使用指南", "Basic Fractionator Guide", "基础分馏塔使用指南",
@@ -103,7 +103,7 @@ public static class TutorialManager {
             Feed a supported ordinary resource through a side input. A successful 5% cycle consumes one item and outputs two of the same item; failed items continue through the flow output. The front port uploads items when the tower is not processing a side input.
 
             [Basic Analysis Tower]
-            Feed an item with explored unresolved content through a side input. Each item has one shared progress slot and a 2% progress roll per unit; ordinary discoveries add 5% per success, while Advanced Tower traits add 1%. When the slot fills, one explored unresolved result is selected. Storing 1,000 towers of one type only allows its trait to appear in exploration; that trait must still be explored and analysed. After no explored result remains, further Advanced Tower inputs become sacrifices. Frag instead rolls for exploration signals. Other items pass through unchanged.
+            Feed an item with explored unresolved content through a side input. Each item has one shared progress slot and a 2% progress roll per unit; ordinary discoveries add 5% per success, while Advanced Tower traits add 1%. When the slot fills, one explored unresolved result is selected. Storing 1,000 towers of one type only allows its trait to appear in exploration; that trait must still be explored and analysed. After no explored result remains, further Advanced Tower inputs become sacrifices. Frag rolls for broadcasts only after the Planet Detector is restored; before that it passes through unchanged. Other items also pass through unchanged.
 
             Both Basic Towers use the power grid, process global cargo stacks, continue while one output is blocked, and expose flow and product buffers of 20 current cargo stacks.
             """,
@@ -112,7 +112,7 @@ public static class TutorialManager {
             从侧面输入受支持的普通资源。每轮有 5% 成功率；成功时消耗 1 件并产出 2 件同种物品，失败物品从流动输出继续离开。未从侧面处理物品时，正面端口用于上传物品。
 
             【基础解析塔】
-            从侧面输入已经探索到未解析内容的物品。每种物品共用一个进度槽，每件物品进行一次 2% 的进度判定；普通内容每次成功增加 5%，高级塔特质每次成功增加 1%。槽满时，从已经探索但尚未解析的结果中选出一项。某类高级塔达到 1000 座库存只会让特质进入探索候选，该特质仍需完成探索和解析；没有已探索的剩余内容后，继续输入高级塔才会转为献祭。Frag 则用于判定探索信号，其他物品会原样流出。
+            从侧面输入已经探索到未解析内容的物品。每种物品共用一个进度槽，每件物品进行一次 2% 的进度判定；普通内容每次成功增加 5%，高级塔特质每次成功增加 1%。槽满时，从已经探索但尚未解析的结果中选出一项。某类高级塔达到 1000 座库存只会让特质进入探索候选，该特质仍需完成探索和解析；没有已探索的剩余内容后，继续输入高级塔才会转为献祭。星球探测器恢复后，Frag 才会判定普通广播；在此之前会原样流出。其他物品也会原样流出。
 
             两座基础塔接入电网，按全局堆叠处理货物，在一路输出阻塞时仍可继续工作，流动与产物缓存均为当前货物堆叠的 20 堆。
             """);
