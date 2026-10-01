@@ -188,35 +188,57 @@ public static class GrowthTechnologyManager {
     /// 注册科技树使用的本地化文本。
     /// </summary>
     public static void AddTranslations() {
-        Register("FE分馏堆叠成长", "Super Compression Technology", "超级压缩技术");
+        RegisterGrowthTechNameTranslations(
+            "FE分馏堆叠成长", "Super Compression Technology", "超级压缩技术", StackTechs.Length - 1);
         Register("FE分馏堆叠成长描述",
             "Raises global cargo stacking and proportionally shortens every vanilla recipe.",
             "提高全局货物堆叠，并按 4/当前堆叠 等比例缩短全部原版配方耗时。");
-        Register("FE亚空间扩容", "Subspace Capacity", "亚空间扩容");
+        RegisterGrowthTechNameTranslations(
+            "FE亚空间扩容", "Subspace Capacity", "亚空间扩容", CapacityInfiniteStartLevel);
         Register("FE亚空间扩容描述",
             "Adds ten stacks to every item slot in the fractionation subspace.",
             "使分馏亚空间中每种物品的容量增加 10 组。");
-        Register("FE亚空间能效", "Subspace Transfer Efficiency", "亚空间存取能效");
+        RegisterGrowthTechNameTranslations(
+            "FE亚空间能效", "Subspace Transfer Efficiency", "亚空间存取能效", FiniteGrowthLevelCount);
         Register("FE亚空间能效描述",
             "Reduces logistics-interaction energy use by 10% per level.",
             "每级使物流交互站存取亚空间的耗能降低 10%。");
-        Register("FE探索信号增幅", "Exploration Signal Amplification", "探索信号增幅");
+        RegisterGrowthTechNameTranslations(
+            "FE探索信号增幅", "Exploration Signal Amplification", "探索信号增幅", FiniteGrowthLevelCount);
         Register("FE探索信号增幅描述",
             "Improves detector precision, raises Frag discovery chance, and shortens the guaranteed signal interval.",
             "提高探测器显示精度和 Frag 发现概率，并缩短探索信号定时保底间隔；最终级解锁主动位置标注。");
-        Register("FE高级矿物特质", "Rare Catalyst Stability", "珍奇催化稳定性");
+        RegisterGrowthTechNameTranslations(
+            "FE高级矿物特质", "Rare Catalyst Stability", "珍奇催化稳定性", FiniteGrowthLevelCount);
         Register("FE高级矿物特质描述",
             "Reduces rare-catalyst consumption in every advanced mineral tower.",
             "降低全部高级矿物塔的珍奇催化物损耗。");
-        Register("FE高级交互特质", "Embryo Breeding Activity", "原胚繁育活性");
+        RegisterGrowthTechNameTranslations(
+            "FE高级交互特质", "Embryo Breeding Activity", "原胚繁育活性", FiniteGrowthLevelCount);
         Register("FE高级交互特质描述",
             "Raises the chance of an extra embryo from advanced interaction towers.",
             "提高全部高级交互塔繁育额外原胚的概率。");
-        Register("FE高级转化特质", "Replacement Recovery", "置换回收效率");
+        RegisterGrowthTechNameTranslations(
+            "FE高级转化特质", "Replacement Recovery", "置换回收效率", FiniteGrowthLevelCount);
         Register("FE高级转化特质描述",
             "Raises recovery output from advanced conversion towers.",
             "提高全部高级转化塔的置换回收量。");
         Register("FE成长科技结果", "Global evolution capability enhanced.", "全局演化能力已增强。");
+    }
+
+    /// <summary>
+    /// 为科技行注册公共标题以及 LDBTool 识别各节点所需的唯一名称键。
+    /// </summary>
+    /// <param name="nameKey">科技行的基础本地化键。</param>
+    /// <param name="english">所有节点共用的英文标题。</param>
+    /// <param name="chinese">所有节点共用的中文标题。</param>
+    /// <param name="nodeCount">需要注册唯一名称键的节点数量。</param>
+    private static void RegisterGrowthTechNameTranslations(
+        string nameKey, string english, string chinese, int nodeCount) {
+        Register(nameKey, english, chinese);
+        for (int node = 1; node <= nodeCount; node++) {
+            Register($"{nameKey} {node}", english, chinese);
+        }
     }
 
     /// <summary>
@@ -399,8 +421,9 @@ public static class GrowthTechnologyManager {
         long baseHash = (long)matrixCost * 3600L
                         - (long)levelDefinition.Level * linearHashIncrement;
         int[] itemPoints = Enumerable.Repeat(1, matrixItemIds.Length).ToArray();
+        string nodeNameKey = $"{series.NameKey} {levelDefinition.Level}";
         TechProto tech = ProtoRegistry.RegisterTech(
-            techId, series.NameKey, series.DescriptionKey, "FE成长科技结果", series.IconPath,
+            techId, nodeNameKey, series.DescriptionKey, "FE成长科技结果", series.IconPath,
             previousTech > 0 ? [previousTech] : [],
             matrixItemIds, itemPoints, baseHash,
             [], GetTechPosition(series.Row, levelDefinition.Level));
