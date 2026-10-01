@@ -420,7 +420,7 @@ Frag 只有在星球探测器恢复后才可解析，每件有 2% 概率立即�
 
 所有当前 FE 科技都由具体研究内容控制显现。行内首节点只使用矩阵科技及必要原版科技作为 `PreTechsImplicit`；后续节点使用 `PreTechs` 显式连接前一级。对应内容解析完成后，`UITechNode.DetermineTechVisible` 同时打开整行；排队仍受行内前置和矩阵条件限制。玩家可见名称不带 `FE`，同一行节点使用相同名称及 `TechProto.Level/MaxLevel`，等级文本由原版生成。
 
-沙盒批量解锁在 `UITechTree._OnUpdate`、`UITechTree.Do1KeyUnlock`、`GoalLogic.CheckIsSanboxAllTechUnlocked` 和 `GoalTools.CheckSandbox1KeyUnlockTech` 使用同一资格条件：原版科技继续按 `Published` 处理；能由 `TryGetTechnologyContentId` 识别的 FE 科技还必须满足 `IsTechnologyDiscovered`。因此未探索或未解析的 FE 科技既不显示为一键解锁候选，也不阻止原版“一键已完成”判定。
+沙盒批量解锁不再替换 `UITechTree._OnUpdate`、`UITechTree.Do1KeyUnlock`、`GoalLogic.CheckIsSanboxAllTechUnlocked` 和 `GoalTools.CheckSandbox1KeyUnlockTech` 的 `Published` 判断，FE 科技与原版科技使用同一资格和长期升级排除条件。`UITechNode.DetermineTechVisible` 对 FE 科技接受三种显现条件：对应内容已经解析、当前节点已经解锁，或沙盒工具启用且当前节点的显式前置均已解锁；废弃节点始终不显示。这样一键解锁会直接显现有限科技，原版不会批量升满的长期成长节点也会在前置完成后显示。
 
 ### 7.2 超级压缩技术
 
@@ -622,7 +622,7 @@ Nebula 客户端禁止手动提取高级塔产物，提示使用传送带；反�
 - FE 不得启动自动导航、创建 `OrderNode`、写入 `navigation.navigating` 或改变机甲运动状态；只允许精确识别并终止旧版本遗留的首遗物导航。
 - 主动位置标注只能由玩家点击触发，并且只能调用不含移动命令的原版位置标注路径。
 - 星球探测器在目标星球局部范围内必须固定为 100%，遗物探测器在目标星球之外必须固定为 0%。
-- 沙盒批量解锁不得解锁尚未完成探索解析的 FE 科技。
+- 普通模式未完成探索解析的 FE 科技不得因显现补丁开放；沙盒一键解锁按原版 `Published` 资格直接解锁并显现有限科技，长期成长节点不得被批量升满。
 - 探索奖励可以超容量，其他上传不得借此绕过容量。
 - 塔特质研究和高级塔献祭不得在同一次塔投入中同时结算。
 - 配方、存档、蓝图和联机必须使用稳定 ID；类名和显示名称不得成为身份。

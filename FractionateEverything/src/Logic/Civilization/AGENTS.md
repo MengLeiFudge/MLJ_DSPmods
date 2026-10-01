@@ -10,7 +10,7 @@ Civilization/
 ├── ResearchManager.cs           # 具体内容探索映射、物品共享槽、解析和献祭状态
 ├── ExplorationManager.cs        # 两节点主线、未知广播、双探测器、额度、抵达和奖励
 ├── GrowthTechnologyManager.cs   # 第一页物流科技、第二页等级链与运行效果
-├── TechnologyTreePatch.cs       # FE 科技显现、沙盒资格过滤与 2061/2062 第一页分类
+├── TechnologyTreePatch.cs       # FE 科技显现、沙盒解锁兼容与 2061/2062 第一页分类
 ├── Recovery.cs                  # 亚空间通信、基础塔配方和首遗物启动补给
 ├── FragDropPatch.cs             # 地面/太空黑雾 Frag 与通用原胚掉落
 ├── PermanentProfileStore.cs     # HasPlayedFractionation3 本地跨存档标记
@@ -47,7 +47,7 @@ Civilization/
 - 探索资源使用 `DataCenterInventory.AddExplorationReward`，这是唯一正式超容量写入路径。
 - 点位按宇宙坐标球形范围认领；气态巨星点位放在外层空间，资源按星球类型从当地实际矿脉、流体或气体中加权选择，并固定保留 10% 原胚权重。
 - Nebula 认领由主机使用连接对应玩家的 `UPosition` 验证；普通 HUD 固定槽是本地 UI 偏好，不进入文明快照。
-- 沙盒批量解锁只允许已经满足 `IsTechnologyDiscovered` 的 FE 科技，原版科技保持原资格。
+- 沙盒批量解锁沿用原版 `Published` 资格，可直接解锁并显现 FE 有限科技；原版排除的长期成长节点不批量升满，但在前置解锁后显示。普通模式仍要求 `IsTechnologyDiscovered`。
 
 ## Prohibited Legacy Paths
 
