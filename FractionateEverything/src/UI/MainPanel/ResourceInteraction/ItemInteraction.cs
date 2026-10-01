@@ -136,7 +136,7 @@ public static class ItemInteraction {
                             CardTitleNode("仓储物品", pos: (0, 0), objectName: "item-interaction-grid-title"),
                             Grid(
                                 pos: (1, 0),
-                                cols: [1, Px(28f), 2],
+                                cols: [1, Px(28f)],
                                 columnGap: 8f,
                                 children: [
                                     TextNode("以下物品在分馏亚空间的存储量为：",

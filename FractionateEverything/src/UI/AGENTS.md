@@ -15,6 +15,7 @@ UI/
 │   ├── MainWindow.cs
 │   ├── MainWindowPageRegistry.cs
 │   ├── Civilization/        # 文明研究、遗物探索
+│   ├── CoreOperate/         # 配方图鉴与历史兼容页面钩子
 │   ├── ResourceInteraction/ # 亚空间仓储
 │   ├── Archive/             # 开发日记
 │   └── Setting/             # 杂项设置
@@ -36,6 +37,7 @@ UI/
 - 页面只调用文明、亚空间和配方域的只读快照/公开命令，不直接修改静态集合。
 - `UI/MainPanel/*` 富文本颜色统一用 `RichTextUtils`，禁止散落硬编码颜色。
 - 业务页面默认一个页面一个文件；共用布局下沉到 `Layout` / `Theme`，规则计算下沉到 `Logic`。
+- 卡片内部的动态长内容使用无边框滚动区，滚动条按溢出状态自动隐藏；不得在内容卡内再嵌套装饰卡片。
 
 ## Layout Baseline
 

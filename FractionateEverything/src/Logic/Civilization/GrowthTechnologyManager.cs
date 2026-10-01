@@ -129,9 +129,8 @@ public static class GrowthTechnologyManager {
             int cost = experienced
                 ? ExperiencedStackCosts[level - 1]
                 : StandardStackCosts[level - 1];
-            int previousTech = experienced
-                ? level > 1 ? TFE分馏堆叠成长 + level - 1 : 0
-                : level > 2 ? TFE分馏堆叠成长 + level - 1 : 0;
+            int previousTech = experienced ? level > 1 ? TFE分馏堆叠成长 + level - 1 : 0 :
+                level > 2 ? TFE分馏堆叠成长 + level - 1 : 0;
             int[] additionalImplicitTechs = !experienced && level == 2 ? [T集装物流系统] : [];
 
             int techLevel = experienced ? level : Math.Max(1, level - 1);
@@ -185,6 +184,55 @@ public static class GrowthTechnologyManager {
         && ResearchManager.IsContentUnlocked(contentId);
 
     /// <summary>
+    /// 获取成长科技在原版“解锁”区域显示的实际效果。
+    /// </summary>
+    public static bool TryGetTechnologyUnlockText(TechProto tech, out string text) {
+        int techId = tech?.ID ?? 0;
+        int level = Math.Max(1, tech?.Level ?? 1);
+        text = techId switch {
+            > TFE分馏堆叠成长 and <= TFE分馏堆叠成长 + 5 =>
+                string.Format("FE超级压缩解锁".Translate(),
+                    (techId - TFE分馏堆叠成长) * 4,
+                    (4f / ((techId - TFE分馏堆叠成长) * 4)).ToString("P0")),
+            > TFE亚空间扩容 and <= TFE亚空间扩容 + CapacityInfiniteStartLevel =>
+                "FE亚空间扩容解锁".Translate(),
+            > TFE亚空间能效 and <= TFE亚空间能效 + FiniteGrowthLevelCount =>
+                string.Format("FE亚空间能效解锁".Translate(), (1f - level * 0.1f).ToString("P0")),
+            > TFE探索信号增幅 and <= TFE探索信号增幅 + FiniteGrowthLevelCount =>
+                BuildExplorationUnlockText(level),
+            > TFE高级矿物特质 and <= TFE高级矿物特质 + FiniteGrowthLevelCount =>
+                string.Format("FE高级矿物特质解锁".Translate(),
+                    (1f - level * 0.1f).ToString("P0"),
+                    (0.05f * (1f - level * 0.1f)).ToString("P1")),
+            > TFE高级交互特质 and <= TFE高级交互特质 + FiniteGrowthLevelCount =>
+                string.Format("FE高级交互特质解锁".Translate(), 1.5f + level * 0.05f),
+            > TFE高级转化特质 and <= TFE高级转化特质 + FiniteGrowthLevelCount =>
+                string.Format("FE高级转化特质解锁".Translate(),
+                    (0.5f + level * 0.05f).ToString("P0")),
+            _ => null,
+        };
+        return text != null;
+    }
+
+    private static string BuildExplorationUnlockText(int level) {
+        float precision = level switch {
+            <= 0 => 20f,
+            1 => 10f,
+            2 => 5f,
+            3 => 2f,
+            4 => 1f,
+            _ => 0.5f,
+        };
+        string text = string.Format("FE探索信号增幅解锁".Translate(),
+            Math.Pow(0.9d, level).ToString("P0"),
+            (0.01f * (1f + level * 0.2f)).ToString("P1"),
+            $"{precision:0.#}%");
+        return level >= FiniteGrowthLevelCount
+            ? $"{text}\r\n{"FE探索位置标注解锁".Translate()}"
+            : text;
+    }
+
+    /// <summary>
     /// 注册科技树使用的本地化文本。
     /// </summary>
     public static void AddTranslations() {
@@ -224,6 +272,29 @@ public static class GrowthTechnologyManager {
             "Raises recovery output from advanced conversion towers.",
             "提高全部高级转化塔的置换回收量。");
         Register("FE成长科技结果", "Global evolution capability enhanced.", "全局演化能力已增强。");
+        Register("FE超级压缩解锁",
+            "Raises global cargo stacking to {0} and shortens every vanilla recipe to {1} of its base time.",
+            "全局货物堆叠上限提高至 {0}，全部原版配方耗时缩短为基础耗时的 {1}。");
+        Register("FE亚空间扩容解锁",
+            "Adds 10 stacks to the capacity of every item in the fractionation subspace.",
+            "分馏亚空间中每种物品的容量增加 10 组。");
+        Register("FE亚空间能效解锁",
+            "Reduces logistics-interaction subspace transfer energy use to {0} of its base value.",
+            "物流交互站存取亚空间的耗能降低至基础值的 {0}。");
+        Register("FE探索信号增幅解锁",
+            "Guaranteed signal interval becomes {0} of base; Frag discovery chance becomes {1}; detector display step becomes {2}.",
+            "探索信号保底周期缩短至基础周期的 {0}；Frag 发现概率提高至 {1}；探测显示步长提高至 {2}。");
+        Register("FE探索位置标注解锁", "Unlocks manual location marking for exploration signals.",
+            "解锁探索信号的主动位置标注。");
+        Register("FE高级矿物特质解锁",
+            "Rare-catalyst loss becomes {0} of base ({1} per successful cycle at the current level).",
+            "珍奇催化物损耗率降低至基础值的 {0}（当前等级每次成功损耗概率为 {1}）。");
+        Register("FE高级交互特质解锁",
+            "Raises average embryo-breeding output to {0:0.##} per successful cycle.",
+            "每次成功繁育的原胚平均产量提高至 {0:0.##}。");
+        Register("FE高级转化特质解锁",
+            "Raises advanced-conversion component recovery to {0}.",
+            "高级转化塔的部件回收倍率提高至 {0}。");
     }
 
     /// <summary>
@@ -347,7 +418,7 @@ public static class GrowthTechnologyManager {
             TFE行星内物流交互, "T行星内物流交互", "行星内物流交互描述", "行星内物流交互结果",
             planetaryVanilla.IconPath, [],
             [.. planetaryVanilla.Items], [.. planetaryVanilla.ItemPoints], planetaryVanilla.HashNeeded,
-            [RFE行星内物流交互站], GetTechPosition(10, 1));
+            [RFE行星内物流交互站], GetTechPosition(-23, 4));
         planetary.PreTechsImplicit = [T行星物流系统];
         planetary.PropertyOverrideItems = [.. planetaryVanilla.PropertyOverrideItems];
         planetary.PropertyItemCounts = [.. planetaryVanilla.PropertyItemCounts];
@@ -359,7 +430,7 @@ public static class GrowthTechnologyManager {
             TFE星际物流交互, "T星际物流交互", "星际物流交互描述", "星际物流交互结果",
             interstellarVanilla.IconPath, [],
             [.. interstellarVanilla.Items], [.. interstellarVanilla.ItemPoints], interstellarVanilla.HashNeeded,
-            [RFE星际物流交互站], GetTechPosition(10, 2));
+            [RFE星际物流交互站], GetTechPosition(-23, 6));
         interstellar.PreTechsImplicit = [T星际物流系统];
         interstellar.PropertyOverrideItems = [.. interstellarVanilla.PropertyOverrideItems];
         interstellar.PropertyItemCounts = [.. interstellarVanilla.PropertyItemCounts];
@@ -426,7 +497,7 @@ public static class GrowthTechnologyManager {
             techId, nodeNameKey, series.DescriptionKey, "FE成长科技结果", series.IconPath,
             previousTech > 0 ? [previousTech] : [],
             matrixItemIds, itemPoints, baseHash,
-            [], GetTechPosition(series.Row, levelDefinition.Level));
+            [], GetTechPosition(series.Row + 10, levelDefinition.Level - 2));
         tech.Level = levelDefinition.Level;
         tech.MaxLevel = levelDefinition.MaxLevel;
         tech.LevelCoef1 = linearHashIncrement;
@@ -532,9 +603,8 @@ public static class GrowthTechnologyManager {
         if (!history.techStates.TryGetValue(infiniteTechId, out TechState state)) {
             return level;
         }
-        int completedLevel = state.unlocked
-            ? state.maxLevel
-            : state.curLevel > CapacityInfiniteStartLevel ? state.curLevel - 1 : level;
+        int completedLevel = state.unlocked ? state.maxLevel :
+            state.curLevel > CapacityInfiniteStartLevel ? state.curLevel - 1 : level;
         return Math.Max(level, Math.Max(0, Math.Min(CapacityMaximumLevel, completedLevel)));
     }
 

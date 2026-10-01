@@ -173,6 +173,37 @@ public static class GridDsl {
         };
     }
 
+    /// <summary>
+    /// 无边框滚动区域，用于卡片内部的长列表或长文本。
+    /// </summary>
+    public static LayoutGrid ScrollableArea(float contentHeight, (int, int)? pos = null,
+        (int, int)? span = null, int? row = null, int? col = null, int? rowSpan = null, int? colSpan = null,
+        string objectName = "scroll-area", IReadOnlyList<LayoutTrack> rows = null,
+        IReadOnlyList<LayoutTrack> cols = null, LayoutInsets? margin = null, LayoutInsets? padding = null,
+        float rowGap = 0f, float columnGap = 0f, IReadOnlyList<LayoutNode> children = null,
+        Action<RectTransform> onBuilt = null) {
+        return new() {
+            Pos = pos,
+            Span = span,
+            Row = row,
+            Col = col,
+            RowSpan = rowSpan,
+            ColSpan = colSpan,
+            Rows = rows ?? Array.Empty<LayoutTrack>(),
+            Cols = cols ?? Array.Empty<LayoutTrack>(),
+            Margin = margin ?? LayoutInsets.Zero,
+            Padding = padding ?? new LayoutInsets(PageLayout.CardInnerPadding),
+            RowGap = rowGap,
+            ColumnGap = columnGap,
+            ObjectName = objectName,
+            Children = children ?? Array.Empty<LayoutNode>(),
+            ContentHeight = contentHeight,
+            OnBuilt = onBuilt,
+            RootFactory = (parent, rect) => PageLayout.CreateScrollableArea(parent, objectName, rect.Left,
+                rect.Top, rect.Width, rect.Height, contentHeight),
+        };
+    }
+
     public static LayoutGrid FooterCard((int, int)? pos = null, (int, int)? span = null, int? row = null,
         int? col = null, int? rowSpan = null, int? colSpan = null, string objectName = "footer-card",
         IReadOnlyList<LayoutTrack> rows = null, IReadOnlyList<LayoutTrack> cols = null, LayoutInsets? margin = null,

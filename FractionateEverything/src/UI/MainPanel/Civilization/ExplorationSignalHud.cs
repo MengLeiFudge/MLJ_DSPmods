@@ -13,7 +13,8 @@ namespace FE.UI.MainPanel.Civilization;
 /// </summary>
 internal static class ExplorationSignalHud {
     private const int OrdinarySlotCount = 4;
-    private const float RowHeight = 26f;
+    private const float HudWidth = 520f;
+    private const float RowHeight = 24f;
     private static readonly int[] PinnedMarkIds = new int[OrdinarySlotCount];
     private static readonly Text[] RowTexts = new Text[OrdinarySlotCount + 1];
     private static GameObject root;
@@ -24,46 +25,57 @@ internal static class ExplorationSignalHud {
     /// 创建 HUD；重复调用不会创建多个实例。
     /// </summary>
     public static void EnsureCreated() {
-        if (root || UIRoot.instance?.overlayCanvas == null
-                 || UIRoot.instance.uiGame?.assemblerWindow?.stateText == null) {
+        UIGame uiGame = UIRoot.instance?.uiGame;
+        if (root || UIRoot.instance?.overlayCanvas == null || uiGame == null
+                 || (uiGame.goalPanel?.uiGoalInfoEntryPrefab?.nameText == null
+                     && uiGame.goalPanel?.headerText == null
+                     && uiGame.assemblerWindow?.stateText == null)) {
             return;
         }
 
-        root = new GameObject("fe-exploration-signal-hud", typeof(RectTransform), typeof(Image));
+        root = new GameObject("fe-exploration-signal-hud", typeof(RectTransform));
         RectTransform rootRect = root.GetComponent<RectTransform>();
         rootRect.SetParent(UIRoot.instance.overlayCanvas.transform, false);
         rootRect.anchorMin = new Vector2(0f, 0.5f);
         rootRect.anchorMax = new Vector2(0f, 0.5f);
         rootRect.pivot = new Vector2(0f, 0.5f);
-        rootRect.anchoredPosition = new Vector2(20f, 100f);
-        rootRect.sizeDelta = new Vector2(630f, RowHeight * RowTexts.Length + 12f);
+        rootRect.anchoredPosition = new Vector2(22f, 100f);
+        rootRect.sizeDelta = new Vector2(HudWidth, RowHeight * RowTexts.Length);
 
-        Image background = root.GetComponent<Image>();
-        background.color = new Color(0.025f, 0.035f, 0.045f, 0.78f);
-        background.raycastTarget = false;
-
-        Text source = UIRoot.instance.uiGame.assemblerWindow.stateText;
+        UIGoalPanel goalPanel = uiGame.goalPanel;
+        Text source = goalPanel?.uiGoalInfoEntryPrefab?.nameText
+                      ?? goalPanel?.headerText
+                      ?? uiGame.assemblerWindow.stateText;
         for (int index = 0; index < RowTexts.Length; index++) {
-            Text row = UnityEngine.Object.Instantiate(source, rootRect);
-            row.name = $"signal-row-{index + 1}";
-            Localizer localizer = row.GetComponent<Localizer>();
-            if (localizer != null) {
-                localizer.enabled = false;
+            var rowObject = new GameObject($"signal-row-{index + 1}",
+                typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+            RectTransform rowRect = rowObject.GetComponent<RectTransform>();
+            rowRect.SetParent(rootRect, false);
+            Text row = rowObject.GetComponent<Text>();
+            row.font = source.font;
+            if (row.font != null) {
+                row.material = row.font.material;
             }
             row.text = string.Empty;
-            row.fontSize = 15;
+            row.fontSize = 14;
+            row.fontStyle = FontStyle.Normal;
+            row.resizeTextForBestFit = true;
+            row.resizeTextMinSize = 11;
+            row.resizeTextMaxSize = 14;
             row.alignment = TextAnchor.MiddleLeft;
             row.supportRichText = false;
+            row.horizontalOverflow = HorizontalWrapMode.Overflow;
+            row.verticalOverflow = VerticalWrapMode.Truncate;
             row.raycastTarget = false;
+            row.gameObject.SetActive(true);
             row.color = index == 0
-                ? new Color(1f, 0.82f, 0.38f, 0.95f)
-                : new Color(0.72f, 0.9f, 1f, 0.92f);
-            RectTransform rowRect = row.rectTransform;
+                ? new Color(1f, 0.76f, 0.32f, 0.88f)
+                : new Color(0.78f, 0.86f, 0.9f, 0.84f);
             rowRect.anchorMin = new Vector2(0f, 1f);
             rowRect.anchorMax = new Vector2(0f, 1f);
             rowRect.pivot = new Vector2(0f, 1f);
-            rowRect.anchoredPosition = new Vector2(10f, -6f - index * RowHeight);
-            rowRect.sizeDelta = new Vector2(610f, RowHeight);
+            rowRect.anchoredPosition = new Vector2(0f, -index * RowHeight);
+            rowRect.sizeDelta = new Vector2(HudWidth, RowHeight);
             RowTexts[index] = row;
         }
         root.SetActive(false);

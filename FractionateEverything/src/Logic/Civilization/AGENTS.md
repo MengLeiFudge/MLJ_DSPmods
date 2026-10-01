@@ -21,7 +21,8 @@ Civilization/
 
 - `ResearchManager` 是具体内容到承载物品的探索映射、已解析稳定内容、物品共享进度、高级塔取得/库存门槛、献祭窗口和当前存档堆叠路线的唯一真源。
 - `ExplorationManager` 是点位 ID、位置、内容、星球额度、定时器、两个主线认领状态和星球探测器状态的唯一真源。
-- `GrowthTechnologyManager` 从原版 `GameHistoryData` 读取确定性科技完成状态，不另存科技等级。
+- `GrowthTechnologyManager` 从原版 `GameHistoryData` 读取确定性科技完成状态，不另存科技等级；每个成长节点的“解锁”文本由其实际累计效果生成。
+- `TechnologyTreePatch` 只接管 FE 成长科技的 `UnlockFunctionText`，其余科技继续使用原版文本。
 - `PermanentProfileStore` 只保存“已经完整走过生命工业成长线”的本机标记；路线选择仍写入每个存档并由主机同步。
 - `Civilization3` 块只含 `Research` 与 `Exploration`；不要复用旧文明块名或读取旧协议状态。
 

@@ -15,6 +15,19 @@ public static class TechnologyTreePatch {
         typeof(TechnologyTreePatch), nameof(IsUpgradePageTech));
 
     /// <summary>
+    /// 为 FE 成长科技恢复旧版同类实现使用的专用解锁说明。
+    /// </summary>
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(TechProto), nameof(TechProto.UnlockFunctionText))]
+    private static bool TechProto_UnlockFunctionText_Prefix(TechProto __instance, ref string __result) {
+        if (!GrowthTechnologyManager.TryGetTechnologyUnlockText(__instance, out string text)) {
+            return true;
+        }
+        __result = text;
+        return false;
+    }
+
+    /// <summary>
     /// 两个物流交互科技保留稳定的 2061/2062 ID，但在界面中属于建筑科技第一页。
     /// </summary>
     [HarmonyPostfix]

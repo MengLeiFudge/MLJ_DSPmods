@@ -393,6 +393,28 @@ public static class ResearchManager {
     }
 
     /// <summary>
+    /// 获取完整研究目录定义；界面必须自行隐藏尚未探索条目的名称。
+    /// </summary>
+    public static ResearchContentDefinition[] GetCatalogContentDefinitions() {
+        lock (Sync) {
+            return ContentDefinitions.Values
+                .OrderBy(definition => definition.Tier)
+                .ThenBy(definition => definition.Id, StringComparer.Ordinal)
+                .ToArray();
+        }
+    }
+
+    /// <summary>
+    /// 判断一项内容是否已经探索；已经解析的内容也视为已探索。
+    /// </summary>
+    public static bool IsContentKnown(string contentId) {
+        lock (Sync) {
+            return contentId != null
+                   && (ExploredContents.Contains(contentId) || UnlockedContents.Contains(contentId));
+        }
+    }
+
+    /// <summary>
     /// 获取全部已探索内容定义；包含等待解析和已经解析的内容。
     /// </summary>
     public static ResearchContentDefinition[] GetKnownContentDefinitions() {

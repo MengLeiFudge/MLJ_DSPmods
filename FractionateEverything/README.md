@@ -44,7 +44,7 @@ Advanced towers keep real input, food, product, and passthrough buffers. Their s
 - 同类高级塔在亚空间库存中首次达到 1000 座后，对应特质才可进入探索候选；之后仍须探索和解析。高级塔没有待解析特质时，基础解析塔会改为献祭，并以每件 2% 的成功率从正面产出 Memory。
 - 最近 60 秒内同类高级塔的实际献祭速率会提高该类高级塔的配方成功率：按 5% 分档，每秒更新，最高 `+75%`；三类塔分别计算。
 
-文明研究页会列出已探索内容、承载物品的真实进度和“等待解析/已解析”状态。已解析配方的图鉴也在该页面中，不需要领取奖励或购买解锁。
+文明研究页会在顶部显示完整研究目录的“已探索/已解析”数量和进度，左侧列出承载物品的真实共享槽，右侧列出科技与特质档案；尚未探索的档案只显示问号。全部稳定配方恢复到独立“配方图鉴”页面，按类别列出完整目录和发现进度，未发现配方不会提前泄露名称、输入或产物。
 
 Each signal reveals one concrete result and its carrier item. Every item has one shared analysis slot; filling it resolves one explored pending result. Technology directions reveal an entire upgrade row, but every level still requires normal matrix research. Results are globally unique, and Advanced-Tower traits require both the 1,000-tower exploration threshold and a later concrete discovery.
 
@@ -62,7 +62,7 @@ Each signal reveals one concrete result and its carrier item. Every item has one
 
 普通广播统一命名为“信号{编号}”，只给出量化后的百分比强度，不公开目标星系、星球、方向、距离、内容或坐标。星球探测器用于寻找宿主星球，进入目标星球后固定为 100%；遗物探测器在目标星球外为 0%，进入后才用于寻找具体点位。两个读数共用“探索信号增幅”的 `20% / 10% / 5% / 2% / 1% / 0.5%` 精度成长。
 
-左侧 HUD 第 1 行固定当前关键信号，另外 4 行由普通信号占用。新信号只在有空槽时自动固定，满槽时不会替换；全部信号仍保留在探索面板，可手动固定或取消。成长科技最终级会在面板中开放“标注位置”，由玩家点击后复用原版目的地标记和指引线，但不会创建移动命令。
+左侧 HUD 第 1 行固定当前关键信号，另外 4 行由普通信号占用；它只使用接近原版目标列表的纯文字，不带黑色背景或发光字体。新信号只在有空槽时自动固定，满槽时不会替换；全部信号仍保留在探索面板，可手动固定或取消。成长科技最终级会在面板中开放“标注位置”，由玩家点击后复用原版目的地标记和指引线，但不会创建移动命令。
 
 探索点使用球形认领范围，固态星球的点贴近地表，气态巨星的点位于外层空间，且所有信号都不会过期。点位可能提供一项具体配方、塔特质或科技方向，也可能提供宿主星球实际拥有的资源或通用原胚；研究内容和承载物品只在抵达后揭示。通用原胚固定占资源奖励的 10%；其余权重为火山/沙漠 `80% 矿脉 + 10% 流体`、海洋 `55% + 35%`、冰原 `60% + 30%`、气态巨星 `90% 气体`。缺失资源类别的权重转给该星球其他实际资源，原胚权重不变。奖励直接进入亚空间，并允许暂时超过常规容量。
 
@@ -127,7 +127,7 @@ The initial advanced catalog focuses on rare-resource catalysis, tower cultivati
 | 在两种主面板外壳间切换 | `Ctrl + Shift + F`，面板打开时 |
 | 查看教程 | `G` |
 
-按键可在游戏设置中修改。主面板页面为“文明研究”“遗物探索”“亚空间仓储”“开发日记”和“杂项设置”。高级塔配方在原版分馏塔窗口中选择。
+按键可在游戏设置中修改。主面板页面为“文明研究”“遗物探索”“配方图鉴”“亚空间仓储”“开发日记”和“杂项设置”。文明研究集中显示总体研究进度与科技/特质档案，配方图鉴显示全部配方槽位和发现进度；高级塔配方仍在原版分馏塔窗口中选择。
 
 Controls are configurable in the game settings. Advanced recipes are selected directly in the standard fractionator window.
 

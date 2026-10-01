@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using FE.UI.Foundation.Window;
 using FE.UI.MainPanel.Archive;
 using FE.UI.MainPanel.Civilization;
+using FE.UI.MainPanel.CoreOperate;
 using FE.UI.MainPanel.ResourceInteraction;
 using FE.UI.MainPanel.Setting;
 using UnityEngine;
@@ -28,6 +29,7 @@ public static class MainWindowPageRegistry {
         new(CivilizationCategoryName, "文明研究", CivilizationOverviewPage.CreateUI,
             CivilizationOverviewPage.UpdateUI),
         new(CivilizationCategoryName, "遗物探索", ExplorationPage.CreateUI, ExplorationPage.UpdateUI),
+        new(CivilizationCategoryName, "配方图鉴", FracRecipeOperate.CreateUI, FracRecipeOperate.UpdateUI),
 
         new(ResourceInteractionCategoryName, "亚空间仓储", ItemInteraction.CreateUI, ItemInteraction.UpdateUI),
 

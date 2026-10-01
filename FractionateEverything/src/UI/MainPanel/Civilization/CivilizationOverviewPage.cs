@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using BepInEx.Configuration;
@@ -16,53 +17,60 @@ using static FE.Utils.Utils;
 namespace FE.UI.MainPanel.Civilization;
 
 /// <summary>
-/// 展示物品方向研究、内容发现和生命工业传承状态。
+/// 以进度、解析方向和科技档案三个层次展示生命工业研究状态。
 /// </summary>
 public static class CivilizationOverviewPage {
-    private const float DirectionLineHeight = 24f;
-    private const float ContentLineHeight = 24f;
+    private const float DirectionLineHeight = 26f;
 
     private static RectTransform tab;
     private static PageLayout.HeaderRefs header;
-    private static Text overviewText;
+    private static Text progressHeadlineText;
+    private static Text exploredMetricText;
+    private static Text resolvedMetricText;
+    private static Image exploredProgressFill;
+    private static Image resolvedProgressFill;
     private static Text directionListText;
     private static RectTransform directionListRoot;
     private static Text directionDetailText;
-    private static Text discoveredContentText;
-    private static RectTransform discoveredContentRoot;
+    private static Text technologySummaryText;
+    private static Text technologyArchiveText;
+    private static RectTransform technologyArchiveRoot;
     private static Text footerText;
     private static UIButton directionButton;
     private static int selectedDirectionItemId;
 
     /// <summary>
-    /// 注册研究页面文本。
+    /// 注册文明研究页面文本。
     /// </summary>
     public static void AddTranslations() {
         Register("文明研究", "Civilization Research");
         Register("文明研究摘要",
-            "Inspect concrete explored contents, shared item analysis slots, resolved recipes, and living-tower traits.",
-            "查看具体探索内容、物品共享解析槽，以及已经解析的配方、科技方向与生命塔特质。");
-        Register("研究总览", "Research Overview");
-        Register("研究方向", "Research Directions");
-        Register("方向详情", "Direction Detail");
-        Register("已探索内容", "Explored Content");
-        Register("切换研究方向", "Cycle Direction");
+            "Track exploration and analysis progress, carrier-item slots, and the recovered technology archive.",
+            "跟踪探索与解析进度、承载物品共享槽，以及已经恢复的科技与特质档案。");
+        Register("研究档案", "Research Archive");
+        Register("研究已探索", "Explored");
+        Register("研究已解析", "Resolved");
+        Register("解析方向", "Analysis Directions");
+        Register("切换研究方向", "Next Direction");
         Register("解析状态", "Analysis Status");
         Register("等待解析", "Awaiting Analysis");
         Register("等待新探索", "Awaiting Exploration");
         Register("当前进度", "Current Progress");
         Register("方向内容", "Pending Content", "待解析内容");
-        Register("已解析", "Resolved");
-        Register("尚无已探索内容", "No content has been explored yet.");
+        Register("仍有未知内容", "Undiscovered content remains");
+        Register("方向已完成", "Direction complete");
         Register("研究方向为空", "No research directions are currently available.");
-        Register("已解析成果", "Resolved Results");
+        Register("科技与特质档案", "Technology & Trait Archive");
+        Register("档案发现进度", "Found {0}/{1}", "已找到 {0}/{1}");
+        Register("未知研究内容", "???", "？？？");
+        Register("已解析", "Resolved");
         Register("高级塔收集", "Advanced Towers");
         Register("传承准备", "Legacy Readiness");
         Register("已完成", "Complete");
         Register("未完成", "Incomplete");
         Register("研究页脚",
-            "Exploration reveals one concrete content and its carrier item. Feed that item into a Basic Analysis Tower to advance its shared slot; a full slot selects one explored unresolved content.",
-            "探索每次发现一项具体内容及其承载物品；将该物品送入基础解析塔推进共享槽，槽满时从已探索且未解析的内容中选出一项。");
+            "Exploration reveals concrete content. Analyse its carrier item to resolve it; discovered recipes are catalogued on the separate Recipe Gallery page.",
+            "探索会发现具体内容；解析其承载物品即可恢复内容，已发现配方统一收录在独立的“配方图鉴”页面。");
         Register("研究客户端说明", "Research state is settled and synchronized by the host.",
             "研究状态由主机结算并同步。");
     }
@@ -73,15 +81,12 @@ public static class CivilizationOverviewPage {
     public static void LoadConfig(ConfigFile configFile) { }
 
     /// <summary>
-    /// 创建研究总览、方向列表和发现内容区域。
+    /// 创建进度总览、解析方向和科技档案区域。
     /// </summary>
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         tab = trans;
         ResearchDirectionSnapshot[] directions = ResearchManager.GetDirectionSnapshots();
-        float directionHeight = Math.Max(360f, directions.Length * DirectionLineHeight + 20f);
-        int discoveredHeightUnits = ResearchManager.GetKnownContentDefinitions()
-            .Sum(definition => RecipeManager.GetRecipe(definition.Id) == null ? 1 : 5);
-        float contentHeight = Math.Max(260f, Math.Max(1, discoveredHeightUnits) * ContentLineHeight + 20f);
+        float directionHeight = Math.Max(280f, directions.Length * DirectionLineHeight + 20f);
 
         BuildLayout(wnd, tab,
             Grid(
@@ -90,24 +95,36 @@ public static class CivilizationOverviewPage {
                 children: [
                     Header("文明研究", "文明研究摘要", pos: (0, 0), objectName: "research-header",
                         onBuilt: refs => header = refs),
-                    ContentCard(pos: (1, 0), objectName: "research-overview-card", strong: true,
-                        cols: [1, Px(210f)], columnGap: PageLayout.InnerGap,
+                    ContentCard(pos: (1, 0), objectName: "research-progress-card", strong: true,
+                        rows: [1, 1], cols: [Px(250f), 1], rowGap: 8f, columnGap: 24f,
                         children: [
-                            TextNode("", 13, White, anchor: TextAnchor.MiddleLeft, wrap: true, pos: (0, 0),
-                                onBuilt: text => {
-                                    overviewText = text;
+                            TextNode("", 18, White, anchor: TextAnchor.MiddleLeft, wrap: true,
+                                pos: (0, 0), span: (2, 1), onBuilt: text => {
+                                    progressHeadlineText = text;
                                     text.supportRichText = true;
-                                }, objectName: "research-overview-text"),
-                            ButtonNode("切换研究方向", CycleDirection, pos: (0, 1),
-                                onBuilt: button => directionButton = button,
-                                objectName: "research-cycle-direction"),
+                                }, objectName: "research-progress-headline"),
+                            Node(pos: (0, 1), objectName: "research-explored-progress",
+                                build: (_, root) => BuildProgressMetric(root, out exploredMetricText,
+                                    out exploredProgressFill)),
+                            Node(pos: (1, 1), objectName: "research-resolved-progress",
+                                build: (_, root) => BuildProgressMetric(root, out resolvedMetricText,
+                                    out resolvedProgressFill, new Color(0.45f, 0.85f, 0.48f, 0.92f))),
                         ]),
-                    Grid(pos: (2, 0), cols: [1, 1], columnGap: PageLayout.Gap,
+                    Grid(pos: (2, 0), cols: [Fr(1.08f), 1], columnGap: PageLayout.Gap,
                         objectName: "research-body", children: [
                             ContentCard(pos: (0, 0), objectName: "research-direction-card", strong: true,
-                                rows: [Px(28f), 1], rowGap: 8f, children: [
-                                    CardTitleNode("研究方向", pos: (0, 0), objectName: "research-direction-title"),
-                                    ScrollableContentCard(directionHeight, pos: (1, 0),
+                                rows: [Px(28f), Px(72f), Px(36f), 1], rowGap: 8f, children: [
+                                    CardTitleNode("解析方向", pos: (0, 0),
+                                        objectName: "research-direction-title"),
+                                    TextNode("", 13, White, anchor: TextAnchor.UpperLeft, wrap: true,
+                                        pos: (1, 0), onBuilt: text => {
+                                            directionDetailText = text;
+                                            text.supportRichText = true;
+                                        }, objectName: "research-direction-detail"),
+                                    ButtonNode("切换研究方向", CycleDirection, pos: (2, 0),
+                                        onBuilt: button => directionButton = button,
+                                        objectName: "research-cycle-direction"),
+                                    ScrollableArea(directionHeight, pos: (3, 0),
                                         objectName: "research-direction-scroll",
                                         onBuilt: root => directionListRoot = root, children: [
                                             TextNode("", 13, White, anchor: TextAnchor.UpperLeft, wrap: true,
@@ -117,31 +134,23 @@ public static class CivilizationOverviewPage {
                                                 }, objectName: "research-direction-list"),
                                         ]),
                                 ]),
-                            Grid(pos: (0, 1), rows: [Px(184f), 1], rowGap: PageLayout.Gap,
-                                objectName: "research-detail-column", children: [
-                                    ContentCard(pos: (0, 0), objectName: "research-direction-detail-card",
-                                        rows: [Px(28f), 1], rowGap: 8f, children: [
-                                            CardTitleNode("方向详情", pos: (0, 0),
-                                                objectName: "research-direction-detail-title"),
+                            ContentCard(pos: (0, 1), objectName: "research-technology-card",
+                                rows: [Px(28f), Px(28f), 1], rowGap: 8f, children: [
+                                    CardTitleNode("科技与特质档案", pos: (0, 0),
+                                        objectName: "research-technology-title"),
+                                    TextNode("", 13, Gray, anchor: TextAnchor.MiddleLeft,
+                                        pos: (1, 0), onBuilt: text => {
+                                            technologySummaryText = text;
+                                            text.supportRichText = true;
+                                        }, objectName: "research-technology-summary"),
+                                    ScrollableArea(360f, pos: (2, 0),
+                                        objectName: "research-technology-scroll",
+                                        onBuilt: root => technologyArchiveRoot = root, children: [
                                             TextNode("", 13, White, anchor: TextAnchor.UpperLeft, wrap: true,
-                                                pos: (1, 0), onBuilt: text => {
-                                                    directionDetailText = text;
+                                                pos: (0, 0), onBuilt: text => {
+                                                    technologyArchiveText = text;
                                                     text.supportRichText = true;
-                                                }, objectName: "research-direction-detail"),
-                                        ]),
-                                    ContentCard(pos: (1, 0), objectName: "research-content-card",
-                                        rows: [Px(28f), 1], rowGap: 8f, children: [
-                                            CardTitleNode("已探索内容", pos: (0, 0),
-                                                objectName: "research-content-title"),
-                                            ScrollableContentCard(contentHeight, pos: (1, 0),
-                                                objectName: "research-content-scroll",
-                                                onBuilt: root => discoveredContentRoot = root, children: [
-                                                    TextNode("", 13, White, anchor: TextAnchor.UpperLeft,
-                                                        wrap: true, pos: (0, 0), onBuilt: text => {
-                                                            discoveredContentText = text;
-                                                            text.supportRichText = true;
-                                                        }, objectName: "research-content-list"),
-                                                ]),
+                                                }, objectName: "research-technology-list"),
                                         ]),
                                 ]),
                         ]),
@@ -163,18 +172,32 @@ public static class CivilizationOverviewPage {
             return;
         }
 
+        ResearchContentDefinition[] catalog = ResearchManager.GetCatalogContentDefinitions();
+        ResearchContentDefinition[] known = ResearchManager.GetKnownContentDefinitions();
+        ResearchContentDefinition[] resolved = ResearchManager.GetUnlockedContentDefinitions();
+        var knownIds = new HashSet<string>(known.Select(definition => definition.Id));
+        var resolvedIds = new HashSet<string>(resolved.Select(definition => definition.Id));
         ResearchDirectionSnapshot[] directions = ResearchManager.GetDirectionSnapshots();
         SynchronizeSelectedDirection(directions);
+
         header.Title.text = "文明研究".Translate().WithColor(Orange);
         header.Summary.text = "文明研究摘要".Translate().WithColor(White);
-        overviewText.text = BuildOverviewText();
-        directionListText.text = BuildDirectionList(directions);
-        ResizeScrollableText(directionListRoot, directionListText);
+        UpdateProgress(catalog.Length, known.Length, resolved.Length);
+
         directionDetailText.text = BuildDirectionDetail(directions);
-        discoveredContentText.text = BuildDiscoveredContent();
-        ResizeScrollableText(discoveredContentRoot, discoveredContentText);
+        directionListText.text = BuildDirectionList(directions);
+        PageLayout.ResizeScrollableText(directionListRoot, directionListText);
         directionButton.button.interactable = directions.Length > 1;
         directionButton.SetText("切换研究方向".Translate());
+
+        ResearchContentDefinition[] technologyDefinitions = catalog
+            .Where(definition => RecipeManager.GetRecipe(definition.Id) == null)
+            .ToArray();
+        int knownTechnologyCount = technologyDefinitions.Count(definition => knownIds.Contains(definition.Id));
+        technologySummaryText.text = string.Format("档案发现进度".Translate(),
+            knownTechnologyCount, technologyDefinitions.Length).WithColor(Gray);
+        technologyArchiveText.text = BuildTechnologyArchive(technologyDefinitions, knownIds, resolvedIds);
+        PageLayout.ResizeScrollableText(technologyArchiveRoot, technologyArchiveText);
 
         string footer = "研究页脚".Translate();
         if (NebulaMultiplayerModAPI.IsClient) {
@@ -183,12 +206,25 @@ public static class CivilizationOverviewPage {
         footerText.text = footer.WithColor(Gray);
     }
 
-    private static string BuildOverviewText() {
+    private static void BuildProgressMetric(RectTransform root, out Text label, out Image fill,
+        Color? fillColor = null) {
+        label = PageLayout.AddCenteredText(root, string.Empty, 13, White, TextAnchor.MiddleLeft,
+            0f, 0f, root.sizeDelta.x, 20f, $"{root.name}-label");
+        label.supportRichText = true;
+        fill = PageLayout.CreateProgressBar(root, $"{root.name}-bar",
+            0f, Math.Max(22f, root.sizeDelta.y - 10f), root.sizeDelta.x, 8f, fillColor);
+    }
+
+    private static void UpdateProgress(int total, int known, int resolved) {
         string towers = (ResearchManager.HasAcquiredAllAdvancedTowers ? "已完成" : "未完成").Translate();
-        string completion = (PermanentProfileStore.HasPlayedFractionation ? "已完成" : "未完成").Translate();
-        return $"{"已解析成果".Translate()}：{ResearchManager.DiscoveredContentCount.ToString().WithColor(Blue)}    "
-               + $"{"高级塔收集".Translate()}：{towers}\n"
-               + $"{"传承准备".Translate()}：{completion}";
+        string legacy = (PermanentProfileStore.HasPlayedFractionation ? "已完成" : "未完成").Translate();
+        progressHeadlineText.text =
+            $"{"研究档案".Translate().WithColor(Orange)}  {known}/{total}\n"
+            + $"{"高级塔收集".Translate()}：{towers}  ·  {"传承准备".Translate()}：{legacy}";
+        exploredMetricText.text = $"{"研究已探索".Translate()}  {known}/{total}";
+        resolvedMetricText.text = $"{"研究已解析".Translate()}  {resolved}/{total}";
+        PageLayout.SetProgress(exploredProgressFill, total > 0 ? known / (float)total : 0f);
+        PageLayout.SetProgress(resolvedProgressFill, total > 0 ? resolved / (float)total : 0f);
     }
 
     private static string BuildDirectionList(ResearchDirectionSnapshot[] directions) {
@@ -200,12 +236,13 @@ public static class CivilizationOverviewPage {
         foreach (ResearchDirectionSnapshot direction in directions) {
             bool selected = direction.ItemId == selectedDirectionItemId;
             string marker = selected ? ">".WithColor(Orange) : " ";
-            string analysisStatus = GetAnalysisStatus(direction).Translate()
+            string status = GetAnalysisStatus(direction).Translate()
                 .WithColor(direction.HasPendingContent ? Green
                     : direction.HasRemainingContent ? Gray : Blue);
             builder.Append(marker).Append(' ')
                 .Append(GetItemName(direction.ItemId))
-                .Append("  ").Append(analysisStatus);
+                .Append("  ").Append(direction.Progress / 100f).Append('%')
+                .Append("  ").Append(status);
             if (direction.HasPendingContent) {
                 builder.Append("  ×").Append(direction.PendingContentCount);
             }
@@ -221,57 +258,31 @@ public static class CivilizationOverviewPage {
             return "研究方向为空".Translate().WithColor(Gray);
         }
 
-        string analysisStatus = GetAnalysisStatus(direction).Translate()
+        string status = GetAnalysisStatus(direction).Translate()
             .WithColor(direction.HasPendingContent ? Green
                 : direction.HasRemainingContent ? Gray : Blue);
-        float percentage = direction.Progress / 100f;
-        string pendingContent = direction.HasPendingContent
-            ? $"\n{"方向内容".Translate()}：{direction.PendingContentCount}"
-            : string.Empty;
-        return $"{GetItemName(direction.ItemId).WithColor(Orange)}\n\n"
-               + $"{"解析状态".Translate()}：{analysisStatus}\n"
-               + $"{"当前进度".Translate()}：{percentage:0.##}%"
-               + pendingContent;
+        string remaining = (direction.HasRemainingContent ? "仍有未知内容" : "方向已完成")
+            .Translate().WithColor(direction.HasRemainingContent ? Gray : Blue);
+        return $"{GetItemName(direction.ItemId).WithColor(Orange)}    "
+               + $"{"解析状态".Translate()}：{status}\n"
+               + $"{"当前进度".Translate()}：{direction.Progress / 100f:0.##}%    "
+               + $"{"方向内容".Translate()}：{direction.PendingContentCount}    {remaining}";
     }
 
-    private static string BuildDiscoveredContent() {
-        ResearchContentDefinition[] definitions = ResearchManager.GetKnownContentDefinitions();
-        if (definitions.Length == 0) {
-            return "尚无已探索内容".Translate().WithColor(Gray);
-        }
-
+    private static string BuildTechnologyArchive(IEnumerable<ResearchContentDefinition> definitions,
+        ISet<string> knownIds, ISet<string> resolvedIds) {
         var builder = new StringBuilder();
         foreach (ResearchContentDefinition definition in definitions) {
-            bool resolved = ResearchManager.IsContentUnlocked(definition.Id);
-            WorldviewRecipe recipe = RecipeManager.GetRecipe(definition.Id);
-            builder.Append("T").Append(definition.Tier).Append("  ")
-                .Append(definition.DisplayName.WithColor(Orange)).Append("  ·  ")
-                .Append((resolved ? "已解析" : "等待解析").Translate()
-                    .WithColor(resolved ? Green : Blue)).Append('\n');
-            if (!resolved || recipe == null) {
-                builder.Append('\n');
-                continue;
+            builder.Append('T').Append(definition.Tier).Append("  ");
+            if (!knownIds.Contains(definition.Id)) {
+                builder.Append("未知研究内容".Translate().WithColor(Gray));
+            } else {
+                bool resolved = resolvedIds.Contains(definition.Id);
+                builder.Append(definition.DisplayName.WithColor(Orange)).Append("  ·  ")
+                    .Append((resolved ? "已解析" : "等待解析").Translate()
+                        .WithColor(resolved ? Green : Blue));
             }
-
-            builder.Append("稳定配方ID".Translate()).Append("：").Append(recipe.StableId)
-                .Append("  ·  ").Append("运行塔型".Translate()).Append("：")
-                .Append(GetItemName(recipe.RecipeType.GetSpriteItemId())).Append('\n');
-            builder.Append("成功率".Translate()).Append("：")
-                .Append(recipe.CycleSuccessProbability.ToString("P0")).Append('\n');
-            builder.Append("配方输入".Translate()).Append("：")
-                .Append(string.Join(" + ", recipe.Inputs.Select(input => {
-                    string consumption = input.ConsumeProbability < 0.9999f
-                        ? $" ({input.ConsumeProbability:P0} {"每次成功消耗概率".Translate()})"
-                        : string.Empty;
-                    return $"{input.Count} × {GetItemName(input.ItemId)}{consumption}";
-                }))).Append('\n');
-            builder.Append("配方输出".Translate()).Append("：")
-                .Append(string.Join(" + ", recipe.Products.Select(output => {
-                    string recovery = output.ScalesWithRecovery
-                        ? $" ({"按回收率结算".Translate()})"
-                        : string.Empty;
-                    return $"{output.Count:0.##} × {GetItemName(output.ItemId)}{recovery}";
-                }))).Append("\n\n");
+            builder.Append('\n').Append('\n');
         }
         return builder.ToString();
     }
@@ -280,7 +291,7 @@ public static class CivilizationOverviewPage {
         if (direction.HasPendingContent) {
             return "等待解析";
         }
-        return direction.HasRemainingContent ? "等待新探索" : "已完成";
+        return direction.HasRemainingContent ? "等待新探索" : "方向已完成";
     }
 
     private static void CycleDirection() {
@@ -301,20 +312,6 @@ public static class CivilizationOverviewPage {
         if (directions.All(direction => direction.ItemId != selectedDirectionItemId)) {
             selectedDirectionItemId = directions.FirstOrDefault(direction => direction.HasPendingContent)?.ItemId
                                       ?? directions[0].ItemId;
-        }
-    }
-
-    private static void ResizeScrollableText(RectTransform contentRoot, Text text) {
-        if (contentRoot == null || text == null) {
-            return;
-        }
-        RectTransform viewport = contentRoot.parent as RectTransform;
-        float height = Math.Max(viewport?.rect.height ?? 0f, text.preferredHeight + 20f);
-        contentRoot.sizeDelta = new Vector2(contentRoot.sizeDelta.x, height);
-        if (text.rectTransform.parent is RectTransform textContainer) {
-            float textHeight = Math.Max(0f, height - 20f);
-            textContainer.sizeDelta = new Vector2(textContainer.sizeDelta.x, textHeight);
-            text.rectTransform.sizeDelta = new Vector2(text.rectTransform.sizeDelta.x, textHeight);
         }
     }
 

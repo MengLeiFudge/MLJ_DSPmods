@@ -985,6 +985,7 @@ public static class DevelopmentDiary {
     private static UIButton btnPrevFragment;
     private static UIButton btnNextFragment;
     private static Text txtDiaryContent;
+    private static RectTransform diaryContentRoot;
     private static Text txtNavigatorTitle;
     private static Text txtContentTitle;
 
@@ -1042,7 +1043,7 @@ public static class DevelopmentDiary {
                                     }
                                     currentCategoryIndex = Mathf.Clamp(index, 0, diaryCategories.Length - 1);
                                     currentFragmentIndex = 0;
-                                    RefreshEntry();
+                                    RefreshEntry(true);
                                 }),
                                 pos: (1, 0), objectName: "development-diary-category-combo"),
                             ComboBoxNode(onBuilt: combo => fragmentCombo = combo.WithOnSelChanged(index => {
@@ -1053,7 +1054,7 @@ public static class DevelopmentDiary {
                                     currentFragmentIndex = fragmentCount == 0
                                         ? 0
                                         : Mathf.Clamp(index, 0, fragmentCount - 1);
-                                    RefreshEntry();
+                                    RefreshEntry(true);
                                 }),
                                 pos: (2, 0), objectName: "development-diary-fragment-combo"),
                         ]),
@@ -1063,10 +1064,11 @@ public static class DevelopmentDiary {
                         children: [
                             CardTitleNode("正文阅读", onBuilt: text => txtContentTitle = text,
                                 pos: (0, 0), objectName: "development-diary-content-title"),
-                            ScrollableContentCard(
+                            ScrollableArea(
                                 contentHeight: 1400f,
                                 pos: (1, 0),
                                 objectName: "development-diary-content-scroll",
+                                onBuilt: root => diaryContentRoot = root,
                                 children: [
                                     TextNode(string.Empty, PageLayout.BodyFontSize, anchor: TextAnchor.UpperLeft,
                                         wrap: true, onBuilt: text => txtDiaryContent = text,
@@ -1083,7 +1085,7 @@ public static class DevelopmentDiary {
                                 pos: (0, 1), objectName: "development-diary-next"),
                         ]),
                 ]));
-        RefreshEntry();
+        RefreshEntry(true);
     }
 
     public static void UpdateUI() {
@@ -1091,10 +1093,10 @@ public static class DevelopmentDiary {
             return;
         }
 
-        RefreshEntry();
+        RefreshEntry(false);
     }
 
-    private static void RefreshEntry() {
+    private static void RefreshEntry(bool resetScroll) {
         if (txtDiaryContent == null) {
             return;
         }
@@ -1106,6 +1108,10 @@ public static class DevelopmentDiary {
             txtDiaryContent.text = "暂无可浏览的片段".Translate().WithColor(White);
             txtDiaryContent.alignment = TextAnchor.MiddleCenter;
             txtDiaryContent.color = PageLayout.EmptyStateTextColor;
+            PageLayout.ResizeScrollableText(diaryContentRoot, txtDiaryContent);
+            if (resetScroll) {
+                PageLayout.ScrollToTop(diaryContentRoot);
+            }
             return;
         }
 
@@ -1120,6 +1126,10 @@ public static class DevelopmentDiary {
         txtNavigatorTitle.text = "分类与片段".Translate().WithColor(Orange);
         txtContentTitle.text = GetFragmentDisplayLabel(fragment).WithColor(Orange);
         txtDiaryContent.text = IsUnlocked(fragment) ? content : BuildLockedContent(content);
+        PageLayout.ResizeScrollableText(diaryContentRoot, txtDiaryContent);
+        if (resetScroll) {
+            PageLayout.ScrollToTop(diaryContentRoot);
+        }
     }
 
     private static void PrevFragment() {
@@ -1128,7 +1138,7 @@ public static class DevelopmentDiary {
         }
 
         currentFragmentIndex--;
-        RefreshEntry();
+        RefreshEntry(true);
     }
 
     private static void NextFragment() {
@@ -1138,7 +1148,7 @@ public static class DevelopmentDiary {
         }
 
         currentFragmentIndex++;
-        RefreshEntry();
+        RefreshEntry(true);
     }
 
     private const string UnlockedFragmentsBlockTag = "UnlockedFragmentsV1";

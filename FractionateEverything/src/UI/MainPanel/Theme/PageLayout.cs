@@ -69,6 +69,16 @@ public static class PageLayout {
     /// <summary>空态提示文本颜色：比正文再低一档的灰白，避免抢视觉。</summary>
     public static readonly Color EmptyStateTextColor = new(1f, 1f, 1f, 0.45f);
 
+    /// <summary>进度条底色。</summary>
+    public static readonly Color ProgressTrackColor = new(1f, 1f, 1f, 0.10f);
+
+    /// <summary>进度条主填充色。</summary>
+    public static readonly Color ProgressFillColor = new(0.32f, 0.76f, 0.92f, 0.92f);
+
+    /// <summary>滚动条轨道与滑块颜色。</summary>
+    public static readonly Color ScrollbarTrackColor = new(1f, 1f, 1f, 0.08f);
+    public static readonly Color ScrollbarHandleColor = new(0.72f, 0.82f, 0.88f, 0.62f);
+
     /// <summary>
     /// 主面板页头根节点与标题文本引用。
     /// </summary>
@@ -265,25 +275,92 @@ public static class PageLayout {
     }
 
     /// <summary>
-    /// 构造一张可滚动的圆角卡片：外层是视口（ContentCard），内部 Content 高度由调用方决定。
-    /// 返回 <c>Content</c> RectTransform —— 后续子节点全部以其为 parent 定位，超出卡片物理高度的
-    /// 部分会被 RectMask2D 裁剪，滚动由 ScrollRect 驱动。
+    /// 创建一条可动态更新的横向进度条，并返回填充图像。
+    /// </summary>
+    public static Image CreateProgressBar(RectTransform parent, string objectName, float left, float top,
+        float width, float height, Color? fillColor = null) {
+        var trackObject = new GameObject(objectName, typeof(RectTransform), typeof(Image));
+        RectTransform trackRect = trackObject.GetComponent<RectTransform>();
+        NormalizeRectWithTopLeft(trackRect, left, top, parent);
+        trackRect.sizeDelta = new Vector2(width, height);
+
+        Image trackImage = trackObject.GetComponent<Image>();
+        trackImage.sprite = RoundedSpriteFactory.GetFillSprite();
+        trackImage.type = Image.Type.Sliced;
+        trackImage.color = ProgressTrackColor;
+        trackImage.raycastTarget = false;
+
+        var fillObject = new GameObject($"{objectName}-fill", typeof(RectTransform), typeof(Image));
+        RectTransform fillRect = fillObject.GetComponent<RectTransform>();
+        fillRect.SetParent(trackRect, false);
+        fillRect.anchorMin = Vector2.zero;
+        fillRect.anchorMax = new Vector2(0f, 1f);
+        fillRect.offsetMin = Vector2.zero;
+        fillRect.offsetMax = Vector2.zero;
+        fillRect.localScale = Vector3.one;
+
+        Image fillImage = fillObject.GetComponent<Image>();
+        fillImage.sprite = RoundedSpriteFactory.GetFillSprite();
+        fillImage.type = Image.Type.Sliced;
+        fillImage.color = fillColor ?? ProgressFillColor;
+        fillImage.raycastTarget = false;
+        return fillImage;
+    }
+
+    /// <summary>
+    /// 更新进度条填充比例。
+    /// </summary>
+    public static void SetProgress(Image fillImage, float progress) {
+        if (fillImage == null) {
+            return;
+        }
+        RectTransform fillRect = fillImage.rectTransform;
+        fillRect.anchorMax = new Vector2(Mathf.Clamp01(progress), 1f);
+        fillRect.offsetMin = Vector2.zero;
+        fillRect.offsetMax = Vector2.zero;
+    }
+
+    /// <summary>
+    /// 构造一张可滚动的圆角卡片。需要在现有卡片内部滚动时应使用
+    /// <see cref="CreateScrollableArea"/>，避免重复卡片边框。
     /// </summary>
     public static RectTransform CreateScrollableContentCard(RectTransform parent, string objectName, float left,
         float top, float width, float height, float contentHeight, bool strong = false) {
         RectTransform card = CreateContentCard(parent, objectName, left, top, width, height, strong);
+        return CreateScrollableArea(card, $"{objectName}-scroll-area", 2f, 2f,
+            width - 4f, height - 4f, contentHeight);
+    }
 
-        var viewportObj = new GameObject($"{objectName}-viewport", typeof(RectTransform), typeof(RectMask2D));
-        RectTransform viewport = viewportObj.GetComponent<RectTransform>();
-        viewport.SetParent(card, false);
+    /// <summary>
+    /// 创建带裁剪、鼠标滚轮和自动隐藏右侧滚动条的无边框滚动区域。
+    /// </summary>
+    public static RectTransform CreateScrollableArea(RectTransform parent, string objectName, float left,
+        float top, float width, float height, float contentHeight) {
+        const float scrollbarWidth = 8f;
+        const float scrollbarGap = 5f;
+
+        var rootObject = new GameObject(objectName, typeof(RectTransform), typeof(ScrollRect));
+        RectTransform root = rootObject.GetComponent<RectTransform>();
+        NormalizeRectWithTopLeft(root, left, top, parent);
+        root.sizeDelta = new Vector2(width, height);
+        rootObject.AddComponent<UIScrollZone>();
+
+        var viewportObject = new GameObject($"{objectName}-viewport",
+            typeof(RectTransform), typeof(Image), typeof(RectMask2D));
+        RectTransform viewport = viewportObject.GetComponent<RectTransform>();
+        viewport.SetParent(root, false);
         viewport.anchorMin = Vector2.zero;
         viewport.anchorMax = Vector2.one;
-        viewport.offsetMin = new Vector2(2f, 2f);
-        viewport.offsetMax = new Vector2(-2f, -2f);
+        viewport.offsetMin = Vector2.zero;
+        viewport.offsetMax = new Vector2(-(scrollbarWidth + scrollbarGap), 0f);
         viewport.localScale = Vector3.one;
 
-        var contentObj = new GameObject($"{objectName}-content", typeof(RectTransform));
-        RectTransform content = contentObj.GetComponent<RectTransform>();
+        Image viewportImage = viewportObject.GetComponent<Image>();
+        viewportImage.color = TransparentColor;
+        viewportImage.raycastTarget = true;
+
+        var contentObject = new GameObject($"{objectName}-content", typeof(RectTransform));
+        RectTransform content = contentObject.GetComponent<RectTransform>();
         content.SetParent(viewport, false);
         content.anchorMin = new Vector2(0f, 1f);
         content.anchorMax = new Vector2(1f, 1f);
@@ -292,17 +369,94 @@ public static class PageLayout {
         content.sizeDelta = new Vector2(0f, Mathf.Max(contentHeight, height));
         content.localScale = Vector3.one;
 
-        ScrollRect scroll = card.gameObject.AddComponent<ScrollRect>();
+        Scrollbar scrollbar = CreateVerticalScrollbar(root, $"{objectName}-scrollbar", scrollbarWidth);
+        ScrollRect scroll = rootObject.GetComponent<ScrollRect>();
         scroll.horizontal = false;
         scroll.vertical = true;
         scroll.viewport = viewport;
         scroll.content = content;
+        scroll.verticalScrollbar = scrollbar;
+        scroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
+        scroll.verticalScrollbarSpacing = scrollbarGap;
         scroll.movementType = ScrollRect.MovementType.Clamped;
-        scroll.scrollSensitivity = 20f;
+        scroll.scrollSensitivity = 28f;
         scroll.inertia = true;
         scroll.decelerationRate = 0.135f;
-
+        scroll.verticalNormalizedPosition = 1f;
         return content;
+    }
+
+    /// <summary>
+    /// 按文本实际首选高度扩展滚动内容，同时保持内容至少覆盖视口。
+    /// </summary>
+    public static void ResizeScrollableText(RectTransform contentRoot, Text text, float verticalPadding = 20f) {
+        if (contentRoot == null || text == null || contentRoot.parent is not RectTransform viewport) {
+            return;
+        }
+
+        float height = Mathf.Max(viewport.rect.height, text.preferredHeight + verticalPadding);
+        contentRoot.sizeDelta = new Vector2(contentRoot.sizeDelta.x, height);
+        if (text.rectTransform.parent is RectTransform textContainer) {
+            float textHeight = Mathf.Max(0f, height - verticalPadding);
+            textContainer.sizeDelta = new Vector2(textContainer.sizeDelta.x, textHeight);
+            text.rectTransform.sizeDelta = new Vector2(text.rectTransform.sizeDelta.x, textHeight);
+        }
+    }
+
+    /// <summary>
+    /// 将滚动区域恢复到顶部。
+    /// </summary>
+    public static void ScrollToTop(RectTransform contentRoot) {
+        ScrollRect scroll = contentRoot?.GetComponentInParent<ScrollRect>();
+        if (scroll != null) {
+            scroll.verticalNormalizedPosition = 1f;
+        }
+    }
+
+    private static Scrollbar CreateVerticalScrollbar(RectTransform parent, string objectName, float width) {
+        var scrollbarObject = new GameObject(objectName, typeof(RectTransform), typeof(Image), typeof(Scrollbar));
+        RectTransform scrollbarRect = scrollbarObject.GetComponent<RectTransform>();
+        scrollbarRect.SetParent(parent, false);
+        scrollbarRect.anchorMin = new Vector2(1f, 0f);
+        scrollbarRect.anchorMax = new Vector2(1f, 1f);
+        scrollbarRect.pivot = new Vector2(1f, 0.5f);
+        scrollbarRect.anchoredPosition = new Vector2(-2f, 0f);
+        scrollbarRect.sizeDelta = new Vector2(width, -4f);
+        scrollbarRect.localScale = Vector3.one;
+
+        Image trackImage = scrollbarObject.GetComponent<Image>();
+        trackImage.sprite = RoundedSpriteFactory.GetFillSprite();
+        trackImage.type = Image.Type.Sliced;
+        trackImage.color = ScrollbarTrackColor;
+
+        var slidingObject = new GameObject("sliding-area", typeof(RectTransform));
+        RectTransform slidingRect = slidingObject.GetComponent<RectTransform>();
+        slidingRect.SetParent(scrollbarRect, false);
+        slidingRect.anchorMin = Vector2.zero;
+        slidingRect.anchorMax = Vector2.one;
+        slidingRect.offsetMin = Vector2.one;
+        slidingRect.offsetMax = -Vector2.one;
+        slidingRect.localScale = Vector3.one;
+
+        var handleObject = new GameObject("handle", typeof(RectTransform), typeof(Image));
+        RectTransform handleRect = handleObject.GetComponent<RectTransform>();
+        handleRect.SetParent(slidingRect, false);
+        handleRect.anchorMin = Vector2.zero;
+        handleRect.anchorMax = Vector2.one;
+        handleRect.offsetMin = Vector2.zero;
+        handleRect.offsetMax = Vector2.zero;
+        handleRect.localScale = Vector3.one;
+
+        Image handleImage = handleObject.GetComponent<Image>();
+        handleImage.sprite = RoundedSpriteFactory.GetFillSprite();
+        handleImage.type = Image.Type.Sliced;
+        handleImage.color = ScrollbarHandleColor;
+
+        Scrollbar scrollbar = scrollbarObject.GetComponent<Scrollbar>();
+        scrollbar.handleRect = handleRect;
+        scrollbar.targetGraphic = handleImage;
+        scrollbar.direction = Scrollbar.Direction.BottomToTop;
+        return scrollbar;
     }
 }
 
