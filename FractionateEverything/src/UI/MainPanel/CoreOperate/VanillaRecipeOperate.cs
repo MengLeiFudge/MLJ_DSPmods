@@ -65,7 +65,6 @@ public static class VanillaRecipeOperate {
     public static void AddTranslations() {
         Register("原版配方", "Vanilla Recipe");
 
-        Register("当前配方", "Current recipe");
         Register("原版配方提示按钮说明1",
             "Left-click to switch between unlocked recipes, right-click to switch between all available recipes.",
             "左键在已解锁配方之间切换，右键在全部可用配方中切换。");

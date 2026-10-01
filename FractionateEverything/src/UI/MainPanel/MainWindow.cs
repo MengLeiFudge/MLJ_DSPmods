@@ -48,6 +48,7 @@ public static class MainWindow {
         Register("切换到分析主面板", "Switch to analysis main panel");
         Register("切换到旧版主面板", "Switch to legacy main panel");
         Register("生产管理", "Production Management");
+        Register("当前配方", "Current Recipe");
         FracRecipeOperate.AddTranslations();
         VanillaRecipeOperate.AddTranslations();
         Register("生命工业", "Living Industry");

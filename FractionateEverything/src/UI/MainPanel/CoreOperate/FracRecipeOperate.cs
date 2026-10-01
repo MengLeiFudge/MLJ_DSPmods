@@ -47,7 +47,6 @@ public static class FracRecipeOperate {
             "Inspect discovered stable recipes, all inputs and outputs, and their tower runtime boundaries.",
             "查看已发现的稳定配方、全部输入输出与对应塔型运行边界。");
         Register("配方类型", "Recipe Type");
-        Register("当前配方", "Current Recipe");
         Register("配方结构", "Recipe Structure");
         Register("运行边界", "Runtime Boundaries");
         Register("尚无可见配方", "No recipes in this category have been discovered yet.");
