@@ -136,7 +136,8 @@ public static partial class Utils {
     [HarmonyTranspiler]
     [HarmonyPriority(Priority.High)]
     [HarmonyAfter(BuildToolOpt.GUID)]
-    [HarmonyPatch(typeof(BuildTool_Reform), nameof(BuildTool_Reform.ReformAction))]
+    // 游戏 0.10.35 将地基数量检查拆分到平整地形入口。
+    [HarmonyPatch(typeof(BuildTool_Reform), nameof(BuildTool_Reform.DoFlattenExecute))]
     [HarmonyPatch(typeof(BuildTool_Reform), nameof(BuildTool_Reform.RemoveBasePit))]
     [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.EntityAutoReplenishIfNeeded))]
     [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.StationAutoReplenishIfNeeded))]
@@ -549,7 +550,8 @@ public static partial class Utils {
     [HarmonyPatch(typeof(BuildTool_Click), nameof(BuildTool_Click.CreatePrebuilds))]
     [HarmonyPatch(typeof(BuildTool_Inserter), nameof(BuildTool_Inserter.CreatePrebuilds))]
     [HarmonyPatch(typeof(BuildTool_Path), nameof(BuildTool_Path.CreatePrebuilds))]
-    [HarmonyPatch(typeof(BuildTool_Reform), nameof(BuildTool_Reform.ReformAction))]
+    // 游戏 0.10.35 将地基扣除拆分到消耗与统计入口。
+    [HarmonyPatch(typeof(BuildTool_Reform), nameof(BuildTool_Reform.ConsumeItemsAndRegisterStats))]
     [HarmonyPatch(typeof(BuildTool_Reform), nameof(BuildTool_Reform.RemoveBasePit))]
     [HarmonyPatch(typeof(ConstructionModuleComponent), nameof(ConstructionModuleComponent.PlaceItems))]
     [HarmonyPatch(typeof(MechaLab), nameof(MechaLab.ManageSupply))]

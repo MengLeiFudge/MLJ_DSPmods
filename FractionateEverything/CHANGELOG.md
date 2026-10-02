@@ -1,3 +1,9 @@
+- v2.2.12
+    + 适配游戏 0.10.35 的地基接口调整，修复旧补丁目标不存在导致的加载失败。
+    + 铺设地基时继续按既有设置检查和消耗背包、物流背包及分馏数据中心的物品。
+    + Adapted foundation patches to game 0.10.35, fixing a loading failure caused by a removed patch target.
+    + Foundation placement continues to count and consume items from the inventory, logistics inventory, and fractionation data centre according to the existing settings.
+
 - v2.2.11
     + 重新发布 2.2 兼容线，用于分发最新 2.2 系列构建包。
     + Re-released the 2.2 compatibility line to distribute the latest 2.2 series build.
