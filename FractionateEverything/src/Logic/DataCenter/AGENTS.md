@@ -16,7 +16,7 @@ DataCenter/
 ## Rules
 
 - `centerItemCount` / `centerItemInc` 是库存唯一真源，长度和元素类型保持 `long[12000]`。
-- 每种物品容量独立计算；普通 `AddItemToModData` 只返回实际接收量，调用方必须保留或返还未接收部分。
+- 每种物品容量独立计算；容量组数由GrowthTechnologyManager投影，终极仓储只解除玩法上限，仍保留数量和增产点安全界限。普通 `AddItemToModData` 只返回实际接收量，调用方必须保留或返还未接收部分。
 - `AddExplorationReward` 允许超容量，只供首遗物和探索奖励调用。
 - 实体上传统一走 `DataCenterUploadRouter`；高级塔按原物品、数量和增产点进入普通库存，并在同类库存首次达到 1000 座时通知研究域永久开放方向；献祭只在基础解析塔发生。
 - 基础塔正面上传必须在取带尾货物前检查真实整堆可接收，不拆分、不先取后丢。

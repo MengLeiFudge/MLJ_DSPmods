@@ -1060,6 +1060,10 @@ public static partial class Utils {
 
     internal const int TFE分馏堆叠成长 = 2080;
     internal const int TFE亚空间扩容 = 2090;
+    /// <summary>长链探索完成后授予的终极探索节点。</summary>
+    internal const int TFE终极探索 = 2171;
+    /// <summary>长链仓储任务完成后授予的终极容量节点。</summary>
+    internal const int TFE终极仓储 = 2172;
     internal const int TFE探索信号增幅 = 2150;
     internal const int TFE高级矿物特质 = 2110;
     internal const int TFE高级交互特质 = 2120;

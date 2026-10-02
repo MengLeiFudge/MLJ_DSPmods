@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -76,6 +76,50 @@ public static class AdvancedFractionatorRuntime {
         States = [];
     private static readonly float[] FoodNutrition = [1f, 2f, 4f, 8f, 16f, 32f];
     private static readonly float[] FoodSpeed = [1f, 1.1f, 1.2f, 1.3f, 1.4f, 1.5f];
+
+    /// <summary>供窗口与汇总页共用的工作状态，按营养、配方、原料和输出空间区分原因。</summary>
+    /// <param name="state">高级塔状态。</param>
+    /// <returns>玩家可读的状态文案。</returns>
+    public static string GetOperatingStatus(AdvancedFractionatorState state) {
+        if (state == null) { return "等待供养"; }
+        lock (state) {
+            if (state.Nutrition <= 0f) { return "饥饿"; }
+            WorldviewRecipe recipe = RecipeManager.GetRecipe(state.SelectedRecipeId);
+            if (recipe == null) { return "等待配方"; }
+            int rounds = GetAvailableRounds(state, recipe);
+            if (rounds <= 0) { return "缺少原材料"; }
+            if (LimitRoundsByOutputRoom(state, recipe, rounds, ResearchManager.MemorySuccessBoost) <= 0) {
+                return "输出堵塞";
+            }
+            int stack = StackingManager.CurrentMaxStack;
+            if (stack > 1 && state.Products.Values.Any(count => count > 0 && count < stack)) { return "运行中 · 等待集装"; }
+            return "正常运转";
+        }
+    }
+
+    /// <summary>可见页面按低频请求统计现有运行状态，不扫描银河全部建筑。</summary>
+    /// <returns>按塔体类型分组的数量与异常计数。</returns>
+    public static Dictionary<int, (int Total, int Hungry, int Missing, int Blocked)> GetTowerSummary() {
+        var result = new Dictionary<int, (int Total, int Hungry, int Missing, int Blocked)>();
+        foreach (var pair in States) {
+            PlanetFactory factory = GameMain.galaxy?.PlanetById(pair.Key.planetId)?.factory;
+            var system = factory?.factorySystem;
+            int id = pair.Key.fractionatorId;
+            if (system == null || id <= 0 || id >= system.fractionatorCursor) { continue; }
+            int entity = system.fractionatorPool[id].entityId;
+            if (entity <= 0 || entity >= factory.entityPool.Length) { continue; }
+            int itemId = factory.entityPool[entity].protoId;
+            result.TryGetValue(itemId, out var counts);
+            counts.Total++;
+            switch (GetOperatingStatus(pair.Value)) {
+                case "饥饿": counts.Hungry++; break;
+                case "缺少原材料": counts.Missing++; break;
+                case "输出堵塞": counts.Blocked++; break;
+            }
+            result[itemId] = counts;
+        }
+        return result;
+    }
 
     /// <summary>
     /// 获取指定实例状态；不存在时创建。
@@ -589,7 +633,8 @@ public static class AdvancedFractionatorRuntime {
             return;
         }
 
-        bool requireFullStack = stackLimit > 1 && !AreCurrentInputsEmpty(state, recipe);
+        // 主消耗物已不足一轮时释放尾料；保留的催化剂不能让尾料永久等待集装。
+        bool requireFullStack = stackLimit > 1 && recipe != null && GetAvailableRounds(state, recipe) > 0;
         if (state.PreferFlowOutput) {
             if (TryOutputCurrentFlow(state, recipe, cargoTraffic, beltId, stackLimit, requireFullStack)) {
                 state.PreferFlowOutput = false;

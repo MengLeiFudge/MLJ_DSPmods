@@ -1,52 +1,30 @@
-# UI/MainPanel — FE 功能面板
+# UI/MainPanel — FE功能面板
 
-主面板按玩家任务组织页面。根层只维护窗口状态、路由、注册表与稳定保存块；业务规则必须留在 `Logic/*`。
+页面按玩家任务组织。根层只拥有外壳、路由和注册表，业务状态归Logic领域；玩法和参数以GAME_DESIGN及GAME_DESIGN_SPEC为准。
 
-## Active Pages
+## 页面与所有者
 
 | 分类 | 页面 | 数据来源 |
 | --- | --- | --- |
-| 生命工业 | 文明研究 | `ResearchManager` |
-| 生命工业 | 遗物探索 | `ExplorationManager` |
-| 生命工业 | 配方图鉴 | `RecipeManager`、`ResearchManager` |
-| 资源管理 | 亚空间仓储 | `DataCenterInventory` |
-| 开发档案 | 开发日记 | 静态档案内容 |
-| 系统设置 | 杂项设置 | BepInEx 配置与当前交互设置 |
+| 指引 | 当前目标、主线记录、使用指南 | ResearchManager、ExplorationManager |
+| 研究 | 解析样本、阶段恢复、塔体特质 | ResearchManager、GrowthTechnologyManager |
+| 探索 | 信号追踪、地点档案、终极任务 | ExplorationManager |
+| 工业 | 配方图鉴、生命塔、亚空间仓储 | RecipeGalleryPage、AdvancedFractionatorRuntime、DataCenterInventory |
+| 手记 | 1.x手记、2.x手记、伊卡洛斯手记 | DevelopmentDiary、主线记录 |
+| 设置 | 亚空间存取、界面与兼容 | Miscellaneous已有配置 |
 
-`CoreOperate/FracRecipeOperate.cs` 是完整配方目录的页面所有者；`VanillaRecipeOperate.cs` 只保留兼容配置/存档钩子，不注册为页面。旧协议恢复、远古科技树、恢复手册、成就和原版配方强化页不得重新注册。
+MainWindowPageRegistry是唯一页面注册表，两种外壳共用。默认当前目标，跨页统一使用MainWindow.NavigateToPage。Shift+F打开，Ctrl+Shift+F切换外壳；通信未建立前不打开。
 
-## Entry And Routing
+## 视觉与生命周期
 
-- `MainWindow.cs`：双外壳状态机、快捷键、保存块 `MainPanelSelection` / `PinnedExplorationSignals`、跨页导航。
-- `MainWindowPageRegistry.cs`：分类顺序、唯一页面注册表和可见性过滤。
-- `Shell/`：MessageBox 与 Analysis 外壳。
-- `Theme/`：统一设计尺寸、页头、内容卡、页脚和圆角素材。
-
-默认快捷键：`Shift + F` 开关面板；面板打开时 `Ctrl + Shift + F` 切换外壳。通信未建立前不打开。
-
-## Page Contracts
-
-静态页面按需实现：
-
-```csharp
-AddTranslations();
-LoadConfig(ConfigFile);
-CreateUI(MyWindow, RectTransform);
-UpdateUI();
-Import/Export/IntoOtherSave();
-```
-
-不是每个页面都必须拥有配置或存档；空钩子只用于保持统一接线。
-
-## Presentation Rules
-
-- 文明研究页突出完整研究目录的已探索/已解析总进度，展示承载物品共享槽，以及科技与特质档案；尚未探索的档案名称必须显示为问号。
-- 配方图鉴按类型列出当前目录中的全部稳定配方槽位，显示总体与分类发现进度；未发现槽位不得披露名称、输入、产物或运行参数。
-- 遗物探索页按稳定 ID 显示 `关键信号{ID}` / `信号{ID}`；只有关键信号公开目标星球，普通信号不得泄露恒星系、星球、内容或坐标。
-- 左侧探索 HUD 固定一个不可取消的主线槽和四个普通槽；使用原版 HUD 普通文字材质，不创建黑色面板或发光文字。普通槽顺序属于本地 UI 偏好，不按强度排序，也不进入主机文明状态。
-- 探索页同时显示已解锁的星球/遗物量化强度，提供普通信号固定操作；最终成长级可提供玩家主动点击的原版位置标注，但不得启动导航或移动。
-- 亚空间仓储页显示真实库存、容量和满状态，不生成奖励或修改研究。
-- 解析发现与探索回收使用逻辑域排队的 `UIRealtimeTip`，页面不自行重复提示。
-- 页面动态长文本使用带裁剪和自动隐藏右侧滚动条的滚动区，内容高度按实际文本或目录条目扩展，不用固定容器裁掉动态文本。
-- `UpdateUI` 先检查可见性；文本颜色走 `RichTextUtils`；跨页只走 `NavigateToPage`。
-- 不加入协议购买、成就领奖、直接坐标文本、自动导航、移动命令或高级塔缓存详情。
+- 外壳已给设计区四边10px间距，页面使用1082×767画布，不再增加一层相同间距。
+- Theme/CardBrowserPage提供窄单列目录、分页、状态和宽正文；业务页只提供PageCard数据和领域操作。正文从顶部排起，切换条目回到顶部，文字、视口和滑条使用相同上下边界。
+- 稳定键只保持选择态，不显示内部ID。卡片可直接点击，不使用循环切换按钮代替选择。
+- 可见页面低频读取快照，离屏不刷新；动态长文本使用裁剪与滚动，不固定高度截断。
+- 未解析内容只展示已有未完成线索的样本与进度；完成后移出，不预告未来线索，不泄露结果名、用途、输入产物。完整配方信息偏好不能覆盖此边界。
+- HUD显示附近最高强度、主线和本地静默收集进度，使用白字黑边并遵从原版全屏界面隐藏条件，不恢复双尺度或点位ID列表。
+- 地点列表仅含收到的广播/剧情，静默隐藏点不能提前暴露；档案读取实际奖励记录，不调用随机结算，主线与地点档案不显示回收时间。
+- 生命塔汇总读取现有状态，不逐帧扫描全银河建筑；窗口状态与汇总共用逻辑域判断。
+- 操作必须调用逻辑命令，客户端通过既有Nebula请求；终极源点只在用户点击时提交。
+- 历史手记与当前教程分开，未解锁记录显示问号。
+- 不增加协议购买、成就领奖、自动导航或高级塔多缓存操作面板。

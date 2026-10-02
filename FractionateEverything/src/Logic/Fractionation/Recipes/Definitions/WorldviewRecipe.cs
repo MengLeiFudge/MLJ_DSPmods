@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using FE.Logic.Civilization;
 using static FE.Utils.Utils;
@@ -52,6 +52,12 @@ public sealed class WorldviewRecipe : BaseRecipe {
     /// <summary>跨存档、蓝图和联机稳定的配方字符串 ID。</summary>
     public string StableId { get; }
 
+    /// <summary>解析本配方所需的唯一实物样本，与生产输入输出独立定义。</summary>
+    public int AnalysisItemId { get; set; }
+
+    /// <summary>配方所属矩阵阶段，0 为开局，1～6 为蓝至白。</summary>
+    public int ResearchStage { get; set; }
+
     /// <summary>跨存档、蓝图和联机稳定的配方整数 ID。</summary>
     public int PersistentId { get; }
 
@@ -103,6 +109,8 @@ public sealed class WorldviewRecipe : BaseRecipe {
         : base(inputs.Count > 0 ? inputs[0].ItemId : 0, successProbability,
             BuildBaseOutputs(outputs), []) {
         StableId = stableId;
+        AnalysisItemId = inputs.Count > 0 ? inputs[0].ItemId : 0;
+        ResearchStage = kind == WorldviewRecipeKind.BasicMineral ? 0 : 2;
         PersistentId = persistentId;
         DisplayName = displayName;
         RecipeType = recipeType;
@@ -166,15 +174,9 @@ public sealed class WorldviewRecipe : BaseRecipe {
         }
 
         if (Kind == WorldviewRecipeKind.BasicAnalysis) {
-            if (!ResearchManager.TryAnalyzeDirection(InputID, batchCount, ref seed,
-                    out int sacrificeOutputCount)) {
-                fluidInputInc -= fluidInputIncAvg * batchCount;
-                return new FractionationBatchResult {
-                    InputRemoveCount = batchCount,
-                    PassThroughCount = batchCount,
-                    PassThroughInc = fluidInputIncAvg * batchCount,
-                };
-            }
+            int consumedCount = ResearchManager.ProcessAnalysisBatch(InputID, batchCount, ref seed,
+                out int sacrificeOutputCount);
+            int returnedCount = batchCount - consumedCount;
 
             if (sacrificeOutputCount > 0) {
                 outputs.Add(true, IFE记忆源点, sacrificeOutputCount);
@@ -183,9 +185,11 @@ public sealed class WorldviewRecipe : BaseRecipe {
             fluidInputInc -= fluidInputIncAvg * batchCount;
             return new FractionationBatchResult {
                 InputRemoveCount = batchCount,
-                ConsumedRegisterCount = batchCount,
+                ConsumedRegisterCount = consumedCount,
                 SuccessCount = sacrificeOutputCount,
-                DestroyedCount = batchCount,
+                DestroyedCount = consumedCount,
+                PassThroughCount = returnedCount,
+                PassThroughInc = fluidInputIncAvg * returnedCount,
             };
         }
 

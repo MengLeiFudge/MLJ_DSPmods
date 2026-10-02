@@ -396,10 +396,9 @@ public static class PageLayout {
 
         float height = Mathf.Max(viewport.rect.height, text.preferredHeight + verticalPadding);
         contentRoot.sizeDelta = new Vector2(contentRoot.sizeDelta.x, height);
-        if (text.rectTransform.parent is RectTransform textContainer) {
-            float textHeight = Mathf.Max(0f, height - verticalPadding);
-            textContainer.sizeDelta = new Vector2(textContainer.sizeDelta.x, textHeight);
-            text.rectTransform.sizeDelta = new Vector2(text.rectTransform.sizeDelta.x, textHeight);
+        text.rectTransform.sizeDelta = new Vector2(text.rectTransform.sizeDelta.x, height - verticalPadding);
+        if (text.rectTransform.parent is RectTransform textContainer && textContainer != contentRoot) {
+            textContainer.sizeDelta = new Vector2(textContainer.sizeDelta.x, height - verticalPadding);
         }
     }
 
@@ -420,8 +419,8 @@ public static class PageLayout {
         scrollbarRect.anchorMin = new Vector2(1f, 0f);
         scrollbarRect.anchorMax = new Vector2(1f, 1f);
         scrollbarRect.pivot = new Vector2(1f, 0.5f);
-        scrollbarRect.anchoredPosition = new Vector2(-2f, 0f);
-        scrollbarRect.sizeDelta = new Vector2(width, -4f);
+        scrollbarRect.anchoredPosition = Vector2.zero;
+        scrollbarRect.sizeDelta = new Vector2(width, 0f);
         scrollbarRect.localScale = Vector3.one;
 
         Image trackImage = scrollbarObject.GetComponent<Image>();

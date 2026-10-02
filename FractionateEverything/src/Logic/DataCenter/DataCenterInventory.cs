@@ -303,7 +303,7 @@ public static class DataCenterInventory {
     /// <summary>
     /// 获取当前每种物品的常规容量组数。
     /// </summary>
-    public static int CurrentCapacityGroups => 10 + GrowthTechnologyManager.SubspaceCapacityLevel * 10;
+    public static int CurrentCapacityGroups => GrowthTechnologyManager.CapacityGroups;
 
     /// <summary>
     /// 获取指定物品在亚空间中的容量上限。
@@ -311,6 +311,9 @@ public static class DataCenterInventory {
     public static long GetItemCapacity(int itemId) {
         if (itemId <= 0 || itemId >= 12000) {
             return 0;
+        }
+        if (GrowthTechnologyManager.UltimateCapacity) {
+            return long.MaxValue / 10L;
         }
         ItemProto item = LDB.items.Select(itemId);
         int stackSize = Math.Max(1, item?.StackSize ?? 1);

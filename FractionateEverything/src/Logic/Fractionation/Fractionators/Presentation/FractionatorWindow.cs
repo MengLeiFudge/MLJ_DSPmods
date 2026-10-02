@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using FE.Logic.Civilization;
 using FE.Logic.DataCenter;
 using FE.Logic.Fractionation.Recipes;
 using FE.UI.Controls;
@@ -1041,22 +1042,10 @@ public static class FractionatorWindow {
 
     private static void UpdateAdvancedStateText(AdvancedFractionatorState state, WorldviewRecipe recipe,
         FractionatorComponent fractionator) {
-        if (recipe == null) {
-            modWindow.stateText.text = "等待配方".Translate();
-            modWindow.stateText.color = modWindow.idleColor;
-        } else if (state == null) {
-            modWindow.stateText.text = "缺少营养".Translate();
-            modWindow.stateText.color = modWindow.workStoppedColor;
-        } else if (state.Nutrition <= 0f && fractionator.isWorking) {
-            modWindow.stateText.text = "饥饿运行".Translate();
-            modWindow.stateText.color = modWindow.workStoppedColor;
-        } else if (fractionator.isWorking) {
-            modWindow.stateText.text = "正常运转".Translate();
-            modWindow.stateText.color = modWindow.workNormalColor;
-        } else {
-            modWindow.stateText.text = "缺少原材料".Translate();
-            modWindow.stateText.color = modWindow.workStoppedColor;
-        }
+        string status = AdvancedFractionatorRuntime.GetOperatingStatus(state);
+        modWindow.stateText.text = status.Translate();
+        modWindow.stateText.color = status is "正常运转" or "运行中 · 等待集装"
+            ? modWindow.workNormalColor : status == "等待配方" ? modWindow.idleColor : modWindow.workStoppedColor;
     }
 
     private static void UpdateAdvancedUI(UIFractionatorWindow src, FractionatorComponent fractionator,
@@ -1334,6 +1323,10 @@ public static class FractionatorWindow {
                 modWindow.stateText.text = "搬运模式".Translate();
                 modWindow.stateText.color = modWindow.workStoppedColor;
             }
+        }
+        if (buildingID == IFE基础解析塔 && fractionator.fluidId > 0) {
+            modWindow.stateText.text = ResearchManager.GetAnalysisMode(fractionator.fluidId)
+                + " · " + modWindow.stateText.text;
         }
     }
 

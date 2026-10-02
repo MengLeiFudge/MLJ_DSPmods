@@ -12,6 +12,8 @@ namespace FE.Logic.Civilization;
 public static class CivilizationModule {
     private static readonly object NotificationSync = new();
     private static readonly Queue<string> PendingNotifications = [];
+    /// <summary>已结算的回收结果，在主线程逐条显示；由 NotificationSync 保护。</summary>
+    private static readonly Queue<(string Title, string Text)> PendingRecoveries = [];
     private static long lastProcessedGameTick = long.MinValue;
     private static bool civilizationSnapshotPending;
 
@@ -23,7 +25,7 @@ public static class CivilizationModule {
         Register("探索发现研究内容：{0}", "Exploration discovered research content: {0}");
         Register("高级塔库存门槛",
             "{0} reached 1,000 units in subspace; its trait can now appear in exploration.",
-            "{0} 在亚空间库存中首次达到 1000 座，对应特质现可进入探索候选。");
+            "{0} 的脉冲正与亚空间中的同伴共鸣。探测器捕捉到了一段新的回应。");
         Register("解析发现：{0}", "Analysis discovered: {0}");
         Register("已恢复一座原型：{0}", "Prototype recovered: {0}");
         Register("生命工业传承已记录",
@@ -34,7 +36,7 @@ public static class CivilizationModule {
         Register("强烈脉冲：遗物探测器已启用，{0}位于{1}",
             "Strong pulse: Relic Detector online; {0} is on {1}.");
         Register("{0}发现 {1} 个探索信号", "{0} revealed {1} exploration signal(s).");
-        Register("Frag 解析", "Frag analysis");
+        Register("残片解析", "Fragment analysis");
         Register("古文明网络发现了新的探索信号",
             "The old-civilization network revealed a new exploration signal.");
         Register("已接入古文明亚空间网络",
@@ -60,6 +62,7 @@ public static class CivilizationModule {
             return;
         }
 
+        FlushRecoveryPopups();
         long gameTick = GameMain.gameTick;
         if (gameTick == lastProcessedGameTick) {
             return;
@@ -83,6 +86,7 @@ public static class CivilizationModule {
             }
             ExplorationManager.ClearLegacyFirstRelicNavigation();
             GrowthTechnologyManager.SyncRuntimeEffects();
+            TutorialManager.UpdateMilestoneTips();
             PermanentProfileStore.TryRecordCompletion();
             NebulaMultiplayerModAPI.BroadcastAdvancedFractionatorState();
             if (civilizationSnapshotPending) {
@@ -102,6 +106,25 @@ public static class CivilizationModule {
         lock (NotificationSync) {
             PendingNotifications.Enqueue(text);
         }
+    }
+
+    /// <summary>排队显示已结算的遗迹回收结果，多个结果依次确认。</summary>
+    /// <param name="title">遗迹名称。</param>
+    /// <param name="text">实际获得的记录或物资。</param>
+    public static void QueueRecoveryPopup(string title, string text) {
+        if (string.IsNullOrWhiteSpace(text)) { return; }
+        lock (NotificationSync) { PendingRecoveries.Enqueue((title, text)); }
+    }
+
+    /// <summary>仅在没有其他弹窗时显示下一条回收结果，避免提示相互覆盖。</summary>
+    private static void FlushRecoveryPopups() {
+        if (UIRoot.instance?.uiGame?.active != true || UIMessageBox.activeCount > 0) { return; }
+        (string Title, string Text) recovery;
+        lock (NotificationSync) {
+            if (PendingRecoveries.Count == 0) { return; }
+            recovery = PendingRecoveries.Dequeue();
+        }
+        UIMessageBox.Show(recovery.Title, recovery.Text, "确定".Translate(), UIMessageBox.INFO, null);
     }
 
     /// <summary>
@@ -129,6 +152,7 @@ public static class CivilizationModule {
     /// </summary>
     public static void AfterImport() {
         ResearchManager.RefreshAdvancedTowerInventoryMilestones();
+        GrowthTechnologyManager.ConsolidateWhiteMatrixResearch();
         GrowthTechnologyManager.SyncRuntimeEffects();
         if (!ExplorationManager.FirstRelicClaimed) {
             ExplorationManager.EnsureFirstRelicMark();
@@ -147,6 +171,7 @@ public static class CivilizationModule {
         civilizationSnapshotPending = false;
         lock (NotificationSync) {
             PendingNotifications.Clear();
+            PendingRecoveries.Clear();
         }
     }
 

@@ -21,8 +21,8 @@ namespace FE.UI.MainPanel.Setting;
 /// 主面板风格、快捷操作和物流阈值设置页面。
 /// </summary>
 public static class Miscellaneous {
-    private static RectTransform window;
-    private static RectTransform tab;
+    private static RectTransform storageTab;
+    private static RectTransform interfaceTab;
 
     private static int[] ClickTakeCounts = [1, 3, 5, 10, 30, 50, 100];
     private static string[] ClickTakeCountsStr = ClickTakeCounts.Select(count => count.ToString()).ToArray();
@@ -174,97 +174,78 @@ public static class Miscellaneous {
             configFile.Bind("Miscellaneous", "PackageLogistic", false, "PackageLogistic兼容亚空间");
     }
 
-    public static void CreateUI(MyWindow wnd, RectTransform trans) {
-        window = trans;
-        tab = trans;
-        CreateUIInternal(wnd, trans);
-    }
-
-    private static void CreateUIInternal(MyWindow wnd, RectTransform parent) {
-        const float rowH = 36f;
-        int rowIdx = 0;
-        List<LayoutTrack> configRows = [Px(24f)];
-        List<LayoutNode> configChildren = [
-            CardTitleNode("参数配置", pos: (0, 0), objectName: "misc-config-title"),
-            LabeledComboBoxNode("左键单击时提取几组物品", ClickTakeCountsStr, LeftClickTakeCountEntry,
-                pos: (++rowIdx, 0), objectName: "misc-left-click"),
-            LabeledComboBoxNode("右键单击时提取几组物品", ClickTakeCountsStr, RightClickTakeCountEntry,
-                pos: (++rowIdx, 0), objectName: "misc-right-click"),
-            LabeledComboBoxNode("物品提取目标", ExtractTargetStrs, ExtractTargetEntry,
-                pos: (++rowIdx, 0), objectName: "misc-extract-target"),
+    /// <summary>创建亚空间提取、消耗顺序及站点阈值设置。</summary>
+    /// <param name="wnd">面板外壳。</param>
+    /// <param name="trans">页面父节点。</param>
+    public static void CreateStorageUI(MyWindow wnd, RectTransform trans) {
+        storageTab = trans;
+        LayoutNode[] children = [
+            LabeledComboBoxNode("左键单击时提取几组物品", ClickTakeCountsStr, LeftClickTakeCountEntry, pos: (0, 0)),
+            LabeledComboBoxNode("右键单击时提取几组物品", ClickTakeCountsStr, RightClickTakeCountEntry, pos: (1, 0)),
+            LabeledComboBoxNode("物品提取目标", ExtractTargetStrs, ExtractTargetEntry, pos: (2, 0)),
             LabeledComboBoxNode("物品消耗顺序", TakeItemPriorityStrs, TakeItemPriorityEntry,
-                tipTitle: "物品消耗顺序", tipContent: "物品消耗顺序说明",
-                pos: (++rowIdx, 0), objectName: "misc-take-priority"),
+                tipTitle: "物品消耗顺序", tipContent: "物品消耗顺序说明", pos: (3, 0)),
             LabeledSliderNode("物流交互站下载阈值", DownloadThresholdEntry, new DownloadThresholdMapper(), "P0",
                 tipTitle: "物流交互站下载阈值", tipContent: "物流交互站阈值修改说明",
-                onSliderBuilt: s => DownloadThresholdSlider = s,
-                onTipBuilt: t => DownloadThresholdTipsButton2 = t,
-                pos: (++rowIdx, 0), objectName: "misc-download-threshold"),
+                onSliderBuilt: s => DownloadThresholdSlider = s, onTipBuilt: t => DownloadThresholdTipsButton2 = t, pos: (4, 0)),
             LabeledSliderNode("物流交互站上传阈值", UploadThresholdEntry, new UploadThresholdMapper(), "P0",
                 tipTitle: "物流交互站上传阈值", tipContent: "物流交互站阈值修改说明",
-                onSliderBuilt: s => UploadThresholdSlider = s,
-                onTipBuilt: t => UploadThresholdTipsButton2 = t,
-                pos: (++rowIdx, 0), objectName: "misc-upload-threshold"),
-            CheckBoxNode(ShowFractionateRecipeDetailsEntry, "始终显示完整分馏配方信息",
-                tipTitle: "始终显示完整分馏配方信息", tipContent: "始终显示完整分馏配方信息说明",
-                pos: (++rowIdx, 0), objectName: "misc-show-recipe-details"),
-            CheckBoxNode(EnableConfirmationDialogEntry, "启用确认弹窗",
-                tipTitle: "启用确认弹窗", tipContent: "启用确认弹窗说明",
-                pos: (++rowIdx, 0), objectName: "misc-enable-confirm-dialog"),
+                onSliderBuilt: s => UploadThresholdSlider = s, onTipBuilt: t => UploadThresholdTipsButton2 = t, pos: (5, 0)),
         ];
-        for (int i = 0; i < rowIdx; i++) configRows.Add(Px(rowH));
-        if (AutoSorter.Enable) {
-            configRows.Add(Px(rowH));
-            configChildren.Add(CheckBoxNode(EnablePackageAutoSortTwiceEntry, "AutoSorter模组将背包中多余物品收入分馏亚空间",
-                onBuilt: cb => PackageAutoSortTwiceCheckBox = cb,
-                pos: (++rowIdx, 0), objectName: "misc-auto-sorter"));
-        }
-        configRows.Add(Px(rowH));
-        configChildren.Add(CheckBoxNode(EnablePackageSortTwiceEntry, "双击背包排序按钮将多余物品收入分馏亚空间",
-            onBuilt: cb => PackageSortTwiceCheckBox = cb,
-            pos: (++rowIdx, 0), objectName: "misc-sort-twice"));
-
-        BuildLayout(wnd, parent,
-            Grid(
-                rows: [Px(PageLayout.HeaderHeight), 1, Px(PageLayout.FooterHeight)],
-                rowGap: PageLayout.Gap,
-                children: [
-                    Header("杂项设置", objectName: "misc-setting-header", pos: (0, 0),
-                        onBuilt: refs => refs.Summary.text = "调整物品提取组数、背包阈值和主面板风格"
-                            .Translate().WithColor(White)),
-                    ContentCard(
-                        pos: (1, 0),
-                        objectName: "misc-setting-config-card",
-                        strong: true,
-                        rows: configRows,
-                        children: configChildren),
-                    FooterCard(
-                        pos: (2, 0),
-                        objectName: "misc-setting-footer-card",
-                        children: [
-                            ButtonNode(MainWindow.GetSwitchMainPanelButtonLabel(),
-                                onClick: () => MainWindow.SwitchMainPanelFrom(MainWindow.GetCurrentMainPanelType()),
-                                fontSize: 14,
-                                onBuilt: btn => SwitchMainPanelButton = btn,
-                                pos: (0, 0), objectName: "misc-switch-panel-btn"),
-                        ]),
-                ]));
+        CreateSettingsLayout(wnd, trans, "亚空间存取", "让需要的物资，去往需要它们的地方。", children);
     }
 
-    public static void UpdateUI() {
-        if (!tab.gameObject.activeSelf) {
-            return;
-        }
-        bool isMultiplayer = NebulaMultiplayerModAPI.IsMultiplayerActive;
-        DownloadThresholdSlider.slider.interactable = !isMultiplayer;
-        DownloadThresholdTipsButton2.gameObject.SetActive(isMultiplayer);
-        UploadThresholdSlider.slider.interactable = !isMultiplayer;
-        UploadThresholdTipsButton2.gameObject.SetActive(isMultiplayer);
-        PackageSortTwiceCheckBox.SetEnable(PackageAccessRules.TechItemInteractionUnlocked);
+    /// <summary>创建界面偏好、收纳和已安装模组的兼容设置。</summary>
+    /// <param name="wnd">面板外壳。</param>
+    /// <param name="trans">页面父节点。</param>
+    public static void CreateInterfaceUI(MyWindow wnd, RectTransform trans) {
+        interfaceTab = trans;
+        List<LayoutNode> children = [
+            CheckBoxNode(ShowFractionateRecipeDetailsEntry, "始终显示完整分馏配方信息", pos: (0, 0)),
+            CheckBoxNode(EnableConfirmationDialogEntry, "启用确认弹窗", pos: (1, 0)),
+            CheckBoxNode(EnablePackageSortTwiceEntry, "双击背包排序按钮将多余物品收入分馏亚空间",
+                onBuilt: cb => PackageSortTwiceCheckBox = cb, pos: (2, 0)),
+        ];
         if (AutoSorter.Enable) {
-            PackageAutoSortTwiceCheckBox.SetEnable(PackageAccessRules.TechItemInteractionUnlocked);
+            children.Add(CheckBoxNode(EnablePackageAutoSortTwiceEntry, "AutoSorter模组将背包中多余物品收入分馏亚空间",
+                onBuilt: cb => PackageAutoSortTwiceCheckBox = cb, pos: (children.Count, 0)));
         }
-        RefreshSwitchMainPanelButtonLabel();
+        children.Add(CheckBoxNode(EnablePackageLogisticEntry, "PackageLogistic兼容亚空间", pos: (children.Count, 0)));
+        children.Add(ButtonNode(MainWindow.GetSwitchMainPanelButtonLabel(),
+            onClick: () => MainWindow.SwitchMainPanelFrom(MainWindow.GetCurrentMainPanelType()),
+            onBuilt: btn => SwitchMainPanelButton = btn, pos: (children.Count, 0)));
+        CreateSettingsLayout(wnd, trans, "界面与兼容", "把熟悉的操作，留在顺手的位置。", children);
+    }
+
+    /// <summary>复用设置控件布局，保持两个页面独立的生命周期。</summary>
+    /// <param name="wnd">外壳。</param>
+    /// <param name="parent">页面父节点。</param>
+    /// <param name="title">页面标题。</param>
+    /// <param name="summary">页头提示。</param>
+    /// <param name="children">按行排列的设置项。</param>
+    private static void CreateSettingsLayout(MyWindow wnd, RectTransform parent, string title, string summary,
+        IReadOnlyList<LayoutNode> children) {
+        BuildLayout(wnd, parent, Grid(rows: [Px(PageLayout.HeaderHeight), 1], rowGap: PageLayout.Gap,
+            children: [
+                Header(title, pos: (0, 0), onBuilt: refs => refs.Summary.text = summary),
+                ContentCard(pos: (1, 0), rows: children.Select(_ => Px(48)).ToArray(), children: children),
+            ]));
+    }
+
+    /// <summary>仅刷新正在显示的设置页。</summary>
+    public static void UpdateUI() {
+        if (storageTab != null && storageTab.gameObject.activeInHierarchy) {
+            bool isMultiplayer = NebulaMultiplayerModAPI.IsMultiplayerActive;
+            DownloadThresholdSlider.slider.interactable = !isMultiplayer;
+            DownloadThresholdTipsButton2.gameObject.SetActive(isMultiplayer);
+            UploadThresholdSlider.slider.interactable = !isMultiplayer;
+            UploadThresholdTipsButton2.gameObject.SetActive(isMultiplayer);
+        }
+        if (interfaceTab != null && interfaceTab.gameObject.activeInHierarchy) {
+            PackageSortTwiceCheckBox.SetEnable(PackageAccessRules.TechItemInteractionUnlocked);
+            PackageAutoSortTwiceCheckBox?.SetEnable(PackageAccessRules.TechItemInteractionUnlocked);
+            RefreshSwitchMainPanelButtonLabel();
+        }
     }
 
     public static void ShowQuestion(string title, string content, Action onConfirm, Action onCancel = null) {

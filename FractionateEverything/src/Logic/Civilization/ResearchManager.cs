@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -53,7 +53,7 @@ public sealed class ResearchDirectionSnapshot(
 /// <summary>
 /// 具体内容探索、物品共享解析槽和高级塔取得状态。
 /// </summary>
-public static class ResearchManager {
+public static partial class ResearchManager {
     /// <summary>
     /// 供逐帧路径无锁读取的研究状态副本；研究状态每次变化后整体替换。
     /// </summary>
@@ -63,26 +63,10 @@ public static class ResearchManager {
         public readonly HashSet<string> UnlockedContents = unlockedContents;
     }
 
-    private sealed class SacrificeRateState {
-        public readonly object Sync = new();
-        public readonly long[] BucketSeconds = new long[SacrificeWindowSeconds];
-        public readonly long[] BucketCounts = new long[SacrificeWindowSeconds];
-        public float SuccessBoost;
-
-        public SacrificeRateState() {
-            for (int i = 0; i < BucketSeconds.Length; i++) {
-                BucketSeconds[i] = long.MinValue;
-            }
-        }
-    }
-
     /// <summary>高级塔库存达到此数量后，对应特质可以进入探索候选。</summary>
     public const int AdvancedTowerEligibilityThreshold = 1000;
 
-    private const int SacrificeWindowSeconds = 60;
     private const int MaximumImportedCollectionCount = 12000;
-    private const float SacrificeBoostStep = 0.05f;
-    private const float MaximumSacrificeBoost = 0.75f;
 
     /// <summary>高级矿物塔特质内容 ID。</summary>
     public const string AdvancedMineralTraitId = "trait:advanced-mineral";
@@ -106,14 +90,13 @@ public static class ResearchManager {
     private static readonly HashSet<int> BootstrapTowerGrants = [];
     private static readonly HashSet<int> AcquiredAdvancedTowers = [];
     private static readonly HashSet<int> AdvancedTowerInventoryMilestones = [];
-    private static readonly SacrificeRateState AdvancedMineralSacrificeRate = new();
-    private static readonly SacrificeRateState AdvancedInteractionSacrificeRate = new();
-    private static readonly SacrificeRateState AdvancedConversionSacrificeRate = new();
     private static readonly Queue<string> PendingNotifications = [];
     private static AnalysisRuntimeSnapshot analysisRuntimeSnapshot = new([], []);
     private static int discoveredContentCount;
     private static int pendingSignalAccelerations;
     private static bool belongsToGeneration3;
+    /// <summary>当前存档失去跨档完成资格后保持为真，并随研究块保存。</summary>
+    private static bool completionDisqualified;
     private static bool snapshotDirty;
 
     /// <summary>
@@ -135,6 +118,20 @@ public static class ResearchManager {
             lock (Sync) {
                 return belongsToGeneration3;
             }
+        }
+    }
+
+    /// <summary>当前存档能否记录正式游玩的完成标记，沙盒使用记录不可撤销。</summary>
+    public static bool CanRecordCompletion {
+        get { lock (Sync) { return belongsToGeneration3 && !completionDisqualified; } }
+    }
+
+    /// <summary>永久取消当前存档的完成标记资格，不改写已经取得的本地档案。</summary>
+    public static void DisqualifyCompletion() {
+        lock (Sync) {
+            if (completionDisqualified) { return; }
+            completionDisqualified = true;
+            snapshotDirty = true;
         }
     }
 
@@ -168,22 +165,7 @@ public static class ResearchManager {
 
                 int tier = GetRecipeTier(recipe);
                 AddContentDefinition(new ResearchContentDefinition(recipe.StableId, recipe.DisplayName, tier));
-                HashSet<int> directions = [];
-                foreach (WorldviewRecipeInput input in recipe.Inputs) {
-                    directions.Add(input.ItemId);
-                }
-                foreach (WorldviewRecipeOutput output in recipe.Products) {
-                    directions.Add(output.ItemId);
-                }
-                if (recipe.Kind == WorldviewRecipeKind.BasicMineral) {
-                    int relatedDirection = GetRelatedCommonResource(recipe.InputID);
-                    if (relatedDirection > 0) {
-                        directions.Add(relatedDirection);
-                    }
-                }
-                foreach (int direction in directions) {
-                    AddToPool(direction, recipe.StableId);
-                }
+                AddToPool(recipe.AnalysisItemId, recipe.StableId);
             }
 
             AddContentDefinition(new ResearchContentDefinition(AdvancedMineralTraitId,
@@ -195,7 +177,7 @@ public static class ResearchManager {
             AddToPool(IFE高级矿物塔, AdvancedMineralTraitId);
             AddToPool(IFE高级交互塔, AdvancedInteractionTraitId);
             AddToPool(IFE高级转化塔, AdvancedConversionTraitId);
-            AddTechnologyContentDefinitions();
+            AddStageContentDefinitions();
             RebuildRemainingDirectionPoolsUnsafe();
             PublishAnalysisRuntimeSnapshotUnsafe();
         }
@@ -219,20 +201,19 @@ public static class ResearchManager {
         lock (Sync) {
             GrowthTechnologyManager.SetStackProgressionMode(PermanentProfileStore.HasPlayedFractionation);
             belongsToGeneration3 = true;
+            completionDisqualified = GameMain.sandboxToolsEnabled || GameMain.data?.gameDesc?.isSandboxMode == true;
             snapshotDirty = true;
         }
     }
 
     /// <summary>
-    /// 首次取得遗物时授予两张基础矿物配方。
+    /// 首遗物提供四种矿物与正向培育的样本线索，配方仍需解析。
     /// </summary>
     public static void GrantStarterResearchState() {
-        lock (Sync) {
-            UnlockWithoutReward($"mineral-basic:{I石矿}");
-            UnlockWithoutReward($"mineral-basic:{I铁矿}");
-            PublishAnalysisRuntimeSnapshotUnsafe();
-            snapshotDirty = true;
+        foreach (int itemId in new[] { I铁矿, I铜矿, I石矿, I煤矿 }) {
+            DiscoverContent($"mineral-basic:{itemId}", itemId, false);
         }
+        DiscoverContent($"interaction-culture:{IFE高级交互塔}", IFE通用原胚, false);
     }
 
     /// <summary>
@@ -242,6 +223,7 @@ public static class ResearchManager {
         lock (Sync) {
             GrowthTechnologyManager.SetStackProgressionMode(false);
             belongsToGeneration3 = false;
+            completionDisqualified = true;
             snapshotDirty = true;
         }
     }
@@ -250,10 +232,23 @@ public static class ResearchManager {
     /// 判断指定物品是否已有待解析具体内容。Frag 和高级塔仍保留各自的特殊消耗路径。
     /// </summary>
     public static bool CanAnalyzeDirection(int itemId) {
-        if (itemId == IFE残片 || FractionatorTowerCatalog.IsAdvancedTowerItem(itemId)) {
+        if (itemId == IFE残片 || itemId == IFE记忆源点
+            || SacrificeUnlocked && FractionatorTowerCatalog.IsAdvancedTowerItem(itemId)) {
             return true;
         }
         return Volatile.Read(ref analysisRuntimeSnapshot).CandidatesByItemId.ContainsKey(itemId);
+    }
+
+    /// <summary>返回解析塔对当前输入的工作模式，不公开未知内容。</summary>
+    /// <param name="itemId">当前输入。</param>
+    /// <returns>模式文案。</returns>
+    public static string GetAnalysisMode(int itemId) {
+        if (itemId == IFE残片) { return "广播解析"; }
+        if (Volatile.Read(ref analysisRuntimeSnapshot).CandidatesByItemId.ContainsKey(itemId)) { return "解析"; }
+        if (SacrificeUnlocked && (itemId == IFE记忆源点 || FractionatorTowerCatalog.IsAdvancedTowerItem(itemId))) {
+            return "献祭";
+        }
+        return "待机";
     }
 
     /// <summary>
@@ -279,15 +274,12 @@ public static class ResearchManager {
     /// </summary>
     public static string[] GetPotentialContentIds() {
         lock (Sync) {
-            int currentTier = UnlockedContents
-                .Where(ContentDefinitions.ContainsKey)
-                .Select(contentId => ContentDefinitions[contentId].Tier)
-                .DefaultIfEmpty(0)
-                .Max();
             return ContentDefinitions.Values
-                .Where(definition => !UnlockedContents.Contains(definition.Id)
+                .Where(definition => !definition.Id.StartsWith("technology:", StringComparison.Ordinal)
+                                     && !definition.Id.StartsWith("stage:", StringComparison.Ordinal)
+                                     && !UnlockedContents.Contains(definition.Id)
                                      && !ExploredContents.Contains(definition.Id)
-                                     && definition.Tier <= currentTier + 1
+                                     && definition.Tier <= CurrentMatrixStage
                                      && IsContentExplorableUnsafe(definition.Id))
                 .OrderBy(definition => definition.Tier)
                 .ThenBy(definition => definition.Id, StringComparer.Ordinal)
@@ -337,7 +329,7 @@ public static class ResearchManager {
             PublishAnalysisRuntimeSnapshotUnsafe();
             if (notify) {
                 QueueNotification(string.Format(
-                    "探索发现研究内容：{0}".Translate(), definition.DisplayName));
+                    "发现了以{0}为样本的记录".Translate(), GetItemName(itemId)));
             }
             return true;
         }
@@ -449,75 +441,56 @@ public static class ResearchManager {
     }
 
     /// <summary>
-    /// 结算一批基础解析塔输入。高级塔在没有可研究内容时转为献祭，并返回 Memory 产量。
+    /// 结算基础解析塔输入，返回实际消耗数；普通样本仅在解析成功判定后消耗。
     /// </summary>
     /// <param name="itemId">输入物品 ID。</param>
     /// <param name="count">本批输入数量。</param>
     /// <param name="seed">分馏随机种子。</param>
-    /// <param name="sacrificeOutputCount">高级塔献祭产生的 Memory 数量。</param>
-    /// <returns>该物品是否应由解析塔消耗；false 表示原样流出。</returns>
-    public static bool TryAnalyzeDirection(int itemId, int count, ref uint seed,
+    /// <param name="sacrificeOutputCount">塔体献祭产出的源点数量。</param>
+    /// <returns>实际消耗数量；其余输入应保留增产点并回流。</returns>
+    public static int ProcessAnalysisBatch(int itemId, int count, ref uint seed,
         out int sacrificeOutputCount) {
         sacrificeOutputCount = 0;
-        if (count <= 0) {
-            return false;
-        }
+        if (count <= 0) { return 0; }
 
         if (itemId == IFE残片) {
-            if (!ExplorationManager.PlanetDetectorUnlocked) {
-                return false;
-            }
+            if (!ExplorationManager.PlanetDetectorUnlocked) { return 0; }
             int pointCount = WorldviewRecipe.RollExpected(ref seed, count * 0.02d);
             if (pointCount > 0) {
-                ExplorationManager.AddExplorationPoints(pointCount, "Frag 解析");
+                ExplorationManager.AddExplorationPoints(pointCount, "残片解析");
             }
-            return true;
+            return count;
         }
+        if (itemId == IFE记忆源点) { return ProcessMemory(count, ref seed) ? count : 0; }
 
         bool advancedTower = FractionatorTowerCatalog.IsAdvancedTowerItem(itemId);
         AnalysisRuntimeSnapshot runtimeSnapshot = Volatile.Read(ref analysisRuntimeSnapshot);
         if (!runtimeSnapshot.CandidatesByItemId.ContainsKey(itemId)) {
-            if (!advancedTower) {
-                return false;
-            }
-            RecordAdvancedTowerSacrifice(itemId, count);
+            if (!advancedTower || !SacrificeUnlocked) { return 0; }
             sacrificeOutputCount = WorldviewRecipe.RollExpected(ref seed, count * 0.02d);
-            return true;
+            return count;
         }
 
         int successCount = WorldviewRecipe.RollExpected(ref seed, count * 0.02d);
-        if (successCount <= 0) {
-            return true;
-        }
-
+        if (successCount <= 0) { return 0; }
         lock (Sync) {
             string[] candidates = GetCandidateIdsUnsafe(itemId);
-            if (!EligibleDirections.Contains(itemId) || candidates.Length == 0) {
-                if (advancedTower) {
-                    RecordAdvancedTowerSacrifice(itemId, count);
-                    sacrificeOutputCount = successCount;
-                }
-                return true;
-            }
+            if (!EligibleDirections.Contains(itemId) || candidates.Length == 0) { return 0; }
 
             int progress = GetDirectionProgressUnsafe(itemId);
             int remainingSuccesses = successCount;
             while (remainingSuccesses > 0) {
                 candidates = GetCandidateIdsUnsafe(itemId);
-                if (candidates.Length == 0) {
-                    progress = 0;
-                    break;
-                }
+                if (candidates.Length == 0) { progress = 0; break; }
 
-                int progressPerSuccess = AreAllTraitContents(candidates) ? 100 : 500;
+                // 预算按真正消耗的样本计；2% 判定只决定推进时机，不再吞掉失败输入。
+                double progressPerSuccess = 10000d / candidates.Average(GetExpectedSampleCount);
                 int successesToComplete = Math.Max(1,
-                    (10000 - progress + progressPerSuccess - 1) / progressPerSuccess);
+                    (int)Math.Ceiling((10000 - progress) / progressPerSuccess));
                 int appliedSuccesses = Math.Min(remainingSuccesses, successesToComplete);
-                progress += appliedSuccesses * progressPerSuccess;
+                progress += WorldviewRecipe.RollExpected(ref seed, appliedSuccesses * progressPerSuccess);
                 remainingSuccesses -= appliedSuccesses;
-                if (progress < 10000) {
-                    break;
-                }
+                if (progress < 10000) { break; }
 
                 int selectedIndex = Math.Min(candidates.Length - 1,
                     (int)(GetRandDouble(ref seed) * candidates.Length));
@@ -525,10 +498,9 @@ public static class ResearchManager {
                 progress -= 10000;
             }
             DirectionProgress[itemId] = GetCandidateIdsUnsafe(itemId).Length == 0
-                ? 0
-                : Math.Max(0, Math.Min(9999, progress));
+                ? 0 : Math.Max(0, Math.Min(9999, progress));
             snapshotDirty = true;
-            return true;
+            return successCount - remainingSuccesses;
         }
     }
 
@@ -584,28 +556,23 @@ public static class ResearchManager {
     }
 
     /// <summary>
-    /// 获取最近一分钟献祭为同种高级塔提供的成功率加成。
+    /// 获取上一完整分钟Memory献祭为指定高级塔提供的成功率增益。
     /// </summary>
-    public static float GetAdvancedTowerSacrificeBoost(int towerItemId) {
-        SacrificeRateState state = GetSacrificeRateState(towerItemId);
-        return state == null ? 0f : Volatile.Read(ref state.SuccessBoost);
-    }
+    /// <param name="towerItemId">高级塔物品身份。</param>
+    /// <returns>三类高级塔共享的相对增益，其他物品为零。</returns>
+    public static float GetAdvancedTowerSacrificeBoost(int towerItemId) =>
+        FractionatorTowerCatalog.IsAdvancedTowerItem(towerItemId) ? MemorySuccessBoost : 0f;
 
     /// <summary>
-    /// 每秒按最近 60 秒实际献祭数量更新三类高级塔的成功率加成。
+    /// 每秒维护阶段资格，在完整分钟边界发布上一窗口的Memory献祭增益。
     /// </summary>
     public static void UpdateSacrificeBoosts(long gameTick) {
         if (NebulaMultiplayerModAPI.IsClient) {
             return;
         }
-        long currentSecond = Math.Max(0L, gameTick / 60L);
-        bool changed = UpdateSacrificeBoost(AdvancedMineralSacrificeRate, currentSecond);
-        changed |= UpdateSacrificeBoost(AdvancedInteractionSacrificeRate, currentSecond);
-        changed |= UpdateSacrificeBoost(AdvancedConversionSacrificeRate, currentSecond);
-        if (changed) {
-            lock (Sync) {
-                snapshotDirty = true;
-            }
+        RefreshStageResearch();
+        lock (Sync) {
+            AdvanceMemoryMinute(gameTick / 3600L);
         }
     }
 
@@ -647,6 +614,9 @@ public static class ResearchManager {
     public static void Import(BinaryReader r) {
         lock (Sync) {
             belongsToGeneration3 = false;
+            bool localDisqualified = NebulaMultiplayerModAPI.IsClient && completionDisqualified;
+            // 没有资格记录的同格式存档不能证明未使用沙盒；仅保留玩法数据，不补授本地完成标记。
+            completionDisqualified = true;
             EligibleDirections.Clear();
             ExploredContents.Clear();
             ExploredContentDirections.Clear();
@@ -657,15 +627,14 @@ public static class ResearchManager {
             AdvancedTowerInventoryMilestones.Clear();
             discoveredContentCount = 0;
             pendingSignalAccelerations = 0;
-            ResetSacrificeRates();
-            bool importedExploredContents = false;
+            ResetProgression();
             r.ReadBlocks(
                 ("Generation", br => belongsToGeneration3 = br.ReadBoolean()),
+                ("CompletionDisqualified", br => completionDisqualified = br.ReadBoolean() || localDisqualified),
                 ("StackProgressionMode", br =>
                     GrowthTechnologyManager.SetStackProgressionMode(br.ReadBoolean())),
                 ("EligibleDirections", br => ReadIntSet(br, EligibleDirections)),
                 ("ExploredContents", br => {
-                    importedExploredContents = true;
                     ReadStringIntDictionary(br, ExploredContentDirections);
                     ExploredContents.Clear();
                     ExploredContents.UnionWith(ExploredContentDirections.Keys);
@@ -676,7 +645,7 @@ public static class ResearchManager {
                 ("AcquiredAdvancedTowers", br => ReadIntSet(br, AcquiredAdvancedTowers)),
                 ("AdvancedTowerInventoryMilestones", br =>
                     ReadIntSet(br, AdvancedTowerInventoryMilestones)),
-                ("SacrificeRates", ReadSacrificeRates),
+                ("Progression", ReadProgression),
                 ("DiscoveredContentCount", br => discoveredContentCount = Math.Max(0, br.ReadInt32()))
             );
             foreach (string contentId in UnlockedContents.ToArray()) {
@@ -709,27 +678,6 @@ public static class ResearchManager {
                 }
                 DirectionProgress[itemId] = Math.Max(0, Math.Min(9999, DirectionProgress[itemId]));
             }
-            if (!importedExploredContents) {
-                foreach (int towerItemId in AdvancedTowerInventoryMilestones) {
-                    EligibleDirections.Add(towerItemId);
-                }
-                foreach (int itemId in EligibleDirections.OrderBy(itemId => itemId).ToArray()) {
-                    if (!DirectionPools.TryGetValue(itemId, out List<string> pool)) {
-                        continue;
-                    }
-                    foreach (string contentId in pool) {
-                        if (IsExplorationDirectionUnsafe(contentId, itemId)
-                            && !UnlockedContents.Contains(contentId)
-                            && ExploredContents.Add(contentId)) {
-                            ExploredContentDirections[contentId] = itemId;
-                        }
-                    }
-                }
-            }
-            GrowthTechnologyManager.MigrateLegacyTechnologyStates();
-            if (!importedExploredContents) {
-                MigrateLegacyTechnologyDiscoveriesUnsafe();
-            }
             foreach (KeyValuePair<string, int> pair in ExploredContentDirections) {
                 EligibleDirections.Add(pair.Value);
             }
@@ -750,6 +698,7 @@ public static class ResearchManager {
         lock (Sync) {
             w.WriteBlocks(
                 ("Generation", bw => bw.Write(belongsToGeneration3)),
+                ("CompletionDisqualified", bw => bw.Write(completionDisqualified)),
                 ("StackProgressionMode", bw =>
                     bw.Write(GrowthTechnologyManager.UsesExperiencedStackProgression)),
                 ("EligibleDirections", bw => WriteIntSet(bw, EligibleDirections)),
@@ -761,7 +710,7 @@ public static class ResearchManager {
                 ("AcquiredAdvancedTowers", bw => WriteIntSet(bw, AcquiredAdvancedTowers)),
                 ("AdvancedTowerInventoryMilestones", bw =>
                     WriteIntSet(bw, AdvancedTowerInventoryMilestones)),
-                ("SacrificeRates", WriteSacrificeRates),
+                ("Progression", WriteProgression),
                 ("DiscoveredContentCount", bw => bw.Write(discoveredContentCount))
             );
         }
@@ -781,11 +730,12 @@ public static class ResearchManager {
             BootstrapTowerGrants.Clear();
             AcquiredAdvancedTowers.Clear();
             AdvancedTowerInventoryMilestones.Clear();
-            ResetSacrificeRates();
+            ResetProgression();
             PendingNotifications.Clear();
             discoveredContentCount = 0;
             pendingSignalAccelerations = 0;
             belongsToGeneration3 = false;
+            completionDisqualified = false;
             snapshotDirty = false;
             RebuildRemainingDirectionPoolsUnsafe();
             PublishAnalysisRuntimeSnapshotUnsafe();
@@ -863,26 +813,6 @@ public static class ResearchManager {
                      .Where(itemId => GetRemainingDirectionCountUnsafe(itemId) == 0)
                      .ToArray()) {
             DirectionProgress.Remove(itemId);
-        }
-    }
-
-    private static void MigrateLegacyTechnologyDiscoveriesUnsafe() {
-        GameHistoryData history = GameMain.history;
-        if (history == null || LDB.techs?.dataArray == null) {
-            return;
-        }
-
-        foreach (TechProto tech in LDB.techs.dataArray) {
-            if (tech == null
-                || !GrowthTechnologyManager.IsTechnologyNodeActive(tech.ID)
-                || !GrowthTechnologyManager.TryGetTechnologyContentId(tech.ID, out string contentId)
-                || !history.techStates.TryGetValue(tech.ID, out TechState state)
-                || !state.unlocked && state.hashUploaded <= 0L && state.curLevel <= tech.Level) {
-                continue;
-            }
-            UnlockedContents.Add(contentId);
-            ExploredContents.Remove(contentId);
-            ExploredContentDirections.Remove(contentId);
         }
     }
 
@@ -968,27 +898,18 @@ public static class ResearchManager {
         }
         return contentId switch {
             AdvancedMineralTraitId =>
-                AdvancedTowerInventoryMilestones.Contains(IFE高级矿物塔),
+                SacrificeUnlocked && AdvancedTowerInventoryMilestones.Contains(IFE高级矿物塔),
             AdvancedInteractionTraitId =>
-                AdvancedTowerInventoryMilestones.Contains(IFE高级交互塔),
+                SacrificeUnlocked && AdvancedTowerInventoryMilestones.Contains(IFE高级交互塔),
             AdvancedConversionTraitId =>
-                AdvancedTowerInventoryMilestones.Contains(IFE高级转化塔),
+                SacrificeUnlocked && AdvancedTowerInventoryMilestones.Contains(IFE高级转化塔),
             _ => ContentDirections[contentId].Any(itemId =>
                 IsExplorationDirectionUnsafe(contentId, itemId)),
         };
     }
 
-    private static bool IsExplorationDirectionUnsafe(string contentId, int itemId) {
-        if (!FractionatorTowerCatalog.IsAdvancedTowerItem(itemId)) {
-            return true;
-        }
-        return itemId switch {
-            IFE高级矿物塔 => contentId == AdvancedMineralTraitId,
-            IFE高级交互塔 => contentId == AdvancedInteractionTraitId,
-            IFE高级转化塔 => contentId == AdvancedConversionTraitId,
-            _ => false,
-        };
-    }
+    private static bool IsExplorationDirectionUnsafe(string contentId, int itemId) =>
+        ContentDirections.TryGetValue(contentId, out List<int> directions) && directions.Contains(itemId);
 
     private static void AddToPool(int itemId, string contentId) {
         if (itemId <= 0) {
@@ -1045,19 +966,7 @@ public static class ResearchManager {
             new AnalysisRuntimeSnapshot(candidatesByItemId, [.. UnlockedContents]));
     }
 
-    private static int GetRecipeTier(WorldviewRecipe recipe) {
-        if (recipe.Kind == WorldviewRecipeKind.BasicMineral) {
-            return 0;
-        }
-        if (recipe.StableId == $"interaction-culture:{IFE高级交互塔}") {
-            return 1;
-        }
-        if (recipe.Kind is WorldviewRecipeKind.TowerCultivation or WorldviewRecipeKind.RareCatalysis
-            or WorldviewRecipeKind.Replacement) {
-            return 2;
-        }
-        return 3;
-    }
+    private static int GetRecipeTier(WorldviewRecipe recipe) => recipe.ResearchStage;
 
     private static int GetRelatedCommonResource(int itemId) {
         return itemId switch {
@@ -1073,111 +982,6 @@ public static class ResearchManager {
             I重氢 => I氢,
             _ => I石矿,
         };
-    }
-
-    private static SacrificeRateState GetSacrificeRateState(int towerItemId) => towerItemId switch {
-        IFE高级矿物塔 => AdvancedMineralSacrificeRate,
-        IFE高级交互塔 => AdvancedInteractionSacrificeRate,
-        IFE高级转化塔 => AdvancedConversionSacrificeRate,
-        _ => null,
-    };
-
-    private static void RecordAdvancedTowerSacrifice(int towerItemId, int count) {
-        if (NebulaMultiplayerModAPI.IsClient) {
-            return;
-        }
-        SacrificeRateState state = GetSacrificeRateState(towerItemId);
-        if (state == null || count <= 0) {
-            return;
-        }
-        long currentSecond = Math.Max(0L, GameMain.gameTick / 60L);
-        int bucketIndex = (int)(currentSecond % SacrificeWindowSeconds);
-        lock (state.Sync) {
-            if (state.BucketSeconds[bucketIndex] != currentSecond) {
-                state.BucketSeconds[bucketIndex] = currentSecond;
-                state.BucketCounts[bucketIndex] = 0L;
-            }
-            long currentCount = state.BucketCounts[bucketIndex];
-            state.BucketCounts[bucketIndex] = currentCount > long.MaxValue - count
-                ? long.MaxValue
-                : currentCount + count;
-        }
-    }
-
-    private static bool UpdateSacrificeBoost(SacrificeRateState state, long currentSecond) {
-        long windowStart = Math.Max(0L, currentSecond - SacrificeWindowSeconds + 1L);
-        long totalCount = 0L;
-        lock (state.Sync) {
-            for (int i = 0; i < SacrificeWindowSeconds; i++) {
-                long bucketSecond = state.BucketSeconds[i];
-                if (bucketSecond < windowStart || bucketSecond > currentSecond) {
-                    continue;
-                }
-                long bucketCount = Math.Max(0L, state.BucketCounts[i]);
-                totalCount = totalCount > long.MaxValue - bucketCount
-                    ? long.MaxValue
-                    : totalCount + bucketCount;
-            }
-        }
-        double sacrificesPerSecond = totalCount / (double)SacrificeWindowSeconds;
-        double steps = Math.Floor(Math.Sqrt(sacrificesPerSecond) * 2d + 1e-9d);
-        float updatedBoost = Math.Min(MaximumSacrificeBoost, (float)(steps * SacrificeBoostStep));
-        float previousBoost = Volatile.Read(ref state.SuccessBoost);
-        Volatile.Write(ref state.SuccessBoost, updatedBoost);
-        return Math.Abs(previousBoost - updatedBoost) > 0.0001f;
-    }
-
-    private static void WriteSacrificeRates(BinaryWriter writer) {
-        WriteSacrificeRate(writer, AdvancedMineralSacrificeRate);
-        WriteSacrificeRate(writer, AdvancedInteractionSacrificeRate);
-        WriteSacrificeRate(writer, AdvancedConversionSacrificeRate);
-    }
-
-    private static void WriteSacrificeRate(BinaryWriter writer, SacrificeRateState state) {
-        lock (state.Sync) {
-            writer.Write(Volatile.Read(ref state.SuccessBoost));
-            for (int i = 0; i < SacrificeWindowSeconds; i++) {
-                writer.Write(state.BucketSeconds[i]);
-                writer.Write(state.BucketCounts[i]);
-            }
-        }
-    }
-
-    private static void ReadSacrificeRates(BinaryReader reader) {
-        ReadSacrificeRate(reader, AdvancedMineralSacrificeRate);
-        ReadSacrificeRate(reader, AdvancedInteractionSacrificeRate);
-        ReadSacrificeRate(reader, AdvancedConversionSacrificeRate);
-    }
-
-    private static void ReadSacrificeRate(BinaryReader reader, SacrificeRateState state) {
-        lock (state.Sync) {
-            float successBoost = reader.ReadSingle();
-            state.SuccessBoost = float.IsNaN(successBoost) || float.IsInfinity(successBoost)
-                ? 0f
-                : Math.Max(0f, Math.Min(MaximumSacrificeBoost, successBoost));
-            for (int i = 0; i < SacrificeWindowSeconds; i++) {
-                long bucketSecond = reader.ReadInt64();
-                long bucketCount = reader.ReadInt64();
-                state.BucketSeconds[i] = bucketSecond < 0L ? long.MinValue : bucketSecond;
-                state.BucketCounts[i] = Math.Max(0L, bucketCount);
-            }
-        }
-    }
-
-    private static void ResetSacrificeRates() {
-        ResetSacrificeRate(AdvancedMineralSacrificeRate);
-        ResetSacrificeRate(AdvancedInteractionSacrificeRate);
-        ResetSacrificeRate(AdvancedConversionSacrificeRate);
-    }
-
-    private static void ResetSacrificeRate(SacrificeRateState state) {
-        lock (state.Sync) {
-            for (int i = 0; i < SacrificeWindowSeconds; i++) {
-                state.BucketSeconds[i] = long.MinValue;
-                state.BucketCounts[i] = 0L;
-            }
-            Volatile.Write(ref state.SuccessBoost, 0f);
-        }
     }
 
     private static string GetItemName(int itemId) => LDB.items.Select(itemId)?.name ?? itemId.ToString();

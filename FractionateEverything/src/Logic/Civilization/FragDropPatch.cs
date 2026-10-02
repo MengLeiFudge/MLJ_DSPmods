@@ -1,4 +1,4 @@
-using FE.Compatibility.Nebula;
+﻿using FE.Compatibility.Nebula;
 using HarmonyLib;
 using UnityEngine;
 using static FE.Utils.Utils;
@@ -29,8 +29,10 @@ public static class FragDropPatch {
         double fragProbability = BaseFragDropProbability
                                  * (1d + GrowthTechnologyManager.ExplorationLevel * 0.2d);
         TryDropItem(__instance.gameData, trashSystem, ref enemyData, IFE残片, fragProbability);
-        TryDropItem(__instance.gameData, trashSystem, ref enemyData, IFE通用原胚,
-            EmbryoDropProbability);
+        if (ExplorationManager.HasProducedFirstMatrix()) {
+            TryDropItem(__instance.gameData, trashSystem, ref enemyData, IFE通用原胚,
+                EmbryoDropProbability);
+        }
     }
 
     private static void TryDropItem(GameData gameData, TrashSystem trashSystem, ref EnemyData enemyData,

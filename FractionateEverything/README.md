@@ -5,174 +5,124 @@
 
 # 万物分馏 Fractionate Everything
 
-万物分馏将分馏扩展为一套需要探索、解析和供养的古文明生命工业。首次生产电磁矩阵后，你会从出生星上的首个遗物开始，建立宇宙通用的分馏亚空间，在实地信号中发现具体研究内容，并用五种分馏塔搭建普通资源增殖、珍奇催化、生命塔繁育和工业置换产线。
+万物分馏是一条需要探索、解析和供养的古文明生命工业路线。从母星遗迹和基础矿物复制起步，逐步建立珍奇催化、生命塔培育、原胚繁育与工业置换产线。
 
-Fractionate Everything turns fractionation into an old-civilization living industry built around exploration, analysis, and sustained automation. After producing your first Electromagnetic Matrix, recover the first relic, establish a galaxy-wide subspace inventory, discover concrete research contents in the field, and operate five specialized fractionators.
+Fractionate Everything is a living-industry progression built around exploration, sample analysis and sustained automation. Begin with a relic on your home world, then develop five specialized fractionators and a galaxy-wide subspace inventory.
 
-## 主要内容 Features
+## 从哪里开始 Getting Started
 
-### 五种分馏塔 Five Fractionators
+开局的G手册会出现“神秘信号？”。HUD显示附近最强信号，沿读数增强的方向寻找，达到100%就进入回收范围；岩石星球需先让伊卡洛斯实际落地。回收结果会打开确认弹窗，FE不会自动导航或控制机甲。首遗物提供：
 
-- **基础矿物塔 Basic Mineral Tower**：自动识别普通自然资源。每轮有机会消耗 1 件并产出 2 件同种物品；失败物继续流出。
-- **基础解析塔 Basic Analysis Tower**：消耗已经探索到具体内容的物品，推进该物品唯一的共享解析槽；槽满时从已探索、未解析的内容中选出一项。没有待解析内容的普通物品会原样流出，高级塔则改为献祭。
-- **高级矿物塔 Advanced Mineral Tower**：以少量珍奇矿物作催化物，把普通资源增殖为对应珍奇资源。
-- **高级交互塔 Advanced Interaction Tower**：将通用原胚培育成三类高级塔，也能用高级塔模板繁育更多通用原胚。
-- **高级转化塔 Advanced Conversion Tower**：重构燃料棒、采矿机和熔炉，并回收被替换的部件。
+- 基础矿物塔4座、基础解析塔2座及其制造配方。
+- 铁、铜、石、煤四条解析线索，以及一条原胚培育线索。
+- 分馏亚空间和主面板访问。
 
-两座基础塔可在制造台制作、使用电网，并可通过正面端口向亚空间上传物品。三座高级塔需要先发现配方，再由通用原胚培育；高级塔不耗电，而是把六种矩阵作为食物。
+普通矿物配方需要先解析，不直接解锁。首次实际生产电磁矩阵后，新的主线才会带来高级交互塔2座、原胚30个和源点30份。先给高级塔供养矩阵，再着手培育。
 
-Basic towers are craftable, grid-powered, single-input machines. Advanced towers are cultivated from Universal Tower Embryos, accept multiple inputs, and consume science matrices as nutrition instead of electricity.
+Recover the starting relic for four Basic Mineral Towers, two Basic Analysis Towers and sample clues. Analyse the ordinary minerals before replicating them. Producing the first Electromagnetic Matrix opens the story supply of living towers, embryos and Memory.
 
-### 生命塔供养 Living-Tower Nutrition
+## 五种塔 Five Fractionators
 
-高级塔必须先在窗口中选择一张已发现配方。所有输入口都可以接收反应物或矩阵，塔会保留两轮底料，把多余或无关物品送回流动输出。
+| 塔型 | 用途 |
+| --- | --- |
+| 基础矿物塔 / Basic Mineral | 自动匹配已解析普通矿物配方，成功时同物1变2 |
+| 基础解析塔 / Basic Analysis | 概率消耗线索指定样本，推进共享解析进度；失败样本回流 |
+| 高级矿物塔 / Advanced Mineral | 使用普通矿物与珍奇催化剂增殖资源 |
+| 高级交互塔 / Advanced Interaction | 培育高级塔，以塔体模板繁育原胚 |
+| 高级转化塔 / Advanced Conversion | 置换指定燃料或机器，并回收部分部件 |
 
-六种矩阵每件分别提供 `1 / 2 / 4 / 8 / 16 / 32` 营养，速度档依次为 `1.0 / 1.1 / 1.2 / 1.3 / 1.4 / 1.5`。每个等效加工轮消耗 0.02 营养，待机每秒消耗 0.002 营养；营养充足会修复耐久。完全断粮后，塔会按当前耐久比例越来越慢地继续加工，同时持续损失耐久，直至损毁。建造无人机不能维修生命塔，损毁会丢失塔内缓存，主动拆除则返还缓存物品。
+基础塔独立制造、接入电网，正面接口还能上传到亚空间。高级塔在窗口选择已解析配方，使用矩阵作为营养。正常产物和失败物等待当前集装规格输出；主消耗物不足一轮后释放尾料，剩余催化剂不会让尾料永久滞留。
 
-正常运行时，产物和失败物会等待凑满当前全局堆叠后输出；切换配方后的无关物会优先排空，输入全部用完后也会释放不足整堆的尾料。
+矩阵越高级，每件营养越多，处理速度也越高。生命塔工作和待机都会消耗营养；断粮后逐渐损失耐久，充分供养可以恢复。无人机不能维修生命塔，主动拆除返还缓存，损毁则丢失缓存。每类缓存按20堆计算，实际件数随全局堆叠变化。
 
-Advanced towers keep real input, food, product, and passthrough buffers. Their six matrix speed tiers range from 1.0x to 1.5x; each equivalent processing round consumes 0.02 nutrition and idling consumes 0.002 per second. A starving tower keeps processing at a speed set by its remaining durability while taking damage; dismantling returns cached items, while destruction does not.
+Basic towers use electricity. Advanced towers consume matrices as nutrition and must be kept fed. Dismantling returns cached items; destruction does not. Buffers hold twenty current cargo stacks.
 
-### 解析研究 Analysis Research
+## 研究与源点 Research and Memory
 
-探索点每次会发现一项**具体内容**，并确定承载它的解析物品。把该物品送进基础解析塔后，会推进这个物品唯一的共享进度槽；槽满时，只从该物品已经探索且尚未解析的内容中选择。
+探索只告诉你需要什么样本，结果的名称与用途在解析完成前保持未知。面板只列已知且未完成的样本，完成后移出。同一样本共享进度，完成时从已探索未完成的记录中取得一项。解析成功才消耗样本，大多数样本会完整回流，可以用传送带连接成循环。培育使用原胚，反向繁育使用对应塔体。
 
-- 只有一个候选时结果确定；多个候选同时等待时才随机选择。
-- 同一内容可能在目录中关联多个物品，但一次探索只指定一个承载物品，不会一次开放整个池。
-- 配方或塔特质解析完成后立即可用；科技方向解析完成后，整条同名等级行同时显现，再正常消耗矩阵研究。
-- Memory 承载普通科技方向。三类高级塔只承载各自的特质。
-- 同类高级塔在亚空间库存中首次达到 1000 座后，对应特质才可进入探索候选；之后仍须探索和解析。高级塔没有待解析特质时，基础解析塔会改为献祭，并以每件 2% 的成功率从正面产出 Memory。
-- 最近 60 秒内同类高级塔的实际献祭速率会提高该类高级塔的配方成功率：按 5% 分档，每秒更新，最高 `+75%`；三类塔分别计算。
+源点每个矩阵阶段恢复一次成长科技资格，随后仍需用矩阵逐项研究。物流科技则在原版物流资格之后，通过回收远古接口恢复。
 
-文明研究页会在顶部显示完整研究目录的“已探索/已解析”数量和进度，左侧列出承载物品的真实共享槽，右侧列出科技与特质档案；尚未探索的档案只显示问号。全部稳定配方恢复到独立“配方图鉴”页面，按类别列出完整目录和发现进度，未发现配方不会提前泄露名称、输入或产物。
+同种高级塔亚空间库存首次达到1000，会让对应特质线索有机会出现；首次千塔还会出现献祭主线。回收后，解析塔在没有待解析内容时才献祭塔体，以2%概率产源点。
 
-Each signal reveals one concrete result and its carrier item. Every item has one shared analysis slot; filling it resolves one explored pending result. Technology directions reveal an entire upgrade row, but every level still requires normal matrix research. Results are globally unique, and Advanced-Tower traits require both the 1,000-tower exploration threshold and a later concrete discovery.
+当前可恢复阶段全部完成后，可继续向解析塔投入源点。本完整分钟的投入提高下一分钟三类高级塔的成功率：相对增益为 `min(75%, 5%×floor(sqrt(M)))`，M是本分钟实际献祭的源点。增益每分钟替换，不永久累积；源点生产变体独立消耗，不会被自动截流。
 
-### 遗物探索 Relic Exploration
+Each sample has one shared probabilistic analysis slot. Memory restores growth qualifications once per matrix stage. After the sacrifice story is unlocked, excess tower samples can produce Memory; Memory offerings then boost all advanced towers during the next complete minute.
 
-首次生产电磁矩阵会触发一次强烈脉冲，解锁遗物探测器，并在出生星生成“关键信号1”。左侧 HUD 会持续显示无方向的遗物强度；FE 不会替你启动导航、设置位置标记或控制机甲。找到并回收首遗物后获得：
+## 遗迹与广播 Exploration
 
-- 基础矿物塔 x10
-- 基础解析塔 x10
-- 通用原胚 x20
-- 石矿与铁矿基础复制配方
-- 分馏亚空间和主面板访问能力
+静默遗迹位置和质量固定，红糖、黄糖会开放更深层的地点；已回收点不刷新。母星岩石星共有40处，出生星系其他岩石星每颗30处，外星系每颗24处，气巨仅少量悬空点。统计只覆盖当前星球和星系的已开放静默点。
 
-取得曲速飞行能力后，出生星系另一颗星球会出现第二个关键信号并直接公开星球名称；回收后解锁星球探测器，普通未知广播才会开始由定时网络或 Frag 产生。
+首遗物后普通广播持续产生，初始周期10分钟，探索科技逐渐缩短。广播质量取决于生成时的矩阵阶段，此后不升档。蓝红阶段集中在母星，黄糖扩展到本星系，具备曲速能力后再进入邻近星系。
 
-普通广播统一命名为“信号{编号}”，只给出量化后的百分比强度，不公开目标星系、星球、方向、距离、内容或坐标。星球探测器用于寻找宿主星球，进入目标星球后固定为 100%；遗物探测器在目标星球外为 0%，进入后才用于寻找具体点位。两个读数共用“探索信号增幅”的 `20% / 10% / 5% / 2% / 1% / 0.5%` 精度成长。
+HUD只显示180米局部范围内的最高强度，使用白字黑边，在科技树等全屏界面隐藏。岩石普通遗迹18米、关键地点30米内落地后自动回收；气巨为40米悬空范围。实际奖励保存在地点档案。已收到的广播和主线可在信号追踪页查看，隐藏静默点不会提前列出。探索成长五级后可主动标注位置，但不会启动移动。
 
-左侧 HUD 第 1 行固定当前关键信号，另外 4 行由普通信号占用；它只使用接近原版目标列表的纯文字，不带黑色背景或发光字体。新信号只在有空槽时自动固定，满槽时不会替换；全部信号仍保留在探索面板，可手动固定或取消。成长科技最终级会在面板中开放“标注位置”，由玩家点击后复用原版目的地标记和指引线，但不会创建移动命令。
+首个矩阵生产后，亚空间原胚或高级交互塔不足300时，资源点有机会补给对应物品。原胚也可通过黑雾战斗补充；残片可送入解析塔增加广播。战斗不是主线门槛。
 
-探索点使用球形认领范围，固态星球的点贴近地表，气态巨星的点位于外层空间，且所有信号都不会过期。点位可能提供一项具体配方、塔特质或科技方向，也可能提供宿主星球实际拥有的资源或通用原胚；研究内容和承载物品只在抵达后揭示。通用原胚固定占资源奖励的 10%；其余权重为火山/沙漠 `80% 矿脉 + 10% 流体`、海洋 `55% + 35%`、冰原 `60% + 30%`、气态巨星 `90% 气体`。缺失资源类别的权重转给该星球其他实际资源，原胚权重不变。奖励直接进入亚空间，并允许暂时超过常规容量。
+Silent relics have fixed locations and open in layers. Dynamic broadcasts continue indefinitely and keep the quality rolled when generated. The HUD shows the strongest nearby signal; recovered rewards are recorded without rerolling. Combat is optional.
 
-The first Electromagnetic Matrix unlocks a directionless Relic Detector and creates Key Signal 1 on the birth planet; FE never starts navigation or controls the mecha. Warp capability later reveals Key Signal 2 on another planet in the birth system, and recovering it unlocks the Planet Detector. Ordinary broadcasts reveal only quantized planet and relic strength percentages. The left HUD keeps one mandatory key signal plus four player-pinned ordinary signals. At the final amplification level, players may explicitly create a vanilla location marker without issuing any movement command.
+## 亚空间与成长 Subspace and Progression
 
-### 黑雾补给 Dark-Fog Drops
+亚空间是跨星球共享库存，每种物品独立计容量。初始10组，前五次扩容依次达到20、30、50、70、100组，白糖阶段每级增加50组，第十级为350组。普通上传满仓拒收，探索奖励可超额且仍能提取。
 
-地面和太空黑雾均有机会分别掉落 Frag 和通用原胚。星球探测器恢复后，Frag 送入基础解析塔可能生成普通广播；恢复前 Frag 会原样流出。通用原胚用于高级塔培育和繁育。
+手动存取和基础塔正面上传无额外耗能。行星/星际物流交互站自动存取，保留槽位模式、阈值、增产点、蓝图与复制粘贴；按物品价值和实际搬运量消耗站内电量。
 
-黑雾不是主线门槛。关闭战斗时，定时探索信号和资源点仍能提供完整进度与持续原胚来源。
+保留两条堆叠路线：普通路线由黄糖原版集装物流提供4堆叠，紫8、绿12、白16及20；已完整体验过的档案从蓝糖4开始，红8、黄12、紫16、绿20。全局堆叠同时影响缓存、输出和原版配方时间。白糖重复升级合并在科技树第六列，终极科技位于第七列，解锁区显示每一级增加的能力。
 
-Ground and space Dark Fog can independently drop Frag and Universal Tower Embryos. Combat accelerates progress but is never required for the complete progression.
+探索与仓储常规十级完成后，各有一条终极任务。恢复中继或空间锚点，分批明确交付2400源点，再连接最终核心；任务直接授予第十一级，无矩阵费用。终极探索持续补足五个普通广播，终极仓储解除玩法容量限制。
 
-### 分馏亚空间 Fractionation Subspace
-
-亚空间是一套全宇宙共享库存，每种物品拥有独立容量。初始容量为每种物品 10 组；亚空间扩容每级增加 10 组，最高可以研究到 10000 级。
-
-访问方式：
-
-- `Shift + F` 打开 FE 主面板，在“亚空间仓储”中手动存取。
-- 两座基础塔在正面输入、两侧不连接时上传物品；容量不足时整批拒收，不会丢货。
-- 行星和星际物流交互站自动存取，并保留槽位模式、阈值、增产点、复制粘贴和蓝图设置。
-- 高级塔与其他物品一样正常进入亚空间；同类库存首次达到 1000 座时只让对应特质进入探索候选，需要解析或献祭时再把该塔送入基础解析塔。
-
-物流交互站按物品价值与实际搬运数量消耗站内电量。能量不足时只传输可支付的数量；六级亚空间存取能效最多把耗能降低 60%。
-
-Subspace is a galaxy-wide inventory with independent per-item limits. Access it manually, upload through the front port of either basic tower, or automate transfers with Planetary and Interstellar Interaction Stations.
-
-### 确定性成长科技 Deterministic Growth
-
-两项物流交互站解锁科技位于原版科技树第一页。第二页只显示已经完成探索与解析的成长行：
-
-- **超级压缩技术**：全局堆叠提高到 20，同时按 `4 / 当前堆叠` 缩短全部原版配方耗时。普通档由原版集装物流提供 4 堆叠，再研究 8/12/16/20 四级；已玩过档研究 4/8/12/16/20 五级，不增加 24 堆叠档。
-- **亚空间扩容**：前八级逐步投入累计矩阵；第九级起只消耗宇宙矩阵，最高 10000 级，每级增加所有物品 10 组容量。
-- **亚空间存取能效**和**三类高级塔特质**：完整六级。前五级逐层累计电磁至引力矩阵，第六级只消耗宇宙矩阵。
-- **探索信号增幅**：同样为完整六级，同时缩短普通信号周期、提高 Frag 掉落并把显示精度从 20% 逐级提高到 0.5%；第六级开放玩家主动位置标注。
-
-解析一个科技方向后会同时显示整条同名等级行，但不会免费完成任何一级。每级仍按原版科技研究；行内连线只连接前一级，不从其他科技页拉出悬空长线。沙盒“一键解锁科技”沿用原版资格，可直接解锁并显示尚未解析的 FE 有限科技；普通模式仍须先完成探索解析。原版不会一键升满的长期扩容节点只在前置解锁后显示。
-
-第一次完整体验生命工业时，超级压缩技术从原版集装物流阶段接入。某个当前格式的存档取得三类高级塔并达到 20 堆叠后，未来新存档会采用更早开始的五档路线，并从首遗物获得物流补给。
-
-Planetary and Interstellar Subspace Interaction unlocks stay on the first technology page. Growth rows appear on page two only after their concrete direction is explored and analysed. Finite rows follow vanilla level-chain and cumulative-matrix conventions; Subspace Capacity continues as a white-matrix upgrade through level 10,000.
+Subspace capacity and exploration have ten regular levels followed by a quest-awarded ultimate level. Each expedition includes a 2,400-Memory delivery. Ultimate exploration replenishes five ordinary broadcasts; ultimate storage removes the gameplay capacity limit.
 
 ## 高级配方 Advanced Recipes
 
-当前高级目录刻意保持精简：
+高级配方基础成功率20%，失败主消耗物回流，催化剂只在成功轮概率消耗。目录包含珍奇增殖、三种塔的培育与繁育、两种燃料置换和采矿机/熔炉重构。
 
-- 光栅石、分形硅石、金伯利矿石、可燃冰、刺笋结晶和单极磁石催化增殖。
-- 三种高级塔的原胚培育与原胚繁育。
-- 液氢燃料棒到氘核燃料棒、氘核燃料棒到反物质燃料棒的置换回收。
-- 采矿机到大型采矿机、电弧熔炉到位面熔炉的置换重构。
+单极磁石基础配方使用多种矿物及少量单极催化，不消耗源点。白糖阶段还有独立的源点简化变体；两条路线可以并存。
 
-所有高级配方的基础成功率都是 20%，再乘以同类高级塔最近一分钟献祭形成的加成。失败轮的普通反应物会从流动输出返回，催化物只在成功轮按低概率消耗。多个产物按实际积压公平输出，不会因为一种副产物量少而永久饿死。
-
-The initial advanced catalog focuses on rare-resource catalysis, tower cultivation and breeding, two fuel replacements, and two high-value machine reconstructions. Failed ordinary inputs pass through; low-consumption catalysts remain until actually consumed.
+Advanced recipes include rare-resource catalysis, tower cultivation and breeding, fuel replacement and machine reconstruction. The mineral-based monopolar-magnet recipe and its later Memory-consuming variant coexist.
 
 ## 操作 Controls
 
 | 操作 | 默认按键 |
 | --- | --- |
-| 打开/关闭 FE 主面板 | `Shift + F` |
-| 在两种主面板外壳间切换 | `Ctrl + Shift + F`，面板打开时 |
-| 查看教程 | `G` |
+| 开关主面板 | Shift + F |
+| 切换面板外壳 | Ctrl + Shift + F，面板打开时 |
+| 重读教程 | G |
 
-按键可在游戏设置中修改。主面板页面为“文明研究”“遗物探索”“配方图鉴”“亚空间仓储”“开发日记”和“杂项设置”。文明研究集中显示总体研究进度与科技/特质档案，配方图鉴显示全部配方槽位和发现进度；高级塔配方仍在原版分馏塔窗口中选择。
+面板分为指引、研究、探索、工业、手记、设置，共十七页。默认当前目标，指南随发现开放；左侧是窄单列目录，右侧是宽阅读区，点击切换内容，长文可以滚动。G手册只在关键节点提供短篇故事，具体操作请看面板指南。中文物品名为“源点”“残片”。高级塔配方在塔窗口选择，窗口区分饥饿、缺料、堵塞和集装。
 
-Controls are configurable in the game settings. Advanced recipes are selected directly in the standard fractionator window.
+Keys can be changed in the game settings. The panel has seventeen pages across six categories, starting with Current Goals and a stage-based guide.
 
-## 联机 Multiplayer
+## 联机与存档 Multiplayer and Saves
 
-万物分馏支持 Nebula。研究、探索、探测器状态、亚空间库存、高级塔反应、营养与耐久均由主机结算；中途加入玩家会收到当前状态。客户端认领探索点时，主机使用该连接对应玩家的真实宇宙坐标验证球形距离。普通信号的四个 HUD 固定槽属于各玩家本地 UI 偏好，不会互相覆盖。
+Nebula由主机结算研究、探索、交付、库存和高级塔，中途加入同步当前状态。客户端认领或交付时，主机验证玩家位置、所在星球、落地状态和剩余需求；回收结果也会在客户端显示。客户端请使用传送带提取高级塔产物。
 
-多人游戏要求主机与客户端使用相同 FE 版本。Nebula 客户端不能直接从高级塔窗口手动取出产物，请使用传送带输出。
+当前FE存档格式为13，面向新存档。联机所有玩家必须使用相同FE版本。只有正常游玩、取得三类高级塔并达到20堆叠的合格存档，才能写入“已玩过分馏3.0”标记；沙盒、用过一键解锁，以及没有资格记录的早期存档均不能新写入该标记。既有本地标记不会被重置。
 
-Nebula multiplayer is host-authoritative for research, exploration, subspace storage, and advanced-tower state. All participants must use the same FE version.
-
-## 存档兼容 Save Compatibility
-
-当前 FE 自有存档格式版本为 12，并明确兼容读取版本 11。
-
-- 版本 11 的旧物品资格池会迁移为具体内容到承载物品的映射；已经开始或完成的独立成长科技会迁移到同 ID 的原版等级链，并保持对应科技行可见。
-- FE 2.x 存档会迁移能够对应的塔、建筑、模型、配方和蓝图物理引用。
-- 2.x 的协议、成就、远古科技点、塔等级及其他 FE 自有进度不会转换为当前研究进度。
-- 过渡存档版本 10 不执行 2.x 物理迁移，也不会被解释为当前格式状态。
-- 建议升级前保留原存档备份。
-
-The current FE save format is version 12 and includes an explicit version-11 migration for research contents and technology levels. Physical references from FE 2.x are migrated where a stable counterpart exists, but removed progression systems are intentionally not converted. Keep a backup before upgrading an existing save.
+The current save format is version 13. Nebula is host-authoritative; all players must use the same FE version. Sandbox saves, saves using unlock-all and earlier saves without an eligibility record cannot grant the cross-save completion flag.
 
 ## 安装 Installation
 
-推荐使用 [r2modman](https://dsp.thunderstore.io/package/ebkr/r2modman/) 或兼容的 Thunderstore 模组管理器安装并启用 **FractionateEverything**。管理器会安装清单中的依赖，包括 BepInEx、LDBTool、DSPModSave、CommonAPI、BuildBarTool、ModFixerOne、ErrorAnalyzer 和 NebulaMultiplayerModApi。
+推荐使用 [r2modman](https://dsp.thunderstore.io/package/ebkr/r2modman/) 或兼容的Thunderstore管理器安装并启用FractionateEverything。清单已声明BepInEx、LDBTool、DSPModSave、CommonAPI、BuildBarTool、ModFixerOne、ErrorAnalyzer和NebulaMultiplayerModApi依赖。
 
-Use [r2modman](https://dsp.thunderstore.io/package/ebkr/r2modman/) or another Thunderstore-compatible manager, then install and enable **FractionateEverything**. Required dependencies are declared in the package manifest and should be installed automatically.
+Install with r2modman or another Thunderstore-compatible manager. Required dependencies are declared in the package manifest.
 
 ## 反馈 Feedback
 
-遇到错误时，请附上游戏版本、FE 版本、已启用模组列表、复现步骤和 ErrorAnalyzer 日志：
+报告问题时请附游戏版本、FE版本、模组列表、复现步骤和ErrorAnalyzer日志。
 
 - [GitHub Issues](https://github.com/MengLeiFudge/MLJ_DSPmods/issues/new)
 - [万物分馏反馈群](https://qm.qq.com/q/zzicz6j9zW)
 
-For bug reports, include the game version, FE version, enabled mods, reproduction steps, and the ErrorAnalyzer log.
+For bug reports, include the game and FE versions, enabled mods, reproduction steps and the ErrorAnalyzer log.
 
 ## 致谢 Credits
 
-- jinxOAO：FractionateUniverse 启发了按功能区分分馏塔的最初方向。
-- Awbugl：协助解决模组开发问题，FE 的部分加载与兼容路径参考了 Genesis Book。
-- Starfi5h：协助处理模组开发中的复杂兼容与错误问题。
-- soarqin：FE 2.0 的 UI 组件基础来自其封装。
-- L、飞鸿、聆汐及交流群测试玩家：长期提供实际游玩反馈、数值建议和错误报告。
+- jinxOAO：FractionateUniverse启发了按功能区分分馏塔的最初方向。
+- Awbugl：协助解决开发问题，部分加载与兼容路径参考Genesis Book。
+- Starfi5h：协助处理复杂兼容与错误问题。
+- soarqin：FE 2.0的UI组件基础来自其封装。
+- L、飞鸿、聆汐及交流群玩家：长期提供游玩反馈、数值建议和错误报告。
 - 所有使用和反馈万物分馏的玩家。
 
-Special thanks to jinxOAO, Awbugl, Starfi5h, soarqin, L, 飞鸿, 聆汐, the community testers, and everyone who has played and reported issues for Fractionate Everything.
+Special thanks to jinxOAO, Awbugl, Starfi5h, soarqin, L, 飞鸿, 聆汐, the community testers, and everyone who has played and reported issues.

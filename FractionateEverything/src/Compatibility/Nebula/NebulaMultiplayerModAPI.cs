@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.IO;
 using System.Reflection;
 using BepInEx.Bootstrap;
@@ -140,32 +141,63 @@ public static class NebulaMultiplayerModAPI {
         return true;
     }
 
-    /// <summary>
-    /// 从主机连接表读取发包玩家的宇宙坐标。
-    /// </summary>
-    public static bool TryGetAuthoritativePlayerUPosition(INebulaConnection connection,
-        out double x, out double y, out double z) {
-        x = 0d;
-        y = 0d;
-        z = 0d;
-        object network = NebulaModAPI.MultiplayerSession?.Network;
-        if (connection == null || network == null) {
-            return false;
-        }
+    /// <summary>请求主机在任务节点附近提交亚空间Memory。</summary>
+    /// <param name="markId">交付节点身份。</param>
+    /// <returns>是否发送请求。</returns>
+    public static bool RequestTaskMemory(int markId) {
+        if (!CanSendCivilizationAction()) { return false; }
+        NebulaModAPI.MultiplayerSession.Network.SendPacket(new CivilizationActionPacket {
+            actionType = CivilizationActionPacket.SubmitMemory, markId = markId,
+        });
+        return true;
+    }
 
-        PropertyInfo playersProperty = network.GetType().GetProperty("Players",
-            BindingFlags.Instance | BindingFlags.Public);
-        if (playersProperty?.GetValue(network) is not ConcurrentPlayerCollection players) {
-            return false;
+    /// <summary>广播已经结算的探索结果；此消息只负责客户端弹窗，不再执行奖励。</summary>
+    /// <param name="title">遗迹名称。</param>
+    /// <param name="text">实际回收结果。</param>
+    public static void BroadcastExplorationRecovery(string title, string text) {
+        if (NebulaModAPI.MultiplayerSession?.LocalPlayer?.IsHost == true) {
+            NebulaModAPI.MultiplayerSession.Network.SendPacket(new ExplorationRecoveryPacket { title = title, text = text });
         }
-        INebulaPlayer player = players.Get(connection);
-        IPlayerData data = player?.Data;
-        if (data == null) {
-            return false;
-        }
-        x = data.UPosition.x;
-        y = data.UPosition.y;
-        z = data.UPosition.z;
+    }
+
+    /// <summary>从连接及主机缓存的移动快照读取玩家位置、星球和落地状态。</summary>
+    /// <param name="connection">发包连接。</param>
+    /// <param name="position">宇宙位置。</param>
+    /// <param name="planetId">所在星球。</param>
+    /// <param name="grounded">最近一次移动快照是否处于地面步行状态。</param>
+    /// <returns>是否取得连接玩家数据；缺少移动状态时不允许地面回收。</returns>
+    public static bool TryGetAuthoritativePlayerState(INebulaConnection connection,
+        out VectorLF3 position, out int planetId, out bool grounded) {
+        position = default;
+        planetId = 0;
+        grounded = false;
+        object network = NebulaModAPI.MultiplayerSession?.Network;
+        if (connection == null || network == null) { return false; }
+        PropertyInfo playersProperty = network.GetType().GetProperty("Players", BindingFlags.Instance | BindingFlags.Public);
+        if (playersProperty?.GetValue(network) is not ConcurrentPlayerCollection players) { return false; }
+        IPlayerData data = players.Get(connection)?.Data;
+        if (data == null) { return false; }
+        position = new VectorLF3(data.UPosition.x, data.UPosition.y, data.UPosition.z);
+        planetId = data.LocalPlanetId;
+
+        // NebulaAPI 未公开移动状态，读取 NebulaWorld 已接收的最新快照，不采信 FE 动作包里的位置或落地声明。
+        object session = NebulaModAPI.MultiplayerSession;
+        object world = AccessTools.Property(session.GetType(), "World")?.GetValue(session);
+        MethodInfo getModels = world == null ? null : AccessTools.Method(world.GetType(), "GetRemotePlayersModels");
+        if (getModels == null) { return true; }
+        object[] arguments = [null];
+        using IDisposable scope = getModels.Invoke(world, arguments) as IDisposable;
+        if (scope == null || arguments[0] is not IDictionary models || !models.Contains(data.PlayerId)) { return true; }
+        object model = models[data.PlayerId];
+        object animator = AccessTools.Property(model.GetType(), "Animator")?.GetValue(model);
+        if (animator == null || AccessTools.Field(animator.GetType(), "packetBuffer")?.GetValue(animator) is not Array frames
+            || frames.Length == 0) { return true; }
+        object frame = frames.GetValue(frames.Length - 1);
+        object movement = AccessTools.Property(frame.GetType(), "MovementState")?.GetValue(frame);
+        object flags = AccessTools.Property(frame.GetType(), "Flags")?.GetValue(frame);
+        // Nebula PlayerMovement.EFlags.isGrounded 使用最低位，且步行状态排除下落中的飞行。
+        grounded = movement is EMovementState.Walk && flags != null && (Convert.ToByte(flags) & 1) != 0;
         return true;
     }
 
@@ -386,12 +418,34 @@ public class AdvancedFractionatorStatePacketProcessor : BasePacketProcessor<Adva
     }
 }
 
+/// <summary>主机发送的回收提示，不包含任何可由客户端执行的奖励指令。</summary>
+public sealed class ExplorationRecoveryPacket {
+    /// <summary>遗迹名称。</summary>
+    public string title { get; set; }
+    /// <summary>已经结算的结果文本。</summary>
+    public string text { get; set; }
+}
+
+/// <summary>在客户端排队显示主机的实际回收结果。</summary>
+[RegisterPacketProcessor]
+public sealed class ExplorationRecoveryPacketProcessor : BasePacketProcessor<ExplorationRecoveryPacket> {
+    /// <inheritdoc />
+    public override void ProcessPacket(ExplorationRecoveryPacket packet, INebulaConnection conn) {
+        if (!IsHost && packet != null) {
+            CivilizationModule.QueueRecoveryPopup(packet.title, packet.text);
+        }
+    }
+}
+
 /// <summary>
 /// 客户端提交给主机的文明状态变更请求。
 /// </summary>
 public class CivilizationActionPacket {
     /// <summary>客户端请求主机校验并结算探索点位。</summary>
     public const int ClaimExploration = 1;
+
+    /// <summary>显式提交终极任务所需Memory，位置与剩余需求由主机验证。</summary>
+    public const int SubmitMemory = 2;
 
     public int actionType { get; set; }
 
@@ -416,12 +470,14 @@ public class CivilizationActionPacketProcessor : BasePacketProcessor<Civilizatio
             return;
         }
 
+        if (!NebulaMultiplayerModAPI.TryGetAuthoritativePlayerState(conn,
+                out VectorLF3 position, out int planetId, out bool grounded)) { return; }
         switch (packet.actionType) {
+            case CivilizationActionPacket.SubmitMemory:
+                ExplorationManager.SubmitTaskMemory(packet.markId, position, planetId, grounded);
+                break;
             case CivilizationActionPacket.ClaimExploration:
-                if (NebulaMultiplayerModAPI.TryGetAuthoritativePlayerUPosition(conn,
-                        out double x, out double y, out double z)) {
-                    ExplorationManager.TryClaimFromClient(packet.markId, x, y, z);
-                }
+                ExplorationManager.TryClaimFromClient(packet.markId, position, planetId, grounded);
                 break;
         }
     }

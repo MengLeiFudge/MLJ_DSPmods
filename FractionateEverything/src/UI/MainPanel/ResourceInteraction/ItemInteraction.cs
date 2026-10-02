@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
+using FE.Logic.Civilization;
 using FE.UI.Controls;
 using FE.UI.Foundation.Window;
 using FE.UI.Layout;
@@ -266,8 +267,8 @@ public static class ItemInteraction {
             btnItems[row, col].gameObject.SetActive(false);
         }
 
-        _capacityText.text = string.Format("亚空间容量说明".Translate(),
-            CurrentCapacityGroups).WithColor(Gray);
+        _capacityText.text = (GrowthTechnologyManager.UltimateCapacity ? "亚空间容量：无限"
+            : string.Format("亚空间容量说明".Translate(), CurrentCapacityGroups)).WithColor(Gray);
         UpdatePagination(totalPages);
     }
 

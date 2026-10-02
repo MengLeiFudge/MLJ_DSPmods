@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using BepInEx.Configuration;
+using FE.Logic.Civilization;
 using FE.UI.Controls;
 using FE.UI.Foundation.Window;
 using FE.UI.MainPanel.Theme;
@@ -36,6 +37,26 @@ public static class DevelopmentDiary {
     private readonly struct DiaryCategory(string labelKey, DiaryFragment[] fragments) {
         public readonly string LabelKey = labelKey;
         public readonly DiaryFragment[] Fragments = fragments;
+    }
+
+    /// <summary>读取独立手记页的卡片；当前伊卡洛斯记录随主线展开。</summary>
+    /// <param name="category">0为1.x，1为2.x，2为伊卡洛斯。</param>
+    /// <returns>只读展示卡片。</returns>
+    public static IReadOnlyList<PageCard> GetCards(int category) {
+        if (category == 2) {
+            return Enumerable.Range(1, 18).Select(number => {
+                bool unlocked = number <= ExplorationManager.StoryCompleted;
+                return new PageCard { Key = number.ToString(), ItemId = IFE记忆源点,
+                    Title = unlocked ? ExplorationManager.GetStoryTitle(number) : "？？？",
+                    Status = unlocked ? "已记录" : "尚未发现",
+                    Detail = unlocked ? ExplorationManager.GetStoryNarrative(number) : "？？？" };
+            }).ToArray();
+        }
+        return diaryCategories[Math.Max(0, Math.Min(1, category))].Fragments.Select(fragment => new PageCard {
+            Key = fragment.Id, ItemId = IFE残片,
+            Title = IsUnlocked(fragment) ? fragment.Label : "？？？", Status = "历史手记",
+            Detail = IsUnlocked(fragment) ? fragment.ContentKey.Translate() : "？？？",
+        }).ToArray();
     }
 
     private static readonly DiaryCategory[] diaryCategories = BuildDiaryCategories();

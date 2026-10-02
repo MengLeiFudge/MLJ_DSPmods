@@ -14,10 +14,7 @@ public static partial class Utils {
         Register("兑换", "Exchange");
         Register("已兑换", "Exchanged");
         Register("无法兑换", "Can not exchange");
-        Register("FE存档版本不兼容标题", "Save Incompatible", "存档版本不兼容");
-        Register("FE存档版本不兼容内容",
-            "This save was made with an older FE format. Previous FE-owned progression is not imported, but legacy buildings and items are migrated when they still have a current counterpart.",
-            "此存档使用旧版 FE 格式。旧版自有进度不会导入；仍有当前对应物的旧建筑与物品会尽可能迁移。");
+
     }
 
     /// <summary>

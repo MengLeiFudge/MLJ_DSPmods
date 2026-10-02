@@ -11,7 +11,6 @@ using CommonAPI.Systems.ModLocalization;
 using crecheng.DSPModSave;
 using FE.Lifecycle;
 using FE.Compatibility;
-using FE.Compatibility.LegacySave;
 using FE.Compatibility.Nebula;
 using FE.Logic.Civilization;
 using FE.UI.Foundation.Window;
@@ -121,8 +120,6 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
                 }
                 harmony.PatchAll(type);
             }
-            // FE.Compatibility.* 被上方循环跳过；旧存档 Proto 迁移需在主实例上显式注册一次
-            harmony.PatchAll(typeof(LegacyProtoMigration));
             //在LDBTool已执行完毕所有PostAddData、EditData后，执行最终修改操作
             harmony.Patch(
                 AccessTools.Method(typeof(VFPreload), nameof(VFPreload.InvokeOnLoadWorkEnded)),
@@ -166,20 +163,12 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     public void Import(BinaryReader r) {
         FeatureSaveRegistry.IntoOtherSave();
         int version = r.ReadInt32();
-        if (version is not (11 or 12)) {
-            if (version < 11) {
-                ResearchManager.MarkLegacyGeneration();
-            }
-            // 只解析版本 11/12 的标签化存档。旧版物理 Proto 迁移由 LegacyProtoMigration 单独处理，未来版本不猜读。
+        if (version != 13) {
+            // 当前玩法使用独立格式，不转换旧版本的研究、探索或科技状态。
             if (r.BaseStream.CanSeek) {
                 r.BaseStream.Seek(0, SeekOrigin.End);
             }
-            UIMessageBox.Show(
-                "FE存档版本不兼容标题".Translate(),
-                "FE存档版本不兼容内容".Translate(),
-                "确定".Translate(),
-                UIMessageBox.WARNING,
-                null);
+            ResearchManager.MarkLegacyGeneration();
             return;
         }
         FeatureSaveRegistry.Import(r);
@@ -189,7 +178,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     /// 导出存档时执行。
     /// </summary>
     public void Export(BinaryWriter w) {
-        w.Write(12);
+        w.Write(13);
         FeatureSaveRegistry.Export(w);
     }
 

@@ -14,8 +14,21 @@ public static class TechnologyTreePatch {
     private static readonly MethodInfo IsUpgradePageTechMethod = AccessTools.Method(
         typeof(TechnologyTreePatch), nameof(IsUpgradePageTech));
 
+    /// <summary>启用沙盒工具时立即取消资格，避免短暂启用后关闭绕过按秒检查。</summary>
+    /// <param name="value">新的沙盒工具开关。</param>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(GameMain), nameof(GameMain.sandboxToolsEnabled), MethodType.Setter)]
+    private static void GameMain_SandboxToolsEnabled_Postfix(bool value) {
+        if (value && GameMain.data != null) { ResearchManager.DisqualifyCompletion(); }
+    }
+
+    /// <summary>使用原版一键解锁后，当前存档不再授予正式游玩的完成标记。</summary>
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(UITechTree), nameof(UITechTree.Do1KeyUnlock))]
+    private static void UITechTree_Do1KeyUnlock_Prefix() => ResearchManager.DisqualifyCompletion();
+
     /// <summary>
-    /// 为 FE 成长科技恢复旧版同类实现使用的专用解锁说明。
+    /// 为 FE 成长科技提供当前等级的增量说明。
     /// </summary>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(TechProto), nameof(TechProto.UnlockFunctionText))]

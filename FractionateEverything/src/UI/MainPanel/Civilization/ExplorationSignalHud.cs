@@ -9,7 +9,7 @@ using UnityEngine.UI;
 namespace FE.UI.MainPanel.Civilization;
 
 /// <summary>
-/// 管理左侧探索信号 HUD，以及每名玩家独立保存的四个普通信号固定槽。
+/// 显示附近最高探测强度、当前主线与本星球静默回收进度。
 /// </summary>
 internal static class ExplorationSignalHud {
     private const int OrdinarySlotCount = 4;
@@ -35,7 +35,8 @@ internal static class ExplorationSignalHud {
 
         root = new GameObject("fe-exploration-signal-hud", typeof(RectTransform));
         RectTransform rootRect = root.GetComponent<RectTransform>();
-        rootRect.SetParent(UIRoot.instance.overlayCanvas.transform, false);
+        rootRect.SetParent(uiGame.dfMonitor != null
+            ? uiGame.dfMonitor.transform.parent : UIRoot.instance.overlayCanvas.transform, false);
         rootRect.anchorMin = new Vector2(0f, 0.5f);
         rootRect.anchorMax = new Vector2(0f, 0.5f);
         rootRect.pivot = new Vector2(0f, 0.5f);
@@ -57,20 +58,20 @@ internal static class ExplorationSignalHud {
                 row.material = row.font.material;
             }
             row.text = string.Empty;
-            row.fontSize = 14;
+            row.fontSize = 16;
             row.fontStyle = FontStyle.Normal;
-            row.resizeTextForBestFit = true;
-            row.resizeTextMinSize = 11;
-            row.resizeTextMaxSize = 14;
+            row.resizeTextForBestFit = false;
             row.alignment = TextAnchor.MiddleLeft;
             row.supportRichText = false;
             row.horizontalOverflow = HorizontalWrapMode.Overflow;
             row.verticalOverflow = VerticalWrapMode.Truncate;
             row.raycastTarget = false;
             row.gameObject.SetActive(true);
-            row.color = index == 0
-                ? new Color(1f, 0.76f, 0.32f, 0.88f)
-                : new Color(0.78f, 0.86f, 0.9f, 0.84f);
+            row.color = Color.white;
+            Outline outline = rowObject.AddComponent<Outline>();
+            outline.effectColor = Color.black;
+            outline.effectDistance = new Vector2(1f, -1f);
+            outline.useGraphicAlpha = true;
             rowRect.anchorMin = new Vector2(0f, 1f);
             rowRect.anchorMax = new Vector2(0f, 1f);
             rowRect.pivot = new Vector2(0f, 1f);
@@ -82,38 +83,44 @@ internal static class ExplorationSignalHud {
     }
 
     /// <summary>
-    /// 刷新 HUD 和自动固定规则。
+    /// 刷新本地聚合读数，复用逻辑域缓存快照。
     /// </summary>
     public static void Update() {
         EnsureCreated();
         if (!root) {
             return;
         }
-        if (!GameMain.isRunning || GameMain.isPaused || GameMain.isFullscreenPaused
-            || GameMain.mainPlayer == null) {
-            root.SetActive(false);
-            return;
-        }
+        UIGame uiGame = UIRoot.instance?.uiGame;
+        Player player = GameMain.mainPlayer;
+        // 与原版黑雾监视器共用所在 UI 层，保留无黑雾模式下的探索显示。
+        bool visible = uiGame?.active == true && GameMain.isRunning && GameMain.gameTick > 0
+            && !GameMain.isPaused && !GameMain.isFullscreenPaused && !VFInput.inFullscreenGUI
+            && !uiGame.hideAllUI0 && !uiGame.hideAllUI1
+            && player != null && player.isAlive && !player.respawning
+            && player.controller.actionBuild.blueprintMode == EBlueprintMode.None
+            && !uiGame.techTree.active && !uiGame.dashboard.active && !uiGame.dysonEditor.active
+            && !uiGame.starmap.active;
+        root.SetActive(visible);
+        if (!visible) { return; }
         if (Time.frameCount == lastRefreshFrame || Time.frameCount % 15 != 0) {
             return;
         }
         lastRefreshFrame = Time.frameCount;
 
-        ExplorationMark[] marks = ExplorationManager.GetActiveMarks();
-        ReconcilePinnedSlots(marks);
-        var marksById = marks.ToDictionary(mark => mark.Id);
-        ExplorationMark keySignal = marks
-            .Where(ExplorationManager.IsKeySignal)
-            .OrderBy(mark => mark.Id)
-            .FirstOrDefault();
-        SetRow(0, keySignal);
-        bool hasVisibleSignal = keySignal != null;
-        for (int slot = 0; slot < OrdinarySlotCount; slot++) {
-            marksById.TryGetValue(PinnedMarkIds[slot], out ExplorationMark mark);
-            SetRow(slot + 1, mark);
-            hasVisibleSignal |= mark != null;
+        ExplorationMark keySignal = ExplorationManager.GetActiveMarks().FirstOrDefault(ExplorationManager.IsKeySignal);
+        float strength = ExplorationManager.GetHighestStrength();
+        RowTexts[0].text = strength > 0 ? $"附近信号：{strength:P0}" : "附近暂无可探测信号";
+        RowTexts[0].gameObject.SetActive(true);
+        RowTexts[1].text = keySignal == null ? ""
+            : $"{ExplorationManager.GetSignalName(keySignal)} · {GameMain.galaxy?.PlanetById(keySignal.PlanetId)?.displayName}";
+        RowTexts[1].gameObject.SetActive(keySignal != null);
+        PlanetData planet = GameMain.localPlanet;
+        if (planet != null && ExplorationManager.FirstRelicClaimed) {
+            ExplorationManager.GetSilentProgress(planet.id, out int collected, out int total);
+            RowTexts[2].text = $"本星球静默遗迹：{collected}/{total}";
         }
-        root.SetActive(hasVisibleSignal && UIRoot.instance?.uiGame?.active == true);
+        RowTexts[2].gameObject.SetActive(planet != null && ExplorationManager.FirstRelicClaimed);
+        for (int i = 3; i < RowTexts.Length; i++) { RowTexts[i].gameObject.SetActive(false); }
     }
 
     /// <summary>

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -302,8 +302,12 @@ public static class RecipeManager {
             new(I金伯利矿石, 2),
             new(I可燃冰, 2),
             new(I刺笋结晶, 2),
-            new(IFE记忆源点, 1),
         ]);
+        AddRecipe(new WorldviewRecipe("mineral-memory:1016", 30107,
+            "单极磁石记忆重构".Translate(), ERecipe.AdvancedMineral,
+            WorldviewRecipeKind.RareCatalysis, 0.2f,
+            [new(IFE记忆源点, 1), new(I单极磁石, 1, 0.05f)],
+            [new(I单极磁石, 20f)]) { AnalysisItemId = I单极磁石, ResearchStage = 6 });
     }
 
     private static void AddRareRecipe(int persistentId, int rareItemId,
@@ -315,7 +319,10 @@ public static class RecipeManager {
         List<WorldviewRecipeInput> inputs = [..commonInputs, new(rareItemId, 1, 0.05f)];
         AddRecipe(new WorldviewRecipe($"mineral-rare:{rareItemId}", persistentId,
             string.Format("{0}催化增殖".Translate(), rare.name), ERecipe.AdvancedMineral, WorldviewRecipeKind.RareCatalysis, 0.2f,
-            inputs, [new WorldviewRecipeOutput(rareItemId, 1f)]));
+            inputs, [new WorldviewRecipeOutput(rareItemId, 1f)]) {
+                AnalysisItemId = rareItemId,
+                ResearchStage = rareItemId == I单极磁石 ? 5 : 3,
+            });
     }
 
     private static void AddInteractionRecipes() {
@@ -327,13 +334,17 @@ public static class RecipeManager {
                 string.Format("培育{0}".Translate(), tower?.name ?? towerId.ToString()),
                 ERecipe.AdvancedInteraction,
                 WorldviewRecipeKind.TowerCultivation, 0.2f,
-                [new WorldviewRecipeInput(IFE通用原胚, 1)], [new WorldviewRecipeOutput(towerId, 1f)]));
+                [new WorldviewRecipeInput(IFE通用原胚, 1)], [new WorldviewRecipeOutput(towerId, 1f)]) {
+                    AnalysisItemId = IFE通用原胚, ResearchStage = towerId == IFE高级交互塔 ? 0 : 1,
+                });
             AddRecipe(new WorldviewRecipe($"interaction-breed:{towerId}", 30211 + i,
                 string.Format("{0}原胚繁育".Translate(), tower?.name ?? towerId.ToString()),
                 ERecipe.AdvancedInteraction,
                 WorldviewRecipeKind.EmbryoBreeding, 0.2f,
                 [new WorldviewRecipeInput(towerId, 1), new WorldviewRecipeInput(IFE通用原胚, 1, 0.05f)],
-                [new WorldviewRecipeOutput(IFE通用原胚, 1.5f)]));
+                [new WorldviewRecipeOutput(IFE通用原胚, 1.5f)]) {
+                    AnalysisItemId = towerId, ResearchStage = 3,
+                });
         }
     }
 

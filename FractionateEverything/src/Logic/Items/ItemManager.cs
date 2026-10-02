@@ -17,14 +17,14 @@ public static class ItemManager {
     /// 注册 Frag、Memory 与通用原胚的玩家可见文本。
     /// </summary>
     public static void AddTranslations() {
-        Register("残片", "Frag", "Frag");
+        Register("残片", "Frag", "残片");
         Register("I残片",
-            "A dark-fog fragment. Analyzing each Frag has a small chance to reveal one permanent exploration signal.",
-            "黑雾掉落的残片。每件 Frag 经基础解析塔处理时，都有小概率发现一个永久探索信号。");
-        Register("记忆源点", "Memory", "Memory");
+            "A fragment recovered from the dark fog. Faint pulses still echo within; an analysis tower may be able to trace their source.",
+            "从黑雾残骸中找到的碎片，内部仍残留着微弱的脉冲。将它送入解析塔，也许能辨认出信号传来的方向。");
+        Register("记忆源点", "Memory", "源点");
         Register("I记忆源点",
-            "A living-industry memory core obtained by sacrificing one advanced tower; consumed by high-value advanced recipes.",
-            "献祭一座高级塔所得的生命工业记忆核心，由高价值高级配方持续消耗。");
+            "A luminous core holding traces of a living tower's memories. Analysis can restore lost knowledge, and living towers can draw strength from it.",
+            "生命塔留下的微光，凝结着它曾经历过的漫长时光。解析其中的记忆可以找回遗失的知识，也能为仍在运转的生命塔提供力量。");
         Register("通用原胚", "Universal Tower Embryo", "通用原胚");
         Register("I通用原胚",
             "A living embryo recovered from exploration and dark-fog combat, then used by advanced interaction recipes to cultivate advanced towers or breed more embryos.",

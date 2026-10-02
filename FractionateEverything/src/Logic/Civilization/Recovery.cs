@@ -99,9 +99,8 @@ public static class CivilizationRecoveryManager {
         GameMain.history.UnlockRecipe(RFE基础矿物塔);
         GameMain.history.UnlockRecipe(RFE基础解析塔);
         ResearchManager.GrantStarterResearchState();
-        DataCenterInventory.AddExplorationReward(IFE基础矿物塔, 10);
-        DataCenterInventory.AddExplorationReward(IFE基础解析塔, 10);
-        DataCenterInventory.AddExplorationReward(IFE通用原胚, 20);
+        DataCenterInventory.AddExplorationReward(IFE基础矿物塔, 4);
+        DataCenterInventory.AddExplorationReward(IFE基础解析塔, 2);
 
         if (GrowthTechnologyManager.UsesExperiencedStackProgression) {
             GrantVeteranLogisticsSupply();

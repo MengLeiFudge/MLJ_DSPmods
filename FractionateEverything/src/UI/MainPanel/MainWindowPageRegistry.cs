@@ -6,6 +6,7 @@ using FE.UI.MainPanel.Civilization;
 using FE.UI.MainPanel.CoreOperate;
 using FE.UI.MainPanel.ResourceInteraction;
 using FE.UI.MainPanel.Setting;
+using FE.UI.MainPanel.Theme;
 using UnityEngine;
 
 namespace FE.UI.MainPanel;
@@ -14,29 +15,39 @@ namespace FE.UI.MainPanel;
 /// FE 主面板页面注册、分类顺序和可见性过滤中心。
 /// </summary>
 public static class MainWindowPageRegistry {
-    public const string ResourceInteractionCategoryName = "资源管理";
-    public const string CivilizationCategoryName = "生命工业";
-    public const string ArchiveCategoryName = "开发档案";
-    public const string SystemSettingCategoryName = "系统设置";
-    private static readonly string[] categoryOrder = [
-        CivilizationCategoryName,
-        ResourceInteractionCategoryName,
-        ArchiveCategoryName,
-        SystemSettingCategoryName,
-    ];
+    public const string ResourceInteractionCategoryName = "工业";
+    public const string CivilizationCategoryName = "研究";
+    public const string ArchiveCategoryName = "手记";
+    public const string SystemSettingCategoryName = "设置";
+    private static readonly string[] categoryOrder = ["指引", "研究", "探索", "工业", "手记", "设置"];
 
     private static readonly MainWindowPageDefinition[] allPages = [
-        new(CivilizationCategoryName, "文明研究", CivilizationOverviewPage.CreateUI,
-            CivilizationOverviewPage.UpdateUI),
-        new(CivilizationCategoryName, "遗物探索", ExplorationPage.CreateUI, ExplorationPage.UpdateUI),
-        new(CivilizationCategoryName, "配方图鉴", FracRecipeOperate.CreateUI, FracRecipeOperate.UpdateUI),
-
-        new(ResourceInteractionCategoryName, "亚空间仓储", ItemInteraction.CreateUI, ItemInteraction.UpdateUI),
-
-        new(ArchiveCategoryName, "开发日记", DevelopmentDiary.CreateUI, DevelopmentDiary.UpdateUI),
-
-        new(SystemSettingCategoryName, "杂项设置", Miscellaneous.CreateUI, Miscellaneous.UpdateUI),
+        Browser("指引", "当前目标", new CurrentGoalPage()),
+        Browser("指引", "主线记录", new StoryRecordsPage()),
+        Browser("指引", "使用指南", new UsageGuidePage()),
+        Browser("研究", "解析样本", new AnalysisSamplesPage()),
+        Browser("研究", "阶段恢复", new StageRecoveryPage()),
+        Browser("研究", "塔体特质", new TowerTraitsPage()),
+        Browser("探索", "信号追踪", new SignalTrackingPage()),
+        Browser("探索", "地点档案", new LocationArchivePage()),
+        Browser("探索", "终极任务", new UltimateTasksPage()),
+        Browser("工业", "配方图鉴", new RecipeGalleryPage()),
+        Browser("工业", "生命塔", new LivingTowersPage()),
+        new("工业", "亚空间仓储", ItemInteraction.CreateUI, ItemInteraction.UpdateUI),
+        Browser("手记", "1.x手记", new DiaryPage(0)),
+        Browser("手记", "2.x手记", new DiaryPage(1)),
+        Browser("手记", "伊卡洛斯手记", new DiaryPage(2)),
+        new("设置", "亚空间存取", Miscellaneous.CreateStorageUI, Miscellaneous.UpdateUI),
+        new("设置", "界面与兼容", Miscellaneous.CreateInterfaceUI, Miscellaneous.UpdateUI),
     ];
+
+    /// <summary>将卡片页实例接入两种外壳共用的注册表。</summary>
+    /// <param name="category">分类。</param>
+    /// <param name="title">页签名。</param>
+    /// <param name="page">页面实例。</param>
+    /// <returns>外壳所用页面定义。</returns>
+    private static MainWindowPageDefinition Browser(string category, string title, CardBrowserPage page) =>
+        new(category, title, page.CreateUI, page.UpdateUI);
 
     private static readonly IReadOnlyList<MainWindowCategoryDefinition>[,,] categoryCache = BuildCategoryCache();
 

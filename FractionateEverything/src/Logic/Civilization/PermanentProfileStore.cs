@@ -21,15 +21,19 @@ public static class PermanentProfileStore {
     public static void Bind(ConfigFile config) {
         configFile = config;
         hasPlayedFractionation = config.Bind("Progression", "HasPlayedFractionation3", false,
-            "仅由当前格式存档在取得全部三类高级塔并达到 20 堆叠后写入；旧版存档不会触发。");
+            "在正常模式下取得全部三类高级塔并达到20堆叠后记录。沙盒、使用过一键解锁及旧格式存档不能写入此标记。");
     }
 
     /// <summary>
     /// 在严格完成条件满足时写入跨存档标记。
     /// </summary>
     public static void TryRecordCompletion() {
+        if (GameMain.sandboxToolsEnabled || GameMain.data?.gameDesc?.isSandboxMode == true
+            || GameMain.history?.createWithSandboxMode == true) {
+            ResearchManager.DisqualifyCompletion();
+        }
         if (hasPlayedFractionation == null || hasPlayedFractionation.Value
-            || !ResearchManager.BelongsToGeneration3
+            || !ResearchManager.CanRecordCompletion
             || !ResearchManager.HasAcquiredAllAdvancedTowers
             || StackingManager.CurrentMaxStack < 20) {
             return;
