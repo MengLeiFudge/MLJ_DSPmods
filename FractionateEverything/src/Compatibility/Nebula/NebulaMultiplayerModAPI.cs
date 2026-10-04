@@ -25,6 +25,8 @@ namespace FE.Compatibility.Nebula;
 /// </summary>
 public static class NebulaMultiplayerModAPI {
     public const string GUID = NebulaModAPI.API_GUID;
+    /// <summary>联机协议修订号；用于隔离探索结构化结果与旧文本消息的不同布局。</summary>
+    public const int ProtocolVersion = 2;
     public static bool Enable;
     public static Assembly assembly;
 
@@ -152,13 +154,14 @@ public static class NebulaMultiplayerModAPI {
         return true;
     }
 
-    /// <summary>广播已经结算的探索结果；此消息只负责客户端弹窗，不再执行奖励。</summary>
-    /// <param name="title">遗迹名称。</param>
-    /// <param name="text">实际回收结果。</param>
-    /// <param name="modal">是否为需要确认的关键信号弹窗。</param>
-    public static void BroadcastExplorationRecovery(string title, string text, bool modal) {
-        if (NebulaModAPI.MultiplayerSession?.LocalPlayer?.IsHost == true) {
-            NebulaModAPI.MultiplayerSession.Network.SendPacket(new ExplorationRecoveryPacket { title = title, text = text, modal = modal });
+    /// <summary>广播已经结算的回收事实，各客户端仅用自己的语言显示，不执行奖励。</summary>
+    /// <param name="mark">已结算的点位副本，包含实际奖励或剧情身份。</param>
+    public static void BroadcastExplorationRecovery(ExplorationMark mark) {
+        if (mark != null && NebulaModAPI.MultiplayerSession?.LocalPlayer?.IsHost == true) {
+            NebulaModAPI.MultiplayerSession.Network.SendPacket(new ExplorationRecoveryPacket {
+                kind = (int)mark.Kind, contentId = mark.ContentId ?? string.Empty,
+                itemId = mark.ItemId, count = mark.Count, quality = mark.Quality,
+            });
         }
     }
 
@@ -399,14 +402,18 @@ public class AdvancedFractionatorStatePacketProcessor : BasePacketProcessor<Adva
     }
 }
 
-/// <summary>主机发送的回收提示，不包含任何可由客户端执行的奖励指令。</summary>
+/// <summary>主机发送的回收事实，足以独立生成本地化提示，不包含可执行的奖励指令。</summary>
 public sealed class ExplorationRecoveryPacket {
-    /// <summary>遗迹名称。</summary>
-    public string title { get; set; }
-    /// <summary>已经结算的结果文本。</summary>
-    public string text { get; set; }
-    /// <summary>关键信号以弹窗显示，普通点只浮现提示。</summary>
-    public bool modal { get; set; }
+    /// <summary>点位类型，取值对应 ExplorationMarkKind，也决定弹窗或浮现提示。</summary>
+    public int kind { get; set; }
+    /// <summary>研究线索的稳定身份或终极任务分支；不直接展示。</summary>
+    public string contentId { get; set; }
+    /// <summary>实际奖励或样本的物品ID；剧情点存节点序号。</summary>
+    public int itemId { get; set; }
+    /// <summary>实际奖励件数；研究线索和剧情节点为零。</summary>
+    public int count { get; set; }
+    /// <summary>遗迹固定质量，1～3，用于生成本地标题。</summary>
+    public int quality { get; set; }
 }
 
 /// <summary>在客户端排队显示主机的实际回收结果。</summary>
@@ -414,9 +421,16 @@ public sealed class ExplorationRecoveryPacket {
 public sealed class ExplorationRecoveryPacketProcessor : BasePacketProcessor<ExplorationRecoveryPacket> {
     /// <inheritdoc />
     public override void ProcessPacket(ExplorationRecoveryPacket packet, INebulaConnection conn) {
-        if (!IsHost && packet != null) {
-            CivilizationModule.QueueRecoveryPopup(packet.title, packet.text, packet.modal);
+        if (IsHost || packet == null) { return; }
+        if (!Enum.IsDefined(typeof(ExplorationMarkKind), packet.kind)
+            || packet.quality is < 1 or > 3 || packet.count < 0) {
+            LogError("Ignored exploration recovery packet with invalid kind, quality or count.");
+            return;
         }
+        CivilizationModule.QueueRecoveryPopup(new ExplorationMark {
+            Kind = (ExplorationMarkKind)packet.kind, ContentId = packet.contentId ?? string.Empty,
+            ItemId = packet.itemId, Count = packet.count, Quality = packet.quality,
+        });
     }
 }
 

@@ -41,8 +41,8 @@ public sealed class ExplorationRecord {
     public ExplorationMark Mark;
     /// <summary>回收时游戏刻。</summary>
     public long Tick;
-    /// <summary>文明记录或奖励描述。</summary>
-    public string Text;
+    /// <summary>按查看者当前语言生成文明记录或奖励描述，不缓存成品文本。</summary>
+    public string Text => ExplorationManager.GetRecoveryText(Mark);
 }
 
 /// <summary>管理固定遗迹、阶段广播、剧情任务与主机认领结算。</summary>
@@ -119,6 +119,23 @@ public static class ExplorationManager {
         };
     }
 
+    /// <summary>将已结算的回收事实转换为本端语言的正文；不执行奖励或推进任务。</summary>
+    /// <param name="mark">包含实际物品、数量或剧情身份的已回收点位。</param>
+    /// <returns>本端语言的文明记录或奖励描述。</returns>
+    public static string GetRecoveryText(ExplorationMark mark) {
+        if (mark == null) { return string.Empty; }
+        return mark.Kind switch {
+            ExplorationMarkKind.FirstRelic or ExplorationMarkKind.PlanetDetector or ExplorationMarkKind.Story =>
+                GetStoryNarrative(mark.ItemId),
+            ExplorationMarkKind.Sacrifice => "FE.ExplorationManager.SacrificeRecovered".Translate(),
+            ExplorationMarkKind.Infrastructure => "FE.ExplorationManager.InfrastructureRecovered".Translate(),
+            ExplorationMarkKind.Ultimate => GetUltimateNarrative(mark.ContentId == "exploration" ? 0 : 1, mark.ItemId),
+            _ when mark.Count == 0 && !string.IsNullOrEmpty(mark.ContentId) =>
+                string.Format("回收了以{0}为样本的未知记录。".Translate(), LDB.items.Select(mark.ItemId)?.name),
+            _ => string.Format("探索取得：{0} × {1}".Translate(), LDB.items.Select(mark.ItemId)?.name, mark.Count),
+        };
+    }
+
     /// <summary>下一主线节点是否只在等待矩阵科技推进；不点名所需矩阵。</summary>
     public static bool StoryWaitingForTechnology {
         get {
@@ -179,7 +196,7 @@ public static class ExplorationManager {
     public static ExplorationRecord[] GetRecords() {
         lock (Sync) {
             return recordsSnapshot ??= Records.Select(r => new ExplorationRecord {
-                Mark = CloneMark(r.Mark), Tick = r.Tick, Text = r.Text,
+                Mark = CloneMark(r.Mark), Tick = r.Tick,
             }).ToArray();
         }
     }
@@ -363,27 +380,28 @@ public static class ExplorationManager {
     /// <returns>是否有待同步变化。</returns>
     public static bool TakeSnapshotDirty() { lock (Sync) { bool dirty = snapshotDirty; snapshotDirty = false; return dirty; } }
 
-    /// <summary>保存当前格式的任务、实际奖励和动态点；静默几何可由种子重建。</summary>
+    /// <summary>保存任务和已结算点位，不保存本地化文本；静默几何可由种子重建。</summary>
     /// <param name="writer">输出流。</param>
     public static void Export(BinaryWriter writer) {
         lock (Sync) {
-            writer.Write(1);
+            writer.Write(2);
             writer.Write(nextMarkId); writer.Write(storyCompleted); writer.Write(nextTimedGenerationTick); writer.Write(randomSeed);
             writer.Write(capacityHintShown);
             for (int i = 0; i < 2; i++) { writer.Write(UltimateSteps[i]); writer.Write(UltimateInputs[i]); }
             writer.Write(ActiveMarks.Count);
             foreach (ExplorationMark mark in ActiveMarks) { WriteMark(writer, mark); }
             writer.Write(Records.Count);
-            foreach (ExplorationRecord record in Records) { WriteMark(writer, record.Mark); writer.Write(record.Tick); writer.Write(record.Text ?? ""); }
+            foreach (ExplorationRecord record in Records) { WriteMark(writer, record.Mark); writer.Write(record.Tick); }
         }
     }
 
-    /// <summary>恢复当前格式状态，检查集合范围并重建静默认领集合。</summary>
+    /// <summary>恢复当前格式状态，兼容读取带成品文本的版本1，重建静默认领集合。</summary>
     /// <param name="reader">存档或主机快照流。</param>
     public static void Import(BinaryReader reader) {
         lock (Sync) {
             IntoOtherSave();
-            if (reader.ReadInt32() != 1) { throw new InvalidDataException("不支持的探索存档格式。"); }
+            int version = reader.ReadInt32();
+            if (version is < 1 or > 2) { throw new InvalidDataException("不支持的探索存档格式。"); }
             nextMarkId = reader.ReadInt32(); storyCompleted = reader.ReadInt32(); nextTimedGenerationTick = reader.ReadInt64(); randomSeed = reader.ReadUInt32();
             capacityHintShown = reader.ReadBoolean();
             for (int i = 0; i < 2; i++) { UltimateSteps[i] = Math.Max(0, Math.Min(6, reader.ReadInt32())); UltimateInputs[i] = Math.Max(0, Math.Min(UltimateMemoryCost, reader.ReadInt32())); }
@@ -391,7 +409,9 @@ public static class ExplorationManager {
             for (int i = 0; i < count; i++) { ActiveMarks.Add(ReadMark(reader)); }
             count = ReadCount(reader);
             for (int i = 0; i < count; i++) {
-                var record = new ExplorationRecord { Mark = ReadMark(reader), Tick = reader.ReadInt64(), Text = reader.ReadString() };
+                var record = new ExplorationRecord { Mark = ReadMark(reader), Tick = reader.ReadInt64() };
+                // 版本1已经保存完整的结算事实，旧成品文本只需消费，不作为显示来源。
+                if (version == 1) { reader.ReadString(); }
                 Records.Add(record);
                 if (record.Mark.Kind == ExplorationMarkKind.SilentCache) { CollectedSilentMarks.Add(record.Mark.Id); }
             }
@@ -592,38 +612,38 @@ public static class ExplorationManager {
 
     private static bool IsPaymentMark(ExplorationMark mark) => mark.Kind == ExplorationMarkKind.Ultimate && mark.ItemId == 4;
 
+    /// <summary>主机认领点位并结算一次奖励，将事实副本交给档案与提示。</summary>
+    /// <param name="mark">已经通过认领范围与任务条件检查的点位。</param>
     private static void Claim(ExplorationMark mark) {
         if (mark.Kind == ExplorationMarkKind.SilentCache) {
             if (!CollectedSilentMarks.Add(mark.Id)) { return; }
         } else if (!ActiveMarks.Remove(mark)) { return; }
-        string text;
         if (mark.Kind is ExplorationMarkKind.FirstRelic or ExplorationMarkKind.PlanetDetector or ExplorationMarkKind.Story) {
             storyCompleted = Math.Max(storyCompleted, mark.ItemId);
-            text = CompleteStory(mark.ItemId);
+            CompleteStory(mark.ItemId);
         } else if (mark.Kind == ExplorationMarkKind.Sacrifice) {
             ResearchManager.UnlockSacrifice();
-            text = "FE.ExplorationManager.SacrificeRecovered".Translate();
         } else if (mark.Kind == ExplorationMarkKind.Infrastructure) {
             ResearchManager.RecoverInfrastructure(mark.ContentId);
-            text = "FE.ExplorationManager.InfrastructureRecovered".Translate();
         } else if (mark.Kind == ExplorationMarkKind.Ultimate) {
             int branch = mark.ContentId == "exploration" ? 0 : 1;
             UltimateSteps[branch] = mark.ItemId + 1;
-            text = GetUltimateNarrative(branch, mark.ItemId);
             if (UltimateSteps[branch] == 6) {
                 GameMain.history.UnlockTechUnlimited(branch == 0 ? TFE终极探索 : TFE终极仓储, true);
             }
-        } else { text = AwardCache(mark); }
-        Records.Add(new ExplorationRecord { Mark = CloneMark(mark), Tick = GameMain.gameTick, Text = text });
+        } else { AwardCache(mark); }
+        var record = new ExplorationRecord { Mark = CloneMark(mark), Tick = GameMain.gameTick };
+        Records.Add(record);
         recordsSnapshot = null;
-        bool modal = IsKeySignal(mark);
-        CivilizationModule.QueueRecoveryPopup(GetSignalName(mark), text, modal);
-        NebulaMultiplayerModAPI.BroadcastExplorationRecovery(GetSignalName(mark), text, modal);
+        CivilizationModule.QueueRecoveryPopup(record.Mark);
+        NebulaMultiplayerModAPI.BroadcastExplorationRecovery(record.Mark);
         MarkDirty();
         ReplenishUltimateSignals();
     }
 
-    private static string CompleteStory(int number) {
+    /// <summary>结算主线节点的固定奖励和研究线索。</summary>
+    /// <param name="number">从1起的已完成主线序号。</param>
+    private static void CompleteStory(int number) {
         if (number == 1) { CivilizationRecoveryManager.CompleteFirstRelicRecovery(); }
         if (number == 4) {
             DataCenterInventory.AddExplorationReward(IFE高级交互塔, 2);
@@ -633,10 +653,11 @@ public static class ExplorationManager {
         if (number is >= 7 and <= 9) { DataCenterInventory.AddExplorationReward(IFE记忆源点, 12); }
         if (number == 5) { ResearchManager.DiscoverContent($"interaction-culture:{IFE高级矿物塔}", IFE通用原胚, false); }
         if (number == 8) { ResearchManager.DiscoverContent($"interaction-culture:{IFE高级转化塔}", IFE通用原胚, false); }
-        return GetStoryNarrative(number);
     }
 
-    private static string AwardCache(ExplorationMark mark) {
+    /// <summary>抽取并发放普通遗迹奖励，将实际结果写回点位以供存档和本地化显示。</summary>
+    /// <param name="mark">待结算的普通遗迹。</param>
+    private static void AwardCache(ExplorationMark mark) {
         bool silent = mark.Kind == ExplorationMarkKind.SilentCache;
         double memoryChance = silent ? mark.Quality == 3 ? 0.25 : 0 : mark.Quality switch { 1 => 0.05, 2 => 0.30, _ => 0.60 };
         if (GetRandDouble(ref randomSeed) < memoryChance) {
@@ -649,7 +670,7 @@ public static class ExplorationManager {
                 int[] inputs = ResearchManager.GetContentDirectionItemIds(id);
                 if (inputs.Length > 0 && ResearchManager.DiscoverContent(id, inputs[0], false)) {
                     mark.ContentId = id; mark.ItemId = inputs[0]; mark.Count = 0;
-                    return string.Format("回收了以{0}为样本的未知记录。".Translate(), LDB.items.Select(mark.ItemId)?.name);
+                    return;
                 }
             }
         }
@@ -666,7 +687,6 @@ public static class ExplorationManager {
             }
         }
         DataCenterInventory.AddExplorationReward(mark.ItemId, mark.Count);
-        return string.Format("探索取得：{0} × {1}".Translate(), LDB.items.Select(mark.ItemId)?.name, mark.Count);
     }
 
     /// <summary>优先选择当前阶段已开放、但玩家尚不能制造的建筑；全部可造时从已开放建筑中挑选。</summary>

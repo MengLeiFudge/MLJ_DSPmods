@@ -13,7 +13,7 @@ public static class CivilizationModule {
     private static readonly object NotificationSync = new();
     private static readonly Queue<string> PendingNotifications = [];
     /// <summary>已结算的回收结果，在主线程逐条显示；由 NotificationSync 保护。</summary>
-    private static readonly Queue<(string Title, string Text)> PendingRecoveries = [];
+    private static readonly Queue<ExplorationMark> PendingRecoveries = [];
     private static long lastProcessedGameTick = long.MinValue;
     private static bool civilizationSnapshotPending;
 
@@ -78,27 +78,26 @@ public static class CivilizationModule {
     }
 
     /// <summary>排队显示已结算的遗迹回收结果；关键信号依次弹窗确认，普通点只浮现提示。</summary>
-    /// <param name="title">遗迹名称。</param>
-    /// <param name="text">实际获得的记录或物资。</param>
-    /// <param name="modal">是否以需要确认的弹窗显示。</param>
-    public static void QueueRecoveryPopup(string title, string text, bool modal) {
-        if (string.IsNullOrWhiteSpace(text)) { return; }
-        if (!modal) {
-            QueueNotification(text);
+    /// <param name="mark">已结算的点位副本，文字由本端按当前语言生成。</param>
+    public static void QueueRecoveryPopup(ExplorationMark mark) {
+        if (mark == null) { return; }
+        if (!ExplorationManager.IsKeySignal(mark)) {
+            QueueNotification(ExplorationManager.GetRecoveryText(mark));
             return;
         }
-        lock (NotificationSync) { PendingRecoveries.Enqueue((title, text)); }
+        lock (NotificationSync) { PendingRecoveries.Enqueue(mark); }
     }
 
     /// <summary>仅在没有其他弹窗时显示下一条回收结果，避免提示相互覆盖。</summary>
     private static void FlushRecoveryPopups() {
         if (UIRoot.instance?.uiGame?.active != true || UIMessageBox.activeCount > 0) { return; }
-        (string Title, string Text) recovery;
+        ExplorationMark recovery;
         lock (NotificationSync) {
             if (PendingRecoveries.Count == 0) { return; }
             recovery = PendingRecoveries.Dequeue();
         }
-        UIMessageBox.Show(recovery.Title, recovery.Text, "确定".Translate(), UIMessageBox.INFO, null);
+        UIMessageBox.Show(ExplorationManager.GetSignalName(recovery), ExplorationManager.GetRecoveryText(recovery),
+            "确定".Translate(), UIMessageBox.INFO, null);
     }
 
     /// <summary>

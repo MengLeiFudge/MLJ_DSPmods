@@ -185,7 +185,8 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         ResearchManager.InitializeGeneration3StarterState();
     }
 
-    public string Version => PluginInfo.PLUGIN_VERSION;
+    /// <inheritdoc />
+    public string Version => $"{PluginInfo.PLUGIN_VERSION}.{NebulaMultiplayerModAPI.ProtocolVersion}";
 
     public bool CheckVersion(string hostVersion, string clientVersion) {
         return hostVersion.Equals(clientVersion);
