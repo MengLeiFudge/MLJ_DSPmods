@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using FE.Compatibility.Nebula;
 using FE.Logic.Fractionation.Recipes;
