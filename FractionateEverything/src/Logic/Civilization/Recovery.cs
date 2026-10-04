@@ -10,27 +10,6 @@ namespace FE.Logic.Civilization;
 /// </summary>
 public static class TechManager {
     /// <summary>
-    /// 注册物流交互科技使用的文本。
-    /// </summary>
-    public static void AddTranslations() {
-        Register("T行星内物流交互", "Planetary Subspace Interaction", "行星亚空间交互");
-        Register("行星内物流交互描述",
-            "Allows planetary logistics interaction stations to exchange items with the fractionation subspace.",
-            "允许行星物流交互站与分馏亚空间交换物品。");
-        Register("行星内物流交互结果",
-            "Planetary logistics interaction stations can now access the fractionation subspace.",
-            "行星物流交互站现在可以访问分馏亚空间。");
-
-        Register("T星际物流交互", "Interstellar Subspace Interaction", "星际亚空间交互");
-        Register("星际物流交互描述",
-            "Allows interstellar logistics interaction stations to exchange items with the fractionation subspace.",
-            "允许星际物流交互站与分馏亚空间交换物品。");
-        Register("星际物流交互结果",
-            "Interstellar logistics interaction stations can now access the fractionation subspace.",
-            "星际物流交互站现在可以访问分馏亚空间。");
-    }
-
-    /// <summary>
     /// 判断指定矩阵层的有限科技是否全部完成。
     /// </summary>
     /// <param name="matrixId">作为该层顶级研究材料的矩阵物品 ID。</param>

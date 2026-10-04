@@ -457,11 +457,11 @@ public static partial class ResearchManager {
             if (!ExplorationManager.PlanetDetectorUnlocked) { return 0; }
             int pointCount = WorldviewRecipe.RollExpected(ref seed, count * 0.02d);
             if (pointCount > 0) {
-                ExplorationManager.AddExplorationPoints(pointCount, "残片解析");
+                ExplorationManager.AddExplorationPoints(pointCount, "残片解析".Translate());
             }
             return count;
         }
-        if (itemId == IFE记忆源点) { return ProcessMemory(count, ref seed) ? count : 0; }
+        if (itemId == IFE记忆源点) { return ProcessMemory(count) ? count : 0; }
 
         bool advancedTower = FractionatorTowerCatalog.IsAdvancedTowerItem(itemId);
         AnalysisRuntimeSnapshot runtimeSnapshot = Volatile.Read(ref analysisRuntimeSnapshot);

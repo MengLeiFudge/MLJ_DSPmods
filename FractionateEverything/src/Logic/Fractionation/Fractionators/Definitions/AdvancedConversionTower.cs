@@ -46,16 +46,6 @@ public static class AdvancedConversionTower {
     /// </summary>
     public const float PlrRatio = 1.0f;
     /// <summary>
-    /// 注册该分馏域对象需要的本地化文本。
-    /// </summary>
-    public static void AddTranslations() {
-        Register("转化塔", "Advanced Conversion Tower", "高级转化塔");
-        Register("I转化塔",
-            "A living, matrix-fed tower that restructures related fuels and industrial equipment while recovering replaced parts.",
-            "由矩阵供养的生命型高级塔，用于重构相关燃料与工业设备，并回收被置换部件。");
-    }
-
-    /// <summary>
     /// 创建并注册该分馏塔的物品、配方和模型原型。
     /// </summary>
     public static void Create() {

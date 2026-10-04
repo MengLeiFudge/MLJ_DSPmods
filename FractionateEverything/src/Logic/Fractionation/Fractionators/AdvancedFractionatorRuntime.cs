@@ -99,8 +99,8 @@ public static class AdvancedFractionatorRuntime {
 
     /// <summary>可见页面按低频请求统计现有运行状态，不扫描银河全部建筑。</summary>
     /// <returns>按塔体类型分组的数量与异常计数。</returns>
-    public static Dictionary<int, (int Total, int Hungry, int Missing, int Blocked)> GetTowerSummary() {
-        var result = new Dictionary<int, (int Total, int Hungry, int Missing, int Blocked)>();
+    public static Dictionary<(int PlanetId, int ItemId), (int Total, int Hungry, int Missing, int Blocked)> GetTowerSummary() {
+        var result = new Dictionary<(int PlanetId, int ItemId), (int Total, int Hungry, int Missing, int Blocked)>();
         foreach (var pair in States) {
             PlanetFactory factory = GameMain.galaxy?.PlanetById(pair.Key.planetId)?.factory;
             var system = factory?.factorySystem;
@@ -108,15 +108,15 @@ public static class AdvancedFractionatorRuntime {
             if (system == null || id <= 0 || id >= system.fractionatorCursor) { continue; }
             int entity = system.fractionatorPool[id].entityId;
             if (entity <= 0 || entity >= factory.entityPool.Length) { continue; }
-            int itemId = factory.entityPool[entity].protoId;
-            result.TryGetValue(itemId, out var counts);
+            var key = (pair.Key.planetId, (int)factory.entityPool[entity].protoId);
+            result.TryGetValue(key, out var counts);
             counts.Total++;
             switch (GetOperatingStatus(pair.Value)) {
                 case "饥饿": counts.Hungry++; break;
                 case "缺少原材料": counts.Missing++; break;
                 case "输出堵塞": counts.Blocked++; break;
             }
-            result[itemId] = counts;
+            result[key] = counts;
         }
         return result;
     }

@@ -63,47 +63,10 @@ public class CheckPlugins : BaseUnityPlugin {
 
     #endregion
 
-    public static void AddTranslations() {
-        Register("万物分馏缺少模组标题", "Missing Mods", "缺少模组");
-        Register("万物分馏缺少模组内容",
-            "Fractionate Everything requires the following prerequisite mods to function:",
-            "万物分馏缺少以下前置模组，无法运行：");
-        Register("万物分馏禁用模组标题", "Disabled Mod Warning", "禁用模组");
-        Register("万物分馏禁用模组内容",
-            "Fractionate Everything conflicts with the following mods and has automatically disabled them:",
-            "万物分馏与以下模组冲突，已自动禁用它们：");
-
-        Register("FE标题", "Fractionate Everything Mod Tips", "万物分馏提示");
-        Register("FE内容",
-            "Thank you for using Fractionate Everything! Build two craftable Basic Towers, cultivate three Advanced Living Towers from embryos, explore old-civilization signals, and connect your factories to a shared subspace inventory and two Logistics Interaction Stations.\n"
-            + $"After recovering the first relic, press {"Shift + F".WithColor(Orange)} (configurable on the settings page) to open the panel.\n"
-            + "This mod has been compatible with some large mods, such as Genesis Book, They Come From Void, and More Mega Structure.\n"
-            + $"If you have any issues or ideas about the mod, please feedback to {"Github Issue".WithColor(Blue)}.\n"
-            + "Have fun with fractionation!".WithColor(Orange),
-            "感谢你使用万物分馏！制造两座基础塔，用原胚培育三座高级生命塔，探索古文明信号，并通过共享亚空间和两种物流交互站连接各地工厂。\n"
-            + $"回收首个遗物后，按下 {"Shift + F".WithColor(Orange)} （可在设置页面修改）即可呼出面板。\n"
-            + $"该Mod已对部分大型Mod进行了兼容，例如创世之书（Genesis Book）、深空来敌（They Come From Void）、更多巨构（More Mega Structure）。\n"
-            + $"如果你在游玩时遇到了任何问题，或者有宝贵的意见或建议，欢迎加入{"万物分馏MOD交流群".WithColor(Blue)}反馈。\n"
-            + "尽情享受分馏的乐趣吧！".WithColor(Orange));
-        Register("FE交流群", "Feedback on Github", "加入交流群");
-        Register("FE交流群链接",
-            "https://github.com/MengLeiFudge/MLJ_DSPmods",
-            "https://qm.qq.com/q/zzicz6j9zW");
-        Register("FE日志", "Update Log", "更新日志");
-        Register("FE日志链接",
-            "https://thunderstore.io/c/dyson-sphere-program/p/MengLei/FractionateEverything/changelog/",
-            "https://thunderstore.io/c/dyson-sphere-program/p/MengLei/FractionateEverything/changelog/");
-
-        Register("万物分馏BepInEx版本警告标题", "BepInEx Version Warning", "BepInEx版本警告");
-        Register("万物分馏BepInEx版本警告内容",
-            "Fractionate Everything is designed for BepInEx 5.4.17. You are using a different version, which may cause compatibility issues.",
-            "万物分馏是为BepInEx 5.4.17设计的。你当前使用的版本不同，可能会导致兼容性问题。");
-    }
-
     public void Awake() {
         logger = Logger;
 
-        AddTranslations();
+        LoadTranslationsFromJson();
 
         //缺少模组提示
         bool dependencyOk = true;

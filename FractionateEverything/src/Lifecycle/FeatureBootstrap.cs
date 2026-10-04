@@ -5,9 +5,6 @@ using FE.Logic.Fractionation.Recipes;
 using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Items;
 using FE.Logic.Station;
-using FE.UI.MainPanel;
-using FeUtils = FE.Utils.Utils;
-using static FE.Utils.Utils;
 
 namespace FE.Lifecycle;
 
@@ -16,21 +13,6 @@ namespace FE.Lifecycle;
 /// </summary>
 public static class FeatureBootstrap {
     private static bool finished;
-
-    public static void AddTranslations() {
-        Register("分馏页面", "Fractionate", "分馏");
-        ERecipeExtension.AddTranslations();
-        RecipeManager.AddTranslations();
-        FeUtils.AddTranslations();
-        FractionatorManager.AddTranslations();
-        StationManager.AddTranslations();
-        ItemManager.AddTranslations();
-        ProcessManager.AddTranslations();
-        TechManager.AddTranslations();
-        TutorialManager.AddTranslations();
-        CivilizationModule.AddTranslations();
-        MainWindow.AddTranslations();
-    }
 
     public static void PreAddData() {
         // 添加生命工业使用的核心物品与原胚

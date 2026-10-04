@@ -40,36 +40,9 @@ public static class MainWindow {
     private static string currentPageCategoryName;
     private static string currentPageSubpageName;
 
-    public static void AddTranslations() {
-        Register("KEYOpenFracCentre", "[FE] Open Fractionation Subspace", "[FE] 打开分馏亚空间");
-        Register("KEYSwitchFracCentreStyle", "[FE] Switch Fractionation Subspace Interface Style",
-            "[FE] 切换分馏亚空间界面风格");
-        Register("分馏数据中心", "Fractionation Subspace", "分馏亚空间");
-        Register("切换到分析主面板", "Switch to analysis main panel");
-        Register("切换到旧版主面板", "Switch to legacy main panel");
-        Register("生产管理", "Production Management");
-        Register("当前配方", "Current Recipe");
-        FracRecipeOperate.AddTranslations();
-        VanillaRecipeOperate.AddTranslations();
-        Register("生命工业", "Living Industry");
-        CivilizationOverviewPage.AddTranslations();
-        ExplorationPage.AddTranslations();
-        Register("资源管理", "Resource Management");
-        ItemInteraction.AddTranslations();
-        Register("开发档案", "Development Archive");
-        DevelopmentDiary.AddTranslations();
-        Register("系统设置", "System Setting");
-        Miscellaneous.AddTranslations();
-    }
-
     public static void LoadConfig(ConfigFile configFile) {
-        FracRecipeOperate.LoadConfig(configFile);
-        VanillaRecipeOperate.LoadConfig(configFile);
-        CivilizationOverviewPage.LoadConfig(configFile);
-        ExplorationPage.LoadConfig(configFile);
 
         ItemInteraction.LoadConfig(configFile);
-        DevelopmentDiary.LoadConfig(configFile);
 
         Miscellaneous.LoadConfig(configFile);
     }
@@ -145,6 +118,10 @@ public static class MainWindow {
         }
 
         if (!CivilizationRecoveryManager.HasDataCenterCommunication) {
+            // 首遗物回收前面板尚未接通，用浮现提示把玩家引回信号源。
+            if (_toggleKey.keyValue) {
+                UIRealtimeTip.Popup(ExplorationManager.FirstSignalHint.Translate(), false);
+            }
             return;
         }
 
@@ -446,55 +423,25 @@ public static class MainWindow {
     #region 模组存档接口实现
 
     public static void Import(BinaryReader r) {
-        ExplorationSignalHud.SetSaveState(null, 0);
         r.ReadBlocks(
             (MainPanelSelectionBlockTag, ImportMainPanelSelection),
-            ("PinnedExplorationSignals", br => {
-                int count = br.ReadInt32();
-                if (count < 0 || count > 4) {
-                    throw new InvalidDataException($"探索信号 HUD 槽位数量无效：{count}。");
-                }
-                int[] slots = new int[count];
-                for (int index = 0; index < count; index++) {
-                    slots[index] = br.ReadInt32();
-                }
-                ExplorationSignalHud.SetSaveState(slots, br.ReadInt32());
-            }),
-            ("FracRecipeOperate", FracRecipeOperate.Import),
-            ("VanillaRecipeOperate", VanillaRecipeOperate.Import),
             ("ItemInteraction", ItemInteraction.Import),
-            ("DevelopmentDiary", DevelopmentDiary.Import),
             ("Miscellaneous", Miscellaneous.Import)
         );
     }
 
     public static void Export(BinaryWriter w) {
-        (int[] pinnedSlots, int lastObservedMarkId) = ExplorationSignalHud.GetSaveState();
         w.WriteBlocks(
             (MainPanelSelectionBlockTag, ExportMainPanelSelection),
-            ("PinnedExplorationSignals", bw => {
-                bw.Write(pinnedSlots.Length);
-                foreach (int markId in pinnedSlots) {
-                    bw.Write(markId);
-                }
-                bw.Write(lastObservedMarkId);
-            }),
-            ("FracRecipeOperate", FracRecipeOperate.Export),
-            ("VanillaRecipeOperate", VanillaRecipeOperate.Export),
             ("ItemInteraction", ItemInteraction.Export),
-            ("DevelopmentDiary", DevelopmentDiary.Export),
             ("Miscellaneous", Miscellaneous.Export)
         );
     }
 
     public static void IntoOtherSave() {
         IntoOtherSaveMainPanelSelection();
-        ExplorationSignalHud.IntoOtherSave();
-        FracRecipeOperate.IntoOtherSave();
-        VanillaRecipeOperate.IntoOtherSave();
 
         ItemInteraction.IntoOtherSave();
-        DevelopmentDiary.IntoOtherSave();
 
         Miscellaneous.IntoOtherSave();
     }

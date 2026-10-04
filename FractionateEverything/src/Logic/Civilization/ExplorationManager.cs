@@ -53,7 +53,16 @@ public static class ExplorationManager {
     private const float DetectionRange = 180f;
     private const float OrdinaryArrivalDistance = 18f;
     private const float KeyArrivalDistance = 30f;
-    private const float GasArrivalDistance = 40f;
+    /// <summary>原版机甲默认悬浮高度，遗迹悬于其一半处，使步行与悬浮的触发范围相同。</summary>
+    private const float DefaultHoverAltitude = 15f;
+    /// <summary>首遗物回收前未接通亚空间时的引导提示。</summary>
+    public const string FirstSignalHint = "也许我应该先去看看那个信号……";
+    /// <summary>不能由普通矿脉替代的建筑奖励，按矩阵阶段开放。</summary>
+    private static readonly (int ItemId, int MinStage)[] BuildingRewards = [
+        (I大型采矿机, 0), (I物流配送器, 1), (I自动集装机, 2), (I星际物流运输站, 2), (I位面熔炉, 2),
+        (I微型粒子对撞机, 2), (I量子化工厂, 3), (I重组式制造台, 3), (I轨道采集器, 3),
+        (I自演化研究站, 4), (I能量枢纽, 4), (I人造恒星, 4), (I负熵熔炉, 5),
+    ];
     private static readonly object Sync = new();
     private static readonly List<ExplorationMark> ActiveMarks = [];
     private static readonly Dictionary<int, ExplorationMark[]> SilentMarks = [];
@@ -78,8 +87,6 @@ public static class ExplorationManager {
 
     /// <summary>首遗物是否已经回收。</summary>
     public static bool FirstRelicClaimed { get { lock (Sync) { return storyCompleted > 0; } } }
-    /// <summary>开局即可探测主线，首遗物后可使用普通探测。</summary>
-    public static bool RelicDetectorUnlocked => GameMain.galaxy != null;
     /// <summary>首遗物回收后开放普通探测与 Frag 输入。</summary>
     public static bool PlanetDetectorUnlocked => FirstRelicClaimed;
     /// <summary>已经完成的主线节点数。</summary>
@@ -101,20 +108,29 @@ public static class ExplorationManager {
     public static string GetSignalName(ExplorationMark mark) {
         if (mark == null) { return string.Empty; }
         return mark.Kind switch {
-            ExplorationMarkKind.FirstRelic => "最初的回声",
-            ExplorationMarkKind.PlanetDetector => "矩阵中的生命",
+            ExplorationMarkKind.FirstRelic => "最初的回声".Translate(),
+            ExplorationMarkKind.PlanetDetector => "矩阵中的生命".Translate(),
             ExplorationMarkKind.Story => GetStoryTitle(mark.ItemId),
-            ExplorationMarkKind.Sacrifice => "过剩的生命",
-            ExplorationMarkKind.Infrastructure => "远古物流接口",
-            ExplorationMarkKind.Ultimate => mark.ContentId == "exploration" ? "长夜中的回声" : "没有尽头的库房",
-            ExplorationMarkKind.SilentCache => $"{new[] { "", "普通", "精良", "珍贵" }[mark.Quality]}遗迹",
-            _ => "远古广播",
+            ExplorationMarkKind.Sacrifice => "过剩的生命".Translate(),
+            ExplorationMarkKind.Infrastructure => "远古物流接口".Translate(),
+            ExplorationMarkKind.Ultimate => mark.ContentId == "exploration" ? "长夜中的回声".Translate() : "没有尽头的库房".Translate(),
+            ExplorationMarkKind.SilentCache => string.Format("{0}遗迹".Translate(), new[] { "", "普通".Translate(), "精良".Translate(), "珍贵".Translate() }[mark.Quality]),
+            _ => "远古广播".Translate(),
         };
     }
 
-    /// <summary>本地机甲已处于步行状态并接触地面，下降或跳跃均不算落地。</summary>
-    public static bool LocalPlayerGrounded => GameMain.mainPlayer?.movementState == EMovementState.Walk
-        && GameMain.mainPlayer.controller?.actionWalk?.isGrounded == true;
+    /// <summary>下一主线节点是否只在等待矩阵科技推进；不点名所需矩阵。</summary>
+    public static bool StoryWaitingForTechnology {
+        get {
+            lock (Sync) {
+                // 4～6 号节点由“第一枚矩阵”目标负责引导，这里只覆盖后续矩阵阶段。
+                int next = storyCompleted + 1;
+                if (next < 7 || next > 18 || ActiveMarks.Any(m => m.Kind is ExplorationMarkKind.Story
+                        or ExplorationMarkKind.PlanetDetector)) { return false; }
+                return ResearchManager.CurrentMatrixStage < (next - 1) / 3;
+            }
+        }
+    }
 
     /// <summary>描述已收到信号的来历与抵达方式，不提前公开回收奖励。</summary>
     /// <param name="mark">玩家已经收到的广播。</param>
@@ -123,28 +139,27 @@ public static class ExplorationManager {
         if (mark == null) { return string.Empty; }
         PlanetData planet = GameMain.galaxy?.PlanetById(mark.PlanetId);
         string lead = mark.Kind switch {
-            ExplorationMarkKind.FirstRelic => "落地之后，伊卡洛斯收到了不属于任务通讯的脉冲。它从地表某处反复传来，强烈，却没有可以辨认的语言。也许有人把什么东西留在了这里。",
-            ExplorationMarkKind.PlanetDetector => "第一枚电磁矩阵开始运转时，探测器忽然捕捉到了一段新的回应。那段脉冲与矩阵的闪光几乎重合，仿佛有什么沉睡已久的东西，正在试着醒来。",
-            ExplorationMarkKind.Sacrifice => "成群的生命塔开始彼此呼应，一段此前无法辨认的广播变得清晰。它的末尾只有一个反复出现的符号，像是在指引某种归途。",
-            ExplorationMarkKind.Infrastructure => "新建的物流网络收到了一次陌生的握手请求。对方使用着古老却完整的协议，地址指向一处远古接口。伊卡洛斯决定亲自去看看是谁在应答。",
+            ExplorationMarkKind.FirstRelic => "FE.ExplorationManager.FirstRelicHint".Translate(),
+            ExplorationMarkKind.PlanetDetector => "FE.ExplorationManager.DetectorHint".Translate(),
+            ExplorationMarkKind.Sacrifice => "FE.ExplorationManager.SacrificeHint".Translate(),
+            ExplorationMarkKind.Infrastructure => "FE.ExplorationManager.InfrastructureHint".Translate(),
             ExplorationMarkKind.Ultimate => mark.ItemId switch {
-                0 => "常规信号逐渐安静下来，一段更深处的回声却穿过了噪声。它沿着古老的网络一遍遍寻找应答，似乎已经等了很久。伊卡洛斯记下了它指向的星球。",
-                >= 1 and <= 3 => "刚刚恢复的记录指向另一处失联节点。广播里的间隔与上次一模一样，微弱的回应仍在继续。找到它，也许就能把这条断开的联系再接上一段。",
-                4 => "几处节点已经重新连通，中央记录却留下了大片空白。接口请求更多源点，用来拼合失落的记忆。需要把它们带到遗迹附近，亲手完成交付。",
-                _ => "最后一段坐标终于完整。远处的核心第一次发来了清晰的应答，声音里没有催促，只是重复着同一个地址。这一次，伊卡洛斯已经知道该去哪里。",
+                0 => "FE.ExplorationManager.UltimateStartHint".Translate(),
+                >= 1 and <= 3 => "FE.ExplorationManager.UltimateNodesHint".Translate(),
+                4 => "FE.ExplorationManager.UltimateDeliveryHint".Translate(),
+                _ => "FE.ExplorationManager.UltimateCoreHint".Translate(),
             },
             ExplorationMarkKind.Story => mark.ItemId switch {
-                2 or 3 => "回收的容器中还留着另一段坐标。沿着同样的脉冲寻找，也许能找到这些装置曾经的使用者留下的记录。",
-                <= 9 => "生命塔运转之后，一段新的记录从杂音里浮现。它似乎提到了同伴、供养，以及这些陌生生命曾经共同经历的日子。",
-                <= 12 => "这一次，广播来自母星之外。熟悉的脉冲穿过星系传来，另一颗行星上，也许还留着相同的装置。",
-                _ => "微弱的广播越过了星际空间。记录里断开的航线，终于又有了一处可以抵达的落点。出发前，先为伊卡洛斯备好足够的燃料。",
+                2 or 3 => "FE.ExplorationManager.StoryContainersHint".Translate(),
+                <= 9 => "FE.ExplorationManager.StoryLivingHint".Translate(),
+                <= 12 => "FE.ExplorationManager.StoryPlanetsHint".Translate(),
+                _ => planet != null && planet.star.id != GameMain.galaxy.birthStarId
+                    ? "FE.ExplorationManager.StoryInterstellarHint".Translate()
+                    : "FE.ExplorationManager.StoryLocalHint".Translate(),
             },
-            _ => "探测器收到了一段断断续续的远古广播。记录里没有说明那里还剩下什么，只有反复传来的脉冲。去信号源看看，或许能带回有用的东西。",
+            _ => "FE.ExplorationManager.BroadcastHint".Translate(),
         };
-        string arrival = planet?.type == EPlanetType.Gas
-            ? "这颗星球没有可落脚的地面。沿着信号增强的方向，在低空接近目标。"
-            : "到达后先让伊卡洛斯落地，再沿着信号增强的方向寻找。读数达到100%时，就已经进入遗迹的回收范围。";
-        return $"{lead}\n\n目标星球：{planet?.displayName}\n\n{arrival}";
+        return string.Format("FE.ExplorationManager.Destination".Translate(), lead, planet?.displayName);
     }
 
     /// <summary>获取已广播点的缓存快照；不会暴露未发现静默点。</summary>
@@ -209,9 +224,6 @@ public static class ExplorationManager {
         }
     }
 
-    /// <summary>保留旧调用入口，探索不会创建或中断玩家导航。</summary>
-    public static void ClearLegacyFirstRelicNavigation() { }
-
     /// <summary>Frag 结算立即生成动态补给，不受累计星球额度限制。</summary>
     /// <param name="count">需要生成的点数。</param>
     /// <param name="source">提示来源。</param>
@@ -220,7 +232,7 @@ public static class ExplorationManager {
         lock (Sync) {
             for (int i = 0; i < count; i++) { GenerateDynamicMark(); }
         }
-        CivilizationModule.QueueNotification($"{source}发现了新的远古广播。");
+        CivilizationModule.QueueNotification(string.Format("{0}发现了新的远古广播。".Translate(), source));
     }
 
     /// <summary>研究结果适度提前尚未到期的广播，不延长既有倒计时。</summary>
@@ -242,7 +254,7 @@ public static class ExplorationManager {
         if (NebulaMultiplayerModAPI.IsClient) {
             foreach (ExplorationMark mark in NearbyMarks(GameMain.mainPlayer.planetId)) {
                 if (!IsPaymentMark(mark) && IsWithinArrival(mark, GameMain.mainPlayer.uPosition,
-                        GameMain.mainPlayer.planetId, LocalPlayerGrounded)) {
+                        GameMain.mainPlayer.planetId)) {
                     NebulaMultiplayerModAPI.RequestExplorationClaim(mark.Id);
                 }
             }
@@ -269,7 +281,7 @@ public static class ExplorationManager {
             }
             foreach (ExplorationMark mark in NearbyMarks(GameMain.mainPlayer.planetId)) {
                 if (!IsPaymentMark(mark) && IsWithinArrival(mark, GameMain.mainPlayer.uPosition,
-                        GameMain.mainPlayer.planetId, LocalPlayerGrounded)) {
+                        GameMain.mainPlayer.planetId)) {
                     Claim(mark);
                 }
             }
@@ -280,13 +292,12 @@ public static class ExplorationManager {
     /// <param name="markId">点位身份。</param>
     /// <param name="position">连接玩家的宇宙坐标。</param>
     /// <param name="planetId">连接玩家所在星球。</param>
-    /// <param name="grounded">主机接收的最近移动状态是否已落地。</param>
     /// <returns>是否成功认领。</returns>
-    public static bool TryClaimFromClient(int markId, VectorLF3 position, int planetId, bool grounded) {
+    public static bool TryClaimFromClient(int markId, VectorLF3 position, int planetId) {
         if (NebulaMultiplayerModAPI.IsClient || !Finite(position.x) || !Finite(position.y) || !Finite(position.z)) { return false; }
         lock (Sync) {
             ExplorationMark mark = FindMark(markId);
-            if (mark == null || IsPaymentMark(mark) || !IsWithinArrival(mark, position, planetId, grounded)) { return false; }
+            if (mark == null || IsPaymentMark(mark) || !IsWithinArrival(mark, position, planetId)) { return false; }
             Claim(mark);
             return true;
         }
@@ -296,13 +307,12 @@ public static class ExplorationManager {
     /// <param name="markId">交付节点身份。</param>
     /// <param name="position">主机验证过的玩家宇宙位置。</param>
     /// <param name="planetId">玩家所在星球。</param>
-    /// <param name="grounded">玩家是否已经落地。</param>
     /// <returns>本次提交数量。</returns>
-    public static int SubmitTaskMemory(int markId, VectorLF3 position, int planetId, bool grounded) {
+    public static int SubmitTaskMemory(int markId, VectorLF3 position, int planetId) {
         if (NebulaMultiplayerModAPI.IsClient || !Finite(position.x) || !Finite(position.y) || !Finite(position.z)) { return 0; }
         lock (Sync) {
             ExplorationMark mark = ActiveMarks.FirstOrDefault(m => m.Id == markId);
-            if (mark == null || !IsPaymentMark(mark) || !IsWithinArrival(mark, position, planetId, grounded)) { return 0; }
+            if (mark == null || !IsPaymentMark(mark) || !IsWithinArrival(mark, position, planetId)) { return 0; }
             int branch = mark.ContentId == "exploration" ? 0 : 1;
             int count = DataCenterInventory.TakeItemFromModData(IFE记忆源点, UltimateMemoryCost - UltimateInputs[branch], out int _);
             UltimateInputs[branch] += count;
@@ -327,7 +337,7 @@ public static class ExplorationManager {
         if (Math.Abs(relative.magnitude - planet.realRadius) > 70) { return false; }
         double distance = GetSignalDistance(mark, planet, playerPosition);
         if (distance > DetectionRange) { return false; }
-        float arrival = GetArrivalDistance(mark, planet);
+        float arrival = GetArrivalDistance(mark);
         float raw = Mathf.Clamp01((DetectionRange - (float)distance) / (DetectionRange - arrival));
         float step = GrowthTechnologyManager.ExplorationSignalPrecisionPercent / 100f;
         relicStrength = distance <= arrival ? 1f : Math.Min(0.99f, Mathf.Floor(raw / step) * step);
@@ -418,7 +428,7 @@ public static class ExplorationManager {
         int stage = (next - 1) / 3;
         if (ResearchManager.CurrentMatrixStage < stage || stage >= 1 && !HasProducedFirstMatrix()) { return; }
         if (next == 3 && ResearchManager.DiscoveredContentCount < 1) { return; }
-        PlanetData planet = SelectReachablePlanet(stage, stage == 3 ? GameMain.galaxy.birthPlanetId : 0);
+        PlanetData planet = SelectReachablePlanet(stage, stage == 3 ? GameMain.galaxy.birthPlanetId : 0, next >= 13);
         AddMark(planet, next == 4 ? ExplorationMarkKind.PlanetDetector : ExplorationMarkKind.Story, next);
     }
 
@@ -426,7 +436,7 @@ public static class ExplorationManager {
         if (!FirstRelicClaimed) { return; }
         if (!capacityHintShown && DataCenterInventory.GetItemCapacity(IFE高级交互塔) >= 1000) {
             capacityHintShown = true;
-            CivilizationModule.QueueNotification("亚空间已经足够宽广。成群的生命塔，似乎正在彼此呼应。");
+            CivilizationModule.QueueNotification("FE.ExplorationManager.CapacityHint".Translate());
             MarkDirty();
         }
         if (ResearchManager.HasTowerInventoryMilestone && !ResearchManager.SacrificeUnlocked
@@ -549,37 +559,36 @@ public static class ExplorationManager {
             ? GetSilentMarks(planetId).FirstOrDefault(m => m.Id == id && m.Quality <= DetectableQuality) : null;
     }
 
-    /// <summary>用同一距离基准判断到达；岩石星球还须验证星球身份与实际落地状态。</summary>
+    /// <summary>以星球身份和空间距离判断到达，步行与默认悬浮高度的触发范围一致。</summary>
     /// <param name="mark">目标遗迹。</param>
     /// <param name="position">真实宇宙位置。</param>
     /// <param name="planetId">玩家所在星球。</param>
-    /// <param name="grounded">是否已接触地面。</param>
     /// <returns>是否可以回收或交付。</returns>
-    private static bool IsWithinArrival(ExplorationMark mark, VectorLF3 position, int planetId, bool grounded) {
+    private static bool IsWithinArrival(ExplorationMark mark, VectorLF3 position, int planetId) {
         PlanetData planet = GameMain.galaxy?.PlanetById(mark.PlanetId);
         if (planet == null || planetId != mark.PlanetId) { return false; }
-        if (planet.type != EPlanetType.Gas
-            && (!grounded || Math.Abs((position - planet.uPosition).magnitude - planet.realRadius) > 70)) { return false; }
-        return GetSignalDistance(mark, planet, position) <= GetArrivalDistance(mark, planet);
+        return GetSignalDistance(mark, planet, position) <= GetArrivalDistance(mark);
     }
 
-    /// <summary>岩石星球按地表弧长定位，气态巨星按悬空点的真实空间距离定位，单位米。</summary>
+    /// <summary>按悬空遗迹的真实空间距离定位，岩石星球与气态巨星共用，单位米。</summary>
     /// <param name="mark">目标遗迹。</param>
     /// <param name="planet">目标星球。</param>
     /// <param name="position">玩家宇宙位置。</param>
     /// <returns>与目标的距离，单位米。</returns>
     private static double GetSignalDistance(ExplorationMark mark, PlanetData planet, VectorLF3 position) {
         Vector3 local = (Vector3)Maths.QRotateLF(Quaternion.Inverse(planet.runtimeRotation), position - planet.uPosition);
-        return planet.type == EPlanetType.Gas ? (local - mark.LocalPosition).magnitude
-            : Vector3.Angle(local, mark.LocalPosition) * Math.PI / 180d * planet.realRadius;
+        // 按当前高度规则重算遗迹位置，旧存档中贴地或高悬的点位同样适用。
+        return (local - mark.LocalPosition.normalized * MarkRadius(planet)).magnitude;
     }
 
-    /// <summary>返回各类遗迹的命中半径，单位米；强度满值与认领共用此边界。</summary>
+    /// <summary>返回空间命中半径，单位米；水平命中半径在地面与默认悬浮高度上相同。</summary>
     /// <param name="mark">目标遗迹。</param>
-    /// <param name="planet">目标星球。</param>
     /// <returns>命中半径，单位米。</returns>
-    private static float GetArrivalDistance(ExplorationMark mark, PlanetData planet) =>
-        planet.type == EPlanetType.Gas ? GasArrivalDistance : IsKeySignal(mark) ? KeyArrivalDistance : OrdinaryArrivalDistance;
+    private static float GetArrivalDistance(ExplorationMark mark) {
+        float horizontal = IsKeySignal(mark) ? KeyArrivalDistance : OrdinaryArrivalDistance;
+        float vertical = DefaultHoverAltitude / 2f;
+        return Mathf.Sqrt(horizontal * horizontal + vertical * vertical);
+    }
 
     private static bool IsPaymentMark(ExplorationMark mark) => mark.Kind == ExplorationMarkKind.Ultimate && mark.ItemId == 4;
 
@@ -593,10 +602,10 @@ public static class ExplorationManager {
             text = CompleteStory(mark.ItemId);
         } else if (mark.Kind == ExplorationMarkKind.Sacrifice) {
             ResearchManager.UnlockSacrifice();
-            text = "记录者没有称它们为机器。过剩的生命将化作记忆，为仍在工作的同伴留下力量。塔体献祭已恢复。";
+            text = "FE.ExplorationManager.SacrificeRecovered".Translate();
         } else if (mark.Kind == ExplorationMarkKind.Infrastructure) {
             ResearchManager.RecoverInfrastructure(mark.ContentId);
-            text = "古老的接口仍在等待接入。物流交互科技现已显现。";
+            text = "FE.ExplorationManager.InfrastructureRecovered".Translate();
         } else if (mark.Kind == ExplorationMarkKind.Ultimate) {
             int branch = mark.ContentId == "exploration" ? 0 : 1;
             UltimateSteps[branch] = mark.ItemId + 1;
@@ -607,8 +616,9 @@ public static class ExplorationManager {
         } else { text = AwardCache(mark); }
         Records.Add(new ExplorationRecord { Mark = CloneMark(mark), Tick = GameMain.gameTick, Text = text });
         recordsSnapshot = null;
-        CivilizationModule.QueueRecoveryPopup(GetSignalName(mark), text);
-        NebulaMultiplayerModAPI.BroadcastExplorationRecovery(GetSignalName(mark), text);
+        bool modal = IsKeySignal(mark);
+        CivilizationModule.QueueRecoveryPopup(GetSignalName(mark), text, modal);
+        NebulaMultiplayerModAPI.BroadcastExplorationRecovery(GetSignalName(mark), text, modal);
         MarkDirty();
         ReplenishUltimateSignals();
     }
@@ -617,7 +627,7 @@ public static class ExplorationManager {
         if (number == 1) { CivilizationRecoveryManager.CompleteFirstRelicRecovery(); }
         if (number == 4) {
             DataCenterInventory.AddExplorationReward(IFE高级交互塔, 2);
-            DataCenterInventory.AddExplorationReward(IFE通用原胚, 30);
+            DataCenterInventory.AddExplorationReward(IFE通用原胚, 60);
             DataCenterInventory.AddExplorationReward(IFE记忆源点, 30);
         }
         if (number is >= 7 and <= 9) { DataCenterInventory.AddExplorationReward(IFE记忆源点, 12); }
@@ -639,28 +649,42 @@ public static class ExplorationManager {
                 int[] inputs = ResearchManager.GetContentDirectionItemIds(id);
                 if (inputs.Length > 0 && ResearchManager.DiscoverContent(id, inputs[0], false)) {
                     mark.ContentId = id; mark.ItemId = inputs[0]; mark.Count = 0;
-                    return $"回收了以{LDB.items.Select(mark.ItemId)?.name}为样本的未知记录。";
+                    return string.Format("回收了以{0}为样本的未知记录。".Translate(), LDB.items.Select(mark.ItemId)?.name);
                 }
             }
         }
         if (mark.ItemId <= 0) {
-            int[] support = [IFE通用原胚, IFE高级交互塔];
-            int selected = support[NextInt(2)];
-            if (HasProducedFirstMatrix() && DataCenterInventory.GetModDataItemCount(selected) < 300 && NextInt(100) < 20) {
-                mark.ItemId = selected; mark.Count = selected == IFE通用原胚 ? 10 * mark.Quality : mark.Quality;
+            int[] scarce = HasProducedFirstMatrix()
+                ? new[] { IFE通用原胚, IFE高级交互塔 }.Where(id => DataCenterInventory.GetModDataItemCount(id) < 300).ToArray()
+                : [];
+            if (scarce.Length > 0) {
+                // 紧缺时必定补给，数量随机浮动，层级越高越多。
+                mark.ItemId = scarce[NextInt(scarce.Length)];
+                mark.Count = mark.ItemId == IFE通用原胚 ? mark.Quality * (5 + NextInt(16)) : mark.Quality * (1 + NextInt(2));
             } else {
-                PlanetData planet = GameMain.galaxy.PlanetById(mark.PlanetId);
-                int[] resources = planet.type == EPlanetType.Gas && planet.gasItems?.Length > 0
-                    ? planet.gasItems : [I铁矿, I铜矿, I石矿, I煤矿];
-                mark.ItemId = resources[NextInt(resources.Length)]; mark.Count = 50 * mark.Quality;
+                mark.ItemId = SelectBuildingReward(); mark.Count = mark.Quality;
             }
         }
         DataCenterInventory.AddExplorationReward(mark.ItemId, mark.Count);
-        return $"探索取得：{LDB.items.Select(mark.ItemId)?.name} × {mark.Count}";
+        return string.Format("探索取得：{0} × {1}".Translate(), LDB.items.Select(mark.ItemId)?.name, mark.Count);
+    }
+
+    /// <summary>优先选择当前阶段已开放、但玩家尚不能制造的建筑；全部可造时从已开放建筑中挑选。</summary>
+    /// <returns>奖励建筑物品。</returns>
+    private static int SelectBuildingReward() {
+        int stage = ResearchManager.CurrentMatrixStage;
+        int[] open = BuildingRewards.Where(r => r.MinStage <= stage).Select(r => r.ItemId).ToArray();
+        int[] locked = open.Where(id => {
+            RecipeProto recipe = LDB.items.Select(id)?.maincraft;
+            return recipe == null || !GameMain.history.RecipeUnlocked(recipe.ID);
+        }).ToArray();
+        int[] pool = locked.Length > 0 ? locked : open;
+        return pool[NextInt(pool.Length)];
     }
 
     private static long GetGenerationIntervalTicks() => (long)(10 * TicksPerMinute * Math.Pow(0.85, GrowthTechnologyManager.ExplorationLevel));
-    private static float MarkRadius(PlanetData planet) => planet.realRadius + (planet.type == EPlanetType.Gas ? 25f : 1.5f);
+    /// <summary>遗迹位于星球半径加默认悬浮高度一半处，岩石星球与气态巨星通用。</summary>
+    private static float MarkRadius(PlanetData planet) => planet.realRadius + DefaultHoverAltitude / 2f;
     private static Vector3 RandomDirection(ref uint seed) {
         double y = GetRandDouble(ref seed) * 2 - 1, angle = GetRandDouble(ref seed) * Math.PI * 2;
         double radius = Math.Sqrt(Math.Max(0, 1 - y * y));
@@ -692,41 +716,41 @@ public static class ExplorationManager {
     /// <param name="number">从1起的主线序号。</param>
     /// <returns>剧情标题。</returns>
     public static string GetStoryTitle(int number) => number switch {
-        1 => "最初的回声", 2 => "留下的容器", 3 => "物质的另一种可能", 4 => "矩阵中的生命",
-        5 => "维持", 6 => "第一座温室", 7 => "记忆的重量", 8 => "不同的形态", 9 => "尚未熄灭",
-        10 => "另一颗行星", 11 => "远古航线", 12 => "生命的规模", 13 => "星际回声", 14 => "同行者",
-        15 => "没有归途的记录", 16 => "星图的边缘", 17 => "漫长的守候", 18 => "留给后来者", _ => "远古记录",
+        1 => "最初的回声".Translate(), 2 => "留下的容器".Translate(), 3 => "物质的另一种可能".Translate(), 4 => "矩阵中的生命".Translate(),
+        5 => "维持".Translate(), 6 => "第一座温室".Translate(), 7 => "记忆的重量".Translate(), 8 => "不同的形态".Translate(), 9 => "尚未熄灭".Translate(),
+        10 => "另一颗行星".Translate(), 11 => "远古航线".Translate(), 12 => "生命的规模".Translate(), 13 => "星际回声".Translate(), 14 => "同行者".Translate(),
+        15 => "没有归途的记录".Translate(), 16 => "星图的边缘".Translate(), 17 => "漫长的守候".Translate(), 18 => "留给后来者".Translate(), _ => "远古记录".Translate(),
     };
 
     /// <summary>取得主线节点对应的文明片段与可行动提示。</summary>
     /// <param name="number">主线序号。</param>
     /// <returns>文明记录。</returns>
     public static string GetStoryNarrative(int number) => number switch {
-        1 => "容器的封口已经磨损，里面的装置却保存得很完整。伊卡洛斯取出了四座基础矿物塔、两座基础解析塔，以及几份标着铁、铜、石、煤样本的残缺记录。\n\n回收物资已送入刚刚接通的亚空间。按 [Shift + F] 打开面板，可以查看它们和留下的线索。",
-        2 => "容器底部夹着一块刻满细线的薄片，旁边嵌着一粒普通矿石。伊卡洛斯把薄片与先前的记录放在一起，缺失的部分恰好有了轮廓。\n\n这些矿石或许就是记录的钥匙。将已有线索的样本送入基础解析塔，看看它会作出怎样的回应。",
-        3 => "恢复出的第一份记录，终于让那些陌生的装置有了可以理解的用途。伊卡洛斯沿着其中的结构试了一次，塔内传来了清晰而有节奏的声响。\n\n容器里还有几页无法辨认的残片。他将它们收好，准备等新的线索出现后再来阅读。",
-        4 => "矩阵的闪光透过容器外壳时，里面的装置轻轻动了一下。它们的表面带着细小裂纹，却仍在缓慢地开合，像是在等待食物。\n\n两座高级交互塔、三十个原胚和三十份源点已送入亚空间。先为这些生命塔接上一条矩阵供给，再尝试让它们工作。",
-        5 => "记录者在停工清单旁重复写下了一行字：休息时也要保留供养。伊卡洛斯想起塔壳上的裂纹，再次检查了矩阵传送带。\n\n随记录回收的原胚线索已经归档。这些生命也许还保存着另一种生长的可能。",
-        6 => "旧温室里只剩下排列整齐的底座。靠近中央的记录仪时，伊卡洛斯听见了与生命塔相似的脉冲，一声接着一声，仿佛这里曾经十分热闹。\n\n解析原胚留下的记录，再到高级交互塔里选择已经恢复的配方。也许这片安静还能被新的生命打破。",
-        7 => "打开容器时，十二份源点沿内壁缓缓亮起。记录者把它们逐一编号，旁边写着那些曾经共同工作的生命。\n\n源点已送入亚空间。把它们交给基础解析塔，或许能继续拼合刚刚能够辨认的阶段记录。",
-        8 => "这份记录画着几种形态不同的装置。边角已经破损，只有共同使用的接口仍能辨认。它们曾经各自承担什么工作，还需要样本来回答。\n\n新的原胚线索已经归档，十二份源点也已送入亚空间。",
-        9 => "记录的末尾留着一段没有写完的话。伊卡洛斯无法辨认其中的名字，却看清了指向母星之外的航迹。\n\n容器里保存的十二份源点已回收。等准备好远行所需的物资，再去看看那颗星球上还留下了什么。",
-        10 => "另一颗行星上的遗迹使用着相同的接口。插入记录时，装置几乎立刻作出了回应。熟悉的脉冲在陌生的天空下响起，让伊卡洛斯第一次意识到，这套工厂曾经延伸得多么远。",
-        11 => "航线记录里没有货船的班次，只有一条条跨越距离的取货应答。某一端曾请求一枚零件，另一端很快就交出了它。\n\n远古接口留下的结构已经清晰。恢复它，也许就能让分散的产线重新使用同一座库房。",
-        12 => "这里的容器被排成了整齐的阵列。记录者逐座清点着停止工作的塔，却始终没有把它们写进废料清单。\n\n在最后一页，他留下了一行注记：还要找个办法，把它们经历过的事保存下来。",
-        13 => "曲速航迹的尽头，中继发出了熟悉的脉冲。伊卡洛斯送出试探的回应，一条中断已久的连接重新亮了起来。\n\n两颗相距遥远的星球，曾经共享同一条生产线。如今，记录终于又有人继续读下去了。",
-        14 => "这份清单把每座塔都称作同行者。记录者记下它们的供养、修复和产出，也记下了某一天又有新的生命加入。\n\n伊卡洛斯把清单留在产线记录旁。那些看似相同的装置，曾经被人一座座记住。",
-        15 => "最后一班运输迟迟没有回航。记录者关闭了远端接口，重新分配手边的矩阵，又将几条快要断供的传送带接了起来。\n\n此后的记录越来越短，供养清单却一直没有中断。",
-        16 => "星图在边缘断开了，库房索引仍指向更远的地址。伊卡洛斯试着发出一次请求，只收到漫长的静默。\n\n那些连接还没有彻底消失。等能够读懂更深处的记录，也许就能再次找到它们。",
-        17 => "中继反复发送着同一段请求。经过如此漫长的时间，它仍在等待足够的源点，等待有人把破碎的记录重新拼合。\n\n伊卡洛斯保存了这次回应。下一次抵达时，他希望能带来一些真正有用的东西。",
-        18 => "记录者把最后的访问权限留在了容器中。末尾没有署名，只有一句简短的叮嘱：如果还有人来到这里，请让它们继续活着。\n\n伊卡洛斯收好记录。探索网络和亚空间库房的深处，还有一些沉默的核心等待重新接通。",
-        _ => "远古记录中的微光仍在闪烁。",
+        1 => "FE.ExplorationManager.Story1".Translate(),
+        2 => "FE.ExplorationManager.Story2".Translate(),
+        3 => "FE.ExplorationManager.Story3".Translate(),
+        4 => "FE.ExplorationManager.Story4".Translate(),
+        5 => "FE.ExplorationManager.Story5".Translate(),
+        6 => "FE.ExplorationManager.Story6".Translate(),
+        7 => "FE.ExplorationManager.Story7".Translate(),
+        8 => "FE.ExplorationManager.Story8".Translate(),
+        9 => "FE.ExplorationManager.Story9".Translate(),
+        10 => "FE.ExplorationManager.Story10".Translate(),
+        11 => "FE.ExplorationManager.Story11".Translate(),
+        12 => "FE.ExplorationManager.Story12".Translate(),
+        13 => "FE.ExplorationManager.Story13".Translate(),
+        14 => "FE.ExplorationManager.Story14".Translate(),
+        15 => "FE.ExplorationManager.Story15".Translate(),
+        16 => "FE.ExplorationManager.Story16".Translate(),
+        17 => "FE.ExplorationManager.Story17".Translate(),
+        18 => "FE.ExplorationManager.Story18".Translate(),
+        _ => "FE.ExplorationManager.StoryFallback".Translate(),
     };
 
     private static string GetUltimateNarrative(int branch, int step) => step switch {
-        0 => "常规协议已经完整，深处却传来另一段回声。三个失联节点指向同一个中心。",
-        1 or 2 or 3 => $"第{step}处远古节点重新回应。记录指出了下一处连接。",
-        4 => "交付的源点拼合出完整索引，核心的位置终于清晰。",
-        _ => branch == 0 ? "最后一座中继苏醒了。此后每一次回收，都将带来新的回应。" : "库房的边界消失在视野之外。你接通了完整的亚空间。",
+        0 => "FE.ExplorationManager.UltimateStart".Translate(),
+        1 or 2 or 3 => string.Format("FE.ExplorationManager.UltimateNode".Translate(), step),
+        4 => "FE.ExplorationManager.UltimateDelivery".Translate(),
+        _ => branch == 0 ? "FE.ExplorationManager.UltimateExploration".Translate() : "FE.ExplorationManager.UltimateCapacity".Translate(),
     };
 }

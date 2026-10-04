@@ -34,6 +34,8 @@
         -->
         <PackageReference Include="DysonSphereProgram.GameLibs" Version="*-*"/>
         <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all"/>
+        <!-- 翻译表嵌入 DLL，资源名固定为 FE.Locale.translations.json -->
+        <EmbeddedResource Include="Locale\translations.json" LogicalName="FE.Locale.translations.json"/>
         <Reference Include="BuildBarTool">
             <HintPath>$(BuildBarToolHintPath)</HintPath>
             <Private>false</Private>

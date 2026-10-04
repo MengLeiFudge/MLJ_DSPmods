@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using FE.Logic.Civilization;
 using FE.Logic.Fractionation.Fractionators;
 using FE.UI.MainPanel.Theme;
@@ -8,17 +9,22 @@ namespace FE.UI.MainPanel.CoreOperate;
 
 /// <summary>按塔体类型汇总已存在的生命塔运行状态。</summary>
 public sealed class LivingTowersPage : CardBrowserPage {
-    protected override string Title => "生命塔";
-    protected override string Summary => $"记忆正在流动。当前成功率相对加成 +{ResearchManager.MemorySuccessBoost:P0}。";
-    protected override IReadOnlyList<PageCard> ReadCards() {
-        var summary = AdvancedFractionatorRuntime.GetTowerSummary();
-        var result = new List<PageCard>();
-        foreach (int itemId in new[] { IFE高级交互塔, IFE高级矿物塔, IFE高级转化塔 }) {
-            summary.TryGetValue(itemId, out var count);
-            result.Add(new PageCard { Key = itemId.ToString(), Title = LDB.items.Select(itemId)?.name, ItemId = itemId,
-                Status = $"已放置 {count.Total}", Detail = $"饥饿：{count.Hungry}\n缺料：{count.Missing}\n堵塞：{count.Blocked}\n\n" +
-                    "营养充足时塔体逐渐恢复，饥饿时耐久下降。优先检查矩阵供养，再检查配方所需的全部输入和输出传送带。\n\n缓存容量按20堆计算。主消耗物不足一轮时，产物尾料会继续流出。" });
-        }
-        return result;
-    }
+    protected override string Title => "生命塔".Translate();
+    protected override string Summary => string.Format("FE.LivingTowersPage.Summary".Translate(), ResearchManager.MemorySuccessBoost);
+    protected override string EmptyText => "FE.LivingTowersPage.Empty".Translate();
+    /// <summary>按星球与塔体类型列出运行状态，存在饥饿或停滞的星球排在前面。</summary>
+    protected override IReadOnlyList<PageCard> ReadCards() => AdvancedFractionatorRuntime.GetTowerSummary()
+        .OrderByDescending(pair => pair.Value.Hungry + pair.Value.Missing + pair.Value.Blocked)
+        .ThenBy(pair => pair.Key.PlanetId).ThenBy(pair => pair.Key.ItemId)
+        .Select(pair => {
+            var count = pair.Value;
+            string planet = GameMain.galaxy?.PlanetById(pair.Key.PlanetId)?.displayName ?? pair.Key.PlanetId.ToString();
+            int stalled = count.Missing + count.Blocked;
+            string status = count.Hungry > 0 ? string.Format("饥饿 {0}".Translate(), count.Hungry) : stalled > 0 ? string.Format("停滞 {0}".Translate(), stalled) : "运转正常".Translate();
+            return new PageCard { Key = $"{pair.Key.PlanetId}-{pair.Key.ItemId}", ItemId = pair.Key.ItemId,
+                Title = $"{planet} · {LDB.items.Select(pair.Key.ItemId)?.name}",
+                Status = string.Format("{0} 座 · {1}".Translate(), count.Total, status),
+                Detail = string.Format("FE.LivingTowersPage.Counts".Translate(), planet, count.Total, count.Hungry, count.Missing, count.Blocked) +
+                    "FE.LivingTowersPage.Advice".Translate() };
+        }).ToArray();
 }

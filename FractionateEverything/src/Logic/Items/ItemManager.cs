@@ -13,24 +13,6 @@ namespace FE.Logic.Items;
 /// FE 物品原型、翻译和物品价值注册入口。
 /// </summary>
 public static class ItemManager {
-    /// <summary>
-    /// 注册 Frag、Memory 与通用原胚的玩家可见文本。
-    /// </summary>
-    public static void AddTranslations() {
-        Register("残片", "Frag", "残片");
-        Register("I残片",
-            "A fragment recovered from the dark fog. Faint pulses still echo within; an analysis tower may be able to trace their source.",
-            "从黑雾残骸中找到的碎片，内部仍残留着微弱的脉冲。将它送入解析塔，也许能辨认出信号传来的方向。");
-        Register("记忆源点", "Memory", "源点");
-        Register("I记忆源点",
-            "A luminous core holding traces of a living tower's memories. Analysis can restore lost knowledge, and living towers can draw strength from it.",
-            "生命塔留下的微光，凝结着它曾经历过的漫长时光。解析其中的记忆可以找回遗失的知识，也能为仍在运转的生命塔提供力量。");
-        Register("通用原胚", "Universal Tower Embryo", "通用原胚");
-        Register("I通用原胚",
-            "A living embryo recovered from exploration and dark-fog combat, then used by advanced interaction recipes to cultivate advanced towers or breed more embryos.",
-            "从探索与黑雾战斗中回收的生命型通用原胚，在高级交互塔中用于培育高级塔或繁育更多原胚。");
-    }
-
     #region 添加新物品
 
     /// <summary>

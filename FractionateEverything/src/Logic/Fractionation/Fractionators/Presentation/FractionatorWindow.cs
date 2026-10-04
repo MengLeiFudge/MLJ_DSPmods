@@ -1325,7 +1325,7 @@ public static class FractionatorWindow {
             }
         }
         if (buildingID == IFE基础解析塔 && fractionator.fluidId > 0) {
-            modWindow.stateText.text = ResearchManager.GetAnalysisMode(fractionator.fluidId)
+            modWindow.stateText.text = ResearchManager.GetAnalysisMode(fractionator.fluidId).Translate()
                 + " · " + modWindow.stateText.text;
         }
     }

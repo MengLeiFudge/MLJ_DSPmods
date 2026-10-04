@@ -47,16 +47,6 @@ public static class BasicAnalysisTower {
     /// </summary>
     public const float PlrRatio = 1.0f;
     /// <summary>
-    /// 注册该分馏域对象需要的本地化文本。
-    /// </summary>
-    public static void AddTranslations() {
-        Register("解析塔", "Basic Analysis Tower", "基础解析塔");
-        Register("I解析塔",
-            "Consumes an item with explored unresolved content and advances that item's shared analysis slot.",
-            "消耗已经探索到未解析内容的物品，并推进该物品的共享解析槽。");
-    }
-
-    /// <summary>
     /// 创建并注册该分馏塔的物品、配方和模型原型。
     /// </summary>
     public static void Create() {

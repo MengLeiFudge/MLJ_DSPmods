@@ -28,13 +28,6 @@ public static class InterstellarInteractionStation {
         set => model.prefabDesc.idleEnergyPerTick = value;
     }
 
-    public static void AddTranslations() {
-        Register("星际物流交互站", "Interstellar Interaction Station");
-        Register("I星际物流交互站",
-            "Interstellar logistics station that exchanges items with the fractionation subspace. Its original upload, download, synchronization, threshold and blueprint modes are retained; each transfer consumes station energy.",
-            "与分馏亚空间交换物品的星际物流运输站。保留原有上传、下载、双向同步、阈值与蓝图模式；每次传输消耗站内电量。");
-    }
-
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE星际物流交互站, "星际物流交互站", "I星际物流交互站",
             "Assets/fe/interstellar-interaction-station", tab分馏 * 1000 + 307, 10, EItemType.Production,

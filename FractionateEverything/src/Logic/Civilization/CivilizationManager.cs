@@ -18,36 +18,6 @@ public static class CivilizationModule {
     private static bool civilizationSnapshotPending;
 
     /// <summary>
-    /// 注册文明域本地化文本。
-    /// </summary>
-    public static void AddTranslations() {
-        GrowthTechnologyManager.AddTranslations();
-        Register("探索发现研究内容：{0}", "Exploration discovered research content: {0}");
-        Register("高级塔库存门槛",
-            "{0} reached 1,000 units in subspace; its trait can now appear in exploration.",
-            "{0} 的脉冲正与亚空间中的同伴共鸣。探测器捕捉到了一段新的回应。");
-        Register("解析发现：{0}", "Analysis discovered: {0}");
-        Register("已恢复一座原型：{0}", "Prototype recovered: {0}");
-        Register("生命工业传承已记录",
-            "Living-industry legacy recorded for future saves.");
-        Register("关键信号{0}", "Key Signal {0}");
-        Register("信号{0}", "Signal {0}");
-        Register("检测到{0}：{1}", "Detected {0}: {1}");
-        Register("强烈脉冲：遗物探测器已启用，{0}位于{1}",
-            "Strong pulse: Relic Detector online; {0} is on {1}.");
-        Register("{0}发现 {1} 个探索信号", "{0} revealed {1} exploration signal(s).");
-        Register("残片解析", "Fragment analysis");
-        Register("古文明网络发现了新的探索信号",
-            "The old-civilization network revealed a new exploration signal.");
-        Register("已接入古文明亚空间网络",
-            "Connected to the old-civilization subspace network.");
-        Register("星球探测器已恢复", "Planet detector restored.");
-        Register("探索取得：{0} × {1}", "Exploration recovered: {0} x {1}");
-        Register("首个遗物已恢复：基础塔与亚空间访问已就绪",
-            "First relic recovered: basic towers and subspace access are ready.");
-    }
-
-    /// <summary>
     /// 完成数据加载后的运行缓存初始化。
     /// </summary>
     public static void Initialize() {
@@ -84,7 +54,6 @@ public static class CivilizationModule {
             if (!ExplorationManager.FirstRelicClaimed) {
                 ExplorationManager.EnsureFirstRelicMark();
             }
-            ExplorationManager.ClearLegacyFirstRelicNavigation();
             GrowthTechnologyManager.SyncRuntimeEffects();
             TutorialManager.UpdateMilestoneTips();
             PermanentProfileStore.TryRecordCompletion();
@@ -108,11 +77,16 @@ public static class CivilizationModule {
         }
     }
 
-    /// <summary>排队显示已结算的遗迹回收结果，多个结果依次确认。</summary>
+    /// <summary>排队显示已结算的遗迹回收结果；关键信号依次弹窗确认，普通点只浮现提示。</summary>
     /// <param name="title">遗迹名称。</param>
     /// <param name="text">实际获得的记录或物资。</param>
-    public static void QueueRecoveryPopup(string title, string text) {
+    /// <param name="modal">是否以需要确认的弹窗显示。</param>
+    public static void QueueRecoveryPopup(string title, string text, bool modal) {
         if (string.IsNullOrWhiteSpace(text)) { return; }
+        if (!modal) {
+            QueueNotification(text);
+            return;
+        }
         lock (NotificationSync) { PendingRecoveries.Enqueue((title, text)); }
     }
 
@@ -157,7 +131,6 @@ public static class CivilizationModule {
         if (!ExplorationManager.FirstRelicClaimed) {
             ExplorationManager.EnsureFirstRelicMark();
         }
-        ExplorationManager.ClearLegacyFirstRelicNavigation();
     }
 
     /// <summary>

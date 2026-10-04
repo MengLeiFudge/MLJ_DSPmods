@@ -58,6 +58,8 @@ public abstract class CardBrowserPage {
     /// <summary>读取本页数据；业务状态仍归逻辑域。</summary>
     /// <returns>本页卡片列表。</returns>
     protected abstract IReadOnlyList<PageCard> ReadCards();
+    /// <summary>没有任何条目时的叙事说明。</summary>
+    protected virtual string EmptyText => "暂无记录。".Translate();
 
     /// <summary>按统一1082×767画布创建可点击卡片与滚动详情。</summary>
     /// <param name="window">当前外壳。</param>
@@ -142,7 +144,7 @@ public abstract class CardBrowserPage {
             PageLayout.SetCardState(slot.Root, card.Key == selectedKey ? CardVisualState.Selected : CardVisualState.Normal);
         }
         pagerText.text = $"{pageIndex + 1} / {Math.Max(1, (cards.Count + PageSize - 1) / PageSize)}";
-        detailText.text = selected == null ? "暂无记录。" : $"<b>{selected.Title}</b>\n\n{selected.Detail}";
+        detailText.text = selected == null ? EmptyText : $"<b>{selected.Title}</b>\n\n{selected.Detail}";
         bool hasIcons = selected?.DetailItems.Length > 0;
         bool hasAction = selected?.Action != null;
         RectTransform scrollRoot = detailRoot.parent.parent as RectTransform;

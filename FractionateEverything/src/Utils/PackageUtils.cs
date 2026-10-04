@@ -4,19 +4,6 @@
 /// 背包、物流背包、数据中心和增产点拆分的共享辅助方法。
 /// </summary>
 public static partial class Utils {
-    public static void AddTranslations() {
-        Register("提示", "Tip");
-        Register("确定", "Confirm");
-        Register("取消", "Cancel");
-        Register("要花费", "Would you like to spend");
-        Register("来兑换", "to exchange");
-        Register("吗？", "?");
-        Register("兑换", "Exchange");
-        Register("已兑换", "Exchanged");
-        Register("无法兑换", "Can not exchange");
-
-    }
-
     /// <summary>
     /// 原版分割增产点数的方法。
     /// 使用前需注意物品总数 n 不能为 0。

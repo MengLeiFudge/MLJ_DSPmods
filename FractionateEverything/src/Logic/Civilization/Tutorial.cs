@@ -63,35 +63,6 @@ public static class TutorialManager {
         }
     }
 
-    /// <summary>注册关键节点的中英文叙事，详细操作由模组面板中的使用指南承担。</summary>
-    public static void AddTranslations() {
-        RegisterTutorial("神秘信号？", "A Mysterious Signal?",
-            "Another routine expedition. Yet after landing, Icarus picked up a powerful signal that was nowhere in the survey records. It grew stronger with every step in one direction… Perhaps it was worth a look.",
-            "这次也是照常的开拓任务，但是落地之后，伊卡洛斯感觉到了一些强烈的信号。它们不在任务记录里，也不像黑雾的通讯。\n\n换个方向走了几步，读数竟然更强了……也许应该去看看。");
-        RegisterTutorial("沉默的装置", "The Silent Machines",
-            "The buried container opened to reveal several unfamiliar towers. There were no operating instructions, only a few mineral samples and faint traces on a damaged record.\n\nThe machines still respond to power. Perhaps sending those samples inside will tell Icarus what they were built to do. The recovered supplies can be found in the new panel [Shift + F].",
-            "埋在尘土下的容器终于打开了。里面是几座陌生的塔，旁边散落着几种再普通不过的矿石。没有制造者的署名，也没有完整的操作说明。\n\n接通电源后，塔内重新亮起了微光。将那些矿石送进去，也许就能弄清它们曾经在做什么。\n\n回收的装置和记录已经整理在新接通的面板里，按 [Shift + F] 可以查看。");
-        RegisterTutorial("它们还活着", "Still Alive",
-            "These towers did not respond to the power grid. Icarus almost mistook them for broken machines, until a matrix passed through the opening and the cracks in their shells began to close.\n\nThey had not been waiting for electricity. They had been waiting for food.",
-            "这次找到的塔没有接入电网。伊卡洛斯原以为它们已经坏了，直到一枚矩阵滑进塔内，外壳上的裂纹开始缓缓合拢。\n\n原来它们等待的不是电力。\n\n它们饿了。哪怕生产暂时停下，也该为这些新伙伴留下一条不断供的矩阵传送带。");
-        RegisterTutorial("留下来的光", "The Light Left Behind",
-            "As the signal faded, a small bright core remained. The recovered record called it Memory. Something of the tower still lived inside it.\n\nIcarus brought it to the analysis tower. The scattered patterns on the old records began to stir.",
-            "信号平息后，塔体原来的位置留下了一团微光。记录中把它称作“源点”。那些曾经在塔内流动的东西，似乎还没有完全消失。\n\n伊卡洛斯将它带到解析塔前，残缺的记录再次有了回应。它们留下的经历，也许能帮助仍在运转的同伴。");
-        RegisterTutorial("遥远的回应", "An Answer from Afar",
-            "The old interface answered a request before any vessel could have arrived. The item had crossed the distance without a visible journey.\n\nThe recovered schematics might allow a logistics station to speak to the same storehouse. Icarus marked a place for it beside the production line.",
-            "接口发出应答时，附近并没有运输船经过。请求的物品却已经出现在眼前，仿佛距离从未存在。\n\n恢复出的结构图或许能让物流站接入同一座库房。伊卡洛斯在产线旁留出了一块空地，准备试一试这种古老的运输方式。");
-    }
-
-    /// <summary>注册一篇叙事的标题与正文。</summary>
-    /// <param name="name">中文标题，同时作为本地化键。</param>
-    /// <param name="englishTitle">英文标题。</param>
-    /// <param name="englishBody">英文正文。</param>
-    /// <param name="chineseBody">中文正文。</param>
-    private static void RegisterTutorial(string name, string englishTitle, string englishBody, string chineseBody) {
-        Register($"{name}标题", englishTitle, name);
-        Register($"{name}前字", englishBody, chineseBody);
-    }
-
     /// <summary>让教程列表支持垂直滚动。</summary>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UITutorialWindow), nameof(UITutorialWindow._OnOpen))]

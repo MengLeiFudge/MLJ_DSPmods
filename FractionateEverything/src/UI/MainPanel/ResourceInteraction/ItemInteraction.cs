@@ -66,31 +66,6 @@ public static class ItemInteraction {
     private static Text _capacityText;
     private static bool ShowNotStoredItem => ShowNotStoredItemEntry.Value;
 
-    public static void AddTranslations() {
-        Register("亚空间仓储", "Subspace Storage");
-        Register("亚空间仓储摘要", "Filter, inspect, and extract items stored in the fractionation subspace.",
-            "筛选、查看并提取分馏亚空间中存储的物品。");
-        Register("物品交互", "Subspace Storage");
-
-        Register("显示未存储的物品", "Display items not stored");
-        Register("查找指定物品", "Search for a specified item");
-        Register("上一页", "Previous page");
-        Register("下一页", "Next page");
-        Register("万物分馏", "Fractionate Everything");
-        Register("按类型筛选可见物品", "Filter visible items by type");
-
-        Register("以下物品在分馏亚空间的存储量为：",
-            "Stored items and their currently extractable quantities:",
-            "当前可提取的亚空间物品及数量：");
-        Register("亚空间容量说明",
-            "Each item normally holds {0} stacks. Exploration rewards may temporarily exceed this limit.",
-            "每种物品通常可存储 {0} 组；探索奖励可以暂时突破该上限。");
-        Register("提取物品", "Extract Item");
-        Register("提取物品说明",
-            "Left-click or right-click to extract items. The number of extraction groups can be adjusted on the settings page. This page shows the actual extractable subspace stock.",
-            "左键单击、右键单击均可提取物品，提取组数可以在设置页面调整。本页面显示亚空间中当前实际可提取的库存。");
-    }
-
     public static void LoadConfig(ConfigFile configFile) {
         ShowNotStoredItemEntry = configFile.Bind("Item Interaction", "Show Not Stored Item", false, "是否显示未存储的物品。");
         SelectedFilterMaskEntry = configFile.Bind("Item Interaction", "Selected Filter Mask", 0,
@@ -267,7 +242,7 @@ public static class ItemInteraction {
             btnItems[row, col].gameObject.SetActive(false);
         }
 
-        _capacityText.text = (GrowthTechnologyManager.UltimateCapacity ? "亚空间容量：无限"
+        _capacityText.text = (GrowthTechnologyManager.UltimateCapacity ? "亚空间容量：无限".Translate()
             : string.Format("亚空间容量说明".Translate(), CurrentCapacityGroups)).WithColor(Gray);
         UpdatePagination(totalPages);
     }
@@ -404,7 +379,7 @@ public static class ItemInteraction {
 
     private static void UpdatePagination(int totalPages) {
         if (_pageIndicator != null) {
-            _pageIndicator.text = $"第{_currentPage + 1}页 / 共{totalPages}页";
+            _pageIndicator.text = string.Format("第{0}页 / 共{1}页".Translate(), _currentPage + 1, totalPages);
         }
         if (_prevPageButton != null) {
             _prevPageButton.button.interactable = _currentPage > 0;

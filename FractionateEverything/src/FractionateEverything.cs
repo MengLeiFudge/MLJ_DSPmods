@@ -79,7 +79,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         using (ProtoRegistry.StartModLoad(PluginInfo.PLUGIN_GUID)) {
             InitLogger(Logger);
 
-            FeatureBootstrap.AddTranslations();
+            LoadTranslationsFromJson();
 
             LoadConfig();
 
@@ -128,15 +128,6 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
                     after = [LDBToolPlugin.MODGUID]
                 }
             );
-            // //在载入语言时、CommonAPIPlugin添加翻译后，添加额外的所有翻译
-            // harmony.Patch(
-            //     AccessTools.Method(typeof(Localization), nameof(Localization.LoadLanguage)),
-            //     null,
-            //     new(typeof(Utils), nameof(Utils.LoadLanguagePostfixAfterCommonApi)) {
-            //         after = [CommonAPIPlugin.GUID]
-            //     }
-            // );
-
             MainWindow.Init();
         }
     }

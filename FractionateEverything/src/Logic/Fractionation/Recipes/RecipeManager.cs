@@ -37,21 +37,6 @@ public static class RecipeManager {
 #endif
 
     /// <summary>
-    /// 注册配方名称模板。
-    /// </summary>
-    public static void AddTranslations() {
-        Register("{0}解析", "Analyze {0}");
-        Register("{0}自身复制", "{0} Self-Replication");
-        Register("{0}催化增殖", "{0} Catalytic Proliferation");
-        Register("培育{0}", "Cultivate {0}");
-        Register("{0}原胚繁育", "{0} Embryo Breeding");
-        Register("液氢燃料棒重氢置换", "Deuterium Replacement for Hydrogen Fuel Rod");
-        Register("氘核燃料棒反物质置换", "Antimatter Replacement for Deuteron Fuel Rod");
-        Register("采矿机重构为大型采矿机", "Mining Machine Reconstruction");
-        Register("电弧熔炉重构为位面熔炉", "Arc Smelter Reconstruction");
-    }
-
-    /// <summary>
     /// 获取全部已注册配方。
     /// </summary>
     public static IReadOnlyList<BaseRecipe> AllRecipes => RecipeList;

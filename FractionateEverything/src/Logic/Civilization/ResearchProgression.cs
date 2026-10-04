@@ -113,24 +113,24 @@ public static partial class ResearchManager {
         AddTechnologyContentDefinitions();
         for (int stage = 1; stage <= 6; stage++) {
             AddTechnologyContent(StageContentId(stage),
-                $"{LDB.items.Select(GetStageMatrix(stage))?.name}文明记录", stage);
+                string.Format("{0}文明记录".Translate(), LDB.items.Select(GetStageMatrix(stage))?.name), stage);
         }
     }
 
-    /// <summary>处理 Memory：阶段优先，剩余阶段均恢复后提供下一分钟增益。</summary>
+    /// <summary>处理 Memory：阶段按累计进度恢复，全部恢复后提供下一分钟增益。</summary>
     /// <param name="count">本批实际输入数量。</param>
-    /// <param name="seed">解析塔随机种子。</param>
     /// <returns>是否消耗输入。</returns>
-    private static bool ProcessMemory(int count, ref uint seed) {
+    private static bool ProcessMemory(int count) {
         if (NebulaMultiplayerModAPI.IsClient) { return false; }
         lock (Sync) {
             for (int stage = 1; stage <= CurrentMatrixStage; stage++) {
                 string id = StageContentId(stage);
                 if (UnlockedContents.Contains(id)) { continue; }
                 StageMemoryInputs[stage - 1] = Math.Min(long.MaxValue - count, StageMemoryInputs[stage - 1]) + count;
-                if (WorldviewRecipe.RollExpected(ref seed, count / (double)GetStageMemoryBudget(stage)) > 0) {
+                // 与样本解析一致使用确定进度，避免几何分布让少数玩家投入数倍预算。
+                if (StageMemoryInputs[stage - 1] >= GetStageMemoryBudget(stage)) {
                     UnlockContent(id);
-                    QueueNotification("记录中的微光重新连成了完整的篇章。新的成长科技已显现。");
+                    QueueNotification("FE.ResearchProgression.StageRestored".Translate());
                 }
                 snapshotDirty = true;
                 return true;

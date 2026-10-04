@@ -558,32 +558,6 @@ public static partial class ProcessManager {
 
     #region 热路径
 
-    /// <summary>
-    /// 注册该分馏域对象需要的本地化文本。
-    /// </summary>
-    public static void AddTranslations() {
-        Register("交互模式", "Interaction mode");
-        Register("原料堆积", "Fluid overflow");
-        Register("搬运模式", "Transport mode");
-        Register("主产物", "Main Outputs");
-        Register("副产物", "Byproducts");
-        Register("流动输入", "Flow input");
-        Register("流动输出", "Flow output");
-        Register("配方不存在", "Recipe does not exist");
-        Register("配方选择", "Recipe Selection");
-        Register("未选择配方", "No Recipe Selected");
-        Register("等待配方", "Waiting for a recipe");
-        Register("当前营养：{0} / {1}", "Nutrition: {0} / {1}");
-        Register("缺少营养", "Insufficient nutrition");
-        Register("饥饿运行", "Running while starving");
-        Register("生命反应中", "Living reaction active");
-        Register("配方产物", "Recipe products");
-        Register("高级塔客户端手动取出受限",
-            "Clients cannot manually extract advanced-tower outputs; use belts.",
-            "联机客户端不能手动取出高级塔产物，请使用传送带。");
-        Register("栏位已满", "The slot is full.");
-    }
-
     #region 字段
 
     /// <summary>

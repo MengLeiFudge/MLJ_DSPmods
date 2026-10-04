@@ -10,14 +10,6 @@ namespace FE.Logic.Fractionation.Fractionators;
 /// 分馏塔原型注册、缓存扩展、固定运行属性和分馏塔实例状态存档入口。
 /// </summary>
 public static class FractionatorManager {
-    public static void AddTranslations() {
-        BasicMineralTower.AddTranslations();
-        BasicAnalysisTower.AddTranslations();
-        AdvancedMineralTower.AddTranslations();
-        AdvancedInteractionTower.AddTranslations();
-        AdvancedConversionTower.AddTranslations();
-    }
-
     public static void AddFractionators() {
         //assembler-mk-1至assembler-mk-4，但对于分馏塔而言太暗，需要适当增加亮度
         //new(1.0f, 0.6596f, 0.3066f)

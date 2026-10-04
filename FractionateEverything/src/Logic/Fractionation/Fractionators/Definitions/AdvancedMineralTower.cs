@@ -52,16 +52,6 @@ public static class AdvancedMineralTower {
     public const float PlrRatio = 1.0f;
 
     /// <summary>
-    /// 注册本地化文本。
-    /// </summary>
-    public static void AddTranslations() {
-        Register("高级矿物塔", "Advanced Mineral Tower", "高级矿物塔");
-        Register("I高级矿物塔",
-            "A living, matrix-fed tower that reproduces rare natural resources with a continuously supplied catalyst.",
-            "由矩阵供养的生命型高级塔，以持续补充的珍奇催化物增殖珍奇自然资源。");
-    }
-
-    /// <summary>
     /// 注册物品与模型原型；高级塔没有制造配方，只能由原胚培育获得。
     /// </summary>
     public static void Create() {

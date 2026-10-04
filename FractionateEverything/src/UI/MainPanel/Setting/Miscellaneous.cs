@@ -78,61 +78,6 @@ public static class Miscellaneous {
     public static bool EnablePackageAutoSortTwice => EnablePackageAutoSortTwiceEntry.Value;
     public static bool EnablePackageLogistic => EnablePackageLogisticEntry.Value;
 
-    public static void AddTranslations() {
-        Register("杂项设置", "Miscellaneous");
-        Register("参数配置", "Parameter Settings", "参数配置");
-        Register("调整物品提取组数、背包阈值和主面板风格",
-            "Adjust item extraction stack counts, inventory thresholds, and main-panel style",
-            "调整物品提取组数、背包阈值和主面板风格");
-
-        Register("左键单击时提取几组物品", "Extract how many sets of items when left-click");
-        Register("右键单击时提取几组物品", "Extract how many sets of items when right-click");
-        Register("物品提取目标", "Extraction target", "物品提取目标");
-        Register("提取到手上", "To cursor", "提取到手上");
-        Register("提取到背包", "To inventory", "提取到背包");
-
-        Register("物品消耗顺序", "Order of consumption of items");
-        Register("物品消耗顺序说明",
-            "Controls which storage is consumed first when FE lets construction, crafting, or other item-consuming actions use items from multiple places. It only changes the consumption priority and does not move items.",
-            "当 FE 允许建造、制作或其他消耗物品的操作从多个位置取物品时，此设置决定先从哪里扣除。它只改变消耗优先级，不会移动物品。");
-        Register("背包", "Inventory");
-        Register("物流背包", "Logistics Inventory");
-        Register("背包 -> 物流背包 -> 分馏亚空间",
-            "Inventory -> Logistics Inventory -> Fractionation Subspace");
-        Register("背包 -> 分馏亚空间 -> 物流背包",
-            "Inventory -> Fractionation Subspace -> Logistics Inventory");
-        Register("物流背包 -> 背包 -> 分馏亚空间",
-            "Logistics Inventory -> Inventory -> Fractionation Subspace");
-        Register("物流背包 -> 分馏亚空间 -> 背包",
-            "Logistics Inventory -> Fractionation Subspace -> Inventory");
-        Register("分馏亚空间 -> 背包 -> 物流背包",
-            "Fractionation Subspace -> Inventory -> Logistics Inventory");
-        Register("分馏亚空间 -> 物流背包 -> 背包",
-            "Fractionation Subspace -> Logistics Inventory -> Inventory");
-
-        Register("物流交互站下载阈值", "Interaction Station download threshold");
-        Register("物流交互站上传阈值", "Interaction Station upload threshold");
-        Register("物流交互站阈值修改说明",
-            "To ensure consistent processing logic, this value cannot be modified in multiplayer games. You can change it in single player mode and save it before playing online.",
-            "为保证处理逻辑一致，多人游戏中无法修改此值。你可以在单人模式修改并保存后再联机游玩。");
-
-        Register("始终显示完整分馏配方信息", "Always show complete fractionation recipe information");
-        Register("始终显示完整分馏配方信息说明",
-            "When enabled, all product names, amounts, and probabilities are shown without requiring accumulated production.\nWhen disabled, this information is gradually revealed as the recipe produces items.",
-            "开启后，无需累计产出即可直接显示全部产物的名称、数量和概率。\n关闭后，相关信息仍随该配方的累计产出逐步公开。");
-        Register("启用确认弹窗", "Enable confirmation dialogs", "启用确认弹窗");
-        Register("启用确认弹窗说明",
-            "When disabled, FE's own question dialogs execute the confirm branch directly. Warning/info dialogs are not affected.",
-            "关闭后，FE 自己的确认弹窗会直接执行“确定”分支；警告框和提示框不受影响。");
-
-        Register("双击背包排序按钮将多余物品收入分馏亚空间",
-            "Double-click the inventory sort button to store excess items in the Fractionation Subspace");
-        Register("AutoSorter模组将背包中多余物品收入分馏亚空间",
-            "The AutoSorter mod stores excess inventory items in the Fractionation Subspace");
-        Register("PackageLogistic兼容亚空间",
-            "Allow PackageLogistic to use the Fractionation Subspace");
-    }
-
     public static void LoadConfig(ConfigFile configFile) {
         LeftClickTakeCountEntry = configFile.Bind("Miscellaneous", "LeftClickTakeCount", 0, "左键单击时提取几组物品");
         if (LeftClickTakeCountEntry.Value < 0 || LeftClickTakeCountEntry.Value >= ClickTakeCounts.Length) {
@@ -192,7 +137,7 @@ public static class Miscellaneous {
                 tipTitle: "物流交互站上传阈值", tipContent: "物流交互站阈值修改说明",
                 onSliderBuilt: s => UploadThresholdSlider = s, onTipBuilt: t => UploadThresholdTipsButton2 = t, pos: (5, 0)),
         ];
-        CreateSettingsLayout(wnd, trans, "亚空间存取", "让需要的物资，去往需要它们的地方。", children);
+        CreateSettingsLayout(wnd, trans, "亚空间存取", "FE.Settings.StorageSummary".Translate(), children);
     }
 
     /// <summary>创建界面偏好、收纳和已安装模组的兼容设置。</summary>
@@ -214,7 +159,7 @@ public static class Miscellaneous {
         children.Add(ButtonNode(MainWindow.GetSwitchMainPanelButtonLabel(),
             onClick: () => MainWindow.SwitchMainPanelFrom(MainWindow.GetCurrentMainPanelType()),
             onBuilt: btn => SwitchMainPanelButton = btn, pos: (children.Count, 0)));
-        CreateSettingsLayout(wnd, trans, "界面与兼容", "把熟悉的操作，留在顺手的位置。", children);
+        CreateSettingsLayout(wnd, trans, "界面与兼容", "FE.Settings.InterfaceSummary".Translate(), children);
     }
 
     /// <summary>复用设置控件布局，保持两个页面独立的生命周期。</summary>

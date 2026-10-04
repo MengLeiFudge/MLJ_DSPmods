@@ -39,24 +39,6 @@ public enum ERecipe {
 /// </summary>
 public static class ERecipeExtension {
     /// <summary>
-    /// 注册该分馏域对象需要的本地化文本。
-    /// </summary>
-    public static void AddTranslations() {
-        Register("未知", "Unknown");
-        Register("基础矿物", "Basic Mineral");
-        Register("基础解析", "Basic Analysis");
-        Register("高级矿物", "Advanced Mineral");
-        Register("高级交互", "Advanced Interaction");
-        Register("高级转化", "Advanced Conversion");
-        Register("未知配方", "Unknown Recipe");
-        Register("基础矿物配方", "Basic Mineral Recipe");
-        Register("基础解析配方", "Basic Analysis Recipe");
-        Register("高级矿物配方", "Advanced Mineral Recipe");
-        Register("高级交互配方", "Advanced Interaction Recipe");
-        Register("高级转化配方", "Advanced Conversion Recipe");
-    }
-
-    /// <summary>
     /// 获取全部 FE 分馏配方类型。
     /// </summary>
     public static readonly ERecipe[] RecipeTypes = [

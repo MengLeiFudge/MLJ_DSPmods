@@ -11,24 +11,6 @@ namespace FE.Logic.Station;
 /// </summary>
 public static partial class StationManager {
     /// <summary>
-    /// 注册交互站原型与扩展按钮的多语言文本。
-    /// </summary>
-    public static void AddTranslations() {
-        PlanetaryInteractionStation.AddTranslations();
-        InterstellarInteractionStation.AddTranslations();
-
-        // 传输模式按钮文本
-        Register("双向同步", "Sync", "双向同步");
-        Register("仅上传", "Upload Only", "仅上传");
-        Register("仅下载", "Download Only", "仅下载");
-        // 容量模式按钮文本
-        Register("有限上传", "Limited Upload", "有限上传");
-        Register("无限上传", "Infinite Upload", "无限上传");
-        // 物流交互站集装上限复选框文本。原版物流站保留游戏自带文本。
-        Register("使用强化上限", "Up to bonus limit", "使用强化上限");
-    }
-
-    /// <summary>
     /// 注册两类物流交互站原型。
     /// </summary>
     public static void AddStations() {

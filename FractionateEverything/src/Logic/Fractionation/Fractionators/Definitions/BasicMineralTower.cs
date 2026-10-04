@@ -47,16 +47,6 @@ public static class BasicMineralTower {
     /// </summary>
     public const float PlrRatio = 1.0f;
     /// <summary>
-    /// 注册该分馏域对象需要的本地化文本。
-    /// </summary>
-    public static void AddTranslations() {
-        Register("复制塔", "Basic Mineral Tower", "基础矿物塔");
-        Register("I复制塔",
-            "Replicates one common natural resource at a time. Successful cycles produce two units from one input.",
-            "自动识别单一普通自然资源；成功时由 1 件输入产出 2 件同类资源。");
-    }
-
-    /// <summary>
     /// 创建并注册该分馏塔的物品、配方和模型原型。
     /// </summary>
     public static void Create() {

@@ -215,7 +215,7 @@ public static class PlayerInventoryAccess {
         if (GetItemTotalCount(itemId) < count) {
             if (showTakeFailMessage) {
                 UIMessageBox.Show("提示".Translate(),
-                    $"{takeProto.name} 不足 {count}！",
+                    string.Format("{0} 不足 {1}！".Translate(), takeProto.name, count),
                     "确定".Translate(), UIMessageBox.WARNING,
                     null);
             }

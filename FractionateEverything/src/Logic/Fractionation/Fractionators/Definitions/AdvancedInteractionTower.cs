@@ -46,16 +46,6 @@ public static class AdvancedInteractionTower {
     /// </summary>
     public const float PlrRatio = 1.0f;
     /// <summary>
-    /// 注册该分馏域对象需要的本地化文本。
-    /// </summary>
-    public static void AddTranslations() {
-        Register("培养塔", "Advanced Interaction Tower", "高级交互塔");
-        Register("I培养塔",
-            "A living, matrix-fed tower for cultivating advanced towers and breeding universal embryos.",
-            "由矩阵供养的生命型高级塔，用于培育高级塔与繁育通用原胚。");
-    }
-
-    /// <summary>
     /// 创建并注册该分馏塔的物品、配方和模型原型。
     /// </summary>
     public static void Create() {

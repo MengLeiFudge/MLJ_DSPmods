@@ -155,23 +155,22 @@ public static class NebulaMultiplayerModAPI {
     /// <summary>广播已经结算的探索结果；此消息只负责客户端弹窗，不再执行奖励。</summary>
     /// <param name="title">遗迹名称。</param>
     /// <param name="text">实际回收结果。</param>
-    public static void BroadcastExplorationRecovery(string title, string text) {
+    /// <param name="modal">是否为需要确认的关键信号弹窗。</param>
+    public static void BroadcastExplorationRecovery(string title, string text, bool modal) {
         if (NebulaModAPI.MultiplayerSession?.LocalPlayer?.IsHost == true) {
-            NebulaModAPI.MultiplayerSession.Network.SendPacket(new ExplorationRecoveryPacket { title = title, text = text });
+            NebulaModAPI.MultiplayerSession.Network.SendPacket(new ExplorationRecoveryPacket { title = title, text = text, modal = modal });
         }
     }
 
-    /// <summary>从连接及主机缓存的移动快照读取玩家位置、星球和落地状态。</summary>
+    /// <summary>从主机持有的连接数据读取玩家位置与星球，不采信 FE 动作包里的位置声明。</summary>
     /// <param name="connection">发包连接。</param>
     /// <param name="position">宇宙位置。</param>
     /// <param name="planetId">所在星球。</param>
-    /// <param name="grounded">最近一次移动快照是否处于地面步行状态。</param>
-    /// <returns>是否取得连接玩家数据；缺少移动状态时不允许地面回收。</returns>
+    /// <returns>是否取得连接玩家数据。</returns>
     public static bool TryGetAuthoritativePlayerState(INebulaConnection connection,
-        out VectorLF3 position, out int planetId, out bool grounded) {
+        out VectorLF3 position, out int planetId) {
         position = default;
         planetId = 0;
-        grounded = false;
         object network = NebulaModAPI.MultiplayerSession?.Network;
         if (connection == null || network == null) { return false; }
         PropertyInfo playersProperty = network.GetType().GetProperty("Players", BindingFlags.Instance | BindingFlags.Public);
@@ -180,24 +179,6 @@ public static class NebulaMultiplayerModAPI {
         if (data == null) { return false; }
         position = new VectorLF3(data.UPosition.x, data.UPosition.y, data.UPosition.z);
         planetId = data.LocalPlanetId;
-
-        // NebulaAPI 未公开移动状态，读取 NebulaWorld 已接收的最新快照，不采信 FE 动作包里的位置或落地声明。
-        object session = NebulaModAPI.MultiplayerSession;
-        object world = AccessTools.Property(session.GetType(), "World")?.GetValue(session);
-        MethodInfo getModels = world == null ? null : AccessTools.Method(world.GetType(), "GetRemotePlayersModels");
-        if (getModels == null) { return true; }
-        object[] arguments = [null];
-        using IDisposable scope = getModels.Invoke(world, arguments) as IDisposable;
-        if (scope == null || arguments[0] is not IDictionary models || !models.Contains(data.PlayerId)) { return true; }
-        object model = models[data.PlayerId];
-        object animator = AccessTools.Property(model.GetType(), "Animator")?.GetValue(model);
-        if (animator == null || AccessTools.Field(animator.GetType(), "packetBuffer")?.GetValue(animator) is not Array frames
-            || frames.Length == 0) { return true; }
-        object frame = frames.GetValue(frames.Length - 1);
-        object movement = AccessTools.Property(frame.GetType(), "MovementState")?.GetValue(frame);
-        object flags = AccessTools.Property(frame.GetType(), "Flags")?.GetValue(frame);
-        // Nebula PlayerMovement.EFlags.isGrounded 使用最低位，且步行状态排除下落中的飞行。
-        grounded = movement is EMovementState.Walk && flags != null && (Convert.ToByte(flags) & 1) != 0;
         return true;
     }
 
@@ -424,6 +405,8 @@ public sealed class ExplorationRecoveryPacket {
     public string title { get; set; }
     /// <summary>已经结算的结果文本。</summary>
     public string text { get; set; }
+    /// <summary>关键信号以弹窗显示，普通点只浮现提示。</summary>
+    public bool modal { get; set; }
 }
 
 /// <summary>在客户端排队显示主机的实际回收结果。</summary>
@@ -432,7 +415,7 @@ public sealed class ExplorationRecoveryPacketProcessor : BasePacketProcessor<Exp
     /// <inheritdoc />
     public override void ProcessPacket(ExplorationRecoveryPacket packet, INebulaConnection conn) {
         if (!IsHost && packet != null) {
-            CivilizationModule.QueueRecoveryPopup(packet.title, packet.text);
+            CivilizationModule.QueueRecoveryPopup(packet.title, packet.text, packet.modal);
         }
     }
 }
@@ -471,13 +454,13 @@ public class CivilizationActionPacketProcessor : BasePacketProcessor<Civilizatio
         }
 
         if (!NebulaMultiplayerModAPI.TryGetAuthoritativePlayerState(conn,
-                out VectorLF3 position, out int planetId, out bool grounded)) { return; }
+                out VectorLF3 position, out int planetId)) { return; }
         switch (packet.actionType) {
             case CivilizationActionPacket.SubmitMemory:
-                ExplorationManager.SubmitTaskMemory(packet.markId, position, planetId, grounded);
+                ExplorationManager.SubmitTaskMemory(packet.markId, position, planetId);
                 break;
             case CivilizationActionPacket.ClaimExploration:
-                ExplorationManager.TryClaimFromClient(packet.markId, position, planetId, grounded);
+                ExplorationManager.TryClaimFromClient(packet.markId, position, planetId);
                 break;
         }
     }
