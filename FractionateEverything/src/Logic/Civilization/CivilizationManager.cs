@@ -126,6 +126,7 @@ public static class CivilizationModule {
     public static void AfterImport() {
         ResearchManager.RefreshAdvancedTowerInventoryMilestones();
         GrowthTechnologyManager.ConsolidateWhiteMatrixResearch();
+        GrowthTechnologyManager.SyncResearchWorkload();
         GrowthTechnologyManager.SyncRuntimeEffects();
         if (!ExplorationManager.FirstRelicClaimed) {
             ExplorationManager.EnsureFirstRelicMark();

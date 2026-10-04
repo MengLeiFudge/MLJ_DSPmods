@@ -65,6 +65,8 @@ public static class GrowthTechnologyManager {
 
     // 采用原版“无人机引擎”升级链的六阶段矩阵数量。
     private static readonly int[] FiniteGrowthCosts = [200, 400, 800, 1200, 1600, 50000];
+    /// <summary>每种矩阵每件对应的科研哈希，按蓝至白采用原版无人机引擎各阶段工作量。</summary>
+    private static readonly int[] MatrixHashPerItem = [90, 180, 180, 300, 900, 900];
     private static readonly int[] CapacityCosts = [600, 1200, 1800, 2400, 3000, 4000];
     private static readonly int[] ExperiencedStackCosts = [1200, 2400, 3600, 4800, 6000];
     private static readonly int[] StandardStackCosts = [0, 6000, 8000, 10000, 40000];
@@ -148,7 +150,7 @@ public static class GrowthTechnologyManager {
                 [MatrixItems[stage]], cost);
             tech.Position = GetTechPosition(10, stage - 1);
             if (!experienced && level == 4) {
-                tech.LevelCoef1 = (StandardStackCosts[4] - cost) * 3600;
+                tech.LevelCoef1 = (StandardStackCosts[4] - cost) * MatrixHashPerItem[stage];
                 tech.HashNeeded -= (long)tech.Level * tech.LevelCoef1;
             }
             tech.IsHiddenTech = true;
@@ -389,10 +391,12 @@ public static class GrowthTechnologyManager {
 
     private static TechProto RegisterGrowthTech(int techId, GrowthTechSeries series,
         int previousTech, int[] matrixItemIds, int matrixCost, GrowthTechLevel levelDefinition) {
-        int linearHashIncrement = checked(levelDefinition.LinearCostIncrement * 3600);
-        long baseHash = (long)matrixCost * 3600L
+        int hashPerItem = MatrixHashPerItem[Array.IndexOf(MatrixItems, matrixItemIds[matrixItemIds.Length - 1])];
+        int linearHashIncrement = checked(levelDefinition.LinearCostIncrement * hashPerItem);
+        long baseHash = (long)matrixCost * hashPerItem
                         - (long)levelDefinition.Level * linearHashIncrement;
-        int[] itemPoints = Enumerable.Repeat(1, matrixItemIds.Length).ToArray();
+        // 原版每件矩阵有3600材料点；缩短科研工作量时同步提高每哈希消耗，保持材料总成本。
+        int[] itemPoints = Enumerable.Repeat(3600 / hashPerItem, matrixItemIds.Length).ToArray();
         string nodeNameKey = $"{series.NameKey} {levelDefinition.Level}";
         TechProto tech = ProtoRegistry.RegisterTech(
             techId, nodeNameKey, series.DescriptionKey, "FE成长科技结果", series.IconPath,
@@ -421,11 +425,12 @@ public static class GrowthTechnologyManager {
         tech.LevelCoef2 = 0;
         tech.PreTechs = previousTech > 0 ? [previousTech] : [];
         tech.PreTechsImplicit = [GetMatrixTechId(matrixItemIds[matrixItemIds.Length - 1])];
+        int hashPerItem = MatrixHashPerItem[Array.IndexOf(MatrixItems, matrixItemIds[matrixItemIds.Length - 1])];
         tech.Items = [.. matrixItemIds];
-        tech.ItemPoints = Enumerable.Repeat(1, matrixItemIds.Length).ToArray();
+        tech.ItemPoints = Enumerable.Repeat(3600 / hashPerItem, matrixItemIds.Length).ToArray();
         tech.PropertyOverrideItems = [.. matrixItemIds];
         tech.PropertyItemCounts = Enumerable.Repeat(matrixCost, matrixItemIds.Length).ToArray();
-        tech.HashNeeded = (long)matrixCost * 3600L;
+        tech.HashNeeded = (long)matrixCost * hashPerItem;
     }
 
     private static int[] GetProgressiveMatrixItems(int matrixStage) => matrixStage switch {
@@ -483,6 +488,27 @@ public static class GrowthTechnologyManager {
             state.maxLevel = tech.MaxLevel;
             state.hashNeeded = tech.GetHashNeeded(state.curLevel);
             history.techStates[techId] = state;
+        }
+    }
+
+    /// <summary>按当前原型校准FE科研工作量与白糖计数，保持未完成节点可继续结算，不重复授予效果。</summary>
+    public static void SyncResearchWorkload() {
+        Dictionary<int, TechState> states = GameMain.history?.techStates;
+        if (states == null) { return; }
+        foreach (TechProto tech in LDB.techs.dataArray) {
+            if (tech == null || tech.IsObsolete || !TryGetTechnologyContentId(tech.ID, out _)
+                || !states.TryGetValue(tech.ID, out TechState state)) { continue; }
+            long needed = tech.GetHashNeeded(state.curLevel);
+            if (needed <= 0) { continue; }
+            // 原版导入已用新原型覆盖hashNeeded，但保留原hashUploaded；超过新总量会使AddTechHash直接返回。
+            long uploaded = state.unlocked ? needed : Math.Min(needed - 1, Math.Max(0L, state.hashUploaded));
+            int universePoints = tech.Items.Length > 0 && tech.Items[0] == I宇宙矩阵 ? tech.ItemPoints[0] : 0;
+            if (state.hashNeeded == needed && state.hashUploaded == uploaded
+                && state.uPointPerHash == universePoints) { continue; }
+            state.hashUploaded = uploaded;
+            state.hashNeeded = needed;
+            state.uPointPerHash = universePoints;
+            states[tech.ID] = state;
         }
     }
 
