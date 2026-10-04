@@ -160,12 +160,12 @@
     "1031": "Energie für Subraumtransfers -10 %",
     "1041": "亜空間への出し入れの消費エネルギー -10%"
   },
-  "广播间隔 -15%\n残片发现概率 +0.2%": {
-    "enUS": "Broadcast interval -15%\nFragment discovery chance +0.2%",
-    "zhCN": "广播间隔 -15%\n残片发现概率 +0.2%",
-    "frFR": "Intervalle des émissions -15 %\nProbabilité de trouver un fragment +0,2 %",
-    "1031": "Sendeintervall -15 %\nChance auf einen Fragmentfund +0,2 %",
-    "1041": "放送間隔 -15%\n断片発見確率 +0.2%"
+  "FE.Growth.ExplorationIncrement": {
+    "enUS": "Broadcast interval -15%\nFragment discovery chance +{0:P0}",
+    "zhCN": "广播间隔 -15%\n残片发现概率 +{0:P0}",
+    "frFR": "Intervalle des émissions -15 %\nProbabilité de trouver un fragment +{0:P0}",
+    "1031": "Sendeintervall -15 %\nChance auf einen Fragmentfund +{0:P0}",
+    "1041": "放送間隔 -15%\n断片発見確率 +{0:P0}"
   },
   "信号读数间隔 -{0:0.#}%": {
     "enUS": "Signal reading interval -{0:0.#}%",
@@ -2541,11 +2541,11 @@
     "1041": "古代の記録"
   },
   "FE.ExplorationManager.Story1": {
-    "enUS": "The container's seal was worn, but the devices inside were well preserved. Icarus recovered four basic mineral towers, two basic analysis towers, and incomplete records marked with iron, copper, stone and coal samples.\n\nThe supplies have entered the newly connected subspace. Press [Shift + F] to view them and their clues.",
-    "zhCN": "容器的封口已经磨损，里面的装置却保存得很完整。伊卡洛斯取出了四座基础矿物塔、两座基础解析塔，以及几份标着铁、铜、石、煤样本的残缺记录。\n\n回收物资已送入刚刚接通的亚空间。按 [Shift + F] 打开面板，可以查看它们和留下的线索。",
-    "frFR": "Le sceau du conteneur était usé, mais les appareils étaient bien conservés. Icarus a récupéré quatre tours minérales de base, deux tours d'analyse de base et des archives incomplètes marquées de fer, cuivre, pierre et charbon.\n\nLes ressources ont rejoint le sous-espace nouvellement connecté. Appuyez sur [Shift + F] pour les consulter avec leurs indices.",
-    "1031": "Die Versiegelung war abgenutzt, doch die Geräte waren gut erhalten. Icarus barg vier einfache Mineraltürme, zwei einfache Analysetürme und lückenhafte Aufzeichnungen mit Eisen-, Kupfer-, Stein- und Kohleproben.\n\nDie Vorräte liegen im neu verbundenen Subraum. Öffne mit [Shift + F] das Fenster, um sie und ihre Hinweise anzusehen.",
-    "1041": "容器の封は傷んでいたが、中の装置はよく保存されていた。イカロスは基礎鉱物塔4基、基礎解析塔2基、そして鉄・銅・石・石炭のサンプルが記された不完全な記録を取り出した。\n\n物資は接続したばかりの亜空間へ送られた。[Shift + F]で画面を開き、物資と手掛かりを確認しよう。"
+    "enUS": "The container's seal was worn, but the devices inside were well preserved. Icarus recovered four basic mineral towers, two basic analysis towers, and incomplete records marked with iron, copper, stone and coal samples.\n\nAs Icarus stepped away, the chassis responded with unexpected ease. The recovered records had recalibrated its walking systems; even distant signals now felt within reach.\n\nThe supplies have entered the newly connected subspace. Press [Shift + F] to view them and their clues.",
+    "zhCN": "容器的封口已经磨损，里面的装置却保存得很完整。伊卡洛斯取出了四座基础矿物塔、两座基础解析塔，以及几份标着铁、铜、石、煤样本的残缺记录。\n\n再次迈步时，伊卡洛斯忽然感到机体的响应轻快了许多。刚才读取的记录似乎重新校准了行走系统，远处的信号也不再那么遥不可及。\n\n回收物资已送入刚刚接通的亚空间。按 [Shift + F] 打开面板，可以查看它们和留下的线索。",
+    "frFR": "Le sceau du conteneur était usé, mais les appareils étaient bien conservés. Icarus a récupéré quatre tours minérales de base, deux tours d'analyse de base et des archives incomplètes marquées de fer, cuivre, pierre et charbon.\n\nEn repartant, Icarus sentit son châssis répondre avec une aisance nouvelle. Les archives avaient recalibré sa marche ; même les signaux lointains semblaient désormais à sa portée.\n\nLes ressources ont rejoint le sous-espace nouvellement connecté. Appuyez sur [Shift + F] pour les consulter avec leurs indices.",
+    "1031": "Die Versiegelung war abgenutzt, doch die Geräte waren gut erhalten. Icarus barg vier einfache Mineraltürme, zwei einfache Analysetürme und lückenhafte Aufzeichnungen mit Eisen-, Kupfer-, Stein- und Kohleproben.\n\nBeim Weitergehen reagierte Icarus plötzlich viel geschmeidiger. Die geborgenen Aufzeichnungen hatten sein Laufsystem neu kalibriert; selbst ferne Signale schienen nun erreichbar.\n\nDie Vorräte liegen im neu verbundenen Subraum. Öffne mit [Shift + F] das Fenster, um sie und ihre Hinweise anzusehen.",
+    "1041": "容器の封は傷んでいたが、中の装置はよく保存されていた。イカロスは基礎鉱物塔4基、基礎解析塔2基、そして鉄・銅・石・石炭のサンプルが記された不完全な記録を取り出した。\n\n再び歩き出すと、機体の反応が驚くほど軽くなっていた。読み込んだ記録が歩行システムを調整したらしい。遠くの信号も、もう手の届かないものには感じられない。\n\n物資は接続したばかりの亜空間へ送られた。[Shift + F]で画面を開き、物資と手掛かりを確認しよう。"
   },
   "FE.ExplorationManager.Story2": {
     "enUS": "A thin plate covered in fine lines lay at the bottom of the container, with an ordinary grain of ore set beside it. Icarus placed it next to the earlier records, and the missing parts began to take shape.\n\nThese minerals may be the keys to the records. Send samples with known clues into a basic analysis tower and see how it responds.",

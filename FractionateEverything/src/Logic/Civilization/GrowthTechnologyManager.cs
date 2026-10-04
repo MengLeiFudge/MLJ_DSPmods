@@ -251,7 +251,8 @@ public static class GrowthTechnologyManager {
     /// <param name="level">当前待研究等级。</param>
     /// <returns>原版解锁区域中的逐项增量。</returns>
     private static string BuildExplorationUnlockText(int level) {
-        string text = "广播间隔 -15%\n残片发现概率 +0.2%".Translate();
+        string text = string.Format("FE.Growth.ExplorationIncrement".Translate(),
+            FragDropPatch.FragDropProbabilityPerLevel);
         if (level <= 5) {
             text += "\n" + string.Format("信号读数间隔 -{0:0.#}%".Translate(),
                 GetSignalPrecision(level - 1) - GetSignalPrecision(level));

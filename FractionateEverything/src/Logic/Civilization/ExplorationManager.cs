@@ -236,7 +236,10 @@ public static class ExplorationManager {
         if (NebulaMultiplayerModAPI.IsClient || GameMain.galaxy == null) { return; }
         lock (Sync) {
             if (storyCompleted == 0 && !ActiveMarks.Any(m => m.Kind == ExplorationMarkKind.FirstRelic)) {
-                AddMark(GameMain.galaxy.PlanetById(GameMain.galaxy.birthPlanetId), ExplorationMarkKind.FirstRelic, 1);
+                PlanetData planet = GameMain.galaxy.PlanetById(GameMain.galaxy.birthPlanetId);
+                if (TryFindFirstRelicPosition(planet, out Vector3 position)) {
+                    AddMark(planet, ExplorationMarkKind.FirstRelic, 1, fixedPosition: position);
+                }
             }
         }
     }
@@ -516,16 +519,62 @@ public static class ExplorationManager {
         };
     }
 
-    private static ExplorationMark AddMark(PlanetData planet, ExplorationMarkKind kind, int number = 0, string content = null) {
+    /// <summary>在出生半球搜索首遗物，使用弧长约束探索距离和黑雾基地安全圈。</summary>
+    /// <param name="planet">母星，工厂及基地数据必须已经就绪。</param>
+    /// <param name="position">安全点的星球局部位置。</param>
+    /// <returns>本次有界搜索是否找到安全位置。</returns>
+    private static bool TryFindFirstRelicPosition(PlanetData planet, out Vector3 position) {
+        position = Vector3.zero;
+        PlanetFactory factory = planet?.factory;
+        if (factory?.enemySystem?.bases == null || planet.birthPoint.sqrMagnitude < 1f) { return false; }
+        float radius = planet.realRadius;
+        float minAngle = 100f / radius;
+        float maxAngle = Mathf.Min(160f / radius, Mathf.PI / 2f - 0.01f);
+        if (minAngle > maxAngle) { return false; }
+        Quaternion rotation = Quaternion.FromToRotation(Vector3.up, planet.birthPoint.normalized);
+        float phase = (float)(GetRandDouble(ref randomSeed) * Math.PI * 2d);
+        var bases = factory.enemySystem.bases;
+        for (int attempt = 0; attempt < 512; attempt++) {
+            float y = Mathf.Lerp(Mathf.Cos(minAngle), Mathf.Cos(maxAngle), (attempt + 0.5f) / 512f);
+            float ring = Mathf.Sqrt(1f - y * y);
+            float angle = phase + attempt * 2.39996323f;
+            Vector3 direction = rotation * new Vector3(ring * Mathf.Cos(angle), y, ring * Mathf.Sin(angle));
+            bool safe = true;
+            for (int i = 1; i < bases.cursor; i++) {
+                DFGBaseComponent b = bases[i];
+                if (b == null || b.id != i || b.enemyId <= 0 || b.enemyId >= factory.enemyPool.Length) { continue; }
+                ref EnemyData enemy = ref factory.enemyPool[b.enemyId];
+                if (enemy.id != b.enemyId) { continue; }
+                float dot = Vector3.Dot(direction, ((Vector3)enemy.pos).normalized);
+                if (Mathf.Acos(Mathf.Clamp(dot, -1f, 1f)) * radius < 200f) { safe = false; break; }
+            }
+            if (!safe) { continue; }
+            position = direction * MarkRadius(planet);
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>添加主机生成的动态或剧情点，首遗物使用预先验证的安全位置。</summary>
+    /// <param name="planet">目标星球。</param>
+    /// <param name="kind">点位类型。</param>
+    /// <param name="number">剧情序号。</param>
+    /// <param name="content">研究内容身份。</param>
+    /// <param name="fixedPosition">已经通过专用规则验证的位置；为空时按普通点规则随机生成。</param>
+    /// <returns>已经加入活动集合的点位。</returns>
+    private static ExplorationMark AddMark(PlanetData planet, ExplorationMarkKind kind, int number = 0,
+        string content = null, Vector3? fixedPosition = null) {
         if (nextMarkId == int.MaxValue) { throw new InvalidOperationException("探索点位身份已耗尽。"); }
         Vector3 position = Vector3.up;
-        for (int attempt = 0; attempt < 32; attempt++) {
+        for (int attempt = 0; !fixedPosition.HasValue && attempt < 32; attempt++) {
             position = RandomDirection(ref randomSeed) * MarkRadius(planet);
             if (!ActiveMarks.Any(m => m.PlanetId == planet.id && (m.LocalPosition - position).magnitude < 65)
                 && (GameMain.mainPlayer?.planetId != planet.id || ((Vector3)GameMain.mainPlayer.position - position).magnitude > 65)) { break; }
         }
-        if (GameMain.mainPlayer?.planetId == planet.id
-            && ((Vector3)GameMain.mainPlayer.position - position).magnitude <= 65) {
+        if (fixedPosition.HasValue) {
+            position = fixedPosition.Value;
+        } else if (GameMain.mainPlayer?.planetId == planet.id
+                   && ((Vector3)GameMain.mainPlayer.position - position).magnitude <= 65) {
             position = -((Vector3)GameMain.mainPlayer.position).normalized * MarkRadius(planet);
         }
         var mark = new ExplorationMark { Id = nextMarkId++, PlanetId = planet.id, LocalPosition = position,

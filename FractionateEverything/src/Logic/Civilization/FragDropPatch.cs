@@ -11,8 +11,10 @@ namespace FE.Logic.Civilization;
 public static class FragDropPatch {
     private const int DropProbabilityScale = 10000;
     private const int DropLifetime = 1800;
-    private const double BaseFragDropProbability = 0.01d;
+    private const double BaseFragDropProbability = 0.10d;
     private const double EmbryoDropProbability = 0.01d;
+    /// <summary>每级探索科技增加的残片掉率，供结算与科技说明共用。</summary>
+    public const double FragDropProbabilityPerLevel = BaseFragDropProbability * 0.2d;
 
     /// <summary>
     /// 每次黑雾击杀分别判定 Frag 与通用原胚；成长科技只提高 Frag 的基础概率。
@@ -27,7 +29,7 @@ public static class FragDropPatch {
         }
 
         double fragProbability = BaseFragDropProbability
-                                 * (1d + GrowthTechnologyManager.ExplorationLevel * 0.2d);
+                                 + GrowthTechnologyManager.ExplorationLevel * FragDropProbabilityPerLevel;
         TryDropItem(__instance.gameData, trashSystem, ref enemyData, IFE残片, fragProbability);
         if (ExplorationManager.HasProducedFirstMatrix()) {
             TryDropItem(__instance.gameData, trashSystem, ref enemyData, IFE通用原胚,

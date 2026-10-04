@@ -1,4 +1,5 @@
-﻿using FE.Logic.DataCenter;
+﻿using System;
+using FE.Logic.DataCenter;
 using FE.Logic.Items;
 using UnityEngine;
 using static FE.Utils.Utils;
@@ -78,6 +79,7 @@ public static class CivilizationRecoveryManager {
         GameMain.history.UnlockRecipe(RFE基础矿物塔);
         GameMain.history.UnlockRecipe(RFE基础解析塔);
         ResearchManager.GrantStarterResearchState();
+        GrantWalkingTechnologies();
         DataCenterInventory.AddExplorationReward(IFE基础矿物塔, 4);
         DataCenterInventory.AddExplorationReward(IFE基础解析塔, 2);
 
@@ -101,6 +103,18 @@ public static class CivilizationRecoveryManager {
     /// 保留联机生命周期入口；探索认领已经不再使用旧请求节流。
     /// </summary>
     public static void ResetNetworkRequestThrottle() { }
+
+    /// <summary>完整授予机械骨骼升级及当前模组附带效果，已完成等级不重复结算。</summary>
+    private static void GrantWalkingTechnologies() {
+        GameHistoryData history = GameMain.history;
+        for (int techId = T机械骨骼; techId < T机械骨骼 + 8; techId++) {
+            TechProto tech = LDB.techs.Select(techId);
+            if (tech?.UnlockFunctions == null || Array.IndexOf(tech.UnlockFunctions, 3) < 0) { continue; }
+            for (int level = tech.Level; level <= tech.MaxLevel && !history.TechUnlocked(techId, true); level++) {
+                history.UnlockTechUnlimited(techId, true);
+            }
+        }
+    }
 
     /// <summary>授予已玩过路线的物流补给，集装科技跟随白爪的实际制造前置。</summary>
     private static void GrantVeteranLogisticsSupply() {
