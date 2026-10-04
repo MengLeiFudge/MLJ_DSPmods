@@ -17,8 +17,8 @@ public static partial class Utils {
     private static bool translationsLoaded;
 
     /// <summary>
-    /// 在 Awake 阶段读取 Locale/translations.json，完整校验后交给 CommonAPI 注册。
-    /// 译文和格式模板只在资源中维护；不得用英文回退掩盖游戏语言缺失。
+    /// 在 Awake 阶段读取 Locale/translations.json，逐条注册；缺失译文回退英文并记录错误。
+    /// 没有英文时保留其他有效译文，没有可用译文的词条单独跳过。
     /// </summary>
     public static void LoadTranslationsFromJson() {
         if (translationsLoaded) { return; }
@@ -32,25 +32,38 @@ public static partial class Utils {
         Dictionary<string, Dictionary<string, string>> table;
         try {
             table = TranslationJsonParser.Parse(reader.ReadToEnd());
-            foreach (var entry in table) {
-                foreach (string language in TranslationLanguages) {
-                    if (!entry.Value.TryGetValue(language, out string text) || string.IsNullOrWhiteSpace(text)) {
-                        throw new FormatException($"Translation '{entry.Key}' has no {language} text.");
-                    }
-                }
-                if (entry.Value.Count != TranslationLanguages.Length) {
-                    throw new FormatException($"Translation '{entry.Key}' contains an unsupported language.");
-                }
-            }
         }
         catch (FormatException ex) {
             LogError($"Failed to load {resourceName}: {ex.Message}");
             return;
         }
+        int registeredCount = 0;
         foreach (var entry in table) {
-            LocalizationModule.RegisterTranslation(entry.Key, entry.Value);
+            if (string.IsNullOrWhiteSpace(entry.Key)) {
+                LogError("Skipping translation with an empty key.");
+                continue;
+            }
+            bool hasEnglish = entry.Value.TryGetValue("enUS", out string english) && !string.IsNullOrWhiteSpace(english);
+            var translations = new Dictionary<string, string>();
+            foreach (string language in TranslationLanguages) {
+                if (!entry.Value.TryGetValue(language, out string text) || string.IsNullOrWhiteSpace(text)) {
+                    LogError($"Translation '{entry.Key}' has no {language} text; "
+                             + (hasEnglish ? "using enUS fallback." : "no enUS fallback is available; skipping this language."));
+                    if (!hasEnglish) { continue; }
+                    text = english;
+                }
+                translations.Add(language, text);
+            }
+            foreach (string language in entry.Value.Keys) {
+                if (Array.IndexOf(TranslationLanguages, language) < 0) {
+                    LogError($"Translation '{entry.Key}' contains unsupported language '{language}'; ignoring this language.");
+                }
+            }
+            if (translations.Count == 0) { continue; }
+            LocalizationModule.RegisterTranslation(entry.Key, translations);
+            registeredCount++;
         }
         translationsLoaded = true;
-        LogInfo($"Loaded {table.Count} translations from {resourceName}");
+        LogInfo($"Loaded {registeredCount} of {table.Count} translations from {resourceName}");
     }
 }
