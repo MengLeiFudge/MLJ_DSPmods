@@ -7,6 +7,7 @@ using FE.Compatibility.Nebula;
 using FE.Logic.DataCenter;
 using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Items;
 using HarmonyLib;
 using static FE.Utils.Utils;
 
@@ -184,11 +185,11 @@ public static partial class ResearchManager {
     }
 
     /// <summary>
-    /// 获取需要建立基础解析入口的物品。Frag 和三类高级塔始终包含在内。
+    /// 获取需要建立基础解析入口的物品，包含扩容矩阵、Frag 和三类高级塔。
     /// </summary>
     public static int[] GetAnalyzableItemIds() {
         lock (Sync) {
-            HashSet<int> itemIds = [.. DirectionPools.Keys,
+            HashSet<int> itemIds = [.. DirectionPools.Keys, .. ItemManager.MainProgressMatrixIds,
                 IFE残片, IFE高级矿物塔, IFE高级交互塔, IFE高级转化塔];
             return itemIds.OrderBy(itemId => itemId).ToArray();
         }
@@ -243,6 +244,7 @@ public static partial class ResearchManager {
     /// <param name="itemId">当前输入。</param>
     /// <returns>模式文案。</returns>
     public static string GetAnalysisMode(int itemId) {
+        if (Array.IndexOf(ItemManager.MainProgressMatrixIds, itemId) >= 0) { return "FE.Storage.ExpansionMode"; }
         if (itemId == IFE残片) { return "广播解析"; }
         if (Volatile.Read(ref analysisRuntimeSnapshot).CandidatesByItemId.ContainsKey(itemId)) { return "解析"; }
         if (SacrificeUnlocked && (itemId == IFE记忆源点 || FractionatorTowerCatalog.IsAdvancedTowerItem(itemId))) {
@@ -453,6 +455,9 @@ public static partial class ResearchManager {
         sacrificeOutputCount = 0;
         if (count <= 0) { return 0; }
 
+        if (Array.IndexOf(ItemManager.MainProgressMatrixIds, itemId) >= 0) {
+            return SubspaceExpansion.SupplyMatrix(itemId, count);
+        }
         if (itemId == IFE残片) {
             if (!ExplorationManager.PlanetDetectorUnlocked) { return 0; }
             int pointCount = WorldviewRecipe.RollExpected(ref seed, count * 0.02d);
@@ -865,8 +870,6 @@ public static partial class ResearchManager {
     private static void AddTechnologyContentDefinitions() {
         AddTechnologyContent(GrowthTechnologyManager.StackTechnologyContentId,
             "FE分馏堆叠成长".Translate(), 0);
-        AddTechnologyContent(GrowthTechnologyManager.SubspaceCapacityTechnologyContentId,
-            "FE亚空间扩容".Translate(), 1);
         AddTechnologyContent(GrowthTechnologyManager.ExplorationTechnologyContentId,
             "FE探索信号增幅".Translate(), 1);
         AddTechnologyContent(GrowthTechnologyManager.PlanetaryInteractionTechnologyContentId,

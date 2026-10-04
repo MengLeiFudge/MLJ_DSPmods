@@ -26,7 +26,7 @@ Recover the starting relic for four Basic Mineral Towers, two Basic Analysis Tow
 | 塔型 | 用途 |
 | --- | --- |
 | 基础矿物塔 / Basic Mineral | 自动匹配已解析普通矿物配方，成功时同物1变2 |
-| 基础解析塔 / Basic Analysis | 概率消耗线索指定样本，推进共享解析进度；失败样本回流 |
+| 基础解析塔 / Basic Analysis | 解析线索指定样本，失败回流；持续投入科学矩阵可扩充亚空间 |
 | 高级矿物塔 / Advanced Mineral | 使用普通矿物与珍奇催化剂增殖资源 |
 | 高级交互塔 / Advanced Interaction | 培育高级塔，以塔体模板繁育原胚 |
 | 高级转化塔 / Advanced Conversion | 置换指定燃料或机器，并回收部分部件 |
@@ -63,15 +63,17 @@ Silent relics have fixed locations and open in layers. Dynamic broadcasts contin
 
 ## 亚空间与成长 Subspace and Progression
 
-亚空间是跨星球共享库存，每种物品独立计容量。初始10组，前五次扩容依次达到20、30、50、70、100组，白糖阶段每级增加50组，第十级为350组。普通上传满仓拒收，探索奖励可超额且仍能提取。
+亚空间是跨星球共享库存，每种物品独立计容量。低价原料按价值获得更大额度，铁矿等普通原料初始可存10000件；建筑和未知估值物品保留10组基础额度。仓储页显示全局容量倍率，鼠标悬停物品可查看其库存和容量。普通上传满仓拒收，探索奖励可超额且仍能提取。
+
+向已供电的基础解析塔侧面持续投入科学矩阵，即可永久扩容。全部塔共享供料，每秒最多使用一件，优先高档矩阵，每档最多预存60件；剩余输入保留增产点回流。蓝至白效率依次为1、2、4、8、16、32倍，容量越大增长越慢；多塔与集装只改善供料稳定性，停供不丢失已有容量。
 
 手动存取和基础塔正面上传无额外耗能。行星/星际物流交互站自动存取，保留槽位模式、阈值、增产点、蓝图与复制粘贴；按物品价值和实际搬运量消耗站内电量。
 
 保留两条堆叠路线：普通路线由黄糖原版集装物流提供4堆叠，紫8、绿12、白16及20；已完整体验过的档案从蓝糖4开始，红8、黄12、紫16、绿20。全局堆叠同时影响缓存、输出和原版配方时间。白糖重复升级合并在科技树第六列，终极科技位于第七列，解锁区显示每一级增加的能力。
 
-探索与仓储常规十级完成后，各有一条终极任务。恢复中继或空间锚点，分批明确交付2400源点，再连接最终核心；任务直接授予第十一级，无矩阵费用。终极探索持续补足五个普通广播，终极仓储解除玩法容量限制。
+探索常规十级完成后开放终极探索任务；亚空间容量达到初始的35倍后开放终极仓储任务。恢复中继或空间锚点，分批明确交付2400源点，再连接最终核心；任务直接授予终极科技，无矩阵研究费用。终极探索持续补足五个普通广播，终极仓储解除玩法容量限制。
 
-Subspace capacity and exploration have ten regular levels followed by a quest-awarded ultimate level. Each expedition includes a 2,400-Memory delivery. Ultimate exploration replenishes five ordinary broadcasts; ultimate storage removes the gameplay capacity limit.
+Each item has its own subspace capacity, with larger allowances for inexpensive materials. Feed science matrices into the side of a powered Basic Analysis Tower for permanent expansion. All towers share a limit of one matrix per second, prioritizing higher tiers; larger storage expands more slowly. Hover over an item on the storage page to see its capacity. Exploration level ten and a storage multiplier of 35 unlock their respective ultimate quests. Each requires a 2,400-Memory delivery. Ultimate exploration replenishes five ordinary broadcasts; ultimate storage removes the gameplay capacity limit.
 
 ## 高级配方 Advanced Recipes
 

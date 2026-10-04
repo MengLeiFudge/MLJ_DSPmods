@@ -5,6 +5,7 @@ using System.Linq;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
 using FE.Logic.Civilization;
+using FE.Logic.DataCenter;
 using FE.UI.Controls;
 using FE.UI.Foundation.Window;
 using FE.UI.Layout;
@@ -226,6 +227,7 @@ public static class ItemInteraction {
         int endIndex = Math.Min(startIndex + ItemsPerPage, items.Count);
 
         int i = 0;
+        int hoveredItemId = 0;
         for (int idx = startIndex; idx < endIndex; idx++) {
             (ItemProto item, long count) = items[idx];
             int row = i / ColumnCount;
@@ -234,6 +236,7 @@ public static class ItemInteraction {
             btnItems[row, col].Proto = item;
             btnItems[row, col].SetCount(count);
             btnItems[row, col].Selected = SelectedItemID > 0 && item.ID == SelectedItemID;
+            if (btnItems[row, col].uiButton.isPointerEnter) { hoveredItemId = item.ID; }
             i++;
         }
         for (; i < ItemsPerPage; i++) {
@@ -242,8 +245,14 @@ public static class ItemInteraction {
             btnItems[row, col].gameObject.SetActive(false);
         }
 
-        _capacityText.text = (GrowthTechnologyManager.UltimateCapacity ? "亚空间容量：无限".Translate()
-            : string.Format("亚空间容量说明".Translate(), CurrentCapacityGroups)).WithColor(Gray);
+        var expansion = SubspaceExpansion.GetStatus();
+        string supply = expansion.MatrixId == 0 ? "FE.Storage.Paused".Translate()
+            : string.Format("FE.Storage.Expanding".Translate(), LDB.items.Select(expansion.MatrixId)?.name ?? "?", expansion.Rate);
+        _capacityText.text = (hoveredItemId > 0
+            ? string.Format("FE.Storage.ItemCapacity".Translate(), LDB.items.Select(hoveredItemId)?.name ?? "?", GetModDataItemCount(hoveredItemId),
+                GrowthTechnologyManager.UltimateCapacity ? "∞" : GetItemCapacity(hoveredItemId).ToString("N0"))
+            : GrowthTechnologyManager.UltimateCapacity ? "亚空间容量：无限".Translate()
+            : string.Format("FE.Storage.Capacity".Translate(), expansion.Scale, supply)).WithColor(Gray);
         UpdatePagination(totalPages);
     }
 

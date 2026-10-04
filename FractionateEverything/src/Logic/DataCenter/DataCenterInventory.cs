@@ -40,6 +40,7 @@ public static class DataCenterInventory {
                         bw.Write(centerItemInc[itemId]);
                     }
                 }),
+                ("Expansion", SubspaceExpansion.Export),
                 ("ManualInteractionStats", bw => {
                     bw.Write(Interlocked.Read(ref ManualExtractCount));
                     bw.Write(Interlocked.Read(ref ManualUploadCount));
@@ -50,6 +51,7 @@ public static class DataCenterInventory {
 
     public static void Import(BinaryReader r) {
         lock (centerItemCount) {
+            SubspaceExpansion.IntoOtherSave();
             r.ReadBlocks(
                 ("CenterItems", br => {
                     int size = br.ReadInt32();
@@ -65,6 +67,7 @@ public static class DataCenterInventory {
                         }
                     }
                 }),
+                ("Expansion", SubspaceExpansion.Import),
                 ("ManualInteractionStats", br => {
                     ManualExtractCount = Math.Max(0L, br.ReadInt64());
                     ManualUploadCount = Math.Max(0L, br.ReadInt64());
@@ -110,6 +113,7 @@ public static class DataCenterInventory {
             Array.Clear(centerItemInc, 0, centerItemInc.Length);
             ManualExtractCount = 0;
             ManualUploadCount = 0;
+            SubspaceExpansion.IntoOtherSave();
             snapshotDirty = false;
         }
     }
@@ -294,20 +298,17 @@ public static class DataCenterInventory {
     /// </summary>
     public static bool TakeSnapshotDirty() {
         lock (centerItemCount) {
-            bool dirty = snapshotDirty;
+            bool dirty = snapshotDirty | SubspaceExpansion.TakeSnapshotDirty();
             snapshotDirty = false;
             return dirty;
         }
     }
 
     /// <summary>
-    /// 获取当前每种物品的常规容量组数。
+    /// 按价值折算基础件数并乘永久容量倍率，建筑和未知估值保留十组底线。
     /// </summary>
-    public static int CurrentCapacityGroups => GrowthTechnologyManager.CapacityGroups;
-
-    /// <summary>
-    /// 获取指定物品在亚空间中的容量上限。
-    /// </summary>
+    /// <param name="itemId">物品原型身份。</param>
+    /// <returns>单物品独立容量；不因容量变化截断现有库存。</returns>
     public static long GetItemCapacity(int itemId) {
         if (itemId <= 0 || itemId >= 12000) {
             return 0;
@@ -317,8 +318,12 @@ public static class DataCenterInventory {
         }
         ItemProto item = LDB.items.Select(itemId);
         int stackSize = Math.Max(1, item?.StackSize ?? 1);
-        int stackGroups = CurrentCapacityGroups;
-        return (long)stackGroups * stackSize;
+        double baseline = 10d * stackSize;
+        double value = itemValue[itemId];
+        if (item?.BuildMode == 0 && value > 0 && value < maxValue) {
+            baseline = Math.Max(baseline, 10000d / Math.Max(1d, Math.Log10(value + 1d)));
+        }
+        return (long)Math.Min(long.MaxValue / 10d, Math.Floor(baseline * SubspaceExpansion.CapacityScale));
     }
 
     /// <summary>

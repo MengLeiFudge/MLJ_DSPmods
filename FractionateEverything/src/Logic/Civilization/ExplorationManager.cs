@@ -477,9 +477,10 @@ public static class ExplorationManager {
     }
 
     private static void EnsureUltimate(int branch) {
-        int level = branch == 0 ? GrowthTechnologyManager.ExplorationLevel : GrowthTechnologyManager.SubspaceCapacityLevel;
+        bool ready = branch == 0 ? GrowthTechnologyManager.ExplorationLevel >= 10 : SubspaceExpansion.UltimateQuestReady;
         string id = branch == 0 ? "exploration" : "capacity";
-        if (level < 10 || UltimateSteps[branch] >= 6 || ActiveMarks.Any(m => m.Kind == ExplorationMarkKind.Ultimate && m.ContentId == id)) { return; }
+        if ((!ready && UltimateSteps[branch] == 0) || UltimateSteps[branch] >= 6
+            || ActiveMarks.Any(m => m.Kind == ExplorationMarkKind.Ultimate && m.ContentId == id)) { return; }
         ExplorationRecord previous = Records.LastOrDefault(r => r.Mark.Kind == ExplorationMarkKind.Ultimate && r.Mark.ContentId == id);
         PlanetData planet = SelectReachablePlanet(6, previous?.Mark.PlanetId ?? 0, UltimateSteps[branch] % 2 == 1);
         AddMark(planet, ExplorationMarkKind.Ultimate, UltimateSteps[branch], id);

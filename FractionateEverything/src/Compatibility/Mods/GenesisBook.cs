@@ -79,7 +79,6 @@ public static class GenesisBook {
     private static bool IsFracTech(int id) {
         return id is >= TFE行星内物流交互 and <= TFE星际物流交互
             or >= TFE分馏堆叠成长 + 1 and <= TFE分馏堆叠成长 + 5
-            or >= TFE亚空间扩容 + 1 and <= TFE亚空间扩容 + 9
             or >= TFE高级矿物特质 + 1 and <= TFE高级矿物特质 + 6
             or >= TFE高级交互特质 + 1 and <= TFE高级交互特质 + 6
             or >= TFE高级转化特质 + 1 and <= TFE高级转化特质 + 6

@@ -76,13 +76,6 @@
     "1031": "Erhöht die globale Frachtstapelung und multipliziert die Dauer aller Originalrezepte mit 4 / aktueller Stapelhöhe.",
     "1041": "貨物の全体スタック数を増やし、すべてのバニラレシピの所要時間を4÷現在のスタック数に比例させます。"
   },
-  "FE亚空间扩容描述": {
-    "enUS": "Extending the old storage index gives every kind of item more room. The same compact notation can be repeated as our understanding of subspace improves.",
-    "zhCN": "古老的库房仍有许多空间没有接入。扩展它的索引，就能为每种物品腾出更多位置；随着对亚空间的理解加深，这种扩展可以继续进行。",
-    "frFR": "Une grande partie de l'ancien entrepôt reste inaccessible. Étendre son index libère de la place pour chaque type d'objet ; cette extension peut se poursuivre à mesure que notre compréhension du sous-espace progresse.",
-    "1031": "Große Teile des alten Lagers sind noch nicht erschlossen. Ein erweitertes Verzeichnis schafft mehr Platz für jede Gegenstandsart. Mit wachsendem Verständnis des Subraums lässt sich dieser Ausbau fortsetzen.",
-    "1041": "古い倉庫には、まだ接続されていない空間が数多く残っています。索引を拡張すれば、各アイテムにより多くの保管場所を確保できます。亜空間への理解が深まれば、この拡張を続けられます。"
-  },
   "FE亚空间能效描述": {
     "enUS": "Reduces logistics-interaction energy use by 10% per level.",
     "zhCN": "每级使物流交互站存取亚空间的耗能降低 10%。",
@@ -132,26 +125,12 @@
     "1031": "Fortlaufende Antworten antiker Sender",
     "1041": "古代放送の継続応答"
   },
-  "物品存放组数无限": {
-    "enUS": "Unlimited item storage stacks",
-    "zhCN": "物品存放组数无限",
-    "frFR": "Nombre illimité de piles par objet",
-    "1031": "Unbegrenzte Lagerstapel pro Gegenstand",
-    "1041": "アイテムの保管スタック数が無制限"
-  },
   "货物堆叠上限 +{0}": {
     "enUS": "Cargo stack limit +{0}",
     "zhCN": "货物堆叠上限 +{0}",
     "frFR": "Limite d'empilement des cargaisons +{0}",
     "1031": "Frachtstapelgrenze +{0}",
     "1041": "貨物スタック上限 +{0}"
-  },
-  "物品存放组数 +{0}": {
-    "enUS": "Item storage stacks +{0}",
-    "zhCN": "物品存放组数 +{0}",
-    "frFR": "Piles stockables par objet +{0}",
-    "1031": "Lagerstapel pro Gegenstand +{0}",
-    "1041": "アイテムの保管スタック数 +{0}"
   },
   "亚空间存取耗能 -10%": {
     "enUS": "Subspace transfer energy -10%",
@@ -1119,12 +1098,40 @@
     "1031": "Eingelagerte Gegenstände und derzeit entnehmbare Mengen:",
     "1041": "現在取り出せる亜空間のアイテムと数量："
   },
-  "亚空间容量说明": {
-    "enUS": "Each item normally holds {0} stacks. Exploration rewards may temporarily exceed this limit.",
-    "zhCN": "每种物品通常可存储 {0} 组；探索奖励可以暂时突破该上限。",
-    "frFR": "Chaque objet peut normalement occuper {0} piles. Les récompenses d'exploration peuvent temporairement dépasser cette limite.",
-    "1031": "Jede Gegenstandsart kann normalerweise {0} Stapel belegen. Erkundungsbelohnungen dürfen diese Grenze vorübergehend überschreiten.",
-    "1041": "各アイテムは通常{0}スタックまで保管できます。探索報酬は一時的にこの上限を超えられます。"
+  "FE.Storage.Capacity": {
+    "enUS": "Storage capacity ×{0:0.00} · {1}",
+    "zhCN": "仓储容量 ×{0:0.00} · {1}",
+    "frFR": "Capacité de stockage ×{0:0.00} · {1}",
+    "1031": "Lagerkapazität ×{0:0.00} · {1}",
+    "1041": "倉庫容量 ×{0:0.00} · {1}"
+  },
+  "FE.Storage.Expanding": {
+    "enUS": "{0}: capacity +{1:0.000}×/min",
+    "zhCN": "{0}供料：容量 +{1:0.000}×/分钟",
+    "frFR": "{0} : capacité +{1:0.000}×/min",
+    "1031": "{0}: Kapazität +{1:0.000}×/min",
+    "1041": "{0}を供給中：容量 +{1:0.000}×/分"
+  },
+  "FE.Storage.Paused": {
+    "enUS": "Expansion paused",
+    "zhCN": "扩容暂停",
+    "frFR": "Extension en pause",
+    "1031": "Erweiterung pausiert",
+    "1041": "拡張停止中"
+  },
+  "FE.Storage.ItemCapacity": {
+    "enUS": "{0}: {1:N0} stored / {2} capacity",
+    "zhCN": "{0}：库存 {1:N0} / 容量 {2}",
+    "frFR": "{0} : stock {1:N0} / capacité {2}",
+    "1031": "{0}: Bestand {1:N0} / Kapazität {2}",
+    "1041": "{0}：在庫 {1:N0} / 容量 {2}"
+  },
+  "FE.Storage.ExpansionMode": {
+    "enUS": "Matrix expansion",
+    "zhCN": "矩阵扩容",
+    "frFR": "Extension par matrices",
+    "1031": "Matrix-Erweiterung",
+    "1041": "マトリックスによる拡張"
   },
   "提取物品": {
     "enUS": "Extract Item",
@@ -1960,11 +1967,11 @@
     "1041": "亜空間"
   },
   "FE.UsageGuidePage.Storage": {
-    "enUS": "Once the container connects, Icarus gains a storehouse that need not be carried around. Supplies recovered from relics are in Industry / Subspace Storage.\n\nItems not needed for now can enter subspace through a basic tower's front port. Retrieve them from the storage page when needed. Research Subspace Capacity when space runs short, and adjust routine transfers in Settings.",
-    "zhCN": "容器接通之后，伊卡洛斯多了一座不必随身背着的库房。遗迹中带回的物资都可以在“工业 / 亚空间仓储”中找到。\n\n暂时不用的物品可以从基础塔的正面端口送入亚空间。需要它们时，再到仓储页提取。容量不够时可以研究亚空间扩容，日常存取方式则在设置页调整。",
-    "frFR": "Une fois le conteneur connecté, Icarus dispose d'un entrepôt qu'il n'a pas besoin de porter. Les ressources des reliques se trouvent dans Industrie / Entrepôt sous-spatial.\n\nLes objets inutiles pour le moment peuvent entrer dans le sous-espace par le port avant d'une tour de base. Retirez-les sur la page de stockage au besoin. Étudiez la capacité sous-spatiale si la place manque et réglez les transferts dans les paramètres.",
-    "1031": "Sobald der Behälter verbunden ist, besitzt Icarus ein Lager, das er nicht mittragen muss. Reliktvorräte findest du unter Industrie / Subraumlager.\n\nVorerst unbenötigte Gegenstände gelangen durch den vorderen Anschluss eines Basisturms in den Subraum. Entnimm sie bei Bedarf auf der Lagerseite. Erforsche Subraumkapazität bei Platzmangel und passe alltägliche Transfers in den Einstellungen an.",
-    "1041": "容器がつながると、イカロスは持ち歩かなくてよい倉庫を得る。遺跡の物資は「工業 / 亜空間倉庫」で確認できる。\n\n今使わないアイテムは基礎塔の正面ポートから亜空間へ送り、必要なときに倉庫画面から取り出そう。容量が足りなければ亜空間拡張を研究し、普段の出し入れは設定画面で調整する。"
+    "enUS": "Once the container connects, Icarus gains a storehouse that need not be carried around. Relic supplies are in Industry / Subspace Storage. Hover over an item to see its stock and capacity.\n\nSend spare items through a basic tower's front port, or retrieve them from the storage page. Each item has its own capacity. Inexpensive resources have more room; buildings and items of unknown value retain a basic allowance. Exploration rewards can exceed the normal limit.\n\nTo expand storage, power a basic analysis tower and feed science matrices into a side port. Leave an outlet for unused matrices. All towers share one expansion supply: at most one matrix is used per second, with room for 60 of each tier. Higher tiers take priority and expand faster; larger storage expands more slowly. Extra towers and stacking stabilize supply without multiplying its speed. Stopping supply preserves all capacity gained.",
+    "zhCN": "容器接通之后，伊卡洛斯多了一座不必随身背着的库房。遗迹物资都在“工业 / 亚空间仓储”中；鼠标移到物品上，可以查看库存与容量。\n\n暂时不用的物品可以从基础塔正面端口送入亚空间，需要时再从仓储页提取。每种物品独立计容量，低价原料空间更大，建筑和未知估值物品保留基础额度；探索奖励可突破普通上限。\n\n想要扩容，就给基础解析塔供电，将科学矩阵送入侧面入口，并为未使用的矩阵留出回流出口。全部塔共用供料，每秒最多使用一件矩阵，每档可预存60件；优先使用高档矩阵，等级越高扩容越快，库房越大增长越慢。多塔和集装能稳定供料，但不叠加扩容速度。停供后，已经增加的容量仍会保留。",
+    "frFR": "Une fois le conteneur connecté, Icarus dispose d'un entrepôt qu'il n'a pas besoin de porter. Les ressources des reliques se trouvent dans Industrie / Entrepôt sous-spatial. Survolez un objet pour voir son stock et sa capacité.\n\nEnvoyez les objets inutilisés par le port avant d'une tour de base et retirez-les depuis la page de stockage. Chaque objet dispose de sa propre capacité. Les ressources peu coûteuses ont plus de place ; les bâtiments et objets sans estimation gardent une réserve de base. Les récompenses d'exploration peuvent dépasser la limite normale.\n\nPour agrandir l'entrepôt, alimentez une tour d'analyse de base et envoyez des matrices scientifiques par un port latéral, en laissant une sortie de retour. Toutes les tours partagent une alimentation : au plus une matrice par seconde, avec une réserve de 60 par niveau. Les niveaux supérieurs sont prioritaires et plus efficaces ; l'extension ralentit avec la taille du stockage. Les tours supplémentaires et l'empilement stabilisent l'alimentation sans multiplier la vitesse. La capacité acquise reste disponible après l'arrêt.",
+    "1031": "Sobald der Behälter verbunden ist, besitzt Icarus ein Lager, das er nicht mittragen muss. Reliktvorräte liegen unter Industrie / Subraumlager. Fahre über einen Gegenstand, um Bestand und Kapazität zu sehen.\n\nUnbenötigte Gegenstände gelangen durch den vorderen Anschluss eines Basisturms in den Subraum und lassen sich auf der Lagerseite entnehmen. Jede Art besitzt eine eigene Kapazität. Günstige Rohstoffe erhalten mehr Platz; Gebäude und Gegenstände ohne Wertschätzung behalten einen Grundvorrat. Erkundungsbelohnungen dürfen die normale Grenze überschreiten.\n\nZur Erweiterung versorgst du einen einfachen Analyseturm mit Strom und führst Wissenschaftsmatrizen seitlich zu. Halte einen Rücklauf für ungenutzte Matrizen frei. Alle Türme teilen sich die Versorgung: höchstens eine Matrix pro Sekunde, mit Platz für 60 je Stufe. Höhere Stufen haben Vorrang und erweitern schneller; mit wachsendem Lager sinkt das Tempo. Mehr Türme und Stapelung stabilisieren die Zufuhr, vervielfachen aber nicht die Geschwindigkeit. Bereits gewonnene Kapazität bleibt nach dem Versorgungsstopp erhalten.",
+    "1041": "容器がつながると、イカロスは持ち歩かなくてよい倉庫を得る。遺跡の物資は「工業 / 亜空間倉庫」にあり、アイテムにカーソルを合わせると在庫と容量を確認できる。\n\n今使わないアイテムは基礎塔の正面ポートから送り、必要なときに倉庫画面から取り出そう。容量はアイテムごとに独立している。安価な資源には広い空間があり、建物や価値が不明なアイテムにも基本枠がある。探索報酬は通常の上限を超えて保管できる。\n\n拡張するには、基礎解析塔に給電し、側面から科学マトリックスを投入する。未使用分の戻り口も確保しよう。すべての塔が供給を共有し、消費は毎秒最大1個、各段階60個まで備蓄できる。高段階のものを優先し、段階が高いほど拡張が速く、倉庫が大きいほど成長は遅くなる。塔の増設やスタックは供給を安定させるが、拡張速度は重ならない。供給を止めても、増えた容量は失われない。"
   },
   "第一条复制产线": {
     "enUS": "The First Replication Line",
@@ -2743,13 +2750,6 @@
     "1031": "Superkompressionstechnologie",
     "1041": "超圧縮技術"
   },
-  "FE亚空间扩容": {
-    "enUS": "Subspace Capacity",
-    "zhCN": "亚空间扩容",
-    "frFR": "Capacité sous-spatiale",
-    "1031": "Subraumkapazität",
-    "1041": "亜空間拡張"
-  },
   "FE亚空间能效": {
     "enUS": "Subspace Transfer Efficiency",
     "zhCN": "亚空间存取能效",
@@ -3050,69 +3050,6 @@
     "frFR": "Technologie de supercompression",
     "1031": "Superkompressionstechnologie",
     "1041": "超圧縮技術"
-  },
-  "FE亚空间扩容 1": {
-    "enUS": "Subspace Capacity",
-    "zhCN": "亚空间扩容",
-    "frFR": "Capacité sous-spatiale",
-    "1031": "Subraumkapazität",
-    "1041": "亜空間拡張"
-  },
-  "FE亚空间扩容 2": {
-    "enUS": "Subspace Capacity",
-    "zhCN": "亚空间扩容",
-    "frFR": "Capacité sous-spatiale",
-    "1031": "Subraumkapazität",
-    "1041": "亜空間拡張"
-  },
-  "FE亚空间扩容 3": {
-    "enUS": "Subspace Capacity",
-    "zhCN": "亚空间扩容",
-    "frFR": "Capacité sous-spatiale",
-    "1031": "Subraumkapazität",
-    "1041": "亜空間拡張"
-  },
-  "FE亚空间扩容 4": {
-    "enUS": "Subspace Capacity",
-    "zhCN": "亚空间扩容",
-    "frFR": "Capacité sous-spatiale",
-    "1031": "Subraumkapazität",
-    "1041": "亜空間拡張"
-  },
-  "FE亚空间扩容 5": {
-    "enUS": "Subspace Capacity",
-    "zhCN": "亚空间扩容",
-    "frFR": "Capacité sous-spatiale",
-    "1031": "Subraumkapazität",
-    "1041": "亜空間拡張"
-  },
-  "FE亚空间扩容 6": {
-    "enUS": "Subspace Capacity",
-    "zhCN": "亚空间扩容",
-    "frFR": "Capacité sous-spatiale",
-    "1031": "Subraumkapazität",
-    "1041": "亜空間拡張"
-  },
-  "FE亚空间扩容 7": {
-    "enUS": "Subspace Capacity",
-    "zhCN": "亚空间扩容",
-    "frFR": "Capacité sous-spatiale",
-    "1031": "Subraumkapazität",
-    "1041": "亜空間拡張"
-  },
-  "FE亚空间扩容 8": {
-    "enUS": "Subspace Capacity",
-    "zhCN": "亚空间扩容",
-    "frFR": "Capacité sous-spatiale",
-    "1031": "Subraumkapazität",
-    "1041": "亜空間拡張"
-  },
-  "FE亚空间扩容 9": {
-    "enUS": "Subspace Capacity",
-    "zhCN": "亚空间扩容",
-    "frFR": "Capacité sous-spatiale",
-    "1031": "Subraumkapazität",
-    "1041": "亜空間拡張"
   },
   "FE亚空间能效 1": {
     "enUS": "Subspace Transfer Efficiency",

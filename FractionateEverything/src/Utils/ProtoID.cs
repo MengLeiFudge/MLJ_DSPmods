@@ -1059,6 +1059,7 @@ public static partial class Utils {
     internal const int TFE星际物流交互 = 2062;
 
     internal const int TFE分馏堆叠成长 = 2080;
+    /// <summary>保留2091～2099历史扩容科技编号；容量现归矩阵扩容状态，不再注册或复用这些编号。</summary>
     internal const int TFE亚空间扩容 = 2090;
     /// <summary>长链探索完成后授予的终极探索节点。</summary>
     internal const int TFE终极探索 = 2171;

@@ -43,6 +43,7 @@ public static class CivilizationModule {
         bool secondBoundary = gameTick % 60L == 0L;
         if (secondBoundary) {
             ResearchManager.UpdateSacrificeBoosts(gameTick);
+            SubspaceExpansion.GameTick(gameTick);
         }
         bool dirty = ResearchManager.FlushMainThreadNotifications();
         dirty |= ExplorationManager.TakeSnapshotDirty();

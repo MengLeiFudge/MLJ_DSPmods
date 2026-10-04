@@ -42,9 +42,6 @@ public static class GrowthTechnologyManager {
     /// <summary>超级压缩技术方向的稳定内容 ID。</summary>
     public const string StackTechnologyContentId = "technology:super-compression";
 
-    /// <summary>亚空间扩容科技方向的稳定内容 ID。</summary>
-    public const string SubspaceCapacityTechnologyContentId = "technology:subspace-capacity";
-
     /// <summary>亚空间存取能效科技方向的稳定内容 ID。</summary>
     public const string SubspaceEfficiencyTechnologyContentId = "technology:subspace-efficiency";
 
@@ -52,9 +49,6 @@ public static class GrowthTechnologyManager {
     public const string ExplorationTechnologyContentId = "technology:exploration-signal";
 
     private const int FiniteGrowthLevelCount = 6;
-    private const int CapacityFinalNodeLevel = 6;
-    private const int CapacityMaximumLevel = 10;
-    private const int CapacityFinalCostIncrement = 8000;
 
     private static readonly int[] MatrixItems = [
         I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵,
@@ -67,7 +61,6 @@ public static class GrowthTechnologyManager {
     private static readonly int[] FiniteGrowthCosts = [200, 400, 800, 1200, 1600, 50000];
     /// <summary>每种矩阵每件对应的科研哈希，按蓝至白采用原版无人机引擎各阶段工作量。</summary>
     private static readonly int[] MatrixHashPerItem = [90, 180, 180, 300, 900, 900];
-    private static readonly int[] CapacityCosts = [600, 1200, 1800, 2400, 3000, 4000];
     private static readonly int[] ExperiencedStackCosts = [1200, 2400, 3600, 4800, 6000];
     private static readonly int[] StandardStackCosts = [0, 6000, 8000, 10000, 40000];
     private static readonly int[] ExperiencedStackMatrixStages = [0, 1, 2, 3, 4];
@@ -77,12 +70,6 @@ public static class GrowthTechnologyManager {
 
     /// <summary>当前存档是否采用已玩过分馏的堆叠路线。</summary>
     public static bool UsesExperiencedStackProgression { get; private set; }
-
-    /// <summary>获取亚空间扩容的常规等级，范围 0..10。</summary>
-    public static int SubspaceCapacityLevel => GetCapacityLevel();
-
-    /// <summary>每种物品容量的组数，按五个基础阶段与五次白糖成长计算。</summary>
-    public static int CapacityGroups => GetCapacityGroupsAtLevel(SubspaceCapacityLevel);
 
     /// <summary>长链任务是否已授予无限仓储。</summary>
     public static bool UltimateCapacity => GameMain.history?.TechUnlocked(TFE终极仓储) == true;
@@ -177,7 +164,6 @@ public static class GrowthTechnologyManager {
             TFE行星内物流交互 => PlanetaryInteractionTechnologyContentId,
             TFE星际物流交互 => InterstellarInteractionTechnologyContentId,
             > TFE分馏堆叠成长 and <= TFE分馏堆叠成长 + 5 => StackTechnologyContentId,
-            > TFE亚空间扩容 and <= TFE亚空间扩容 + 9 => SubspaceCapacityTechnologyContentId,
             > TFE亚空间能效 and <= TFE亚空间能效 + FiniteGrowthLevelCount =>
                 SubspaceEfficiencyTechnologyContentId,
             > TFE探索信号增幅 and <= TFE探索信号增幅 + FiniteGrowthLevelCount =>
@@ -229,13 +215,10 @@ public static class GrowthTechnologyManager {
         }
         text = techId switch {
             TFE终极探索 => "远古广播持续回应".Translate(),
-            TFE终极仓储 => "物品存放组数无限".Translate(),
+            TFE终极仓储 => "亚空间容量：无限".Translate(),
             > TFE分馏堆叠成长 and <= TFE分馏堆叠成长 + 5 =>
                 string.Format("货物堆叠上限 +{0}".Translate(),
                     UsesExperiencedStackProgression && techId == TFE分馏堆叠成长 + 1 ? 3 : 4),
-            > TFE亚空间扩容 and <= TFE亚空间扩容 + CapacityFinalNodeLevel =>
-                string.Format("物品存放组数 +{0}".Translate(),
-                    GetCapacityGroupsAtLevel(level) - GetCapacityGroupsAtLevel(level - 1)),
             > TFE亚空间能效 and <= TFE亚空间能效 + FiniteGrowthLevelCount => "亚空间存取耗能 -10%".Translate(),
             > TFE探索信号增幅 and <= TFE探索信号增幅 + FiniteGrowthLevelCount =>
                 BuildExplorationUnlockText(level),
@@ -267,13 +250,12 @@ public static class GrowthTechnologyManager {
     public static void AddTechs() {
         AddInfrastructureTechs();
         AddStackTechs();
-        AddCapacityTechs();
         AddFiniteSeries(TFE亚空间能效, "FE亚空间能效", "FE亚空间能效描述",
             "Assets/fe/tech分馏数据中心", 6);
         AddFiniteSeries(TFE探索信号增幅, "FE探索信号增幅", "FE探索信号增幅描述",
             "Assets/fe/tech物品分解", 2);
         AddUltimateTech(TFE终极探索, "终极探索", TFE探索信号增幅 + 6, 2);
-        AddUltimateTech(TFE终极仓储, "终极仓储", TFE亚空间扩容 + 6, 1);
+        AddUltimateTech(TFE终极仓储, "终极仓储", 0, 1);
         AddFiniteSeries(TFE高级矿物特质, "FE高级矿物特质", "FE高级矿物特质描述",
             "Assets/fe/tech资源复制", 3);
         AddFiniteSeries(TFE高级交互特质, "FE高级交互特质", "FE高级交互特质描述",
@@ -348,30 +330,6 @@ public static class GrowthTechnologyManager {
             previousTech = techId;
         }
         SetStackProgressionMode(PermanentProfileStore.HasPlayedFractionation);
-    }
-
-    private static void AddCapacityTechs() {
-        var series = new GrowthTechSeries("FE亚空间扩容", "FE亚空间扩容描述",
-            "Assets/fe/tech分馏数据中心", 1);
-        int previousTech = 0;
-        for (int level = 1; level <= CapacityFinalNodeLevel; level++) {
-            int matrixStage = Math.Min(MatrixItems.Length - 1, level - 1);
-            int maxLevel = level == CapacityFinalNodeLevel ? CapacityMaximumLevel : level;
-            int linearCost = level == CapacityFinalNodeLevel ? CapacityFinalCostIncrement : 0;
-            TechProto tech = RegisterGrowthTech(
-                TFE亚空间扩容 + level, series, previousTech,
-                GetProgressiveMatrixItems(matrixStage), CapacityCosts[level - 1],
-                new GrowthTechLevel(level, maxLevel, linearCost));
-            tech.IconTag = $"fe-growth-{TFE亚空间扩容}";
-            previousTech = tech.ID;
-        }
-        // 同格式的3.0存档仍可能引用这些节点；原版导入需保留原型，导入后将已完成等级归入第六列。
-        for (int level = 7; level <= 9; level++) {
-            int cost = level switch { 7 => 8000, 8 => 16000, _ => 32000 };
-            TechProto retired = RegisterGrowthTech(TFE亚空间扩容 + level, series, 0,
-                [I宇宙矩阵], cost, new GrowthTechLevel(level, level == 9 ? 10 : level, level == 9 ? 8000 : 0));
-            retired.IsObsolete = true;
-        }
     }
 
     private static void AddFiniteSeries(int baseTechId, string nameKey, string descriptionKey,
@@ -516,7 +474,6 @@ public static class GrowthTechnologyManager {
     /// <summary>将同格式3.0存档的白糖研究状态归并到当前多级节点，保留已完成等级与当前研究量。</summary>
     public static void ConsolidateWhiteMatrixResearch() {
         if (!ResearchManager.BelongsToGeneration3) { return; }
-        ConsolidateResearchNode(TFE亚空间扩容 + 6, [TFE亚空间扩容 + 7, TFE亚空间扩容 + 8, TFE亚空间扩容 + 9]);
         if (!UsesExperiencedStackProgression) {
             ConsolidateResearchNode(TFE分馏堆叠成长 + 4, [TFE分馏堆叠成长 + 5]);
         }
@@ -555,9 +512,6 @@ public static class GrowthTechnologyManager {
         return index >= 0 ? MatrixTechs[index] : 0;
     }
 
-    private static int GetCapacityLevel() => Math.Max(GetUnlockedLevel(TFE亚空间扩容, 5),
-        GetCompletedLevel(TFE亚空间扩容 + CapacityFinalNodeLevel));
-
     /// <summary>读取多级节点已经完成的等级，未研究节点的初始 curLevel 不算完成。</summary>
     /// <param name="techId">科技原型身份。</param>
     /// <returns>已完成等级，尚未研究时为零。</returns>
@@ -581,22 +535,14 @@ public static class GrowthTechnologyManager {
         return level;
     }
 
-    /// <summary>计算任意常规等级的单物品容量组数。</summary>
-    /// <param name="level">常规等级。</param>
-    /// <returns>该等级的总容量组数。</returns>
-    private static int GetCapacityGroupsAtLevel(int level) => level switch {
-        <= 0 => 10, 1 => 20, 2 => 30, 3 => 50, 4 => 70, 5 => 100,
-        _ => 100 + (level - 5) * 50,
-    };
-
     /// <summary>注册由剧情直接授予的第十一级标记，普通研究入口保持关闭。</summary>
     /// <param name="id">稳定科技身份。</param>
     /// <param name="name">名称键。</param>
-    /// <param name="previous">常规分支末节点。</param>
+    /// <param name="previous">常规分支末节点；仓储由容量里程碑开启，取0。</param>
     /// <param name="row">科技树布局行。</param>
     private static void AddUltimateTech(int id, string name, int previous, int row) {
         TechProto tech = ProtoRegistry.RegisterTech(id, name, "终极任务科技描述", "FE成长科技结果",
-            "Assets/fe/tech分馏数据中心", [previous], [], [], 0, [], GetTechPosition(row + 10, 5));
+            "Assets/fe/tech分馏数据中心", previous > 0 ? [previous] : [], [], [], 0, [], GetTechPosition(row + 10, 5));
         tech.Level = 11;
         tech.MaxLevel = 11;
         tech.IsHiddenTech = true;

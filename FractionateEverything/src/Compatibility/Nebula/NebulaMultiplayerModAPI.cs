@@ -24,8 +24,8 @@ namespace FE.Compatibility.Nebula;
 /// </summary>
 public static class NebulaMultiplayerModAPI {
     public const string GUID = NebulaModAPI.API_GUID;
-    /// <summary>联机协议修订号；用于隔离探索结构化结果与旧文本消息的不同布局。</summary>
-    public const int ProtocolVersion = 2;
+    /// <summary>联机协议修订号；隔离结构化探索消息和矩阵扩容状态的不同合同。</summary>
+    public const int ProtocolVersion = 3;
     public static bool Enable;
     public static Assembly assembly;
 
