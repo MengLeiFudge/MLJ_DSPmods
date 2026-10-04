@@ -91,7 +91,7 @@ public static partial class ResearchManager {
     /// <param name="contentId">配方或特质身份。</param>
     /// <returns>完成一份内容所需的期望成功消耗数；失败回流不计入预算。</returns>
     public static int GetExpectedSampleCount(string contentId) {
-        if (IsTraitContent(contentId)) { return 5000; }
+        if (IsTraitContent(contentId)) { return 20000; }
         WorldviewRecipe recipe = RecipeManager.GetRecipe(contentId);
         if (recipe?.Kind == WorldviewRecipeKind.EmbryoBreeding) { return 200; }
         if (recipe?.Kind == WorldviewRecipeKind.TowerCultivation) { return 50; }
