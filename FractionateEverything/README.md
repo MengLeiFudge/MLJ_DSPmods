@@ -11,15 +11,16 @@ Fractionate Everything is a living-industry progression built around exploration
 
 ## 从哪里开始 Getting Started
 
-开局的G手册会出现“神秘信号？”。HUD显示附近最强信号，沿读数增强的方向寻找，达到100%就进入回收范围；岩石星球需先让伊卡洛斯实际落地。回收结果会打开确认弹窗，FE不会自动导航或控制机甲。首遗物提供：
+开局的G手册会出现“神秘信号？”。首遗物位于出生点所在半球，与出生点保持一段探索距离，并避开黑雾基地。HUD显示附近最强信号，沿读数增强的方向寻找，达到100%就进入回收范围；步行与悬浮均可回收。关键信号的回收结果会打开确认弹窗。首遗物提供：
 
 - 基础矿物塔4座、基础解析塔2座及其制造配方。
 - 铁、铜、石、煤四条解析线索，以及一条原胚培育线索。
 - 分馏亚空间和主面板访问。
+- 完整机械骨骼步行升级链及当前科技附带效果，包括星环的生命上限奖励；已完成等级不会重复授予。
 
-普通矿物配方需要先解析，不直接解锁。首次实际生产电磁矩阵后，新的主线才会带来高级交互塔2座、原胚30个和源点30份。先给高级塔供养矩阵，再着手培育。
+普通矿物配方需要先解析，不直接解锁。首次实际生产电磁矩阵后，新的主线才会带来高级交互塔2座、原胚60个和源点30份。先给高级塔供养矩阵，再着手培育。
 
-Recover the starting relic for four Basic Mineral Towers, two Basic Analysis Towers and sample clues. Analyse the ordinary minerals before replicating them. Producing the first Electromagnetic Matrix opens the story supply of living towers, embryos and Memory.
+The starting relic appears in the birth hemisphere, away from dark-fog bases. Recover it for four Basic Mineral Towers, two Basic Analysis Towers, sample clues and the full Mechanical Frame walking-upgrade chain, including any additional effects provided by compatible mods. Analyse the ordinary minerals before replicating them. Producing the first Electromagnetic Matrix opens the story supply of living towers, embryos and Memory.
 
 ## 五种塔 Five Fractionators
 
@@ -41,7 +42,7 @@ Basic towers use electricity. Advanced towers consume matrices as nutrition and 
 
 探索只告诉你需要什么样本，结果的名称与用途在解析完成前保持未知。面板只列已知且未完成的样本，完成后移出。同一样本共享进度，完成时从已探索未完成的记录中取得一项。解析成功才消耗样本，大多数样本会完整回流，可以用传送带连接成循环。培育使用原胚，反向繁育使用对应塔体。
 
-源点每个矩阵阶段恢复一次成长科技资格，随后仍需用矩阵逐项研究。物流科技则在原版物流资格之后，通过回收远古接口恢复。
+源点每个矩阵阶段恢复一次成长科技资格，随后仍需用矩阵逐项研究。成长科技的科研工作量参考原版同矩阵阶段升级，矩阵成本单独计算；未显现科技不能加入研究队列。物流科技则在原版物流资格之后，通过回收远古接口恢复。
 
 同种高级塔亚空间库存首次达到1000，会让对应特质线索有机会出现；首次千塔还会出现献祭主线。回收后，解析塔在没有待解析内容时才献祭塔体，以2%概率产源点。
 
@@ -55,9 +56,9 @@ Each sample has one shared probabilistic analysis slot. Memory restores growth q
 
 首遗物后普通广播持续产生，初始周期10分钟，探索科技逐渐缩短。广播质量取决于生成时的矩阵阶段，此后不升档。蓝红阶段集中在母星，黄糖扩展到本星系，具备曲速能力后再进入邻近星系。
 
-HUD只显示180米局部范围内的最高强度，使用白字黑边，在科技树等全屏界面隐藏。岩石普通遗迹18米、关键地点30米内落地后自动回收；气巨为40米悬空范围。实际奖励保存在地点档案。已收到的广播和主线可在信号追踪页查看，隐藏静默点不会提前列出。探索成长五级后可主动标注位置，但不会启动移动。
+HUD显示180米局部范围内的最高强度，复用原版提示文字的白字黑边样式，并随黑雾列表与教学面板动态避让；在科技树等全屏界面隐藏。普通遗迹18米、关键地点30米为水平回收范围，空间距离计入悬空点位的高度，使步行和默认悬浮均可触发，岩石星球和气巨使用同一规则。实际奖励保存在地点档案，查看时按当前语言生成文本。已收到的广播和主线可在信号追踪页查看，隐藏静默点不会提前列出。探索成长五级后可主动标注位置，但不会启动移动。
 
-首个矩阵生产后，亚空间原胚或高级交互塔不足300时，资源点有机会补给对应物品。原胚也可通过黑雾战斗补充；残片可送入解析塔增加广播。战斗不是主线门槛。
+首个矩阵生产后，亚空间原胚或高级交互塔不足300时，资源点有机会补给对应物品。原胚也可通过黑雾战斗补充。黑雾击杀的残片基础掉率为10%，每级探索再增加2个百分点；每片残片送入解析塔后有2%概率生成新广播。战斗不是主线门槛。
 
 Silent relics have fixed locations and open in layers. Dynamic broadcasts continue indefinitely and keep the quality rolled when generated. The HUD shows the strongest nearby signal; recovered rewards are recorded without rerolling. Combat is optional.
 
@@ -69,7 +70,7 @@ Silent relics have fixed locations and open in layers. Dynamic broadcasts contin
 
 手动存取和基础塔正面上传无额外耗能。行星/星际物流交互站自动存取，保留槽位模式、阈值、增产点、蓝图与复制粘贴；按物品价值和实际搬运量消耗站内电量。
 
-保留两条堆叠路线：普通路线由黄糖原版集装物流提供4堆叠，紫8、绿12、白16及20；已完整体验过的档案从蓝糖4开始，红8、黄12、紫16、绿20。全局堆叠同时影响缓存、输出和原版配方时间。白糖重复升级合并在科技树第六列，终极科技位于第七列，解锁区显示每一级增加的能力。
+保留两条堆叠路线：普通路线在当前科技树实际解锁自动集装机或集装分拣器后获得4堆叠（原版为黄糖阶段），紫8、绿12、白16及20；已完整体验过的档案从蓝糖4开始，红8、黄12、紫16、绿20。全局堆叠同时影响缓存、输出和原版配方时间。白糖重复升级合并在科技树第六列，终极科技位于第七列，解锁区显示每一级增加的能力。
 
 探索常规十级完成后开放终极探索任务；亚空间容量达到初始的35倍后开放终极仓储任务。恢复中继或空间锚点，分批明确交付2400源点，再连接最终核心；任务直接授予终极科技，无矩阵研究费用。终极探索持续补足五个普通广播，终极仓储解除玩法容量限制。
 
@@ -97,7 +98,7 @@ Keys can be changed in the game settings. The panel has seventeen pages across s
 
 ## 联机与存档 Multiplayer and Saves
 
-Nebula由主机结算研究、探索、交付、库存和高级塔，中途加入同步当前状态。客户端认领或交付时，主机验证玩家位置、所在星球、落地状态和剩余需求；回收结果也会在客户端显示。客户端请使用传送带提取高级塔产物。
+Nebula由主机结算研究、探索、交付、库存和高级塔，中途加入同步当前状态。客户端认领或交付时，主机按连接数据验证玩家位置、所在星球、回收距离和剩余需求；回收事实传给客户端，由各端使用自己的语言显示。客户端请使用传送带提取高级塔产物。
 
 当前FE存档格式为13，面向新存档。联机所有玩家必须使用相同FE版本。只有正常游玩、取得三类高级塔并达到20堆叠的合格存档，才能写入“已玩过分馏3.0”标记；沙盒、用过一键解锁，以及没有资格记录的早期存档均不能新写入该标记。既有本地标记不会被重置。
 
