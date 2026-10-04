@@ -102,10 +102,13 @@ public static class CivilizationRecoveryManager {
     /// </summary>
     public static void ResetNetworkRequestThrottle() { }
 
+    /// <summary>授予已玩过路线的物流补给，集装科技跟随白爪的实际制造前置。</summary>
     private static void GrantVeteranLogisticsSupply() {
-        int[] logisticsTechs = [T基础物流系统, T改良物流系统, T高效物流系统, T集装物流系统];
+        int pilingTechId = LDB.items.Select(I集装分拣器)?.preTech?.ID
+                           ?? LDB.items.Select(I自动集装机)?.preTech?.ID ?? 0;
+        int[] logisticsTechs = [T基础物流系统, T改良物流系统, T高效物流系统, pilingTechId];
         foreach (int techId in logisticsTechs) {
-            if (!GameMain.history.TechUnlocked(techId, true)) {
+            if (techId > 0 && !GameMain.history.TechUnlocked(techId, true)) {
                 GameMain.history.UnlockTechUnlimited(techId, true);
             }
         }

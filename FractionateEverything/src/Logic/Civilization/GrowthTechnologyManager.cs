@@ -118,7 +118,7 @@ public static class GrowthTechnologyManager {
     public static int AdvancedConversionTraitLevel => Volatile.Read(ref conversionTraitLevel);
 
     /// <summary>
-    /// 应用当前存档的堆叠成长路线。未玩过分馏时由原版黄糖科技提供 4 堆叠，FE 从 8 开始。
+    /// 应用当前存档的堆叠成长路线。普通路线由实际集装设备解锁提供4堆叠，FE从8开始。
     /// </summary>
     public static void SetStackProgressionMode(bool experienced) {
         if (stackProgressionModeApplied && UsesExperiencedStackProgression == experienced) {
@@ -142,11 +142,10 @@ public static class GrowthTechnologyManager {
                 : StandardStackCosts[level - 1];
             int previousTech = experienced ? level > 1 ? TFE分馏堆叠成长 + level - 1 : 0 :
                 level > 2 ? TFE分馏堆叠成长 + level - 1 : 0;
-            int[] additionalImplicitTechs = !experienced && level == 2 ? [T集装物流系统] : [];
 
             int techLevel = experienced ? level : Math.Max(1, level - 1);
             ConfigureGrowthTech(tech, techLevel, !experienced && level == 4 ? 4 : techLevel, previousTech,
-                [MatrixItems[stage]], cost, additionalImplicitTechs);
+                [MatrixItems[stage]], cost);
             tech.Position = GetTechPosition(10, stage - 1);
             if (!experienced && level == 4) {
                 tech.LevelCoef1 = (StandardStackCosts[4] - cost) * 3600;
@@ -205,6 +204,8 @@ public static class GrowthTechnologyManager {
         if (techId is TFE行星内物流交互 or TFE星际物流交互) {
             return ResearchManager.IsContentUnlocked(contentId);
         }
+        if (contentId == StackTechnologyContentId && !UsesExperiencedStackProgression
+            && !StackingManager.HasPilingTechnology) { return false; }
         TechProto tech = LDB.techs.Select(techId);
         int stage = tech?.Items?.Length > 0
             ? Array.IndexOf(MatrixItems, tech.Items[tech.Items.Length - 1]) + 1 : 0;
@@ -291,7 +292,7 @@ public static class GrowthTechnologyManager {
         }
 
         bool experienced = UsesExperiencedStackProgression;
-        int stack = !experienced && history.TechUnlocked(T集装物流系统) ? 4 : 1;
+        int stack = !experienced && StackingManager.HasPilingTechnology ? 4 : 1;
         int firstGrowthLevel = experienced ? 1 : 2;
         for (int level = firstGrowthLevel; level <= (experienced ? 5 : 3); level++) {
             if (history.TechUnlocked(TFE分馏堆叠成长 + level)) { stack = level * 4; }
@@ -413,16 +414,13 @@ public static class GrowthTechnologyManager {
     }
 
     private static void ConfigureGrowthTech(TechProto tech, int level, int maxLevel, int previousTech,
-        int[] matrixItemIds, int matrixCost, int[] additionalImplicitTechs) {
+        int[] matrixItemIds, int matrixCost) {
         tech.Level = level;
         tech.MaxLevel = maxLevel;
         tech.LevelCoef1 = 0;
         tech.LevelCoef2 = 0;
         tech.PreTechs = previousTech > 0 ? [previousTech] : [];
-        tech.PreTechsImplicit = additionalImplicitTechs
-            .Append(GetMatrixTechId(matrixItemIds[matrixItemIds.Length - 1]))
-            .Distinct()
-            .ToArray();
+        tech.PreTechsImplicit = [GetMatrixTechId(matrixItemIds[matrixItemIds.Length - 1])];
         tech.Items = [.. matrixItemIds];
         tech.ItemPoints = Enumerable.Repeat(1, matrixItemIds.Length).ToArray();
         tech.PropertyOverrideItems = [.. matrixItemIds];
