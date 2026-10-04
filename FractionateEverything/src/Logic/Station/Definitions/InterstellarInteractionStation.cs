@@ -65,9 +65,6 @@ public static class InterstellarInteractionStation {
     }
 
     public static void UpdateHpAndEnergy() {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-            return;
-        }
         ModelProto stationModel = LDB.models.Select(M星际物流运输站);
         model.HpMax = stationModel.HpMax;
         model.prefabDesc.stationMaxItemKinds = stationModel.prefabDesc.stationMaxItemKinds;

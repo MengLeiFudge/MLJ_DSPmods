@@ -49,7 +49,7 @@ public static class FeatureBootstrap {
         ItemManager.CalculateItemValues();
         // 将物品分类到各个矩阵层级中
         ItemManager.ClassifyItemsToMatrix();
-        // UpdateHpAndEnergy 用到了 Init 生成的数据
+        // 此时尚无玩家；必须先设置原型生命值与能耗，再由存档创建 SkillSystem 的生命值缓存。
         FractionatorManager.UpdateHpAndEnergy();
         StationManager.UpdateHpAndEnergy();
         // SetFractionatorCacheSize 用到了 Init 生成的数据

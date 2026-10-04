@@ -88,9 +88,6 @@ public static class BasicMineralTower {
     /// 按当前固定原型参数刷新该分馏塔的生命值和能耗。
     /// </summary>
     public static void UpdateHpAndEnergy() {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-            return;
-        }
         ModelProto fractionatorModel = LDB.models.Select(M分馏塔);
         model.HpMax = fractionatorModel.HpMax;
         workEnergyPerTick = (long)(fractionatorModel.prefabDesc.workEnergyPerTick * EnergyRatio);

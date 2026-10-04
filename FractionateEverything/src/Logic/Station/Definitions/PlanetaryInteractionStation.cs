@@ -65,9 +65,6 @@ public static class PlanetaryInteractionStation {
     }
 
     public static void UpdateHpAndEnergy() {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-            return;
-        }
         ModelProto stationModel = LDB.models.Select(M行星内物流运输站);
         model.HpMax = stationModel.HpMax;
         model.prefabDesc.stationMaxItemKinds = stationModel.prefabDesc.stationMaxItemKinds;

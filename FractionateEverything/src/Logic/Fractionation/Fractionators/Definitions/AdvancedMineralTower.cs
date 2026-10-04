@@ -58,10 +58,12 @@ public static class AdvancedMineralTower {
         item = ProtoRegistry.RegisterItem(IFE高级矿物塔, "高级矿物塔", "I高级矿物塔",
             "Assets/fe/mineral-copy-tower", tab分馏 * 1000 + 303, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
+        // 高级塔由高级交互塔培育，制造来源沿用其物品名的本地化键。
+        item.ProduceFrom = "培养塔";
         item.UnlockKey = -1;
         item.IconTag = "gjkwt";
         model = ProtoRegistry.RegisterModel(MFE高级矿物塔, item,
-            "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
+            "Entities/Prefabs/fractionator", null, [53, 1, 40], 0);
         item.SetBuildBar(OrbitalRing.Enable ? 6 : 5, item.GridIndex % 10, true);
     }
 
@@ -88,10 +90,6 @@ public static class AdvancedMineralTower {
     /// 同步生命值并关闭电网能耗。
     /// </summary>
     public static void UpdateHpAndEnergy() {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-            return;
-        }
-
         ModelProto fractionatorModel = LDB.models.Select(M分馏塔);
         model.HpMax = fractionatorModel.HpMax;
         workEnergyPerTick = 0;

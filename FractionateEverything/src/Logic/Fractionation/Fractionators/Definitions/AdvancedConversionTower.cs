@@ -52,10 +52,12 @@ public static class AdvancedConversionTower {
         item = ProtoRegistry.RegisterItem(IFE高级转化塔, "转化塔", "I转化塔",
             "Assets/fe/conversion-tower", tab分馏 * 1000 + 304, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
+        // 高级塔由高级交互塔培育，制造来源沿用其物品名的本地化键。
+        item.ProduceFrom = "培养塔";
         item.UnlockKey = -1;
         item.IconTag = "zht";
         model = ProtoRegistry.RegisterModel(MFE高级转化塔, item,
-            "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
+            "Entities/Prefabs/fractionator", null, [53, 1, 40], 0);
         item.SetBuildBar(OrbitalRing.Enable ? 6 : 5, item.GridIndex % 10, true);
     }
 
@@ -82,9 +84,6 @@ public static class AdvancedConversionTower {
     /// 按当前固定原型参数刷新该分馏塔的生命值和能耗。
     /// </summary>
     public static void UpdateHpAndEnergy() {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-            return;
-        }
         ModelProto fractionatorModel = LDB.models.Select(M分馏塔);
         model.HpMax = fractionatorModel.HpMax;
         workEnergyPerTick = (long)(fractionatorModel.prefabDesc.workEnergyPerTick * EnergyRatio);
