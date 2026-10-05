@@ -137,7 +137,8 @@ public static partial class AdvancedFractionatorRuntime {
         writer.Write(key.planetId);
         writer.Write(key.fractionatorId);
         writer.Write(state.SelectedRecipeId);
-        writer.Write(state.Nutrition);
+        // 运行时用 double 累计，存档与联机字段保持 float，格式不变。
+        writer.Write((float)state.Nutrition);
         writer.Write(state.LastFoodTier);
         writer.Write(state.OutputCursor);
         WriteDictionary(writer, state.Inputs);

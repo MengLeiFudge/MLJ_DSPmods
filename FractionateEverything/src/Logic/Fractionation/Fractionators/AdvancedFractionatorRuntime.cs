@@ -60,7 +60,8 @@ public sealed class AdvancedFractionatorState {
     public readonly Dictionary<int, int> FlowOutputInc = [];
 
     /// <summary>当前营养点数，范围 0..1000。</summary>
-    public float Nutrition;
+    /// <remarks>运行时用 double 逐帧扣减：float 在 512 以上的精度约 6e-5，会把待机每帧 3.3e-5 的消耗放大近一倍。存档仍写 float。</remarks>
+    public double Nutrition;
 
     /// <summary>最近一次转入营养的矩阵层次，范围 0..5。</summary>
     public int LastFoodTier;
@@ -432,7 +433,7 @@ public static partial class AdvancedFractionatorRuntime {
                 continue;
             }
             int consumed = Math.Min(available,
-                Mathf.FloorToInt((MaximumNutrition - state.Nutrition) / nutritionPerItem));
+                (int)Math.Floor((MaximumNutrition - state.Nutrition) / nutritionPerItem));
             if (consumed <= 0) {
                 // 营养空间装不下一件时等待，不拿低层矩阵填小缺口。
                 break;
@@ -446,7 +447,7 @@ public static partial class AdvancedFractionatorRuntime {
             }
             lock (consumeRegister) { consumeRegister[itemId] += consumed; }
         }
-        state.Nutrition = Mathf.Min(MaximumNutrition, state.Nutrition);
+        state.Nutrition = Math.Min(MaximumNutrition, state.Nutrition);
     }
 
     /// <summary>
@@ -741,12 +742,12 @@ public static partial class AdvancedFractionatorRuntime {
 
     private static void ConsumeNutritionAndApplyDurability(PlanetFactory factory, int entityId,
         AdvancedFractionatorState state, float processingRate) {
-        float drain = processingRate > 0f
-            ? WorkingNutritionPerRound * processingRate / 60f
-            : IdleNutritionPerSecond / 60f;
-        float nutrition = Mathf.Max(0f, state.Nutrition - drain);
-        state.SnapshotDirty |= nutrition != state.Nutrition;
-        state.Nutrition = nutrition;
+        double drain = processingRate > 0f
+            ? WorkingNutritionPerRound * processingRate / 60d
+            : IdleNutritionPerSecond / 60d;
+        double before = state.Nutrition;
+        state.Nutrition = Math.Max(0d, before - drain);
+        state.SnapshotDirty |= IsNutritionSyncChange(before, state.Nutrition);
 
         int combatStatId = factory.entityPool[entityId].combatStatId;
         if (combatStatId > 0) {
@@ -785,6 +786,14 @@ public static partial class AdvancedFractionatorRuntime {
         combatStat.hpRecover = 0;
         combatStat.hp = Math.Max(0, Math.Min(combatStat.hpMax, combatStat.hp + change));
     }
+
+    /// <summary>判断营养消耗是否需要联机同步：只在窗口显示精度 0.1 变化或营养归零时同步。</summary>
+    /// <param name="before">本帧扣减前的营养。</param>
+    /// <param name="after">本帧扣减后的营养。</param>
+    /// <returns>客户端可见的显示值或状态发生变化时为 true；500 耐久阈值同为 0.1 的整数倍，已被显示精度覆盖。</returns>
+    /// <remarks>营养每帧都在变化，逐帧置脏会让增量同步退化为全量；按显示精度同步后待机塔约 50 秒同步一次。</remarks>
+    private static bool IsNutritionSyncChange(double before, double after) =>
+        (before > 0d) != (after > 0d) || Math.Floor(before * 10d) != Math.Floor(after * 10d);
 
     private static void MirrorVanillaFields(ref FractionatorComponent fractionator,
         AdvancedFractionatorState state, SignData[] signPool, int entityId, int buildingId) {
