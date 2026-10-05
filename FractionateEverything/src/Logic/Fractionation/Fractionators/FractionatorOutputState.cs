@@ -65,13 +65,6 @@ public static class FractionatorOutputState {
         }
 
         /// <summary>
-        /// 按配方类型和输入物品读取分馏配方。
-        /// </summary>
-        public T GetRecipe<T>(ERecipe recipeType, int fluidId) where T : BaseRecipe {
-            return GetRecipe(recipeType, fluidId) as T;
-        }
-
-        /// <summary>
         /// 尝试读取分馏塔当前缓存的运行时输出架构。
         /// </summary>
         public bool TryGetRuntimeSchema(ERecipe recipeType, int fluidId, BaseRecipe recipe, int productId,

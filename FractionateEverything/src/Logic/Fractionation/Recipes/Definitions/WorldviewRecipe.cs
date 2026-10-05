@@ -187,7 +187,6 @@ public sealed class WorldviewRecipe : BaseRecipe {
                 InputRemoveCount = batchCount,
                 ConsumedRegisterCount = consumedCount,
                 SuccessCount = sacrificeOutputCount,
-                DestroyedCount = consumedCount,
                 PassThroughCount = returnedCount,
                 PassThroughInc = fluidInputIncAvg * returnedCount,
             };

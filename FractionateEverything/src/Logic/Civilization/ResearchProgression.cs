@@ -128,7 +128,8 @@ public static partial class ResearchManager {
                 StageMemoryInputs[stage - 1] = Math.Min(long.MaxValue - count, StageMemoryInputs[stage - 1]) + count;
                 // 与样本解析一致使用确定进度，避免几何分布让少数玩家投入数倍预算。
                 if (StageMemoryInputs[stage - 1] >= GetStageMemoryBudget(stage)) {
-                    UnlockContent(id);
+                    // 阶段内容不是配方，不会返回原型塔奖励；若以后改为可能返回奖励，必须像 ProcessAnalysisBatch 一样在研究锁外发放。
+                    _ = UnlockContent(id);
                     QueueNotification("FE.ResearchProgression.StageRestored".Translate());
                 }
                 snapshotDirty = true;

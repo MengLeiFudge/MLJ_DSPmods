@@ -121,10 +121,6 @@ public struct FractionationBatchResult {
     /// </summary>
     public int SuccessCount;
     /// <summary>
-    /// 记录本批次因损毁消耗的输入数量。
-    /// </summary>
-    public int DestroyedCount;
-    /// <summary>
     /// 记录本批次失败直通的输入数量。
     /// </summary>
     public int PassThroughCount;

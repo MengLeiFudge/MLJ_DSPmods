@@ -342,10 +342,8 @@ public static partial class ProcessManager {
             }
         } else if (!extraState.TryGetRuntimeSchema(recipeType, fluidId, recipe, fractionator.productId,
                        out product0)) {
-            int expectedProductCount = recipe.OutputMain.Count;
             int firstProductId = recipe.OutputMain.Count > 0 ? recipe.OutputMain[0].OutputID : recipe.InputID;
             bool needResetProducts = fractionator.productId != firstProductId
-                                     || products.Count != expectedProductCount
                                      || !MatchesRecipeOutputs(products, recipe);
             if (needResetProducts) {
                 ResetProductsForRecipe(ref fractionator, extraState, recipe, signPool);
@@ -418,7 +416,6 @@ public static partial class ProcessManager {
                         InputRemoveCount = batchCount,
                         ConsumedRegisterCount = 0,
                         SuccessCount = 0,
-                        DestroyedCount = 0,
                         PassThroughCount = batchCount,
                         PassThroughInc = fluidInputIncAvg * batchCount,
                     };
@@ -727,15 +724,11 @@ public static partial class ProcessManager {
         }
     }
 
-    private static ProductOutputInfo FindProduct(List<ProductOutputInfo> products, int itemId, bool mainOnly = false) {
+    private static ProductOutputInfo FindProduct(List<ProductOutputInfo> products, int itemId) {
         foreach (ProductOutputInfo product in products) {
-            if (product.itemId != itemId) {
-                continue;
+            if (product.itemId == itemId) {
+                return product;
             }
-            if (mainOnly && !product.isMainOutput) {
-                continue;
-            }
-            return product;
         }
         return null;
     }
@@ -770,20 +763,19 @@ public static partial class ProcessManager {
         foreach (OutputInfo output in recipe.OutputMain) { state.Products.Add(new(true, output.OutputID, 0)); }
     }
 
+    /// <summary>判断产物缓存是否与配方主产物逐项一致，包括数量、顺序和主产物标记。</summary>
+    /// <param name="products">当前扩展产物列表。</param>
+    /// <param name="recipe">当前识别的配方。</param>
+    /// <returns>完全一致时为 true。</returns>
     private static bool MatchesRecipeOutputs(List<ProductOutputInfo> products, BaseRecipe recipe) {
-        int expectedCount = recipe.OutputMain.Count;
-        if (products.Count != expectedCount) {
+        if (products.Count != recipe.OutputMain.Count) {
             return false;
         }
-
-        int productIndex = 0;
-        for (int i = 0; i < recipe.OutputMain.Count; i++, productIndex++) {
-            ProductOutputInfo product = products[productIndex];
-            if (!product.isMainOutput || product.itemId != recipe.OutputMain[i].OutputID) {
+        for (int i = 0; i < products.Count; i++) {
+            if (!products[i].isMainOutput || products[i].itemId != recipe.OutputMain[i].OutputID) {
                 return false;
             }
         }
-
         return true;
     }
 
