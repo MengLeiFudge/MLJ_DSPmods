@@ -12,6 +12,28 @@ namespace FE.Logic.DataCenter;
 /// </summary>
 public static class DataCenterUploadRouter {
 
+    /// <summary>整堆上传基础塔带尾货物；空带不加库存锁，容量检查、取货和入库保持原子性。</summary>
+    /// <param name="cargoTraffic">所属工厂的传送带系统。</param>
+    /// <param name="beltId">正面输入带身份。</param>
+    /// <returns>成功上传的物品 ID；未取货时为 0。</returns>
+    public static int UploadRearStack(CargoTraffic cargoTraffic, int beltId) {
+        int itemId = cargoTraffic.GetItemIdAtRear(beltId);
+        int count = ProcessManager.GetRearCargoStack(cargoTraffic, beltId);
+        if (itemId <= 0 || count <= 0 || Array.IndexOf(needs, itemId) < 0) { return 0; }
+
+        long newCount;
+        lock (DataCenterInventory.centerItemCount) {
+            count = ProcessManager.GetRearCargoStack(cargoTraffic, beltId);
+            if (!CanUploadStack(itemId, count)) { return 0; }
+            itemId = cargoTraffic.TryPickItemAtRear(beltId, itemId, null, out byte stack, out byte inc);
+            if (itemId <= 0) { return 0; }
+            // needs 排除了历史面额包裹；整堆容量已在同一锁内确认。
+            DataCenterInventory.AddStoredItem(itemId, stack, inc, out newCount);
+        }
+        DataCenterInventory.OnItemCountIncreased(itemId, newCount);
+        return itemId;
+    }
+
     /// <summary>
     /// 上传整数数量的物品；返回实际接收的源物品件数。
     /// </summary>

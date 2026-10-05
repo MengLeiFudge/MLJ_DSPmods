@@ -478,6 +478,8 @@ public static partial class ResearchManager {
 
         int successCount = WorldviewRecipe.RollExpected(ref seed, count * 0.02d);
         if (successCount <= 0) { return 0; }
+        List<int> bootstrapTowers = null;
+        int consumed;
         lock (Sync) {
             string[] candidates = GetCandidateIdsUnsafe(itemId);
             if (!EligibleDirections.Contains(itemId) || candidates.Length == 0) { return 0; }
@@ -499,14 +501,25 @@ public static partial class ResearchManager {
 
                 int selectedIndex = Math.Min(candidates.Length - 1,
                     (int)(GetRandDouble(ref seed) * candidates.Length));
-                UnlockContent(candidates[selectedIndex]);
+                int towerId = UnlockContent(candidates[selectedIndex]);
+                if (towerId > 0) {
+                    bootstrapTowers ??= [];
+                    bootstrapTowers.Add(towerId);
+                }
                 progress -= 10000;
             }
             DirectionProgress[itemId] = GetCandidateIdsUnsafe(itemId).Length == 0
                 ? 0 : Math.Max(0, Math.Min(9999, progress));
             snapshotDirty = true;
-            return successCount - remainingSuccesses;
+            consumed = successCount - remainingSuccesses;
         }
+        // 先释放研究锁，再写库存；上传通知会反向进入研究域。
+        if (bootstrapTowers != null) {
+            foreach (int towerId in bootstrapTowers) {
+                DataCenterInventory.AddExplorationReward(towerId, 1);
+            }
+        }
+        return consumed;
     }
 
     /// <summary>
@@ -760,9 +773,12 @@ public static partial class ResearchManager {
         }
     }
 
-    private static void UnlockContent(string contentId) {
+    /// <summary>记录内容解析完成，返回需要在研究锁外发放的原型塔。</summary>
+    /// <param name="contentId">本次解析完成的稳定内容身份。</param>
+    /// <returns>首次恢复的高级塔物品 ID；没有奖励时为 0。</returns>
+    private static int UnlockContent(string contentId) {
         if (!UnlockedContents.Add(contentId)) {
-            return;
+            return 0;
         }
 
         discoveredContentCount++;
@@ -774,17 +790,19 @@ public static partial class ResearchManager {
         ResearchContentDefinition definition = ContentDefinitions[contentId];
         QueueNotification(string.Format("解析发现：{0}".Translate(), definition.DisplayName));
         WorldviewRecipe recipe = RecipeManager.GetRecipe(contentId);
-        if (recipe != null) {
-            GrantBootstrapTower(recipe);
-        }
+        int towerId = recipe == null ? 0 : RecordBootstrapTowerGrant(recipe);
         RebuildRecipeAvailability();
         PublishAnalysisRuntimeSnapshotUnsafe();
         snapshotDirty = true;
+        return towerId;
     }
 
-    private static void GrantBootstrapTower(WorldviewRecipe recipe) {
+    /// <summary>在研究锁内登记首次原型奖励；实际入库由解析批次在锁外完成。</summary>
+    /// <param name="recipe">刚刚解析完成的配方。</param>
+    /// <returns>待发放的塔物品 ID；已领取或非高级配方时为 0。</returns>
+    private static int RecordBootstrapTowerGrant(WorldviewRecipe recipe) {
         if (!recipe.IsAdvanced) {
-            return;
+            return 0;
         }
         int towerId = recipe.RecipeType switch {
             ERecipe.AdvancedMineral => IFE高级矿物塔,
@@ -793,12 +811,11 @@ public static partial class ResearchManager {
             _ => 0,
         };
         if (towerId <= 0 || !BootstrapTowerGrants.Add(towerId)) {
-            return;
+            return 0;
         }
 
-        DataCenterInventory.AddExplorationReward(towerId, 1);
-        NotifyAdvancedTowerObtained(towerId);
         QueueNotification(string.Format("已恢复一座原型：{0}".Translate(), GetItemName(towerId)));
+        return towerId;
     }
 
     private static void UnlockWithoutReward(string contentId) {

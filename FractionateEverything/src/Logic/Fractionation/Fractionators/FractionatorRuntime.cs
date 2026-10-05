@@ -1222,20 +1222,8 @@ public static partial class ProcessManager {
                        && AreAllProductsEmpty(products)) {
                 // 基础塔正面反向输入且两侧未连接时上传到亚空间；容量不足一份带上堆叠时停止取货。
                 interactionMode = true;
-                int interactionItemId = 0;
-                long accepted = 0;
-                lock (DataCenterInventory.centerItemCount) {
-                    int rearItemId = cargoTraffic.GetItemIdAtRear(__instance.belt0);
-                    int rearStack = GetRearCargoStack(cargoTraffic, __instance.belt0);
-                    if (DataCenterUploadRouter.CanUploadStack(rearItemId, rearStack)) {
-                        interactionItemId = cargoTraffic.TryPickItemAtRear(__instance.belt0, rearItemId,
-                            null, out stack, out inc);
-                    }
-                    if (interactionItemId > 0) {
-                        accepted = DataCenterUploadRouter.Upload(interactionItemId, stack, inc);
-                    }
-                }
-                interactionTransferred = interactionItemId > 0 && accepted == stack;
+                int interactionItemId = DataCenterUploadRouter.UploadRearStack(cargoTraffic, __instance.belt0);
+                interactionTransferred = interactionItemId > 0;
                 if (interactionTransferred) {
                     __instance.fluidId = interactionItemId;
                     __instance.productId = interactionItemId;

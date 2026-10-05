@@ -222,10 +222,6 @@ public static class DataCenterInventory {
         if (count <= 0) {
             return 0;
         }
-        if (itemId == I沙土) {
-            GameMain.mainPlayer.sandCount = SaturatingAddNonNegative(GameMain.mainPlayer.sandCount, count);
-            return count;
-        }
         if (itemId <= 0 || itemId >= 12000) {
             return 0;
         }
@@ -237,8 +233,24 @@ public static class DataCenterInventory {
             inc = 0;
         }
 
+        long accepted = AddStoredItem(itemId, count, inc, out long newCount);
+        if (accepted > 0) { OnItemCountIncreased(itemId, newCount); }
+        return accepted;
+    }
+
+    /// <summary>写入已规范化的库存物品，返回入库后数量；由调用方在全部库存锁释放后通知研究域。</summary>
+    /// <param name="itemId">已校验的普通物品 ID，不包含历史面额包裹。</param>
+    /// <param name="count">请求入库的正数件数。</param>
+    /// <param name="inc">本批增产点。</param>
+    /// <param name="newCount">入库后的库存件数；沙土不参与研究门槛。</param>
+    /// <returns>实际接收件数。</returns>
+    internal static long AddStoredItem(int itemId, long count, long inc, out long newCount) {
+        newCount = 0;
+        if (itemId == I沙土) {
+            GameMain.mainPlayer.sandCount = SaturatingAddNonNegative(GameMain.mainPlayer.sandCount, count);
+            return count;
+        }
         long accepted;
-        long newCount;
         lock (centerItemCount) {
             long remaining = GetRemainingCapacityUnsafe(itemId);
             accepted = Math.Min(count, remaining);
@@ -257,7 +269,6 @@ public static class DataCenterInventory {
             snapshotDirty = true;
             newCount = centerItemCount[itemId];
         }
-        OnItemCountIncreased(itemId, newCount);
         return accepted;
     }
 
@@ -265,7 +276,7 @@ public static class DataCenterInventory {
     /// 亚空间库存增加后的统一处理点。所有入库路径都经过这里，高级塔的 1000 座门槛只在此检测。
     /// </summary>
     /// <remarks>必须在释放库存锁之后调用，避免与研究锁形成锁顺序冲突。</remarks>
-    private static void OnItemCountIncreased(int itemId, long newCount) {
+    internal static void OnItemCountIncreased(int itemId, long newCount) {
         if (!FractionatorTowerCatalog.IsAdvancedTowerItem(itemId)) {
             return;
         }
