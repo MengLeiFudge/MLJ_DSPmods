@@ -58,8 +58,10 @@ public static partial class ResearchManager {
     /// <summary>
     /// 供逐帧路径无锁读取的研究状态副本；研究状态每次变化后整体替换。
     /// </summary>
-    private sealed class AnalysisRuntimeSnapshot(Dictionary<int, string[]> candidatesByItemId,
+    private sealed class AnalysisRuntimeSnapshot(long version, Dictionary<int, string[]> candidatesByItemId,
         HashSet<string> unlockedContents) {
+        /// <summary>本进程内递增的发布版本，切档和导入也会失效界面缓存。</summary>
+        public readonly long Version = version;
         public readonly Dictionary<int, string[]> CandidatesByItemId = candidatesByItemId;
         public readonly HashSet<string> UnlockedContents = unlockedContents;
     }
@@ -92,7 +94,10 @@ public static partial class ResearchManager {
     private static readonly HashSet<int> AcquiredAdvancedTowers = [];
     private static readonly HashSet<int> AdvancedTowerInventoryMilestones = [];
     private static readonly Queue<string> PendingNotifications = [];
-    private static AnalysisRuntimeSnapshot analysisRuntimeSnapshot = new([], []);
+    private static AnalysisRuntimeSnapshot analysisRuntimeSnapshot = new(0, [], []);
+
+    /// <summary>当前研究只读快照的版本，用于配方选项缓存失效。</summary>
+    public static long AnalysisSnapshotVersion => Volatile.Read(ref analysisRuntimeSnapshot).Version;
     private static int discoveredContentCount;
     private static int pendingSignalAccelerations;
     private static bool belongsToGeneration3;
@@ -983,7 +988,8 @@ public static partial class ResearchManager {
             }
         }
         Volatile.Write(ref analysisRuntimeSnapshot,
-            new AnalysisRuntimeSnapshot(candidatesByItemId, [.. UnlockedContents]));
+            new AnalysisRuntimeSnapshot(unchecked(analysisRuntimeSnapshot.Version + 1),
+                candidatesByItemId, [.. UnlockedContents]));
     }
 
     private static int GetRecipeTier(WorldviewRecipe recipe) => recipe.ResearchStage;

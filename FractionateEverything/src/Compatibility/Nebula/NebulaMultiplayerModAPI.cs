@@ -24,8 +24,8 @@ namespace FE.Compatibility.Nebula;
 /// </summary>
 public static class NebulaMultiplayerModAPI {
     public const string GUID = NebulaModAPI.API_GUID;
-    /// <summary>联机协议修订号；隔离结构化探索消息和矩阵扩容状态的不同合同。</summary>
-    public const int ProtocolVersion = 3;
+    /// <summary>联机协议修订号；高级塔全量与增量快照必须由相同版本的主机和客户端处理。</summary>
+    public const int ProtocolVersion = 4;
     public static bool Enable;
     public static Assembly assembly;
 
@@ -51,7 +51,7 @@ public static class NebulaMultiplayerModAPI {
         NebulaModAPI.OnPlayerJoinedGame += _ => {
             if (NebulaModAPI.MultiplayerSession?.LocalPlayer?.IsHost == true) {
                 BroadcastCivilizationState();
-                BroadcastAdvancedFractionatorState();
+                BroadcastAdvancedFractionatorState(fullSnapshot: true);
             }
         };
         CheckPlugins.LogInfo("NebulaMultiplayerModAPI Compat finish.");
@@ -114,9 +114,10 @@ public static class NebulaMultiplayerModAPI {
     }
 
     /// <summary>
-    /// 主机广播高级塔多输入、产物、营养与选定配方状态。
+    /// 主机按秒广播变化的高级塔，玩家加入时补发完整状态。
     /// </summary>
-    public static void BroadcastAdvancedFractionatorState() {
+    /// <param name="fullSnapshot">加入时发送完整快照；普通秒更新只发送增量。</param>
+    public static void BroadcastAdvancedFractionatorState(bool fullSnapshot = false) {
         if (!NebulaModAPI.IsMultiplayerActive
             || NebulaModAPI.MultiplayerSession?.LocalPlayer?.IsHost != true
             || NebulaModAPI.MultiplayerSession.Network == null) {
@@ -124,10 +125,14 @@ public static class NebulaMultiplayerModAPI {
         }
         byte[] data;
         using (IWriterProvider provider = NebulaModAPI.GetBinaryWriter()) {
-            AdvancedFractionatorRuntime.Export(provider.BinaryWriter);
+            if (fullSnapshot) {
+                AdvancedFractionatorRuntime.Export(provider.BinaryWriter);
+            } else if (!AdvancedFractionatorRuntime.ExportChanges(provider.BinaryWriter)) {
+                return;
+            }
             data = provider.CloseAndGetBytes();
         }
-        NebulaModAPI.MultiplayerSession.Network.SendPacket(new AdvancedFractionatorStatePacket(data));
+        NebulaModAPI.MultiplayerSession.Network.SendPacket(new AdvancedFractionatorStatePacket(data, fullSnapshot));
     }
 
     /// <summary>
@@ -378,26 +383,35 @@ public class CivilizationStatePacketProcessor : BasePacketProcessor<Civilization
 /// 同步高级塔的多输入缓存、产物、营养与选定配方。
 /// </summary>
 public class AdvancedFractionatorStatePacket {
+    /// <summary>实例序列；增量包在实例序列前携带删除身份列表。</summary>
     public byte[] data { get; set; }
+    /// <summary>完整快照覆盖存活集合，增量只更新出现的实例。</summary>
+    public bool fullSnapshot { get; set; }
 
+    /// <summary>Nebula 反序列化入口。</summary>
     public AdvancedFractionatorStatePacket() { }
 
-    public AdvancedFractionatorStatePacket(byte[] data) {
+    /// <summary>构造一个已序列化的高级塔快照。</summary>
+    /// <param name="data">主机状态字节。</param>
+    /// <param name="fullSnapshot">是否替换完整存活集合。</param>
+    public AdvancedFractionatorStatePacket(byte[] data, bool fullSnapshot) {
         this.data = data;
+        this.fullSnapshot = fullSnapshot;
     }
 }
 
 /// <summary>
-/// 客户端以主机快照覆盖高级塔运行状态。
+/// 客户端原位应用主机高级塔状态，保留未变化实例及窗口引用。
 /// </summary>
 [RegisterPacketProcessor]
 public class AdvancedFractionatorStatePacketProcessor : BasePacketProcessor<AdvancedFractionatorStatePacket> {
+    /// <inheritdoc />
     public override void ProcessPacket(AdvancedFractionatorStatePacket packet, INebulaConnection conn) {
         if (IsHost || packet?.data == null) {
             return;
         }
         using IReaderProvider provider = NebulaModAPI.GetBinaryReader(packet.data);
-        AdvancedFractionatorRuntime.Import(provider.BinaryReader);
+        AdvancedFractionatorRuntime.ApplySnapshot(provider.BinaryReader, packet.fullSnapshot);
     }
 }
 

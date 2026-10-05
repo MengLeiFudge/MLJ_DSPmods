@@ -80,7 +80,7 @@ public static class FractionatorWindow {
     private static Text recipeSelectorLabel;
     private static MyComboBox recipeSelector;
     private static List<int> selectableRecipeIds = [];
-    private static string selectableRecipeSignature = string.Empty;
+    private static IReadOnlyList<WorldviewRecipe> selectableRecipes;
     private static bool suppressRecipeSelection;
 
     // 一次性记录的原版元素 localPosition
@@ -1005,10 +1005,9 @@ public static class FractionatorWindow {
             return;
         }
 
-        List<WorldviewRecipe> recipes = GetUnlockedRecipesForTower(buildingId);
-        string signature = $"{buildingId}:{string.Join(",", recipes.Select(recipe => recipe.PersistentId))}";
-        if (signature != selectableRecipeSignature) {
-            selectableRecipeSignature = signature;
+        IReadOnlyList<WorldviewRecipe> recipes = GetUnlockedRecipesForTower(buildingId);
+        if (!ReferenceEquals(recipes, selectableRecipes)) {
+            selectableRecipes = recipes;
             selectableRecipeIds = [0, .. recipes.Select(recipe => recipe.PersistentId)];
             string[] names = ["未选择配方", .. recipes.Select(recipe => recipe.DisplayName)];
             suppressRecipeSelection = true;

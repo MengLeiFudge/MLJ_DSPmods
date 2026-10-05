@@ -587,6 +587,8 @@ public static partial class ProcessManager {
     private const int FractionRateWindowSeconds = 60;
     private static readonly long[] fractionSuccessBuckets = new long[FractionRateWindowSeconds];
     private static readonly object fractionRateWindowLock = new();
+    /// <summary>并行塔线程的当前秒成功计数，主线程每秒交换后推进滚动窗口。</summary>
+    private static long pendingFractionSuccesses;
     private static long currentFractionRateSecond = -1;
     private static long currentFractionSuccessesPerMinute;
     /// <summary>
@@ -1302,11 +1304,13 @@ public static partial class ProcessManager {
         int successCount, List<ProductOutputInfo> productRegisterDeltas,
         int[] productRegister, int[] consumeRegister) {
         if (consumedInputCount > 0) {
-            Interlocked.Add(ref consumeRegister[fluidId], consumedInputCount);
+            lock (consumeRegister) { consumeRegister[fluidId] += consumedInputCount; }
         }
         if (productRegisterDeltas != null) {
-            foreach (ProductOutputInfo delta in productRegisterDeltas) {
-                Interlocked.Add(ref productRegister[delta.itemId], delta.count);
+            lock (productRegister) {
+                foreach (ProductOutputInfo delta in productRegisterDeltas) {
+                    productRegister[delta.itemId] += delta.count;
+                }
             }
         }
         if (successCount > 0) {
@@ -1314,18 +1318,25 @@ public static partial class ProcessManager {
         }
     }
 
+    /// <summary>并行结算只原子累计成功数，不进入每分钟窗口的全局锁。</summary>
+    /// <param name="count">本批成功轮数。</param>
     internal static void RecordFractionSuccess(int count) {
-        // 与 BaseRecipe.RecordSuccesses 一致：线程安全饱和累加，避免 long.MaxValue 后再加回绕为负。
-        if (count > 0) {
-            long current;
-            long updated;
-            do {
-                current = Interlocked.Read(ref totalFractionSuccesses);
-                updated = current > long.MaxValue - count ? long.MaxValue : current + count;
-            } while (Interlocked.CompareExchange(ref totalFractionSuccesses, updated, current) != current);
-        }
-        long second = GameMain.gameTick >= 0 ? GameMain.gameTick / 60L : 0L;
+        if (count <= 0) { return; }
+        long current;
+        long updated;
+        do {
+            current = Interlocked.Read(ref totalFractionSuccesses);
+            updated = current > long.MaxValue - count ? long.MaxValue : current + count;
+        } while (Interlocked.CompareExchange(ref totalFractionSuccesses, updated, current) != current);
+        Interlocked.Add(ref pendingFractionSuccesses, count);
+    }
+
+    /// <summary>主线程每秒收集并行成功计数，推进一分钟窗口并记录历史峰值。</summary>
+    /// <param name="gameTick">当前游戏刻，60 刻为一秒。</param>
+    public static void FlushFractionSuccessWindow(long gameTick) {
+        long second = Math.Max(0L, gameTick / 60L);
         lock (fractionRateWindowLock) {
+            long count = Interlocked.Exchange(ref pendingFractionSuccesses, 0);
             AdvanceFractionRateWindow(second);
 
             int bucketIndex = (int)(second % FractionRateWindowSeconds);
@@ -1368,6 +1379,7 @@ public static partial class ProcessManager {
 
     private static void ResetFractionRateWindow() {
         lock (fractionRateWindowLock) {
+            Interlocked.Exchange(ref pendingFractionSuccesses, 0);
             Array.Clear(fractionSuccessBuckets, 0, fractionSuccessBuckets.Length);
             currentFractionRateSecond = -1;
             currentFractionSuccessesPerMinute = 0;

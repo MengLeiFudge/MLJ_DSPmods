@@ -19,6 +19,8 @@ public static class RecipeManager {
     private static readonly Dictionary<int, WorldviewRecipe> PersistentRecipeIndex = [];
     private static readonly Dictionary<int, List<WorldviewRecipe>> InputRecipeIndex = [];
     private static readonly Dictionary<int, List<WorldviewRecipe>> OutputRecipeIndex = [];
+    /// <summary>主线程界面使用的高级配方缓存，按塔型和研究快照版本失效。</summary>
+    private static readonly Dictionary<int, (long Version, IReadOnlyList<WorldviewRecipe> Recipes)> UnlockedRecipeCache = [];
     private static readonly HashSet<int> RareMineralIds = [
         I可燃冰,
         I金伯利矿石,
@@ -55,6 +57,7 @@ public static class RecipeManager {
             File.Delete(SPRITE_CSV_PATH);
         }
 #endif
+        UnlockedRecipeCache.Clear();
         RecipeList.Clear();
         RecipeTypeDic.Clear();
         RecipeMatrixDic.Clear();
@@ -150,13 +153,21 @@ public static class RecipeManager {
     /// <summary>
     /// 查询指定塔当前可选择的高级配方。
     /// </summary>
-    public static List<WorldviewRecipe> GetUnlockedRecipesForTower(int buildingItemId) {
+    /// <param name="buildingItemId">塔物品 ID；仅由主线程界面查询。</param>
+    /// <returns>同一研究快照下复用的只读配方列表。</returns>
+    public static IReadOnlyList<WorldviewRecipe> GetUnlockedRecipesForTower(int buildingItemId) {
+        long version = ResearchManager.AnalysisSnapshotVersion;
+        if (UnlockedRecipeCache.TryGetValue(buildingItemId, out var cached) && cached.Version == version) {
+            return cached.Recipes;
+        }
         ERecipe type = Fractionators.FractionatorTowerCatalog.GetRecipeType(buildingItemId);
-        return StableRecipeIndex.Values
+        IReadOnlyList<WorldviewRecipe> recipes = StableRecipeIndex.Values
             .Where(recipe => recipe.IsAdvanced && recipe.RecipeType == type
                              && ResearchManager.IsContentUnlocked(recipe.StableId))
             .OrderBy(recipe => recipe.PersistentId)
-            .ToList();
+            .ToArray();
+        UnlockedRecipeCache[buildingItemId] = (version, recipes);
+        return recipes;
     }
 
     /// <summary>
@@ -225,6 +236,7 @@ public static class RecipeManager {
     /// 清除存档级配方统计。
     /// </summary>
     public static void IntoOtherSave() {
+        UnlockedRecipeCache.Clear();
         foreach (BaseRecipe recipe in RecipeList) {
             recipe.IntoOtherSave();
         }

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using FE.Compatibility.Nebula;
 using FE.Logic.DataCenter;
+using FE.Logic.Fractionation.Fractionators;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Civilization;
@@ -42,6 +43,7 @@ public static class CivilizationModule {
         ExplorationManager.GameTick(gameTick);
         bool secondBoundary = gameTick % 60L == 0L;
         if (secondBoundary) {
+            ProcessManager.FlushFractionSuccessWindow(gameTick);
             ResearchManager.UpdateSacrificeBoosts(gameTick);
             SubspaceExpansion.GameTick(gameTick);
         }
