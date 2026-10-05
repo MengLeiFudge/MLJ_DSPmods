@@ -13,8 +13,6 @@ namespace FE.Logic.Fractionation.Recipes;
 /// </summary>
 public static class RecipeManager {
     private static readonly List<BaseRecipe> RecipeList = [];
-    private static readonly Dictionary<ERecipe, List<BaseRecipe>> RecipeTypeDic = [];
-    private static readonly Dictionary<int, List<BaseRecipe>> RecipeMatrixDic = [];
     private static readonly Dictionary<string, WorldviewRecipe> StableRecipeIndex = [];
     private static readonly Dictionary<int, WorldviewRecipe> PersistentRecipeIndex = [];
     private static readonly Dictionary<int, List<WorldviewRecipe>> InputRecipeIndex = [];
@@ -59,8 +57,6 @@ public static class RecipeManager {
 #endif
         UnlockedRecipeCache.Clear();
         RecipeList.Clear();
-        RecipeTypeDic.Clear();
-        RecipeMatrixDic.Clear();
         StableRecipeIndex.Clear();
         PersistentRecipeIndex.Clear();
         InputRecipeIndex.Clear();
@@ -87,26 +83,11 @@ public static class RecipeManager {
         }
 
         RecipeList.Add(recipe);
-        if (!RecipeTypeDic.TryGetValue(recipe.RecipeType, out List<BaseRecipe> typedRecipes)) {
-            typedRecipes = [];
-            RecipeTypeDic[recipe.RecipeType] = typedRecipes;
-        }
-        typedRecipes.Add(recipe);
-
         int typeIndex = (int)recipe.RecipeType;
         if (typeIndex > 0 && typeIndex < RecipeTypeArr.Length && recipe.InputID < RecipeTypeArr[typeIndex].Length
             && RecipeTypeArr[typeIndex][recipe.InputID] == null) {
             RecipeTypeArr[typeIndex][recipe.InputID] = recipe;
         }
-
-        recipe.MatrixID = recipe.InputID < itemToMatrix.Length && itemToMatrix[recipe.InputID] != 0
-            ? itemToMatrix[recipe.InputID]
-            : I电磁矩阵;
-        if (!RecipeMatrixDic.TryGetValue(recipe.MatrixID, out List<BaseRecipe> matrixRecipes)) {
-            matrixRecipes = [];
-            RecipeMatrixDic[recipe.MatrixID] = matrixRecipes;
-        }
-        matrixRecipes.Add(recipe);
 
         if (recipe is WorldviewRecipe worldviewRecipe) {
             if (StableRecipeIndex.ContainsKey(worldviewRecipe.StableId)) {
@@ -183,30 +164,6 @@ public static class RecipeManager {
         OutputRecipeIndex.TryGetValue(itemId, out List<WorldviewRecipe> recipes) ? recipes : [];
 
     /// <summary>
-    /// 按配方类型查询配方列表。
-    /// </summary>
-    public static List<BaseRecipe> GetRecipesByType(ERecipe recipeType) =>
-        RecipeTypeDic.TryGetValue(recipeType, out List<BaseRecipe> recipes) ? recipes : [];
-
-    /// <summary>
-    /// 按矩阵阶段查询配方列表。
-    /// </summary>
-    public static List<BaseRecipe> GetRecipesByMatrix(int matrixId) =>
-        RecipeMatrixDic.TryGetValue(matrixId, out List<BaseRecipe> recipes) ? recipes : [];
-
-    /// <summary>
-    /// 查询指定矩阵阶段以下的分层配方列表。
-    /// </summary>
-    public static List<List<BaseRecipe>> GetRecipesUnderMatrix(int topMatrixId) {
-        List<List<BaseRecipe>> result = [];
-        int top = Math.Max(I电磁矩阵, Math.Min(I宇宙矩阵, topMatrixId));
-        for (int matrixId = I电磁矩阵; matrixId <= top; matrixId++) {
-            result.Add(GetRecipesByMatrix(matrixId));
-        }
-        return result;
-    }
-
-    /// <summary>
     /// 读取配方累计统计；配方身份按稳定 ID 定位。
     /// </summary>
     public static void Import(BinaryReader r) {
@@ -249,7 +206,7 @@ public static class RecipeManager {
                 continue;
             }
             IReadOnlyList<WorldviewRecipeOutput> outputs =
-                Fractionators.FractionatorTowerCatalog.IsAdvancedTowerItem(itemId)
+                Fractionators.FractionatorTowerCatalog.IsAdvancedTower(itemId)
                     ? [new WorldviewRecipeOutput(IFE记忆源点, 1f)]
                     : [];
             AddRecipe(new WorldviewRecipe($"analysis:{item.ID}", 100000 + item.ID,

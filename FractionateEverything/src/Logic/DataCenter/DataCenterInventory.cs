@@ -277,7 +277,7 @@ public static class DataCenterInventory {
     /// </summary>
     /// <remarks>必须在释放库存锁之后调用，避免与研究锁形成锁顺序冲突。</remarks>
     internal static void OnItemCountIncreased(int itemId, long newCount) {
-        if (!FractionatorTowerCatalog.IsAdvancedTowerItem(itemId)) {
+        if (!FractionatorTowerCatalog.IsAdvancedTower(itemId)) {
             return;
         }
         ResearchManager.NotifyAdvancedTowerObtained(itemId);

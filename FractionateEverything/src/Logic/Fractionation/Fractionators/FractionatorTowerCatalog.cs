@@ -62,7 +62,4 @@ public static class FractionatorTowerCatalog {
     /// <summary>判断物品是否为需要矩阵供养的高级生命塔。</summary>
     public static bool IsAdvancedTower(int itemId) =>
         itemId is IFE高级矿物塔 or IFE高级交互塔 or IFE高级转化塔;
-
-    /// <summary>判断物品是否为当前版本的三类高级塔之一。</summary>
-    public static bool IsAdvancedTowerItem(int itemId) => IsAdvancedTower(itemId);
 }

@@ -1,0 +1,373 @@
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using HarmonyLib;
+using FE.Logic.Fractionation.Recipes;
+
+namespace FE.Logic.Fractionation.Fractionators;
+
+/// <summary>
+/// 分馏塔扩展产物状态缓存、存档和同步逻辑。
+/// </summary>
+public static class FractionatorOutputState {
+    /// <summary>
+    /// 存储分馏塔所有产物。结构：
+    /// (planetId, entityId) => List&lt;ProductOutputInfo&gt;
+    /// </summary>
+    public sealed class FractionatorExtraState {
+        /// <summary>
+        /// 保存该分馏塔当前累计的扩展产物列表。
+        /// </summary>
+        public readonly List<ProductOutputInfo> Products = [];
+        /// <summary>
+        /// 保存热路径复用的临时产物缓冲。
+        /// </summary>
+        public readonly ProductOutputBuffer ScratchOutputs = new();
+        /// <summary>
+        /// 保存当前扩展产物列表包含的产物类型标记。
+        /// </summary>
+        public byte CurrentOutputFlags;
+        /// <summary>
+        /// 保存当前运行时识别出的主产物物品 ID。
+        /// </summary>
+        public ProductOutputInfo PrimaryProduct;
+        private bool cachedRecipeValid;
+        private int cachedFluidId;
+        private ERecipe cachedRecipeType;
+        private BaseRecipe cachedRecipe;
+        private bool runtimeSchemaValid;
+        private int runtimeSchemaFluidId;
+        private ERecipe runtimeSchemaRecipeType;
+        private BaseRecipe runtimeSchemaRecipe;
+        private int runtimeSchemaProductId;
+        private int runtimeSchemaProductCount;
+        private bool fullProductCacheValid;
+        private int fullProductCacheThreshold;
+        private bool fullProductCacheValue;
+
+        /// <summary>
+        /// 按配方类型和输入物品读取分馏配方。
+        /// </summary>
+        public BaseRecipe GetRecipe(ERecipe recipeType, int fluidId) {
+            if (cachedRecipeValid
+                && cachedFluidId == fluidId
+                && cachedRecipeType == recipeType) {
+                return cachedRecipe;
+            }
+
+            cachedRecipeValid = true;
+            cachedFluidId = fluidId;
+            cachedRecipeType = recipeType;
+            cachedRecipe = RecipeManager.GetRecipe<BaseRecipe>(recipeType, fluidId);
+            return cachedRecipe;
+        }
+
+        /// <summary>
+        /// 按配方类型和输入物品读取分馏配方。
+        /// </summary>
+        public T GetRecipe<T>(ERecipe recipeType, int fluidId) where T : BaseRecipe {
+            return GetRecipe(recipeType, fluidId) as T;
+        }
+
+        /// <summary>
+        /// 尝试读取分馏塔当前缓存的运行时输出架构。
+        /// </summary>
+        public bool TryGetRuntimeSchema(ERecipe recipeType, int fluidId, BaseRecipe recipe, int productId,
+            out ProductOutputInfo primaryProduct) {
+
+            primaryProduct = null;
+            if (!runtimeSchemaValid
+                || runtimeSchemaFluidId != fluidId
+                || runtimeSchemaRecipeType != recipeType
+                || !ReferenceEquals(runtimeSchemaRecipe, recipe)
+                || runtimeSchemaProductId != productId
+                || runtimeSchemaProductCount != Products.Count) {
+                return false;
+            }
+            if (runtimeSchemaProductCount <= 0) {
+                return true;
+            }
+            if (PrimaryProduct == null || PrimaryProduct.itemId != productId) {
+                return false;
+            }
+
+            primaryProduct = PrimaryProduct;
+            return true;
+        }
+
+        /// <summary>
+        /// 记录分馏塔当前运行时输出架构。
+        /// </summary>
+        public void MarkRuntimeSchema(ERecipe recipeType, int fluidId, BaseRecipe recipe, int productId,
+            ProductOutputInfo primaryProduct) {
+
+            runtimeSchemaValid = true;
+            runtimeSchemaFluidId = fluidId;
+            runtimeSchemaRecipeType = recipeType;
+            runtimeSchemaRecipe = recipe;
+            runtimeSchemaProductId = productId;
+            runtimeSchemaProductCount = Products.Count;
+            PrimaryProduct = primaryProduct;
+        }
+
+        /// <summary>
+        /// 清除分馏塔运行时输出架构缓存。
+        /// </summary>
+        public void ClearRuntimeSchema() {
+            runtimeSchemaValid = false;
+            runtimeSchemaFluidId = 0;
+            runtimeSchemaRecipeType = default;
+            runtimeSchemaRecipe = null;
+            runtimeSchemaProductId = 0;
+            runtimeSchemaProductCount = 0;
+            PrimaryProduct = null;
+        }
+
+        /// <summary>
+        /// 判断分馏塔扩展产物缓存是否已有足够输出。
+        /// </summary>
+        public bool HasFullProduct(int countThreshold, bool forceRefresh = false) {
+            if (!forceRefresh
+                && fullProductCacheValid
+                && fullProductCacheThreshold == countThreshold) {
+                return fullProductCacheValue;
+            }
+
+            bool hasFullProduct = false;
+            foreach (ProductOutputInfo product in Products) {
+                if (product.count >= countThreshold) {
+                    hasFullProduct = true;
+                    break;
+                }
+            }
+
+            fullProductCacheValid = true;
+            fullProductCacheThreshold = countThreshold;
+            fullProductCacheValue = hasFullProduct;
+            return hasFullProduct;
+        }
+
+        /// <summary>
+        /// 标记扩展产物满载缓存失效。
+        /// </summary>
+        public void InvalidateFullProductCache() {
+            fullProductCacheValid = false;
+        }
+
+        /// <summary>
+        /// 记录扩展产物已达到指定输出阈值。
+        /// </summary>
+        public void MarkFullProductCache(int countThreshold) {
+            fullProductCacheValid = true;
+            fullProductCacheThreshold = countThreshold;
+            fullProductCacheValue = true;
+        }
+    }
+
+    private static readonly ConcurrentDictionary<(int, int), FractionatorExtraState> outputDic = [];
+
+    /// <summary>
+    /// 单个星球的分馏塔扩展状态数组和版本号。
+    /// </summary>
+    private sealed class FractionatorExtraStateArray(int length) {
+        /// <summary>
+        /// 保存该星球分馏塔扩展状态的同步锁。
+        /// </summary>
+        public readonly object SyncRoot = new();
+        /// <summary>
+        /// 保存该星球按实体 ID 索引的分馏塔扩展状态。
+        /// </summary>
+        public FractionatorExtraState[] States = new FractionatorExtraState[length];
+        /// <summary>
+        /// 保存该星球分馏塔扩展状态表的变更版本。
+        /// </summary>
+        public int Version;
+    }
+
+    private static readonly ConcurrentDictionary<int, FractionatorExtraStateArray> outputStateArraysByPlanet = [];
+    private static int outputStateArrayGeneration;
+    [ThreadStatic] private static int cachedOutputStatePlanetId;
+    [ThreadStatic] private static int cachedOutputStateVersion;
+    [ThreadStatic] private static int cachedOutputStateGeneration;
+    [ThreadStatic] private static FractionatorExtraStateArray cachedOutputStateArray;
+
+    private static FractionatorExtraState[] EnsureOutputStateArray(int planetId, int entityId,
+        PlanetFactory factory = null) {
+        int generation = Volatile.Read(ref outputStateArrayGeneration);
+        FractionatorExtraStateArray cachedArray = cachedOutputStateArray;
+        if (cachedArray != null
+            && cachedOutputStatePlanetId == planetId
+            && cachedOutputStateVersion == cachedArray.Version
+            && cachedOutputStateGeneration == generation
+            && (uint)entityId < (uint)cachedArray.States.Length) {
+            return cachedArray.States;
+        }
+
+        int minLength = entityId + 1;
+        if (factory?.entityPool != null && factory.entityPool.Length > minLength) {
+            minLength = factory.entityPool.Length;
+        }
+        minLength = Math.Max(minLength, 64);
+
+        FractionatorExtraStateArray stateArray =
+            outputStateArraysByPlanet.GetOrAdd(planetId, _ => new FractionatorExtraStateArray(minLength));
+        FractionatorExtraState[] states;
+        int version;
+        lock (stateArray.SyncRoot) {
+            states = stateArray.States;
+            if (states.Length <= entityId) {
+                Array.Resize(ref states, minLength);
+                stateArray.States = states;
+                stateArray.Version++;
+            }
+            version = stateArray.Version;
+        }
+
+        cachedOutputStatePlanetId = planetId;
+        cachedOutputStateVersion = version;
+        cachedOutputStateGeneration = generation;
+        cachedOutputStateArray = stateArray;
+        return states;
+    }
+
+    /// <summary>
+    /// 读取分馏塔扩展输出状态。
+    /// </summary>
+    public static void OutputExtendImport(BinaryReader r) {
+        outputDic.Clear();
+        outputStateArraysByPlanet.Clear();
+        Interlocked.Increment(ref outputStateArrayGeneration);
+        cachedOutputStatePlanetId = 0;
+        cachedOutputStateVersion = 0;
+        cachedOutputStateGeneration = 0;
+        cachedOutputStateArray = null;
+        int fractionatorNum = r.ReadInt32();
+        for (int i = 0; i < fractionatorNum; i++) {
+            int planetId = r.ReadInt32();
+            int entityId = r.ReadInt32();
+            FractionatorExtraState state = new();
+            int outputKinds = r.ReadInt32();
+            for (int j = 0; j < outputKinds; j++) {
+                bool isMainOutput = r.ReadBoolean();
+                int outputId = r.ReadInt32();
+                int outputCount = r.ReadInt32();
+                if (!LDB.items.Exist(outputId)) {
+                    continue;
+                }
+                state.Products.Add(new(isMainOutput, outputId, outputCount));
+            }
+            outputDic.TryAdd((planetId, entityId), state);
+            EnsureOutputStateArray(planetId, entityId)[entityId] = state;
+        }
+    }
+
+    /// <summary>
+    /// 写入分馏塔扩展输出状态。
+    /// </summary>
+    public static void OutputExtendExport(BinaryWriter w) {
+        w.Write(outputDic.Count);
+        foreach (var p in outputDic) {
+            w.Write(p.Key.Item1);
+            w.Write(p.Key.Item2);
+            List<ProductOutputInfo> products = p.Value.Products;
+            w.Write(products.Count);
+            foreach (ProductOutputInfo outputItem in products) {
+                w.Write(outputItem.isMainOutput);
+                w.Write(outputItem.itemId);
+                w.Write(outputItem.count);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 重置分馏塔扩展输出状态。
+    /// </summary>
+    public static void OutputExtendIntoOtherSave() {
+        outputDic.Clear();
+        outputStateArraysByPlanet.Clear();
+        Interlocked.Increment(ref outputStateArrayGeneration);
+        cachedOutputStatePlanetId = 0;
+        cachedOutputStateVersion = 0;
+        cachedOutputStateGeneration = 0;
+        cachedOutputStateArray = null;
+    }
+
+    /// <summary>
+    /// 读取指定分馏塔当前可显示的产物列表。
+    /// </summary>
+    /// <param name="fractionator">基础分馏塔组件。</param>
+    /// <param name="factory">组件所属星球工厂。</param>
+    /// <returns>该塔唯一的可变扩展产物缓存。</returns>
+    public static List<ProductOutputInfo> GetProducts(this FractionatorComponent fractionator,
+        PlanetFactory factory) {
+        return fractionator.GetExtraState(factory).Products;
+    }
+
+    /// <summary>
+    /// 读取或创建指定分馏塔的扩展运行状态。
+    /// </summary>
+    public static FractionatorExtraState GetExtraState(this FractionatorComponent fractionator,
+        PlanetFactory factory) {
+        int planetId = factory.planetId;
+        int entityId = fractionator.entityId;
+        FractionatorExtraState[] states = EnsureOutputStateArray(planetId, entityId, factory);
+        FractionatorExtraState state = states[entityId];
+        if (state != null) {
+            return state;
+        }
+
+        var key = (planetId, entityId);
+        if (outputDic.TryGetValue(key, out state)) {
+            states[entityId] = state;
+            return state;
+        }
+
+        state = new FractionatorExtraState();
+        states[entityId] = state;
+        outputDic[key] = state;
+        return state;
+    }
+
+    /// <summary>
+    /// 清除指定实体对应的分馏塔扩展状态。
+    /// </summary>
+    public static void ClearExtraState(PlanetFactory factory, int entityId) {
+        if (factory == null || entityId <= 0) {
+            return;
+        }
+        int planetId = factory.planetId;
+        outputDic.TryRemove((planetId, entityId), out _);
+        if (outputStateArraysByPlanet.TryGetValue(planetId, out FractionatorExtraStateArray stateArray)) {
+            lock (stateArray.SyncRoot) {
+                FractionatorExtraState[] states = stateArray.States;
+                if (entityId < states.Length) {
+                    states[entityId] = null;
+                }
+            }
+        }
+        if (cachedOutputStatePlanetId == planetId
+            && cachedOutputStateArray != null
+            && cachedOutputStateGeneration == Volatile.Read(ref outputStateArrayGeneration)) {
+            lock (cachedOutputStateArray.SyncRoot) {
+                FractionatorExtraState[] states = cachedOutputStateArray.States;
+                if (cachedOutputStateVersion == cachedOutputStateArray.Version
+                    && entityId < states.Length) {
+                    states[entityId] = null;
+                }
+            }
+        }
+    }
+}
+
+/// <summary>
+/// 拆除或销毁基础塔前，清掉它的多产物缓存记录。
+/// </summary>
+public static class FractionatorStateCleanup {
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.RemoveEntityWithComponents))]
+    private static void PlanetFactory_RemoveEntityWithComponents_Prefix(PlanetFactory __instance, int id) {
+        FractionatorOutputState.ClearExtraState(__instance, id);
+    }
+}

@@ -9,8 +9,12 @@ Fractionation/
 ├── Fractionators/
 │   ├── Definitions/                 # 两座基础塔、三座高级塔原型
 │   ├── FractionatorTowerCatalog.cs  # 五塔稳定目录与 ERecipe 映射
-│   ├── FractionatorRuntime.cs       # 基础塔单输入、输出和正面上传
+│   ├── FractionatorRuntime.cs       # 基础塔单输入、输出、正面上传与共享参数
+│   ├── VanillaFractionatorOutput.cs # 原版塔流动物和产物补放
+│   ├── FractionatorOutputState.cs   # 基础塔扩展缓存、存档与拆除清理
+│   ├── FractionatorBlueprintParameters.cs # 共用蓝图状态块读写
 │   ├── AdvancedFractionatorRuntime.cs # 多输入/输出、食物、营养、耐久、状态
+│   ├── AdvancedFractionatorPersistence.cs # 高级塔存档及全量/增量快照
 │   ├── AdvancedRecipeSelectionSync.cs # 复制粘贴、蓝图和联机配方 ID
 │   ├── LivingTowerPatches.cs        # 拆除/损毁、维修和运行接线
 │   ├── FractionatorManager.cs       # 原型入口与 Building 存档聚合
@@ -32,7 +36,7 @@ Fractionation/
 
 ## Runtime Rules
 
-- 缓存以堆为单位：五塔各类缓存均为 `ProcessManager.BufferStackCount`（20）堆，一堆等于当前全局堆叠；基础塔单输入自动识别。
+- 缓存以堆为单位：五塔各类缓存均为 `ProcessManager.BufferStackCount`（20）堆，一堆等于当前全局堆叠；件数上限统一读取 `ProcessManager.BufferCapacity`，基础塔单输入自动识别。
 - 原版分馏塔输入缓存固定 `FractionatorManager.VanillaFluidInputCargoMax`（40）堆，两项输出缓存为 20 堆；原版更新后由 `ProcessManager.TopUpVanillaOutputs` 把流动输出和产物叠到输出带头部。已放置塔的原版缓存字段由 `FractionatorManager.SetFractionatorCacheSize` 与 `FactorySystem.Import` 补丁同步。
 - 基础塔按带尾真实 stack 做整批准入；失败物进入流动输出，`DestroyRatio` 为 0。
 - 高级塔先验证已研究且塔型匹配的稳定配方 ID，再接收多输入和矩阵食物。

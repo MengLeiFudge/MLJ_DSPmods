@@ -37,17 +37,6 @@ public static class RecipeAvailabilityStore {
     }
 
     /// <summary>
-    /// 判断配方是否由研究域管理。
-    /// </summary>
-    public static bool IsManaged(BaseRecipe recipe) => recipe != null && IsManaged(RecipeKey.FromRecipe(recipe));
-
-    /// <summary>
-    /// 判断稳定键是否由研究域管理。
-    /// </summary>
-    public static bool IsManaged(RecipeKey recipeKey) =>
-        Volatile.Read(ref snapshot).ManagedRecipes.Contains(recipeKey);
-
-    /// <summary>
     /// 判断配方是否可以运行；不受研究管理的基础设施配方默认可用。
     /// </summary>
     public static bool IsAvailable(BaseRecipe recipe) => recipe != null && IsAvailable(RecipeKey.FromRecipe(recipe));

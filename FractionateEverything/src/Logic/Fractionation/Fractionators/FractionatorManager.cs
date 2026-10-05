@@ -58,8 +58,8 @@ public static class FractionatorManager {
             if (modelProto.prefabDesc.isFractionator) {
                 modelProto.prefabDesc.fracFluidInputMax =
                     GetFluidInputMax(FractionatorTowerCatalog.IsActiveFractionatorModel(modelProto.ID));
-                modelProto.prefabDesc.fracProductOutputMax = BaseFracProductOutputMax;
-                modelProto.prefabDesc.fracFluidOutputMax = BaseFracFluidOutputMax;
+                modelProto.prefabDesc.fracProductOutputMax = BufferCapacity;
+                modelProto.prefabDesc.fracFluidOutputMax = BufferCapacity;
             }
         }
 
@@ -103,8 +103,8 @@ public static class FractionatorManager {
             bool activeFractionator = entityId > 0 && entityId < entityPool.Length
                 && FractionatorTowerCatalog.IsActiveFractionator(entityPool[entityId].protoId);
             fractionator.fluidInputMax = GetFluidInputMax(activeFractionator);
-            fractionator.productOutputMax = BaseFracProductOutputMax;
-            fractionator.fluidOutputMax = BaseFracFluidOutputMax;
+            fractionator.productOutputMax = BufferCapacity;
+            fractionator.fluidOutputMax = BufferCapacity;
         }
     }
 
@@ -114,24 +114,24 @@ public static class FractionatorManager {
     /// <param name="activeFractionator">是否为五座 FE 塔之一。</param>
     /// <returns>FE 塔为件数上限（20 堆），原版塔为堆数上限（40 堆）。</returns>
     private static int GetFluidInputMax(bool activeFractionator) =>
-        activeFractionator ? BaseFracFluidInputCargoMax : VanillaFluidInputCargoMax;
+        activeFractionator ? BufferCapacity : VanillaFluidInputCargoMax;
 
     /// <summary>
     /// 返回流动输入缓存上限：20 堆 × 当前全局堆叠。
     /// </summary>
     public static int FluidInputCargoMax(this ItemProto fractionator) {
-        return BaseFracFluidInputCargoMax;
+        return BufferCapacity;
     }
 
     /// <summary>
     /// 返回产物输出缓存上限：20 堆 × 当前全局堆叠。
     /// </summary>
-    public static int ProductOutputMax(this ItemProto fractionator) => BaseFracProductOutputMax;
+    public static int ProductOutputMax(this ItemProto fractionator) => BufferCapacity;
 
     /// <summary>
     /// 返回流动输出缓存上限：20 堆 × 当前全局堆叠。
     /// </summary>
-    public static int FluidOutputMax(this ItemProto fractionator) => BaseFracFluidOutputMax;
+    public static int FluidOutputMax(this ItemProto fractionator) => BufferCapacity;
 
     /// <summary>
     /// 读取分馏塔当前允许的处理堆叠上限；该值来自全局堆叠科技，不属于建筑等级。

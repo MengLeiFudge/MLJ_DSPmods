@@ -239,7 +239,7 @@ public static partial class ResearchManager {
     /// </summary>
     public static bool CanAnalyzeDirection(int itemId) {
         if (itemId == IFE残片 || itemId == IFE记忆源点
-            || SacrificeUnlocked && FractionatorTowerCatalog.IsAdvancedTowerItem(itemId)) {
+            || SacrificeUnlocked && FractionatorTowerCatalog.IsAdvancedTower(itemId)) {
             return true;
         }
         return Volatile.Read(ref analysisRuntimeSnapshot).CandidatesByItemId.ContainsKey(itemId);
@@ -252,7 +252,7 @@ public static partial class ResearchManager {
         if (Array.IndexOf(ItemManager.MainProgressMatrixIds, itemId) >= 0) { return "FE.Storage.ExpansionMode"; }
         if (itemId == IFE残片) { return "广播解析"; }
         if (Volatile.Read(ref analysisRuntimeSnapshot).CandidatesByItemId.ContainsKey(itemId)) { return "解析"; }
-        if (SacrificeUnlocked && (itemId == IFE记忆源点 || FractionatorTowerCatalog.IsAdvancedTowerItem(itemId))) {
+        if (SacrificeUnlocked && (itemId == IFE记忆源点 || FractionatorTowerCatalog.IsAdvancedTower(itemId))) {
             return "献祭";
         }
         return "待机";
@@ -473,7 +473,7 @@ public static partial class ResearchManager {
         }
         if (itemId == IFE记忆源点) { return ProcessMemory(count) ? count : 0; }
 
-        bool advancedTower = FractionatorTowerCatalog.IsAdvancedTowerItem(itemId);
+        bool advancedTower = FractionatorTowerCatalog.IsAdvancedTower(itemId);
         AnalysisRuntimeSnapshot runtimeSnapshot = Volatile.Read(ref analysisRuntimeSnapshot);
         if (!runtimeSnapshot.CandidatesByItemId.ContainsKey(itemId)) {
             if (!advancedTower || !SacrificeUnlocked) { return 0; }
@@ -531,7 +531,7 @@ public static partial class ResearchManager {
     /// 记录高级塔在当前存档中已经取得。
     /// </summary>
     public static void NotifyAdvancedTowerObtained(int itemId) {
-        if (!FractionatorTowerCatalog.IsAdvancedTowerItem(itemId)) {
+        if (!FractionatorTowerCatalog.IsAdvancedTower(itemId)) {
             return;
         }
         lock (Sync) {
@@ -546,7 +546,7 @@ public static partial class ResearchManager {
     /// </summary>
     public static void NotifyAdvancedTowerInventoryCount(int itemId, long inventoryCount) {
         if (NebulaMultiplayerModAPI.IsClient || inventoryCount < AdvancedTowerEligibilityThreshold
-            || !FractionatorTowerCatalog.IsAdvancedTowerItem(itemId)) {
+            || !FractionatorTowerCatalog.IsAdvancedTower(itemId)) {
             return;
         }
         lock (Sync) {
@@ -584,7 +584,7 @@ public static partial class ResearchManager {
     /// <param name="towerItemId">高级塔物品身份。</param>
     /// <returns>三类高级塔共享的相对增益，其他物品为零。</returns>
     public static float GetAdvancedTowerSacrificeBoost(int towerItemId) =>
-        FractionatorTowerCatalog.IsAdvancedTowerItem(towerItemId) ? MemorySuccessBoost : 0f;
+        FractionatorTowerCatalog.IsAdvancedTower(towerItemId) ? MemorySuccessBoost : 0f;
 
     /// <summary>
     /// 每秒维护阶段资格，在完整分钟边界发布上一窗口的Memory献祭增益。
@@ -688,12 +688,12 @@ public static partial class ResearchManager {
                 }
             }
             AdvancedTowerInventoryMilestones.RemoveWhere(
-                itemId => !FractionatorTowerCatalog.IsAdvancedTowerItem(itemId));
+                itemId => !FractionatorTowerCatalog.IsAdvancedTower(itemId));
             EligibleDirections.RemoveWhere(itemId => !DirectionPools.ContainsKey(itemId));
             BootstrapTowerGrants.RemoveWhere(
-                itemId => !FractionatorTowerCatalog.IsAdvancedTowerItem(itemId));
+                itemId => !FractionatorTowerCatalog.IsAdvancedTower(itemId));
             AcquiredAdvancedTowers.RemoveWhere(
-                itemId => !FractionatorTowerCatalog.IsAdvancedTowerItem(itemId));
+                itemId => !FractionatorTowerCatalog.IsAdvancedTower(itemId));
             foreach (int itemId in DirectionProgress.Keys.ToArray()) {
                 if (!DirectionPools.ContainsKey(itemId)) {
                     DirectionProgress.Remove(itemId);

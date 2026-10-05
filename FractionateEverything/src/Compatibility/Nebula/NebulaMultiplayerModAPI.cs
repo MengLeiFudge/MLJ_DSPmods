@@ -274,7 +274,7 @@ internal static class CenterItemChangeApply {
             return;
         }
         if (count > 0) {
-            if (FractionatorTowerCatalog.IsAdvancedTowerItem(itemId)) {
+            if (FractionatorTowerCatalog.IsAdvancedTower(itemId)) {
                 DataCenterUploadRouter.Upload(itemId, count, Math.Max(0, inc));
             } else {
                 AddItemToModData(itemId, count, Math.Max(0, inc));
@@ -296,7 +296,7 @@ internal static class CenterItemChangeApply {
             return;
         }
         if (count > 0) {
-            if (FractionatorTowerCatalog.IsAdvancedTowerItem(itemId)) {
+            if (FractionatorTowerCatalog.IsAdvancedTower(itemId)) {
                 DataCenterUploadRouter.Upload(itemId, count, Math.Max(0L, inc));
             } else {
                 AddItemToModData(itemId, count, Math.Max(0L, inc));

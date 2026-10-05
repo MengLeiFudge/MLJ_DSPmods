@@ -8,6 +8,7 @@ using FE.Logic.Civilization;
 using FE.Logic.Enhancements.Stacking;
 using FE.Logic.Fractionation.Recipes;
 using UnityEngine;
+using static FE.Logic.Fractionation.Fractionators.ProcessManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Fractionators;
@@ -463,9 +464,6 @@ public static partial class AdvancedFractionatorRuntime {
         return true;
     }
 
-    /// <summary>当前缓存区上限：20 堆 × 当前全局堆叠。</summary>
-    private static int BufferCapacity => ProcessManager.BaseFracFluidInputCargoMax;
-
     private static bool IsFoodItem(int itemId) {
         int tier = itemId - I电磁矩阵;
         return tier >= 0 && tier < FoodNutrition.Length;
@@ -520,7 +518,7 @@ public static partial class AdvancedFractionatorRuntime {
             }
             AddCount(state.Products, output.ItemId, outputCount);
             lock (productRegister) { productRegister[output.ItemId] += outputCount; }
-            if (FractionatorTowerCatalog.IsAdvancedTowerItem(output.ItemId)) {
+            if (FractionatorTowerCatalog.IsAdvancedTower(output.ItemId)) {
                 ResearchManager.NotifyAdvancedTowerObtained(output.ItemId);
             }
         }
@@ -547,7 +545,7 @@ public static partial class AdvancedFractionatorRuntime {
         if (rounds <= 0) {
             return 0;
         }
-        int outputCapacity = GetOutputCapacity();
+        int outputCapacity = BufferCapacity;
         foreach (WorldviewRecipeInput input in recipe.InputArray) {
             if (input.ConsumeProbability < 0.9999f) {
                 continue;
@@ -728,18 +726,6 @@ public static partial class AdvancedFractionatorRuntime {
         return true;
     }
 
-    private static bool AreCurrentInputsEmpty(AdvancedFractionatorState state, WorldviewRecipe recipe) {
-        if (recipe == null) {
-            return true;
-        }
-        foreach (WorldviewRecipeInput input in recipe.InputArray) {
-            if (GetCount(state.Inputs, input.ItemId) > 0) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     private static float GetDurabilityEfficiency(PlanetFactory factory, int entityId,
         AdvancedFractionatorState state) {
         if (state.Nutrition > 0f) {
@@ -820,8 +806,6 @@ public static partial class AdvancedFractionatorRuntime {
             signPool[entityId].iconType = fractionator.fluidId > 0 ? 1U : 0U;
         }
     }
-
-    private static int GetOutputCapacity() => BufferCapacity;
 
     private static void MoveNonTargetEntries(Dictionary<int, int> source, Dictionary<int, int> sourceInc,
         Dictionary<int, int> target, Dictionary<int, int> targetInc, WorldviewRecipe recipe,

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using FE.Logic.Fractionation.Fractionators;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Recipes;
@@ -19,11 +18,6 @@ public abstract class BaseRecipe(
     /// 获取配方类型和输入物品组成的显示名称。
     /// </summary>
     public string TypeName => $"{RecipeType.GetShortName()}-{LDB.items.Select(InputID).name}";
-    /// <summary>
-    /// 获取带矩阵阶段颜色的配方显示名称。
-    /// </summary>
-    public string TypeNameWC => TypeName.WithColor(MatrixID - I电磁矩阵);
-
     #region 配方类型、输入输出
 
     /// <summary>
@@ -60,11 +54,6 @@ public abstract class BaseRecipe(
     public int InputID => inputID;
 
     /// <summary>
-    /// 配方层次对应的矩阵ID
-    /// </summary>
-    public int MatrixID = 0;
-
-    /// <summary>
     /// 配方成功率
     /// </summary>
     public float SuccessRatio => baseSuccessRatio;
@@ -87,271 +76,19 @@ public abstract class BaseRecipe(
     /// </summary>
     public List<OutputInfo> OutputAppend => outputAppend;
 
-    /// <summary>
-    /// 执行单次完整分馏结算，返回损毁、产出或直通结果，并写回输入与产物变化。
-    /// </summary>
-    /// <param name="seed">随机数种子</param>
-    /// <param name="pointsBonus">增产剂加成（比例，例如0.25）</param>
-    /// <param name="successBoost">配方成功率加成</param>
-    /// <param name="fluidInputIncAvg">输入物品的平均增产等级</param>
-    /// <param name="fluidInputInc">该分馏塔当前的全部增产点数，将在该方法中被修改</param>
-    /// <param name="inputChange">原材料会变成几个（-1表示消耗，0表示保留）</param>
-    /// <param name="outputs">损毁返回null，直通返回空List，成功返回输出产物</param>
-    public virtual void GetOutputs(ref uint seed, float pointsBonus, float successBoost,
-        int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, out List<ProductOutputInfo> outputs) {
-        // 1. 损毁判定
-        if (GetRandDouble(ref seed) < DestroyRatio) {
-            inputChange = -1;
-            fluidInputInc -= fluidInputIncAvg;
-            outputs = null;
-            return;
-        }
-
-        // 2. 成功判定
-        if (GetRandDouble(ref seed) < SuccessRatio * (1 + pointsBonus) * (1 + successBoost)) {
-            List<ProductOutputInfo> list = [];
-            OutputInfo mainOutput = SelectMainOutput(ref seed);
-            if (mainOutput != null) {
-                int countReal = RollOutputCount(ref seed, mainOutput.OutputCount);
-                if (countReal > 0) {
-                    list.Add(new(true, mainOutput.OutputID, countReal));
-                    mainOutput.AddOutputCount(countReal);
-                }
-            }
-            // 附加输出判定，每一项依次判定，互不影响
-            foreach (var outputInfo in OutputAppend) {
-                if (GetRandDouble(ref seed) <= outputInfo.SuccessRatio) {
-                    float countAvg = outputInfo.OutputCount;
-                    int countReal = (int)countAvg;
-                    countAvg -= countReal;
-                    if (countAvg > 0.0001 && GetRandDouble(ref seed) < countAvg) {
-                        countReal++;
-                    }
-                    if (countReal > 0) {
-                        list.Add(new(false, outputInfo.OutputID, countReal));
-                        outputInfo.AddOutputCount(countReal);
-                    }
-                }
-            }
-
-            if (list.Count > 0) {
-                inputChange = -1;
-                fluidInputInc -= fluidInputIncAvg;
-                outputs = list;
-                return;
-            }
-
-            // 如果判定成功但产出数为0（例如由于小数判定未通过），由于原料已尝试消耗但无产出，视同损毁
-            inputChange = -1;
-            fluidInputInc -= fluidInputIncAvg;
-            outputs = null;
-            return;
-        }
-
-        // 3. 无变化 -> 直通输出
-        inputChange = -1;
-        fluidInputInc -= fluidInputIncAvg;
-        outputs = ProcessManager.emptyOutputs;
-    }
-
-    /// <summary>
-    /// 执行单次轻量分馏结算，供运行热路径减少分配使用。
-    /// </summary>
-    public virtual FractionationOutcome GetOutputsFast(ref uint seed, float pointsBonus, float successBoost,
-        int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, ProductOutputBuffer outputs) {
-        outputs.Clear();
-
-        // 1. 损毁判定
-        if (GetRandDouble(ref seed) < DestroyRatio) {
-            inputChange = -1;
-            fluidInputInc -= fluidInputIncAvg;
-            return FractionationOutcome.Destroyed;
-        }
-
-        // 2. 成功判定
-        if (GetRandDouble(ref seed) < SuccessRatio * (1 + pointsBonus) * (1 + successBoost)) {
-            OutputInfo mainOutput = SelectMainOutput(ref seed);
-            if (mainOutput != null) {
-                int countReal = RollOutputCount(ref seed, mainOutput.OutputCount);
-                if (countReal > 0) {
-                    outputs.Add(true, mainOutput.OutputID, countReal);
-                    mainOutput.AddOutputCount(countReal);
-                }
-            }
-
-            foreach (var outputInfo in OutputAppend) {
-                if (GetRandDouble(ref seed) <= outputInfo.SuccessRatio) {
-                    int countReal = RollOutputCount(ref seed, outputInfo.OutputCount);
-                    if (countReal > 0) {
-                        outputs.Add(false, outputInfo.OutputID, countReal);
-                        outputInfo.AddOutputCount(countReal);
-                    }
-                }
-            }
-
-            if (outputs.Count > 0) {
-                inputChange = -1;
-                fluidInputInc -= fluidInputIncAvg;
-                return FractionationOutcome.Produced;
-            }
-
-            inputChange = -1;
-            fluidInputInc -= fluidInputIncAvg;
-            return FractionationOutcome.Destroyed;
-        }
-
-        // 3. 无变化 -> 直通输出
-        inputChange = -1;
-        fluidInputInc -= fluidInputIncAvg;
-        return FractionationOutcome.PassThrough;
-    }
-
-    /// <summary>
-    /// 执行批量轻量分馏结算，供运行热路径合并多次处理。
-    /// </summary>
-    public virtual FractionationBatchResult GetOutputsBatchFast(ref uint seed, float pointsBonus, float successBoost,
-        int batchCount, int fluidInputIncAvg, ref int fluidInputInc, ProductOutputBuffer outputs) {
-        outputs.Clear();
-
-        int destroyedCount = RollBinomialApprox(ref seed, batchCount, DestroyRatio);
-        int aliveCount = batchCount - destroyedCount;
-        float successRatio = SuccessRatio * (1 + pointsBonus) * (1 + successBoost);
-        int rolledSuccessCount = RollBinomialApprox(ref seed, aliveCount, successRatio);
-        int passThroughCount = aliveCount - rolledSuccessCount;
-        int producedSuccessCount = 0;
-
-        int remainingMainCount = rolledSuccessCount;
-        float remainingMainRatio = 1.0f;
-        for (int i = 0; i < OutputMain.Count && remainingMainCount > 0; i++) {
-            OutputInfo outputInfo = OutputMain[i];
-            int outputHits = i == OutputMain.Count - 1
-                ? remainingMainCount
-                : RollBinomialApprox(ref seed, remainingMainCount, outputInfo.SuccessRatio / remainingMainRatio);
-            remainingMainCount -= outputHits;
-            remainingMainRatio -= outputInfo.SuccessRatio;
-            if (remainingMainRatio <= 0f) {
-                remainingMainRatio = 1.0f;
-            }
-            producedSuccessCount += AddRolledOutput(ref seed, outputs, outputInfo, true, outputHits);
-        }
-
-        foreach (var outputInfo in OutputAppend) {
-            int outputHits = RollBinomialApprox(ref seed, rolledSuccessCount, outputInfo.SuccessRatio);
-            int producedHits = AddRolledOutput(ref seed, outputs, outputInfo, false, outputHits);
-            int missingSuccessCount = rolledSuccessCount - producedSuccessCount;
-            if (missingSuccessCount > 0 && producedHits > 0) {
-                int rescuedCount = RollBinomialApprox(ref seed, missingSuccessCount,
-                    (float)producedHits / rolledSuccessCount);
-                producedSuccessCount += rescuedCount;
-            }
-        }
-
-        int noOutputCount = rolledSuccessCount - producedSuccessCount;
-        destroyedCount += noOutputCount;
-        int inputRemoveCount = destroyedCount + passThroughCount + producedSuccessCount;
-        fluidInputInc -= fluidInputIncAvg * inputRemoveCount;
-        if (fluidInputInc < 0) {
-            fluidInputInc = 0;
-        }
-
-        FractionationBatchResult result = new() {
-            InputRemoveCount = inputRemoveCount,
-            ConsumedRegisterCount = destroyedCount + producedSuccessCount,
-            SuccessCount = producedSuccessCount,
-            DestroyedCount = destroyedCount,
-            PassThroughCount = passThroughCount,
-            PassThroughInc = fluidInputIncAvg * passThroughCount,
-        };
-        return result;
-    }
-
-    /// <summary>
-    /// 按输出概率和数量随机结算一条产物并加入缓存，返回实际产生该产物的成功次数。
-    /// </summary>
-    protected static int AddRolledOutput(ref uint seed, ProductOutputBuffer outputs, OutputInfo outputInfo,
-        bool isMainOutput, int outputHits) {
-        if (outputHits <= 0) {
-            return 0;
-        }
-
-        int baseCount = (int)outputInfo.OutputCount;
-        float fractionalCount = outputInfo.OutputCount - baseCount;
-        int totalCount = outputHits * baseCount + RollBinomialApprox(ref seed, outputHits, fractionalCount);
-        if (totalCount <= 0) {
-            return 0;
-        }
-
-        outputs.Add(isMainOutput, outputInfo.OutputID, totalCount);
-        outputInfo.AddOutputCount(totalCount);
-        return baseCount > 0 ? outputHits : totalCount;
-    }
-
-    private OutputInfo SelectMainOutput(ref uint seed) {
-        double ratio = GetRandDouble(ref seed);
-        float cumulativeRatio = 0f;
-        foreach (OutputInfo outputInfo in OutputMain) {
-            cumulativeRatio += outputInfo.SuccessRatio;
-            if (ratio <= cumulativeRatio) {
-                return outputInfo;
-            }
-        }
-        return null;
-    }
-
-    /// <summary>
-    /// 按小数产量随机取整得到实际输出数量。
-    /// </summary>
-    protected static int RollOutputCount(ref uint seed, float outputCount) {
-        int countReal = (int)outputCount;
-        float fractionalCount = outputCount - countReal;
-        if (fractionalCount > 0.0001 && GetRandDouble(ref seed) < fractionalCount) {
-            countReal++;
-        }
-
-        return countReal;
-    }
-
-    /// <summary>
-    /// 用分段算法近似结算二项分布成功次数。
-    /// </summary>
-    public static int RollBinomialApprox(ref uint seed, int trials, float probability) {
-        if (trials <= 0 || probability <= 0f) {
-            return 0;
-        }
-        if (probability >= 1f) {
-            return trials;
-        }
-        if (trials <= 8) {
-            int result = 0;
-            for (int i = 0; i < trials; i++) {
-                if (GetRandDouble(ref seed) < probability) {
-                    result++;
-                }
-            }
-            return result;
-        }
-
-        double mean = trials * probability;
-        double variance = mean * (1.0 - probability);
-        if (variance <= 0.000001) {
-            return (int)(mean + GetRandDouble(ref seed));
-        }
-
-        // 3 次均匀随机近似正态分布，比逐次判定少得多，同时保留批量波动。
-        double normalized = (GetRandDouble(ref seed) + GetRandDouble(ref seed) + GetRandDouble(ref seed) - 1.5) * 2.0;
-        int sampled = (int)Math.Round(mean + Math.Sqrt(variance) * normalized);
-        if (sampled < 0) {
-            return 0;
-        }
-        return sampled > trials ? trials : sampled;
-    }
+    /// <summary>由具体配方实现批量结算，写回输入增产点并复用输出缓冲。</summary>
+    /// <param name="seed">分馏随机种子。</param>
+    /// <param name="pointsBonus">增产剂成功率加成。</param>
+    /// <param name="successBoost">额外成功率加成。</param>
+    /// <param name="batchCount">本批可处理的输入数量。</param>
+    /// <param name="fluidInputIncAvg">单件输入平均增产点。</param>
+    /// <param name="fluidInputInc">输入缓存的剩余增产点。</param>
+    /// <param name="outputs">复用的产物缓冲。</param>
+    /// <returns>本批实际消耗、产出与回流数量。</returns>
+    public abstract FractionationBatchResult GetOutputsBatchFast(ref uint seed, float pointsBonus, float successBoost,
+        int batchCount, int fluidInputIncAvg, ref int fluidInputInc, ProductOutputBuffer outputs);
 
     #endregion
-
-    /// <summary>
-    /// 获取产物的增产点数
-    /// </summary>
-    public virtual byte GetOutputInc(int itemId) => 0;
 
     #region 模组存档接口实现
 

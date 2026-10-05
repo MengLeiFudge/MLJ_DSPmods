@@ -830,11 +830,6 @@ public static class FractionatorWindow {
         }
     }
 
-    private static int GetModSlotMax(FractionatorComponent fractionator, int itemId, ProductSlot slot = null) {
-        // 缓存上限随全局堆叠变化，已放置塔的原版字段可能是旧值，所以读当前上限。
-        return IsFluidSlot(fractionator, slot, itemId) ? BaseFracFluidOutputMax : BaseFracProductOutputMax;
-    }
-
     /// <summary>
     /// 处理模组分馏塔产物槽按钮点击。
     /// </summary>
@@ -864,7 +859,7 @@ public static class FractionatorWindow {
         // 原版会把“非第一主产物”错误走到流体输出分支，导致错取和无限取。
         // 自定义槽位需要额外带上槽位身份，避免主路目标只靠 itemId 反查到错误缓存。
         Player player = __instance.player;
-        List<ProductOutputInfo> products = fractionator.products(__instance.factory);
+        List<ProductOutputInfo> products = fractionator.GetProducts(__instance.factory);
         int currentCount = GetModSlotCount(fractionator, products, itemId, slot);
         bool isFluidSlot = IsFluidSlot(fractionator, slot, itemId);
 
@@ -877,7 +872,8 @@ public static class FractionatorWindow {
             if (player.inhandItemId != itemId) {
                 return false;
             }
-            int canAdd = GetModSlotMax(fractionator, itemId, slot) - currentCount;
+            // 缓存上限随全局堆叠变化，读当前值而不是已放置塔的旧字段。
+            int canAdd = BufferCapacity - currentCount;
             if (canAdd < 0) {
                 canAdd = 0;
             }
@@ -1259,10 +1255,9 @@ public static class FractionatorWindow {
         bool workingNow = hasFluid && fractionator.isWorking;
         byte outputFlags = fractionator.GetCurrentOutputFlags(src.factory);
         bool mainLit = workingNow && (outputFlags & OutputFlagMain) != 0;
-        bool sideLit = workingNow && (outputFlags & OutputFlagSide) != 0;
-        bool fluidLit = workingNow && ((outputFlags & OutputFlagFluid) != 0 || (!mainLit && !sideLit));
+        bool fluidLit = workingNow && ((outputFlags & OutputFlagFluid) != 0 || !mainLit);
         SetArrowGroup(_mainArrows, hasFluid, mainLit ? modWindow.marqueeOnColor : modWindow.marqueeOffColor);
-        SetArrowGroup(_sideArrows, hasFluid, sideLit ? modWindow.marqueeOnColor : modWindow.marqueeOffColor);
+        SetArrowGroup(_sideArrows, false, modWindow.marqueeOffColor);
         SetArrowGroup(_fluidArrows, hasFluid, fluidLit ? modWindow.marqueeOnColor : modWindow.marqueeOffColor);
 
         UpdateModStateText(src, fractionator, building, buildingID, consumerRatio);
@@ -1283,7 +1278,7 @@ public static class FractionatorWindow {
 
         int fluidOutputMax = building.FluidOutputMax();
         int productOutputMax = building.ProductOutputMax();
-        List<ProductOutputInfo> products = fractionator.products(src.factory);
+        List<ProductOutputInfo> products = fractionator.GetProducts(src.factory);
         bool interactionMode = FractionatorTowerCatalog.IsBasicTower(buildingID)
                                && fractionator.belt0 > 0
                                && !fractionator.isOutput0
@@ -1382,7 +1377,7 @@ public static class FractionatorWindow {
         FractionatorComponent fractionator, BaseRecipe recipe,
         float recipeSuccessRatio, float destroyRatio, bool hasFluid) {
 
-        List<ProductOutputInfo> products = fractionator.products(src.factory);
+        List<ProductOutputInfo> products = fractionator.GetProducts(src.factory);
         bool showCompleteRecipeInformation = GameMain.sandboxToolsEnabled
                                              || Miscellaneous.ShowFractionateRecipeDetails;
 
@@ -1412,7 +1407,7 @@ public static class FractionatorWindow {
             return;
         }
 
-        int mainCount = 0, sideCount = 0;
+        int mainCount = 0;
         float mainSuccessSum = 0f;
 
         if (recipe != null && RecipeAvailabilityStore.IsAvailable(recipe)) {
@@ -1426,15 +1421,6 @@ public static class FractionatorWindow {
                 mainSuccessSum += ratio;
                 mainCount++;
             }
-            foreach (var output in recipe.OutputAppend) {
-                if (sideCount >= MaxSideSlots) break;
-                var pInfo = products.Find(p => p.itemId == output.OutputID && !p.isMainOutput);
-                float ratio = recipeSuccessRatio * output.SuccessRatio;
-                FillSlot(sideSlots[sideCount], output, pInfo?.count ?? 0,
-                    ratio, output.ShowSuccessRatio || showCompleteRecipeInformation,
-                    ProductSlotKind.Side);
-                sideCount++;
-            }
         }
 
         if (_mainArrowText != null) {
@@ -1442,11 +1428,7 @@ public static class FractionatorWindow {
             _mainArrowText.text = "主产物".Translate();
             _mainArrowText.color = ProbColor;
         }
-        if (_sideArrowText != null) {
-            _sideArrowText.gameObject.SetActive(sideCount > 0);
-            _sideArrowText.text = "副产物".Translate();
-            _sideArrowText.color = ProbColor;
-        }
+        if (_sideArrowText != null) { _sideArrowText.gameObject.SetActive(false); }
         if (_fluidArrowText != null) {
             _fluidArrowText.gameObject.SetActive(true);
             _fluidArrowText.text = "流动输出".Translate();
@@ -1472,12 +1454,10 @@ public static class FractionatorWindow {
             }
         }
 
-        // 动态布局： 无副产物时流动输出上移， 窗口高度缩小
-        bool hasSideProducts = sideCount > 0;
-        float fluidY = hasSideProducts ? FluidY : SideY;
-        float actualAddHeight = hasSideProducts ? AddHeight : AddHeight - 60f;
-
-        int visibleSlotCount = Mathf.Max(mainCount, sideCount);
+        // 基础塔只有产物和流动输出两行。
+        float fluidY = SideY;
+        float actualAddHeight = AddHeight - 60f;
+        int visibleSlotCount = mainCount;
         float targetAddWidth = Mathf.Max(0, visibleSlotCount - 1) * SlotSpacing;
 
         if (visibleSlotCount > 0) {

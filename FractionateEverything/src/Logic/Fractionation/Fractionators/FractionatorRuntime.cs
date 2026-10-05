@@ -1,32 +1,26 @@
-﻿// 分馏塔运行时：逐帧处理、配置、功耗、扩展状态、科技效果与单塔同步。
+﻿// 基础分馏塔逐帧处理、共享堆叠配置、功耗适配与累计成功统计。
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Text;
 using System.Threading;
 using UnityEngine;
 using HarmonyLib;
-using FE.Logic.Civilization;
 using FE.Logic.DataCenter;
 using FE.Logic.Fractionation.Recipes;
 using static FE.Utils.Utils;
 
-namespace FE.Logic.Fractionation.Fractionators {
+namespace FE.Logic.Fractionation.Fractionators;
 
 /// <summary>
-/// 修改所有分馏塔的处理逻辑，以及对应的显示。
+/// 连接 FE 与原版分馏运行入口，并维护基础塔处理和共享运行参数。
 /// </summary>
 public static partial class ProcessManager {
 
     #region 运行配置
 
-    // partial 类跨文件静态字段初始化顺序不稳定，不能用另一个文件里的 handler 数组决定长度。
-    private const int FractionatorBuildingTypeCount = 5;
     /// <summary>
     /// 每个缓存区能放的堆数。
     /// </summary>
@@ -36,47 +30,12 @@ public static partial class ProcessManager {
     /// </summary>
     private static int globalMaxStack = 1;
     private static double[] incTableFixedRatio = [];
-    /// <summary>
-    /// 定义分馏塔流动输出缓存的基础上限。
-    /// </summary>
-    public static int BaseFracFluidOutputMax = 20;
-    /// <summary>
-    /// 定义分馏塔产物输出缓存的基础上限。
-    /// </summary>
-    public static int BaseFracProductOutputMax = 20;
-    /// <summary>
-    /// 定义分馏塔流动输入缓存的基础上限。
-    /// </summary>
-    public static int BaseFracFluidInputCargoMax = 20;
+    /// <summary>FE 塔每类缓存的件数上限：20 堆乘当前全局堆叠。</summary>
+    public static int BufferCapacity { get; private set; } = BufferStackCount;
     /// <summary>
     /// 定义热路径按传送带速度估算的最大输入速度。
     /// </summary>
     public static int MaxBeltSpeed = 30;
-
-    /// <summary>
-    /// 单次分馏更新使用的运行参数快照。
-    /// </summary>
-    private struct FractionatorRuntimeConfig {
-        /// <summary>
-        /// 读取该建筑当前允许的分馏处理堆叠上限。
-        /// </summary>
-        public int MaxStack;
-        /// <summary>
-        /// 保存该分馏塔运行配置允许缓存的产物输出上限。
-        /// </summary>
-        public int ProductOutputMax;
-        /// <summary>
-        /// 保存该分馏塔运行配置允许缓存的流动输出上限。
-        /// </summary>
-        public int FluidOutputMax;
-        /// <summary>
-        /// 读取该建筑当前增产点倍率。
-        /// </summary>
-        public float PlrRatio;
-    }
-
-    private static readonly FractionatorRuntimeConfig[] runtimeConfigsByBuildingOffset =
-        new FractionatorRuntimeConfig[FractionatorBuildingTypeCount];
 
     /// <summary>
     /// 初始化分馏运行热路径的配置表。
@@ -90,10 +49,6 @@ public static partial class ProcessManager {
             select item.prefabDesc.beltSpeed * 6).Prepend(0).Max();
         MaxBeltSpeed = Math.Min(60, MaxBeltSpeed);
         MaxOutputTimes = (int)Math.Ceiling(MaxBeltSpeed / 15.0);
-        BaseFracFluidInputCargoMax = 20;
-        BaseFracProductOutputMax = 20;
-        BaseFracFluidOutputMax = 20;
-
         // 增产剂表在游戏静态数据加载后才可靠，不能放到类型静态初始化阶段读取。
         incTableFixedRatio = new double[Cargo.incTableMilli.Length];
         //增产剂的增产效果修复，因为增产点数对于增产的加成不是线性的，但对于加速的加成是线性的
@@ -109,304 +64,7 @@ public static partial class ProcessManager {
     /// <remarks>缓存以“堆”为单位：输入、流动输出、产物输出都是 20 堆，一堆的件数等于当前全局堆叠。</remarks>
     public static void RefreshFractionatorRuntimeConfig() {
         globalMaxStack = Math.Max(1, BasicMineralTower.MaxStack);
-        int cacheCount = BufferStackCount * globalMaxStack;
-        BaseFracFluidInputCargoMax = cacheCount;
-        BaseFracProductOutputMax = cacheCount;
-        BaseFracFluidOutputMax = cacheCount;
-        SetRuntimeConfig(IFE基础矿物塔, BasicMineralTower.MaxStack, BasicMineralTower.PlrRatio);
-        SetRuntimeConfig(IFE基础解析塔, BasicAnalysisTower.MaxStack, BasicAnalysisTower.PlrRatio);
-    }
-
-    private static void SetRuntimeConfig(int buildingID, int maxStack, float plrRatio) {
-
-        int index = FractionatorTowerCatalog.GetActiveFractionatorIndex(buildingID);
-        if (index < 0 || index >= runtimeConfigsByBuildingOffset.Length) {
-            return;
-        }
-        runtimeConfigsByBuildingOffset[index] = new FractionatorRuntimeConfig {
-            MaxStack = maxStack,
-            ProductOutputMax = BaseFracProductOutputMax,
-            FluidOutputMax = BaseFracFluidOutputMax,
-            PlrRatio = plrRatio,
-        };
-    }
-
-    private static FractionatorRuntimeConfig GetRuntimeConfig(int buildingID) {
-        int index = FractionatorTowerCatalog.GetActiveFractionatorIndex(buildingID);
-        if (index >= 0 && index < runtimeConfigsByBuildingOffset.Length) {
-            FractionatorRuntimeConfig config = runtimeConfigsByBuildingOffset[index];
-            if (config.MaxStack > 0) {
-                return config;
-            }
-        }
-
-        return new FractionatorRuntimeConfig {
-            MaxStack = 1,
-            ProductOutputMax = BaseFracProductOutputMax,
-            FluidOutputMax = BaseFracFluidOutputMax,
-            PlrRatio = 1.0f,
-        };
-    }
-
-    #endregion
-
-    #region 性能
-
-    private static bool EnableFractionatorPerfProbe = false;
-    private const int FractionatorPerfBucketCount = 4;
-    private const int FractionatorPerfLogIntervalTicks = 300;
-    private const int FractionatorPerfUpdateFe = 0;
-    private const int FractionatorPerfUpdateVanilla = 1;
-    private const int FractionatorPerfSetPcFe = 2;
-    private const int FractionatorPerfSetPcVanilla = 3;
-    private const int FractionatorPerfStageCount = 7;
-    private const int FractionatorPerfStagePrepare = 0;
-    private const int FractionatorPerfStageProcess = 1;
-    private const int FractionatorPerfStageFlushDeltas = 2;
-    private const int FractionatorPerfStagePostProcess = 3;
-    private const int FractionatorPerfStageFluidBelts = 4;
-    private const int FractionatorPerfStageProductBelt = 5;
-    private const int FractionatorPerfStageFinalize = 6;
-    private const int FractionatorPerfDetailCount = 7;
-    private const int FractionatorPerfDetailPrepareStateRecipe = 0;
-    private const int FractionatorPerfDetailPrepareSchema = 1;
-    private const int FractionatorPerfDetailPrepareProduct = 2;
-    private const int FractionatorPerfDetailPrepareConfig = 3;
-    private const int FractionatorPerfDetailFlushDeltas = 4;
-    private const int FractionatorPerfDetailProcessGetOutputs = 5;
-    private const int FractionatorPerfDetailProcessMergeOutputs = 6;
-    private static readonly long[] fractionatorPerfCalls = new long[FractionatorPerfBucketCount];
-    private static readonly long[] fractionatorPerfTicks = new long[FractionatorPerfBucketCount];
-    private static readonly long[] fractionatorPerfMaxTicks = new long[FractionatorPerfBucketCount];
-    private static readonly long[] fractionatorPerfStageCalls = new long[FractionatorPerfStageCount];
-    private static readonly long[] fractionatorPerfStageTicks = new long[FractionatorPerfStageCount];
-    private static readonly long[] fractionatorPerfStageMaxTicks = new long[FractionatorPerfStageCount];
-    private static readonly long[] fractionatorPerfDetailCalls = new long[FractionatorPerfDetailCount];
-    private static readonly long[] fractionatorPerfDetailTicks = new long[FractionatorPerfDetailCount];
-    private static readonly long[] fractionatorPerfDetailMaxTicks = new long[FractionatorPerfDetailCount];
-    private static readonly long[] fractionatorPerfFeUpdateCallsByType =
-        new long[FractionatorBuildingTypeCount];
-    private static readonly long[] fractionatorPerfFeUpdateTicksByType =
-        new long[FractionatorBuildingTypeCount];
-    private static long fractionatorPerfWindowStartTick = -1;
-    private static int fractionatorPerfLogging;
-
-    private static void RecordFractionatorPerf(int bucket, int buildingID, long elapsedTicks) {
-        if (!EnableFractionatorPerfProbe) {
-            return;
-        }
-        fractionatorPerfCalls[bucket]++;
-        fractionatorPerfTicks[bucket] += elapsedTicks;
-        UpdateFractionatorPerfMax(fractionatorPerfMaxTicks, bucket, elapsedTicks);
-
-        int towerIndex = FractionatorTowerCatalog.GetActiveFractionatorIndex(buildingID);
-        if (bucket == FractionatorPerfUpdateFe
-            && towerIndex >= 0
-            && towerIndex < fractionatorPerfFeUpdateCallsByType.Length) {
-            fractionatorPerfFeUpdateCallsByType[towerIndex]++;
-            fractionatorPerfFeUpdateTicksByType[towerIndex] += elapsedTicks;
-        }
-
-        MaybeLogFractionatorPerf();
-    }
-
-    private static void RecordFractionatorPerfStage(int stage, long elapsedTicks) {
-        if (!EnableFractionatorPerfProbe) {
-            return;
-        }
-        fractionatorPerfStageCalls[stage]++;
-        fractionatorPerfStageTicks[stage] += elapsedTicks;
-        UpdateFractionatorPerfMax(fractionatorPerfStageMaxTicks, stage, elapsedTicks);
-    }
-
-    /// <summary>
-    /// 记录分馏塔热路径指定阶段的性能耗时。
-    /// </summary>
-    public static void RecordFractionatorPerfDetail(int detail, long elapsedTicks) {
-        if (!EnableFractionatorPerfProbe) {
-            return;
-        }
-        fractionatorPerfDetailCalls[detail]++;
-        fractionatorPerfDetailTicks[detail] += elapsedTicks;
-        UpdateFractionatorPerfMax(fractionatorPerfDetailMaxTicks, detail, elapsedTicks);
-    }
-
-    private static long GetFractionatorPerfTimestamp() {
-        return EnableFractionatorPerfProbe ? Stopwatch.GetTimestamp() : 0L;
-    }
-
-    private static long GetFractionatorPerfElapsed(long startTicks) {
-        return EnableFractionatorPerfProbe ? Stopwatch.GetTimestamp() - startTicks : 0L;
-    }
-
-    private static void UpdateFractionatorPerfMax(long[] maxTicks, int index, long elapsedTicks) {
-        if (elapsedTicks > maxTicks[index]) {
-            maxTicks[index] = elapsedTicks;
-        }
-    }
-
-    private static void MaybeLogFractionatorPerf() {
-        long gameTick = GameMain.gameTick;
-        if (gameTick < 0) {
-            return;
-        }
-
-        long windowStart = fractionatorPerfWindowStartTick;
-        if (windowStart < 0) {
-            fractionatorPerfWindowStartTick = gameTick;
-            return;
-        }
-        if (gameTick - windowStart < FractionatorPerfLogIntervalTicks) {
-            return;
-        }
-        if (fractionatorPerfLogging != 0) {
-            return;
-        }
-        fractionatorPerfLogging = 1;
-
-        try {
-            windowStart = fractionatorPerfWindowStartTick;
-            fractionatorPerfWindowStartTick = gameTick;
-            long windowTicks = Math.Max(1, gameTick - windowStart);
-            long[] calls = new long[FractionatorPerfBucketCount];
-            long[] ticks = new long[FractionatorPerfBucketCount];
-            long[] maxTicks = new long[FractionatorPerfBucketCount];
-            for (int i = 0; i < FractionatorPerfBucketCount; i++) {
-                calls[i] = fractionatorPerfCalls[i];
-                ticks[i] = fractionatorPerfTicks[i];
-                maxTicks[i] = fractionatorPerfMaxTicks[i];
-                fractionatorPerfCalls[i] = 0;
-                fractionatorPerfTicks[i] = 0;
-                fractionatorPerfMaxTicks[i] = 0;
-            }
-
-            long[] feTypeCalls = new long[fractionatorPerfFeUpdateCallsByType.Length];
-            long[] feTypeTicks = new long[fractionatorPerfFeUpdateTicksByType.Length];
-            for (int i = 0; i < feTypeCalls.Length; i++) {
-                feTypeCalls[i] = fractionatorPerfFeUpdateCallsByType[i];
-                feTypeTicks[i] = fractionatorPerfFeUpdateTicksByType[i];
-                fractionatorPerfFeUpdateCallsByType[i] = 0;
-                fractionatorPerfFeUpdateTicksByType[i] = 0;
-            }
-            long[] stageCalls = new long[FractionatorPerfStageCount];
-            long[] stageTicks = new long[FractionatorPerfStageCount];
-            long[] stageMaxTicks = new long[FractionatorPerfStageCount];
-            for (int i = 0; i < FractionatorPerfStageCount; i++) {
-                stageCalls[i] = fractionatorPerfStageCalls[i];
-                stageTicks[i] = fractionatorPerfStageTicks[i];
-                stageMaxTicks[i] = fractionatorPerfStageMaxTicks[i];
-                fractionatorPerfStageCalls[i] = 0;
-                fractionatorPerfStageTicks[i] = 0;
-                fractionatorPerfStageMaxTicks[i] = 0;
-            }
-            long[] detailCalls = new long[FractionatorPerfDetailCount];
-            long[] detailTicks = new long[FractionatorPerfDetailCount];
-            long[] detailMaxTicks = new long[FractionatorPerfDetailCount];
-            for (int i = 0; i < FractionatorPerfDetailCount; i++) {
-                detailCalls[i] = fractionatorPerfDetailCalls[i];
-                detailTicks[i] = fractionatorPerfDetailTicks[i];
-                detailMaxTicks[i] = fractionatorPerfDetailMaxTicks[i];
-                fractionatorPerfDetailCalls[i] = 0;
-                fractionatorPerfDetailTicks[i] = 0;
-                fractionatorPerfDetailMaxTicks[i] = 0;
-            }
-            LogInfo("[FractionatorPerf] "
-                    + $"window={windowTicks}gt "
-                    + FormatPerfBucket("feUpdate", calls[FractionatorPerfUpdateFe],
-                        ticks[FractionatorPerfUpdateFe], maxTicks[FractionatorPerfUpdateFe])
-                    + " "
-                    + FormatPerfBucket("vanillaUpdate", calls[FractionatorPerfUpdateVanilla],
-                        ticks[FractionatorPerfUpdateVanilla], maxTicks[FractionatorPerfUpdateVanilla])
-                    + " "
-                    + FormatPerfBucket("feSetPC", calls[FractionatorPerfSetPcFe],
-                        ticks[FractionatorPerfSetPcFe], maxTicks[FractionatorPerfSetPcFe])
-                    + " "
-                    + FormatPerfBucket("vanillaSetPC", calls[FractionatorPerfSetPcVanilla],
-                        ticks[FractionatorPerfSetPcVanilla], maxTicks[FractionatorPerfSetPcVanilla])
-                    + " "
-                    + FormatStagePerf(stageCalls, stageTicks, stageMaxTicks)
-                    + " "
-                    + FormatDetailPerf(detailCalls, detailTicks, detailMaxTicks)
-                    + " "
-                    + FormatFeTypePerf(feTypeCalls, feTypeTicks));
-        }
-        finally {
-            fractionatorPerfLogging = 0;
-        }
-    }
-
-    private static string FormatPerfBucket(string name, long calls, long elapsedTicks, long maxTicks) {
-        double totalMs = elapsedTicks * 1000.0 / Stopwatch.Frequency;
-        double avgUs = calls > 0 ? elapsedTicks * 1000000.0 / Stopwatch.Frequency / calls : 0.0;
-        double maxUs = maxTicks * 1000000.0 / Stopwatch.Frequency;
-        return $"{name}:calls={calls},totalMs={totalMs:F3},avgUs={avgUs:F3},maxUs={maxUs:F3}";
-    }
-
-    private static string FormatFeTypePerf(long[] calls, long[] ticks) {
-        return "feTypes="
-               + FormatFeType(IFE基础矿物塔, calls, ticks)
-               + ";"
-               + FormatFeType(IFE基础解析塔, calls, ticks)
-               + ";"
-               + FormatFeType(IFE高级矿物塔, calls, ticks)
-               + ";"
-               + FormatFeType(IFE高级交互塔, calls, ticks)
-               + ";"
-               + FormatFeType(IFE高级转化塔, calls, ticks);
-    }
-
-    private static string FormatStagePerf(long[] calls, long[] ticks, long[] maxTicks) {
-        StringBuilder builder = new("feStages=");
-        AppendStagePerf(builder, "prepare", FractionatorPerfStagePrepare, calls, ticks, maxTicks);
-        AppendStagePerf(builder, "process", FractionatorPerfStageProcess, calls, ticks, maxTicks);
-        AppendStagePerf(builder, "flush", FractionatorPerfStageFlushDeltas, calls, ticks, maxTicks);
-        AppendStagePerf(builder, "postProcess", FractionatorPerfStagePostProcess, calls, ticks, maxTicks);
-        AppendStagePerf(builder, "fluidBelts", FractionatorPerfStageFluidBelts, calls, ticks, maxTicks);
-        AppendStagePerf(builder, "productBelt", FractionatorPerfStageProductBelt, calls, ticks, maxTicks);
-        AppendStagePerf(builder, "finalize", FractionatorPerfStageFinalize, calls, ticks, maxTicks);
-        return builder.ToString();
-    }
-
-    private static string FormatDetailPerf(long[] calls, long[] ticks, long[] maxTicks) {
-        StringBuilder builder = new("feDetails=");
-        AppendStagePerf(builder, "stateRecipe", FractionatorPerfDetailPrepareStateRecipe, calls, ticks, maxTicks);
-        AppendStagePerf(builder, "schema", FractionatorPerfDetailPrepareSchema, calls, ticks, maxTicks);
-        AppendStagePerf(builder, "product", FractionatorPerfDetailPrepareProduct, calls, ticks, maxTicks);
-        AppendStagePerf(builder, "config", FractionatorPerfDetailPrepareConfig, calls, ticks, maxTicks);
-        AppendStagePerf(builder, "flushDeltas", FractionatorPerfDetailFlushDeltas, calls, ticks, maxTicks);
-        AppendStagePerf(builder, "processGetOutputs", FractionatorPerfDetailProcessGetOutputs, calls, ticks,
-            maxTicks);
-        AppendStagePerf(builder, "processMergeOutputs", FractionatorPerfDetailProcessMergeOutputs, calls, ticks,
-            maxTicks);
-        return builder.ToString();
-    }
-
-    private static void AppendStagePerf(StringBuilder builder, string name, int stage, long[] calls, long[] ticks,
-        long[] maxTicks) {
-        if (stage > 0) {
-            builder.Append('|');
-        }
-        builder.Append(name);
-        builder.Append(':');
-        builder.Append(calls[stage]);
-        builder.Append('/');
-        builder.Append((ticks[stage] * 1000.0 / Stopwatch.Frequency).ToString("F3"));
-        builder.Append("ms/");
-        builder.Append((calls[stage] > 0 ? ticks[stage] * 1000000.0 / Stopwatch.Frequency / calls[stage] : 0.0)
-            .ToString("F3"));
-        builder.Append("us/");
-        builder.Append((maxTicks[stage] * 1000000.0 / Stopwatch.Frequency).ToString("F3"));
-        builder.Append("maxUs");
-    }
-
-    private static string FormatFeType(int buildingID, long[] calls, long[] ticks) {
-        int index = FractionatorTowerCatalog.GetActiveFractionatorIndex(buildingID);
-        if (index < 0 || index >= calls.Length) {
-            return $"{buildingID}:0/0.000us";
-        }
-        long callCount = calls[index];
-        double avgUs = callCount > 0 ? ticks[index] * 1000000.0 / Stopwatch.Frequency / callCount : 0.0;
-        return $"{buildingID}:{callCount}/{avgUs:F3}us";
+        BufferCapacity = BufferStackCount * globalMaxStack;
     }
 
     #endregion
@@ -478,23 +136,11 @@ public static partial class ProcessManager {
     /// </summary>
     public static void SetPCStateWithEntityPool(ref FractionatorComponent fractionator, PowerConsumerComponent[] pcPool,
         EntityData[] entityPool) {
-        long perfStart = GetFractionatorPerfTimestamp();
         int buildingID = entityPool[fractionator.entityId].protoId;
-        if (!FractionatorTowerCatalog.IsActiveFractionator(buildingID)) {
-            try {
-                fractionator.SetPCState(pcPool);// 原版分馏塔保持原逻辑
-                return;
-            }
-            finally {
-                RecordFractionatorPerf(FractionatorPerfSetPcVanilla, buildingID,
-                    GetFractionatorPerfElapsed(perfStart));
-            }
-        }
-        try {
+        if (FractionatorTowerCatalog.IsActiveFractionator(buildingID)) {
             fractionator.SetPCState(pcPool, buildingID);
-        }
-        finally {
-            RecordFractionatorPerf(FractionatorPerfSetPcFe, buildingID, GetFractionatorPerfElapsed(perfStart));
+        } else {
+            fractionator.SetPCState(pcPool);
         }
     }
 
@@ -565,17 +211,9 @@ public static partial class ProcessManager {
     /// </summary>
     public static int MaxOutputTimes = 2;
     /// <summary>
-    /// 提供无产物状态下复用的空输出列表。
-    /// </summary>
-    public static readonly List<ProductOutputInfo> emptyOutputs = [];
-    /// <summary>
     /// 表示当前缓存包含主产物输出。
     /// </summary>
     public const byte OutputFlagMain = 1 << 0;
-    /// <summary>
-    /// 表示当前缓存包含副产物输出。
-    /// </summary>
-    public const byte OutputFlagSide = 1 << 1;
     /// <summary>
     /// 表示当前缓存包含流动物品输出。
     /// </summary>
@@ -609,12 +247,11 @@ public static partial class ProcessManager {
 
     private static void SetCurrentOutputFlags(PlanetFactory factory,
         FractionatorOutputState.FractionatorExtraState extraState,
-        bool main, bool side, bool fluid) {
+        bool main, bool fluid) {
 
         if (factory == null) return;
         byte flags = 0;
         if (main) flags |= OutputFlagMain;
-        if (side) flags |= OutputFlagSide;
         if (fluid) flags |= OutputFlagFluid;
         if (extraState.CurrentOutputFlags == flags) {
             return;
@@ -649,294 +286,128 @@ public static partial class ProcessManager {
     /// <param name="consumeRegister">消耗统计寄存器。</param>
     /// <returns>分馏器工作状态码；FE 塔由热路径写入，原版塔透传 InternalUpdate。</returns>
     /// <remarks>
-    /// <para>FE 分馏塔使用扩展状态保存全部主产物和副产物；原版字段只保留首个主产物兼容数据。</para>
-    /// <para>具体分馏结果由 <see cref="BaseRecipe.GetOutputs"/> 及其批量实现结算。</para>
+    /// <para>FE 分馏塔使用扩展状态保存产物；原版字段只保留首个主产物兼容数据。</para>
+    /// <para>基础塔结果由 <see cref="BaseRecipe.GetOutputsBatchFast"/> 结算，高级塔由独立运行器结算。</para>
     /// </remarks>
     public static uint InternalUpdateWithModDispatch(ref FractionatorComponent fractionator,
         PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister) {
-        long perfStart = GetFractionatorPerfTimestamp();
         int buildingID = factory.entityPool[fractionator.entityId].protoId;
-        // 五塔按建筑 ID 分发：基础塔复用单输入热路径，高级塔使用独立多输入状态。
-        if (FractionatorTowerCatalog.IsActiveFractionator(buildingID)) {
-            try {
-                if (FractionatorTowerCatalog.IsAdvancedTower(buildingID)) {
-                    return AdvancedFractionatorRuntime.InternalUpdate(ref fractionator, factory, signPool,
-                        productRegister, consumeRegister);
-                }
-
-                uint result = 0;
-                switch (buildingID) {
-                    case IFE基础解析塔:
-                        InternalUpdate<WorldviewRecipe>(ref fractionator, factory, power, signPool,
-                            productRegister, consumeRegister, ref result, ERecipe.BasicAnalysis);
-                        break;
-                    case IFE基础矿物塔:
-                        InternalUpdate<WorldviewRecipe>(ref fractionator, factory, power, signPool,
-                            productRegister, consumeRegister, ref result, ERecipe.BasicMineral);
-                        break;
-                }
-                return result;
-            }
-            finally {
-                RecordFractionatorPerf(FractionatorPerfUpdateFe, buildingID, GetFractionatorPerfElapsed(perfStart));
-            }
+        if (FractionatorTowerCatalog.IsAdvancedTower(buildingID)) {
+            return AdvancedFractionatorRuntime.InternalUpdate(ref fractionator, factory, signPool,
+                productRegister, consumeRegister);
+        }
+        if (FractionatorTowerCatalog.IsBasicTower(buildingID)) {
+            return InternalUpdate(ref fractionator, factory, power, signPool, productRegister, consumeRegister,
+                FractionatorTowerCatalog.GetRecipeType(buildingID));
         }
 
-        // 原版分馏塔先走原版逻辑，再按堆叠补放输出，避免高堆叠传送带被原版的单件输出限流。
-        try {
-            int fluidOutputStack = GetVanillaFluidOutputStack(in fractionator);
-            uint state = fractionator.InternalUpdate(factory, power, signPool, productRegister, consumeRegister);
-            // 原版在电力不足时直接返回，不做任何传送带交互，这里保持一致。
-            return power < 0.1f ? state : TopUpVanillaOutputs(ref fractionator, factory.cargoTraffic, fluidOutputStack);
-        }
-        finally {
-            RecordFractionatorPerf(FractionatorPerfUpdateVanilla, buildingID, GetFractionatorPerfElapsed(perfStart));
-        }
+        int fluidOutputStack = GetVanillaFluidOutputStack(in fractionator);
+        uint state = fractionator.InternalUpdate(factory, power, signPool, productRegister, consumeRegister);
+        // 原版在电力不足时不做传送带交互，其余情况按当前堆叠补放输出。
+        return power < 0.1f ? state : TopUpVanillaOutputs(ref fractionator, factory.cargoTraffic, fluidOutputStack);
     }
 
     /// <summary>
-    /// 按原版规则计算原版分馏塔流动输出的堆叠：输入货物的平均堆叠，向上取整。
+    /// 两座基础塔的单输入批量处理、回流、端口收发与正面上传。
     /// </summary>
-    /// <param name="fractionator">原版更新前的分馏塔状态；原版也在处理前取这个值。</param>
-    /// <returns>流动输出单个货物允许的最大件数，至少为 1。</returns>
-    private static int GetVanillaFluidOutputStack(in FractionatorComponent fractionator) {
-        double averageStack = fractionator.fluidInputCount == 0
-            ? 1.0
-            : fractionator.fluidInputCargoCount > 0.0001f
-                ? fractionator.fluidInputCount / fractionator.fluidInputCargoCount
-                : 4.0;
-        return Math.Max(1, Mathf.CeilToInt((float)(averageStack - 0.1)));
-    }
-
-    /// <summary>
-    /// 原版分馏塔更新后，把流动输出和产物继续叠到输出带头部的货物上。
-    /// </summary>
-    /// <remarks>
-    /// <para>原版每帧每条流动输出带最多放 2 件、产物每帧放 1 件且不叠堆，高堆叠满带时会让输出缓存堆满而停机。</para>
-    /// <para>流动输出沿用原版堆叠规则，产物堆叠等于当前全局最大堆叠。只填充带头货物，不等待凑满；带子堵住时带头货物停留会被一直填到满堆。</para>
-    /// </remarks>
-    /// <param name="fractionator">原版分馏塔组件。</param>
-    /// <param name="cargoTraffic">所属星球的传送带系统。</param>
-    /// <param name="fluidOutputStack">流动输出单个货物的最大件数。</param>
-    /// <returns>补放后重新计算的工作状态码。</returns>
-    private static uint TopUpVanillaOutputs(ref FractionatorComponent fractionator, CargoTraffic cargoTraffic,
-        int fluidOutputStack) {
-        if (fractionator.fluidId > 0) {
-            if (fractionator.isOutput1) {
-                TopUpVanillaFluidOutput(ref fractionator, cargoTraffic, fractionator.belt1, fluidOutputStack);
-            }
-            if (fractionator.isOutput2) {
-                TopUpVanillaFluidOutput(ref fractionator, cargoTraffic, fractionator.belt2, fluidOutputStack);
-            }
-        }
-        if (fractionator.belt0 > 0 && fractionator.isOutput0 && fractionator.productOutputCount > 0) {
-            CargoPath path = cargoTraffic.GetCargoPath(cargoTraffic.beltPool[fractionator.belt0].segPathId);
-            fractionator.productOutputCount -= TryStackAtBeltHead(path, fractionator.productId, globalMaxStack,
-                fractionator.productOutputCount, 0, out _);
-        }
-
-        // 补放后计数可能变化，按原版规则重新判断清空与工作状态。
-        if (fractionator.fluidInputCount == 0 && fractionator.fluidOutputCount == 0
-            && fractionator.productOutputCount == 0) {
-            fractionator.fluidId = 0;
-        }
-        fractionator.isWorking = fractionator.fluidInputCount > 0
-                                 && fractionator.productOutputCount < fractionator.productOutputMax
-                                 && fractionator.fluidOutputCount < fractionator.fluidOutputMax;
-        return fractionator.isWorking ? 1U : 0U;
-    }
-
-    private static void TopUpVanillaFluidOutput(ref FractionatorComponent fractionator, CargoTraffic cargoTraffic,
-        int beltId, int maxStack) {
-        if (beltId <= 0 || fractionator.fluidOutputCount <= 0) {
-            return;
-        }
-        CargoPath path = cargoTraffic.GetCargoPath(cargoTraffic.beltPool[beltId].segPathId);
-        int moved = TryStackAtBeltHead(path, fractionator.fluidId, maxStack, fractionator.fluidOutputCount,
-            fractionator.fluidOutputInc, out int movedInc);
-        fractionator.fluidOutputCount -= moved;
-        fractionator.fluidOutputInc -= movedInc;
-    }
-
-    /// <summary>
-    /// 把物品叠到传送带头部的同种货物上；头部有空位时新建一个货物。
-    /// </summary>
-    /// <param name="path">输出带所在的货物路径；为空时不处理。</param>
-    /// <param name="itemId">要输出的物品。</param>
-    /// <param name="maxStack">带头货物允许达到的最大件数。</param>
-    /// <param name="count">塔内待输出的件数。</param>
-    /// <param name="inc">待输出物品的增产点总数；产物没有增产点时传 0。</param>
-    /// <param name="movedInc">实际随物品输出的增产点。</param>
-    /// <returns>实际输出的件数；带头是别的物品或已满堆时为 0。</returns>
-    private static int TryStackAtBeltHead(CargoPath path, int itemId, int maxStack, int count, int inc,
-        out int movedInc) {
-        movedInc = 0;
-        if (path == null || itemId <= 0 || count <= 0) {
-            return 0;
-        }
-        // 带头状态只用来估算可叠数量；真正写入时 TryUpdateItemAtHeadAndFillBlank 会在锁内重新校验。
-        int room = maxStack;
-        if (path.TestBlankAtHead() < 0) {
-            int cargoId = path.GetCargoIdAtIndex(0, 10);
-            if (cargoId < 0 || cargoId >= path.cargoContainer.cargoPool.Length) {
-                return 0;
-            }
-            Cargo headCargo = path.cargoContainer.cargoPool[cargoId];
-            if (headCargo.item != itemId) {
-                return 0;
-            }
-            room = maxStack - headCargo.stack;
-        }
-        int moved = Math.Min(Math.Min(count, room), byte.MaxValue);
-        if (moved <= 0) {
-            return 0;
-        }
-        int remainingCount = count;
-        int remainingInc = Math.Max(0, inc);
-        int splitInc = remainingInc > 0 ? split_inc(ref remainingCount, ref remainingInc, moved) : 0;
-        // 货物增产点是 byte，超出部分留在塔内，避免账面扣减多于实际随物品离开的数量。
-        byte cargoInc = (byte)Math.Min(byte.MaxValue, splitInc);
-        if (!path.TryUpdateItemAtHeadAndFillBlank(itemId, maxStack, (byte)moved, cargoInc)) {
-            return 0;
-        }
-        movedInc = cargoInc;
-        return moved;
-    }
-
-    /// <summary>
-    /// InternalUpdate的默认实现。
-    /// </summary>
-    public static void InternalUpdate<T>(ref FractionatorComponent __instance,
+    /// <param name="fractionator">当前基础塔组件。</param>
+    /// <param name="factory">所属工厂。</param>
+    /// <param name="power">供电比例。</param>
+    /// <param name="signPool">实体图标池。</param>
+    /// <param name="productRegister">原版产出统计。</param>
+    /// <param name="consumeRegister">原版消耗统计。</param>
+    /// <param name="recipeType">该塔的基础配方分支。</param>
+    /// <returns>工作时为 1，否则为 0。</returns>
+    private static uint InternalUpdate(ref FractionatorComponent fractionator,
         PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister,
-        ref uint __result, ERecipe recipeType) where T : BaseRecipe {
-        long perfStageStart = GetFractionatorPerfTimestamp();
-        long perfDetailStart = perfStageStart;
-        int entityId = __instance.entityId;
-        int buildingID = factory.entityPool[entityId].protoId;
-        bool isBasicTower = FractionatorTowerCatalog.IsBasicTower(buildingID);
+        ERecipe recipeType) {
+        int entityId = fractionator.entityId;
         //所有产物输出
-        FractionatorOutputState.FractionatorExtraState extraState = __instance.GetExtraState(factory);
+        FractionatorOutputState.FractionatorExtraState extraState = fractionator.GetExtraState(factory);
         List<ProductOutputInfo> products = extraState.Products;
         ProductOutputBuffer outputBuffer = extraState.ScratchOutputs;
-        int fluidId = __instance.fluidId;
+        int fluidId = fractionator.fluidId;
         BaseRecipe recipe = extraState.GetRecipe(recipeType, fluidId);
-        RecordFractionatorPerfDetail(FractionatorPerfDetailPrepareStateRecipe,
-            GetFractionatorPerfElapsed(perfDetailStart));
-        perfDetailStart = GetFractionatorPerfTimestamp();
         //检测products和recipe的输出是否一致
         ProductOutputInfo product0 = null;
         if (recipe == null) {
-            bool needResetProducts = !extraState.TryGetRuntimeSchema(recipeType, fluidId, null, __instance.productId,
+            bool needResetProducts = !extraState.TryGetRuntimeSchema(recipeType, fluidId, null, fractionator.productId,
                                          out _)
                                      || products.Count > 0
-                                     || __instance.productId != fluidId
-                                     || __instance.productOutputCount != 0;
+                                     || fractionator.productId != fluidId
+                                     || fractionator.productOutputCount != 0;
             if (needResetProducts) {
-                products.Clear();
-                extraState.InvalidateFullProductCache();
-                __instance.productId = fluidId;
-                __instance.productOutputCount = 0;
-                __instance.produceProb = 0.01f;
-                signPool[entityId].iconId0 = 0;
-                signPool[entityId].iconType = 0U;
+                ResetProductsForRecipe(ref fractionator, extraState, null, signPool);
+                extraState.MarkRuntimeSchema(recipeType, fluidId, null, fractionator.productId, null);
             }
-            if (needResetProducts) {
-                extraState.MarkRuntimeSchema(recipeType, fluidId, null, __instance.productId, null);
-            }
-        } else if (!extraState.TryGetRuntimeSchema(recipeType, fluidId, recipe, __instance.productId,
+        } else if (!extraState.TryGetRuntimeSchema(recipeType, fluidId, recipe, fractionator.productId,
                        out product0)) {
-            int expectedProductCount = recipe.OutputMain.Count + recipe.OutputAppend.Count;
+            int expectedProductCount = recipe.OutputMain.Count;
             int firstProductId = recipe.OutputMain.Count > 0 ? recipe.OutputMain[0].OutputID : recipe.InputID;
-            bool needResetProducts = __instance.productId != firstProductId
+            bool needResetProducts = fractionator.productId != firstProductId
                                      || products.Count != expectedProductCount
                                      || !MatchesRecipeOutputs(products, recipe);
             if (needResetProducts) {
-                products.Clear();
-                extraState.InvalidateFullProductCache();
-                __instance.productId = firstProductId;
-                __instance.productOutputCount = 0;
-                __instance.produceProb = 0.01f;
-                signPool[entityId].iconId0 = (uint)__instance.fluidId;
-                signPool[entityId].iconType = 1U;
-                foreach (OutputInfo info in recipe.OutputMain) {
-                    products.Add(new(true, info.OutputID, 0));
-                }
-                foreach (OutputInfo info in recipe.OutputAppend) {
-                    products.Add(new(false, info.OutputID, 0));
-                }
+                ResetProductsForRecipe(ref fractionator, extraState, recipe, signPool);
             }
-            int productId = __instance.productId;
+            int productId = fractionator.productId;
             product0 = products.Count > 0 && products[0].itemId == productId
                 ? products[0]
                 : FindProduct(products, productId);
             extraState.MarkRuntimeSchema(recipeType, fluidId, recipe, productId, product0);
         }
-        RecordFractionatorPerfDetail(FractionatorPerfDetailPrepareSchema, GetFractionatorPerfElapsed(perfDetailStart));
-        perfDetailStart = GetFractionatorPerfTimestamp();
         //第一个主输出，recipe有则必定有，recipe没有则必定没有
-        int product0Id = __instance.productId;
+        int product0Id = fractionator.productId;
         //如果通过面板取了物品，需要同步数目到products
-        if (product0 != null && product0.count != __instance.productOutputCount) {
-            product0.count = __instance.productOutputCount;
+        if (product0 != null && product0.count != fractionator.productOutputCount) {
+            product0.count = fractionator.productOutputCount;
             extraState.InvalidateFullProductCache();
         }
-        RecordFractionatorPerfDetail(FractionatorPerfDetailPrepareProduct, GetFractionatorPerfElapsed(perfDetailStart));
         if (power < 0.1) {
-            __result = 0;
-            RecordFractionatorPerfStage(FractionatorPerfStagePrepare, GetFractionatorPerfElapsed(perfStageStart));
-            return;
+            return 0;
         }
-        perfDetailStart = GetFractionatorPerfTimestamp();
-        long perfConfigStart = perfDetailStart;
         float fluidInputCountPerCargo = 1.0f;
-        if (__instance.fluidInputCount == 0)
-            __instance.fluidInputCargoCount = 0f;
+        if (fractionator.fluidInputCount == 0)
+            fractionator.fluidInputCargoCount = 0f;
         else
-            fluidInputCountPerCargo = __instance.fluidInputCargoCount > 0.0001
-                ? __instance.fluidInputCount / __instance.fluidInputCargoCount
+            fluidInputCountPerCargo = fractionator.fluidInputCargoCount > 0.0001
+                ? fractionator.fluidInputCount / fractionator.fluidInputCargoCount
                 : 4f;
-        FractionatorRuntimeConfig runtimeConfig = GetRuntimeConfig(buildingID);
-        int maxStack = runtimeConfig.MaxStack;
-        float plrRatio = runtimeConfig.PlrRatio;
-        int fluidInputCargoMax = BaseFracFluidInputCargoMax;
-        int productOutputMax = runtimeConfig.ProductOutputMax;
-        int fluidOutputMax = runtimeConfig.FluidOutputMax;
+        int maxStack = globalMaxStack;
+        int fluidInputCargoMax = BufferCapacity;
+        int productOutputMax = BufferCapacity;
+        int fluidOutputMax = BufferCapacity;
         bool canProcessRecipe = recipe != null && RecipeAvailabilityStore.IsAvailable(recipe);
         bool moveDirectly = !canProcessRecipe;
         bool producedMainThisTick = false;
-        bool producedSideThisTick = false;
         bool producedFluidThisTick = false;
         bool hasFullProduct = extraState.HasFullProduct(productOutputMax);
         bool needRecheckFullProduct = false;
         int consumedInputThisTick = 0;
         int successCountThisTick = 0;
         List<ProductOutputInfo> productRegisterDeltas = null;
-        RecordFractionatorPerfDetail(FractionatorPerfDetailPrepareConfig, GetFractionatorPerfElapsed(perfConfigStart));
-        RecordFractionatorPerfStage(FractionatorPerfStagePrepare, GetFractionatorPerfElapsed(perfStageStart));
-        perfStageStart = GetFractionatorPerfTimestamp();
-        perfDetailStart = perfStageStart;
-        if (__instance.fluidInputCount > 0
-            && __instance.fluidOutputCount < fluidOutputMax) {
+        if (fractionator.fluidInputCount > 0
+            && fractionator.fluidOutputCount < fluidOutputMax) {
             //分馏塔正常运转时，计算进度，10000点进度可以处理一次
-            __instance.progress += (int)(power
+            fractionator.progress += (int)(power
                                          * (500.0 / 3.0)
-                                         * (__instance.fluidInputCargoCount < MaxBeltSpeed
-                                             ? __instance.fluidInputCargoCount
+                                         * (fractionator.fluidInputCargoCount < MaxBeltSpeed
+                                             ? fractionator.fluidInputCargoCount
                                              : MaxBeltSpeed)
                                          * fluidInputCountPerCargo
                                          + 0.75);
-            if (__instance.progress > 300000) {
-                __instance.progress = 300000;
+            if (fractionator.progress > 300000) {
+                fractionator.progress = 300000;
             }
-            int batchCount = Math.Min(__instance.progress / 10000, __instance.fluidInputCount);
+            int batchCount = Math.Min(fractionator.progress / 10000, fractionator.fluidInputCount);
             if (batchCount > 0) {
                 int reservedBatchCount = batchCount;
-                __instance.progress -= reservedBatchCount * 10000;
-                int fluidInputIncAvg = __instance.fluidInputInc <= 0 || __instance.fluidInputCount <= 0
+                fractionator.progress -= reservedBatchCount * 10000;
+                int fluidInputIncAvg = fractionator.fluidInputInc <= 0 || fractionator.fluidInputCount <= 0
                     ? 0
-                    : __instance.fluidInputInc / __instance.fluidInputCount;
-                if (!__instance.incUsed)
-                    __instance.incUsed = fluidInputIncAvg > 0;
+                    : fractionator.fluidInputInc / fractionator.fluidInputCount;
+                if (!fractionator.incUsed)
+                    fractionator.incUsed = fluidInputIncAvg > 0;
 
                 // 无可用配方或产物缓存已满时，输入直接进入流动输出。
                 bool isForcedPassthrough = moveDirectly || hasFullProduct;
@@ -951,59 +422,54 @@ public static partial class ProcessManager {
                         PassThroughCount = batchCount,
                         PassThroughInc = fluidInputIncAvg * batchCount,
                     };
-                    __instance.fluidInputInc -= fluidInputIncAvg * batchCount;
-                    if (__instance.fluidInputInc < 0) __instance.fluidInputInc = 0;
+                    fractionator.fluidInputInc -= fluidInputIncAvg * batchCount;
+                    if (fractionator.fluidInputInc < 0) fractionator.fluidInputInc = 0;
                 } else {
-                    float pointsBonus = (float)MaxTableMilli(fluidInputIncAvg) * plrRatio;
+                    float pointsBonus = (float)MaxTableMilli(fluidInputIncAvg);
                     // 两座基础塔只使用配方自身概率与增产剂加成，不再叠加额外成功率。
                     float successBoost = 0f;
                     if (recipe is WorldviewRecipe worldviewRecipe) {
-                        int availableOutput = productOutputMax - (product0?.count ?? __instance.productOutputCount);
+                        int availableOutput = productOutputMax - (product0?.count ?? fractionator.productOutputCount);
                         batchCount = worldviewRecipe.LimitBasicBatchCountByOutputRoom(
                             batchCount, availableOutput, pointsBonus, successBoost);
                         if (batchCount < reservedBatchCount) {
-                            __instance.progress += (reservedBatchCount - batchCount) * 10000;
+                            fractionator.progress += (reservedBatchCount - batchCount) * 10000;
                         }
                     }
-                    perfDetailStart = GetFractionatorPerfTimestamp();
-                    batchResult = recipe.GetOutputsBatchFast(ref __instance.seed, pointsBonus, successBoost,
-                        batchCount, fluidInputIncAvg, ref __instance.fluidInputInc, outputBuffer);
-                    RecordFractionatorPerfDetail(FractionatorPerfDetailProcessGetOutputs,
-                        GetFractionatorPerfElapsed(perfDetailStart));
+                    batchResult = recipe.GetOutputsBatchFast(ref fractionator.seed, pointsBonus, successBoost,
+                        batchCount, fluidInputIncAvg, ref fractionator.fluidInputInc, outputBuffer);
                 }
 
                 recipe?.RecordSuccesses(batchResult.SuccessCount);
-                __instance.fractionSuccess = batchResult.HasOutput;
+                fractionator.fractionSuccess = batchResult.HasOutput;
 
                 if (batchResult.InputRemoveCount > 0) {
-                    __instance.fluidInputCount -= batchResult.InputRemoveCount;
-                    if (__instance.fluidInputCount < 0) __instance.fluidInputCount = 0;
-                    if (__instance.fluidInputCount == 0) __instance.fluidInputInc = 0;
-                    __instance.fluidInputCargoCount -= batchResult.InputRemoveCount / fluidInputCountPerCargo;
-                    if (__instance.fluidInputCargoCount < 0f) __instance.fluidInputCargoCount = 0f;
+                    fractionator.fluidInputCount -= batchResult.InputRemoveCount;
+                    if (fractionator.fluidInputCount < 0) fractionator.fluidInputCount = 0;
+                    if (fractionator.fluidInputCount == 0) fractionator.fluidInputInc = 0;
+                    fractionator.fluidInputCargoCount -= batchResult.InputRemoveCount / fluidInputCountPerCargo;
+                    if (fractionator.fluidInputCargoCount < 0f) fractionator.fluidInputCargoCount = 0f;
                 }
 
                 if (batchResult.PassThroughCount > 0) {
-                    __instance.fluidOutputCount += batchResult.PassThroughCount;
-                    __instance.fluidOutputTotal += batchResult.PassThroughCount;
-                    __instance.fluidOutputInc += batchResult.PassThroughInc;
+                    fractionator.fluidOutputCount += batchResult.PassThroughCount;
+                    fractionator.fluidOutputTotal += batchResult.PassThroughCount;
+                    fractionator.fluidOutputInc += batchResult.PassThroughInc;
                     producedFluidThisTick = true;
                 }
 
                 if (batchResult.SuccessCount > 0) {
-                    perfDetailStart = GetFractionatorPerfTimestamp();
                     successCountThisTick += batchResult.SuccessCount;
-                    __instance.productOutputTotal += batchResult.SuccessCount;
+                    fractionator.productOutputTotal += batchResult.SuccessCount;
                     for (int i = 0; i < outputBuffer.Count; i++) {
                         ProductOutputInfo p = outputBuffer[i];
                         int itemID = p.itemId;
                         int itemCount = p.count;
-                        if (p.isMainOutput) producedMainThisTick = true;
-                        else producedSideThisTick = true;
+                        producedMainThisTick = true;
                         AddProductRegisterDelta(ref productRegisterDeltas, itemID, itemCount);
                         if (itemID == product0Id) {
                             product0.count += itemCount;
-                            __instance.productOutputCount = product0.count;
+                            fractionator.productOutputCount = product0.count;
                             NotifyProductCountIncreased(extraState, product0.count, productOutputMax,
                                 ref hasFullProduct);
                         } else {
@@ -1019,234 +485,86 @@ public static partial class ProcessManager {
                             }
                         }
                     }
-                    RecordFractionatorPerfDetail(FractionatorPerfDetailProcessMergeOutputs,
-                        GetFractionatorPerfElapsed(perfDetailStart));
                 }
 
                 consumedInputThisTick += batchResult.ConsumedRegisterCount;
             }
         } else {
-            __instance.fractionSuccess = false;
+            fractionator.fractionSuccess = false;
         }
 
-        RecordFractionatorPerfStage(FractionatorPerfStageProcess, GetFractionatorPerfElapsed(perfStageStart));
-        perfStageStart = GetFractionatorPerfTimestamp();
-        perfDetailStart = GetFractionatorPerfTimestamp();
         FlushProcessingDeltas(fluidId, consumedInputThisTick, successCountThisTick,
             productRegisterDeltas, productRegister, consumeRegister);
-        RecordFractionatorPerfDetail(FractionatorPerfDetailFlushDeltas, GetFractionatorPerfElapsed(perfDetailStart));
 
         SetCurrentOutputFlags(factory,
             extraState,
-            producedMainThisTick, producedSideThisTick, producedFluidThisTick);
+            producedMainThisTick, producedFluidThisTick);
 
-        RecordFractionatorPerfStage(FractionatorPerfStageFlushDeltas, GetFractionatorPerfElapsed(perfStageStart));
-        perfStageStart = GetFractionatorPerfTimestamp();
-        RecordFractionatorPerfStage(FractionatorPerfStagePostProcess, GetFractionatorPerfElapsed(perfStageStart));
-        perfStageStart = GetFractionatorPerfTimestamp();
         CargoTraffic cargoTraffic = factory.cargoTraffic;
-        byte stack = 0;
-        byte inc = 0;
-        if (__instance.belt1 > 0) {
-            if (__instance.isOutput1) {
-                TryOutputFluidToBelt(ref __instance, !moveDirectly, maxStack,
-                    cargoTraffic, __instance.belt1, fluidInputCountPerCargo, forceSingleStack: moveDirectly);
-            } else if (!__instance.isOutput1
-                       && CanAcceptBasicInputStack(cargoTraffic, __instance.belt1,
-                           fluidInputCargoMax, __instance.fluidInputCount)) {
-                if (fluidId > 0) {
-                    for (int i = 0;
-                         i < MaxOutputTimes && CanAcceptBasicInputStack(cargoTraffic, __instance.belt1,
-                             fluidInputCargoMax, __instance.fluidInputCount);
-                         i++) {
-                        if (cargoTraffic.TryPickItemAtRear(__instance.belt1, fluidId, null, out stack, out inc) > 0) {
-                            __instance.fluidInputCount += stack;
-                            __instance.fluidInputInc += inc;
-                            __instance.fluidInputCargoCount++;
-                        } else {
-                            break;
-                        }
-                    }
-                } else {
-                    int needId = cargoTraffic.TryPickItemAtRear(__instance.belt1, 0, null, out stack, out inc);
-                    if (needId > 0) {
-                        __instance.fluidInputCount += stack;
-                        __instance.fluidInputInc += inc;
-                        __instance.fluidInputCargoCount++;
-                        __instance.fluidId = needId;
-                        recipe = extraState.GetRecipe(recipeType, needId);
-                        if (recipe == null) {
-                            __instance.productId = needId;
-                            __instance.produceProb = 0.01f;
-                            signPool[entityId].iconId0 = 0;
-                            signPool[entityId].iconType = 0U;
-                        } else {
-                            __instance.productId = recipe.OutputMain.Count > 0
-                                ? recipe.OutputMain[0].OutputID
-                                : recipe.InputID;
-                            __instance.produceProb = 0.01f;
-                            signPool[entityId].iconId0 = (uint)__instance.fluidId;
-                            signPool[entityId].iconType = 1U;
-                            foreach (OutputInfo info in recipe.OutputMain) {
-                                products.Add(new(true, info.OutputID, 0));
-                            }
-                            foreach (OutputInfo info in recipe.OutputAppend) {
-                                products.Add(new(false, info.OutputID, 0));
-                            }
-                            extraState.InvalidateFullProductCache();
-                        }
-                        // 初始拾取一个后，尝试继续拾取同类物品以快速填满
-                        for (int i = 1;
-                             i < MaxOutputTimes && CanAcceptBasicInputStack(cargoTraffic, __instance.belt1,
-                                 fluidInputCargoMax, __instance.fluidInputCount);
-                             i++) {
-                            if (cargoTraffic.TryPickItemAtRear(__instance.belt1, needId, null, out stack, out inc)
-                                > 0) {
-                                __instance.fluidInputCount += stack;
-                                __instance.fluidInputInc += inc;
-                                __instance.fluidInputCargoCount++;
-                            } else {
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        if (__instance.belt2 > 0) {
-            if (__instance.isOutput2) {
-                TryOutputFluidToBelt(ref __instance, !moveDirectly, maxStack,
-                    cargoTraffic, __instance.belt2, fluidInputCountPerCargo, forceSingleStack: moveDirectly);
-            } else if (!__instance.isOutput2
-                       && CanAcceptBasicInputStack(cargoTraffic, __instance.belt2,
-                           fluidInputCargoMax, __instance.fluidInputCount)) {
-                if (__instance.fluidId > 0) {
-                    for (int i = 0;
-                         i < MaxOutputTimes && CanAcceptBasicInputStack(cargoTraffic, __instance.belt2,
-                             fluidInputCargoMax, __instance.fluidInputCount);
-                         i++) {
-                        if (cargoTraffic.TryPickItemAtRear(__instance.belt2, __instance.fluidId, null,
-                                out stack, out inc) > 0) {
-                            __instance.fluidInputCount += stack;
-                            __instance.fluidInputInc += inc;
-                            __instance.fluidInputCargoCount++;
-                        } else {
-                            break;
-                        }
-                    }
-                } else {
-                    int needId = cargoTraffic.TryPickItemAtRear(__instance.belt2, 0, null, out stack, out inc);
-                    if (needId > 0) {
-                        __instance.fluidInputCount += stack;
-                        __instance.fluidInputInc += inc;
-                        __instance.fluidInputCargoCount++;
-                        __instance.fluidId = needId;
-                        recipe = extraState.GetRecipe(recipeType, needId);
-                        if (recipe == null) {
-                            __instance.productId = needId;
-                            __instance.produceProb = 0.01f;
-                            signPool[entityId].iconId0 = 0;
-                            signPool[entityId].iconType = 0U;
-                        } else {
-                            __instance.productId = recipe.OutputMain.Count > 0
-                                ? recipe.OutputMain[0].OutputID
-                                : recipe.InputID;
-                            __instance.produceProb = 0.01f;
-                            signPool[entityId].iconId0 = (uint)__instance.fluidId;
-                            signPool[entityId].iconType = 1U;
-                            foreach (OutputInfo info in recipe.OutputMain) {
-                                products.Add(new(true, info.OutputID, 0));
-                            }
-                            foreach (OutputInfo info in recipe.OutputAppend) {
-                                products.Add(new(false, info.OutputID, 0));
-                            }
-                            extraState.InvalidateFullProductCache();
-                        }
-                        // 初始拾取一个后，尝试继续拾取同类物品以快速填满
-                        for (int i = 1;
-                             i < MaxOutputTimes && CanAcceptBasicInputStack(cargoTraffic, __instance.belt2,
-                                 fluidInputCargoMax, __instance.fluidInputCount);
-                             i++) {
-                            if (cargoTraffic.TryPickItemAtRear(__instance.belt2, needId, null, out stack, out inc)
-                                > 0) {
-                                __instance.fluidInputCount += stack;
-                                __instance.fluidInputInc += inc;
-                                __instance.fluidInputCargoCount++;
-                            } else {
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        RecordFractionatorPerfStage(FractionatorPerfStageFluidBelts, GetFractionatorPerfElapsed(perfStageStart));
-        perfStageStart = GetFractionatorPerfTimestamp();
+        HandleBasicSidePort(ref fractionator, fractionator.belt1, fractionator.isOutput1);
+        HandleBasicSidePort(ref fractionator, fractionator.belt2, fractionator.isOutput2);
         bool interactionMode = false;
         bool interactionTransferred = false;
-        if (__instance.belt0 > 0) {
-            if (__instance.isOutput0) {
+        if (fractionator.belt0 > 0) {
+            if (fractionator.isOutput0) {
                 if (products.Count > 0) {
                     // 获取分馏塔产物输出堆叠。
                     int productStack = maxStack;
-                    ProductOutputInfo product = SelectProductForBeltOutput(products, productStack);
+                    ProductOutputInfo product = SelectProductForBeltOutput(products);
                     //输出产物
                     if (product != null && product.count > 0) {
                         if (product.count >= productStack) {
                             //产物达到最大堆叠数目，直接尝试输出
-                            if (cargoTraffic.TryInsertItemAtHead(__instance.belt0, product.itemId, (byte)productStack,
-                                    (byte)(productStack * (recipe?.GetOutputInc(product.itemId) ?? 0)))) {
+                            if (cargoTraffic.TryInsertItemAtHead(fractionator.belt0, product.itemId, (byte)productStack,
+                                    0)) {
                                 product.count -= productStack;
                                 extraState.InvalidateFullProductCache();
                                 needRecheckFullProduct = needRecheckFullProduct
                                                          || hasFullProduct && product.count < productOutputMax;
                                 if (ReferenceEquals(product, product0)) {
-                                    __instance.productOutputCount = product.count;
+                                    fractionator.productOutputCount = product.count;
                                 }
                             }
-                        } else if (product.count > 0 && __instance.fluidInputCount == 0) {
+                        } else if (product.count > 0 && fractionator.fluidInputCount == 0) {
                             // 输入排空后释放不足整堆的尾料。
-                            if (cargoTraffic.TryInsertItemAtHead(__instance.belt0, product.itemId, (byte)product.count,
-                                    (byte)(product.count * (recipe?.GetOutputInc(product.itemId) ?? 0)))) {
+                            if (cargoTraffic.TryInsertItemAtHead(fractionator.belt0, product.itemId, (byte)product.count,
+                                    0)) {
                                 product.count = 0;
                                 extraState.InvalidateFullProductCache();
                                 needRecheckFullProduct = needRecheckFullProduct || hasFullProduct;
                                 if (ReferenceEquals(product, product0)) {
-                                    __instance.productOutputCount = product.count;
+                                    fractionator.productOutputCount = product.count;
                                 }
                             }
                         }
                     }
                 }
-            } else if (isBasicTower
-                       && __instance.belt1 <= 0
-                       && __instance.belt2 <= 0
+            } else if (fractionator.belt1 <= 0
+                       && fractionator.belt2 <= 0
                        && AreAllProductsEmpty(products)) {
                 // 基础塔正面反向输入且两侧未连接时上传到亚空间；容量不足一份带上堆叠时停止取货。
                 interactionMode = true;
-                int interactionItemId = DataCenterUploadRouter.UploadRearStack(cargoTraffic, __instance.belt0);
+                int interactionItemId = DataCenterUploadRouter.UploadRearStack(cargoTraffic, fractionator.belt0);
                 interactionTransferred = interactionItemId > 0;
                 if (interactionTransferred) {
-                    __instance.fluidId = interactionItemId;
-                    __instance.productId = interactionItemId;
-                    __instance.produceProb = 0.01f;
-                    signPool[entityId].iconId0 = (uint)__instance.fluidId;
+                    fractionator.fluidId = interactionItemId;
+                    fractionator.productId = interactionItemId;
+                    fractionator.produceProb = 0.01f;
+                    signPool[entityId].iconId0 = (uint)fractionator.fluidId;
                     signPool[entityId].iconType = 1U;
                 }
             }
         }
 
-        RecordFractionatorPerfStage(FractionatorPerfStageProductBelt, GetFractionatorPerfElapsed(perfStageStart));
-        perfStageStart = GetFractionatorPerfTimestamp();
         if (interactionMode) {
-            __instance.isWorking = interactionTransferred;
+            fractionator.isWorking = interactionTransferred;
         } else {
             // 如果缓存区全部清空，重置全部
-            if (__instance.fluidInputCount == 0
-                && __instance.fluidOutputCount == 0
+            if (fractionator.fluidInputCount == 0
+                && fractionator.fluidOutputCount == 0
                 && AreAllProductsEmpty(products)) {
-                __instance.fluidId = 0;
-                __instance.productId = 0;
+                fractionator.fluidId = 0;
+                fractionator.productId = 0;
                 products.Clear();
                 hasFullProduct = false;
                 extraState.InvalidateFullProductCache();
@@ -1256,14 +574,37 @@ public static partial class ProcessManager {
             if (needRecheckFullProduct) {
                 hasFullProduct = extraState.HasFullProduct(productOutputMax, forceRefresh: true);
             }
-            __instance.isWorking = __instance.fluidInputCount > 0
+            fractionator.isWorking = fractionator.fluidInputCount > 0
                                    && !hasFullProduct
-                                   && __instance.fluidOutputCount < fluidOutputMax
+                                   && fractionator.fluidOutputCount < fluidOutputMax
                                    && !moveDirectly;
         }
 
-        __result = !__instance.isWorking ? 0U : 1U;
-        RecordFractionatorPerfStage(FractionatorPerfStageFinalize, GetFractionatorPerfElapsed(perfStageStart));
+        return fractionator.isWorking ? 1U : 0U;
+
+        /// <summary>按当前帧上下文处理一个侧面端口，首次取料时建立配方产物架构。</summary>
+        /// <param name="tower">当前塔组件，通过参数引用避免捕获外层 ref 参数。</param>
+        /// <param name="beltId">侧面传送带 ID。</param>
+        /// <param name="isOutput">该端口是否向传送带输出。</param>
+        void HandleBasicSidePort(ref FractionatorComponent tower, int beltId, bool isOutput) {
+            if (beltId <= 0) { return; }
+            if (isOutput) {
+                TryOutputFluidToBelt(ref tower, !moveDirectly, maxStack, cargoTraffic, beltId,
+                    fluidInputCountPerCargo, forceSingleStack: moveDirectly);
+                return;
+            }
+            for (int i = 0; i < MaxOutputTimes
+                 && CanAcceptBasicInputStack(cargoTraffic, beltId, fluidInputCargoMax, tower.fluidInputCount); i++) {
+                int itemId = cargoTraffic.TryPickItemAtRear(beltId, tower.fluidId, null, out byte stack, out byte inc);
+                if (itemId <= 0) { break; }
+                tower.fluidInputCount += stack;
+                tower.fluidInputInc += inc;
+                tower.fluidInputCargoCount++;
+                if (tower.fluidId != 0) { continue; }
+                tower.fluidId = itemId;
+                ResetProductsForRecipe(ref tower, extraState, extraState.GetRecipe(recipeType, itemId), signPool);
+            }
+        }
     }
 
     private static bool CanAcceptBasicInputStack(CargoTraffic cargoTraffic, int beltId,
@@ -1399,37 +740,38 @@ public static partial class ProcessManager {
         return null;
     }
 
-    private static ProductOutputInfo SelectByNormalOutputPriority(ProductOutputInfo bestSideProduct,
-        ProductOutputInfo bestMainProduct, int productStack) {
-        ProductOutputInfo product = bestSideProduct;
-        if (product == null || product.count < productStack) {
-            if (bestMainProduct != null && (product == null || bestMainProduct.count > product.count)) {
-                product = bestMainProduct;
-            }
+    /// <summary>选择积压件数最多的基础塔产物，数量相同时沿用配方顺序。</summary>
+    /// <param name="products">当前配方产物缓存。</param>
+    /// <returns>有库存的产物；缓存全空时为 null。</returns>
+    private static ProductOutputInfo SelectProductForBeltOutput(List<ProductOutputInfo> products) {
+        ProductOutputInfo best = null;
+        foreach (ProductOutputInfo product in products) {
+            if (product.count > 0 && (best == null || product.count > best.count)) { best = product; }
         }
-        return product;
+        return best;
     }
 
-    private static ProductOutputInfo SelectProductForBeltOutput(List<ProductOutputInfo> products, int productStack) {
-        ProductOutputInfo bestSideProduct = null;
-        ProductOutputInfo bestMainProduct = null;
-        foreach (ProductOutputInfo product in products) {
-            if (product.count <= 0) {
-                continue;
-            }
-            if (product.isMainOutput) {
-                if (bestMainProduct == null || product.count > bestMainProduct.count) {
-                    bestMainProduct = product;
-                }
-            } else if (bestSideProduct == null || product.count > bestSideProduct.count) {
-                bestSideProduct = product;
-            }
-        }
-        return SelectByNormalOutputPriority(bestSideProduct, bestMainProduct, productStack);
+    /// <summary>按当前基础配方统一重建产物、原版首产物镜像和实体图标。</summary>
+    /// <param name="fractionator">需要重建显示与缓存的基础塔。</param>
+    /// <param name="state">该塔扩展缓存。</param>
+    /// <param name="recipe">当前识别的配方；没有配方时清空产物。</param>
+    /// <param name="signPool">实体图标池。</param>
+    private static void ResetProductsForRecipe(ref FractionatorComponent fractionator,
+        FractionatorOutputState.FractionatorExtraState state, BaseRecipe recipe, SignData[] signPool) {
+        state.Products.Clear();
+        state.InvalidateFullProductCache();
+        state.ClearRuntimeSchema();
+        fractionator.productId = recipe?.OutputMain.Count > 0 ? recipe.OutputMain[0].OutputID : fractionator.fluidId;
+        fractionator.productOutputCount = 0;
+        fractionator.produceProb = 0.01f;
+        signPool[fractionator.entityId].iconId0 = recipe == null ? 0U : (uint)fractionator.fluidId;
+        signPool[fractionator.entityId].iconType = recipe == null ? 0U : 1U;
+        if (recipe == null) { return; }
+        foreach (OutputInfo output in recipe.OutputMain) { state.Products.Add(new(true, output.OutputID, 0)); }
     }
 
     private static bool MatchesRecipeOutputs(List<ProductOutputInfo> products, BaseRecipe recipe) {
-        int expectedCount = recipe.OutputMain.Count + recipe.OutputAppend.Count;
+        int expectedCount = recipe.OutputMain.Count;
         if (products.Count != expectedCount) {
             return false;
         }
@@ -1438,13 +780,6 @@ public static partial class ProcessManager {
         for (int i = 0; i < recipe.OutputMain.Count; i++, productIndex++) {
             ProductOutputInfo product = products[productIndex];
             if (!product.isMainOutput || product.itemId != recipe.OutputMain[i].OutputID) {
-                return false;
-            }
-        }
-
-        for (int i = 0; i < recipe.OutputAppend.Count; i++, productIndex++) {
-            ProductOutputInfo product = products[productIndex];
-            if (product.isMainOutput || product.itemId != recipe.OutputAppend[i].OutputID) {
                 return false;
             }
         }
@@ -1586,439 +921,4 @@ public static partial class ProcessManager {
     #endregion
 
     #endregion
-}
-
-#region 扩展输出状态
-
-/// <summary>
-/// 分馏塔扩展产物状态缓存、存档和同步逻辑。
-/// </summary>
-public static class FractionatorOutputState {
-    #region 分馏塔产物输出拓展
-
-    /// <summary>
-    /// 存储分馏塔所有产物。结构：
-    /// (planetId, entityId) => List&lt;ProductOutputInfo&gt;
-    /// </summary>
-    public sealed class FractionatorExtraState {
-        /// <summary>
-        /// 保存该分馏塔当前累计的扩展产物列表。
-        /// </summary>
-        public readonly List<ProductOutputInfo> Products = [];
-        /// <summary>
-        /// 保存热路径复用的临时产物缓冲。
-        /// </summary>
-        public readonly ProductOutputBuffer ScratchOutputs = new();
-        /// <summary>
-        /// 保存当前扩展产物列表包含的产物类型标记。
-        /// </summary>
-        public byte CurrentOutputFlags;
-        /// <summary>
-        /// 保存当前运行时识别出的主产物物品 ID。
-        /// </summary>
-        public ProductOutputInfo PrimaryProduct;
-        private bool cachedRecipeValid;
-        private int cachedFluidId;
-        private ERecipe cachedRecipeType;
-        private BaseRecipe cachedRecipe;
-        private bool runtimeSchemaValid;
-        private int runtimeSchemaFluidId;
-        private ERecipe runtimeSchemaRecipeType;
-        private BaseRecipe runtimeSchemaRecipe;
-        private int runtimeSchemaProductId;
-        private int runtimeSchemaProductCount;
-        private bool fullProductCacheValid;
-        private int fullProductCacheThreshold;
-        private bool fullProductCacheValue;
-
-        /// <summary>
-        /// 按配方类型和输入物品读取分馏配方。
-        /// </summary>
-        public BaseRecipe GetRecipe(ERecipe recipeType, int fluidId) {
-            if (cachedRecipeValid
-                && cachedFluidId == fluidId
-                && cachedRecipeType == recipeType) {
-                return cachedRecipe;
-            }
-
-            cachedRecipeValid = true;
-            cachedFluidId = fluidId;
-            cachedRecipeType = recipeType;
-            cachedRecipe = RecipeManager.GetRecipe<BaseRecipe>(recipeType, fluidId);
-            return cachedRecipe;
-        }
-
-        /// <summary>
-        /// 按配方类型和输入物品读取分馏配方。
-        /// </summary>
-        public T GetRecipe<T>(ERecipe recipeType, int fluidId) where T : BaseRecipe {
-            return GetRecipe(recipeType, fluidId) as T;
-        }
-
-        /// <summary>
-        /// 清除扩展状态中的配方查询缓存。
-        /// </summary>
-        public void ClearRecipeCache() {
-            cachedRecipeValid = false;
-            cachedFluidId = 0;
-            cachedRecipeType = default;
-            cachedRecipe = null;
-            ClearRuntimeSchema();
-        }
-
-        /// <summary>
-        /// 尝试读取分馏塔当前缓存的运行时输出架构。
-        /// </summary>
-        public bool TryGetRuntimeSchema(ERecipe recipeType, int fluidId, BaseRecipe recipe, int productId,
-            out ProductOutputInfo primaryProduct) {
-
-            primaryProduct = null;
-            if (!runtimeSchemaValid
-                || runtimeSchemaFluidId != fluidId
-                || runtimeSchemaRecipeType != recipeType
-                || !ReferenceEquals(runtimeSchemaRecipe, recipe)
-                || runtimeSchemaProductId != productId
-                || runtimeSchemaProductCount != Products.Count) {
-                return false;
-            }
-            if (runtimeSchemaProductCount <= 0) {
-                return true;
-            }
-            if (PrimaryProduct == null || PrimaryProduct.itemId != productId) {
-                return false;
-            }
-
-            primaryProduct = PrimaryProduct;
-            return true;
-        }
-
-        /// <summary>
-        /// 记录分馏塔当前运行时输出架构。
-        /// </summary>
-        public void MarkRuntimeSchema(ERecipe recipeType, int fluidId, BaseRecipe recipe, int productId,
-            ProductOutputInfo primaryProduct) {
-
-            runtimeSchemaValid = true;
-            runtimeSchemaFluidId = fluidId;
-            runtimeSchemaRecipeType = recipeType;
-            runtimeSchemaRecipe = recipe;
-            runtimeSchemaProductId = productId;
-            runtimeSchemaProductCount = Products.Count;
-            PrimaryProduct = primaryProduct;
-        }
-
-        /// <summary>
-        /// 清除分馏塔运行时输出架构缓存。
-        /// </summary>
-        public void ClearRuntimeSchema() {
-            runtimeSchemaValid = false;
-            runtimeSchemaFluidId = 0;
-            runtimeSchemaRecipeType = default;
-            runtimeSchemaRecipe = null;
-            runtimeSchemaProductId = 0;
-            runtimeSchemaProductCount = 0;
-            PrimaryProduct = null;
-        }
-
-        /// <summary>
-        /// 判断分馏塔扩展产物缓存是否已有足够输出。
-        /// </summary>
-        public bool HasFullProduct(int countThreshold, bool forceRefresh = false) {
-            if (!forceRefresh
-                && fullProductCacheValid
-                && fullProductCacheThreshold == countThreshold) {
-                return fullProductCacheValue;
-            }
-
-            bool hasFullProduct = false;
-            foreach (ProductOutputInfo product in Products) {
-                if (product.count >= countThreshold) {
-                    hasFullProduct = true;
-                    break;
-                }
-            }
-
-            fullProductCacheValid = true;
-            fullProductCacheThreshold = countThreshold;
-            fullProductCacheValue = hasFullProduct;
-            return hasFullProduct;
-        }
-
-        /// <summary>
-        /// 标记扩展产物满载缓存失效。
-        /// </summary>
-        public void InvalidateFullProductCache() {
-            fullProductCacheValid = false;
-        }
-
-        /// <summary>
-        /// 记录扩展产物已达到指定输出阈值。
-        /// </summary>
-        public void MarkFullProductCache(int countThreshold) {
-            fullProductCacheValid = true;
-            fullProductCacheThreshold = countThreshold;
-            fullProductCacheValue = true;
-        }
-    }
-
-    private static readonly ConcurrentDictionary<(int, int), FractionatorExtraState> outputDic = [];
-
-    /// <summary>
-    /// 单个星球的分馏塔扩展状态数组和版本号。
-    /// </summary>
-    private sealed class FractionatorExtraStateArray(int length) {
-        /// <summary>
-        /// 保存该星球分馏塔扩展状态的同步锁。
-        /// </summary>
-        public readonly object SyncRoot = new();
-        /// <summary>
-        /// 保存该星球按实体 ID 索引的分馏塔扩展状态。
-        /// </summary>
-        public FractionatorExtraState[] States = new FractionatorExtraState[length];
-        /// <summary>
-        /// 保存该星球分馏塔扩展状态表的变更版本。
-        /// </summary>
-        public int Version;
-    }
-
-    private static readonly ConcurrentDictionary<int, FractionatorExtraStateArray> outputStateArraysByPlanet = [];
-    private static int outputStateArrayGeneration;
-    [ThreadStatic] private static int cachedOutputStatePlanetId;
-    [ThreadStatic] private static int cachedOutputStateVersion;
-    [ThreadStatic] private static int cachedOutputStateGeneration;
-    [ThreadStatic] private static FractionatorExtraStateArray cachedOutputStateArray;
-
-    private static FractionatorExtraState[] EnsureOutputStateArray(int planetId, int entityId,
-        PlanetFactory factory = null) {
-        int generation = Volatile.Read(ref outputStateArrayGeneration);
-        FractionatorExtraStateArray cachedArray = cachedOutputStateArray;
-        if (cachedArray != null
-            && cachedOutputStatePlanetId == planetId
-            && cachedOutputStateVersion == cachedArray.Version
-            && cachedOutputStateGeneration == generation
-            && (uint)entityId < (uint)cachedArray.States.Length) {
-            return cachedArray.States;
-        }
-
-        int minLength = entityId + 1;
-        if (factory?.entityPool != null && factory.entityPool.Length > minLength) {
-            minLength = factory.entityPool.Length;
-        }
-        minLength = Math.Max(minLength, 64);
-
-        FractionatorExtraStateArray stateArray =
-            outputStateArraysByPlanet.GetOrAdd(planetId, _ => new FractionatorExtraStateArray(minLength));
-        FractionatorExtraState[] states;
-        int version;
-        lock (stateArray.SyncRoot) {
-            states = stateArray.States;
-            if (states.Length <= entityId) {
-                Array.Resize(ref states, minLength);
-                stateArray.States = states;
-                stateArray.Version++;
-            }
-            version = stateArray.Version;
-        }
-
-        cachedOutputStatePlanetId = planetId;
-        cachedOutputStateVersion = version;
-        cachedOutputStateGeneration = generation;
-        cachedOutputStateArray = stateArray;
-        return states;
-    }
-
-    /// <summary>
-    /// 读取分馏塔扩展输出状态。
-    /// </summary>
-    public static void OutputExtendImport(BinaryReader r) {
-        outputDic.Clear();
-        outputStateArraysByPlanet.Clear();
-        Interlocked.Increment(ref outputStateArrayGeneration);
-        cachedOutputStatePlanetId = 0;
-        cachedOutputStateVersion = 0;
-        cachedOutputStateGeneration = 0;
-        cachedOutputStateArray = null;
-        int fractionatorNum = r.ReadInt32();
-        for (int i = 0; i < fractionatorNum; i++) {
-            int planetId = r.ReadInt32();
-            int entityId = r.ReadInt32();
-            FractionatorExtraState state = new();
-            int outputKinds = r.ReadInt32();
-            for (int j = 0; j < outputKinds; j++) {
-                bool isMainOutput = r.ReadBoolean();
-                int outputId = r.ReadInt32();
-                int outputCount = r.ReadInt32();
-                if (!LDB.items.Exist(outputId)) {
-                    continue;
-                }
-                state.Products.Add(new(isMainOutput, outputId, outputCount));
-            }
-            outputDic.TryAdd((planetId, entityId), state);
-            EnsureOutputStateArray(planetId, entityId)[entityId] = state;
-        }
-    }
-
-    /// <summary>
-    /// 写入分馏塔扩展输出状态。
-    /// </summary>
-    public static void OutputExtendExport(BinaryWriter w) {
-        w.Write(outputDic.Count);
-        foreach (var p in outputDic) {
-            w.Write(p.Key.Item1);
-            w.Write(p.Key.Item2);
-            List<ProductOutputInfo> products = p.Value.Products;
-            w.Write(products.Count);
-            foreach (ProductOutputInfo outputItem in products) {
-                w.Write(outputItem.isMainOutput);
-                w.Write(outputItem.itemId);
-                w.Write(outputItem.count);
-            }
-        }
-    }
-
-    /// <summary>
-    /// 重置分馏塔扩展输出状态。
-    /// </summary>
-    public static void OutputExtendIntoOtherSave() {
-        outputDic.Clear();
-        outputStateArraysByPlanet.Clear();
-        Interlocked.Increment(ref outputStateArrayGeneration);
-        cachedOutputStatePlanetId = 0;
-        cachedOutputStateVersion = 0;
-        cachedOutputStateGeneration = 0;
-        cachedOutputStateArray = null;
-    }
-
-    /// <summary>
-    /// 读取指定分馏塔当前可显示的产物列表。
-    /// </summary>
-    public static List<ProductOutputInfo> products(this FractionatorComponent fractionator,
-        PlanetFactory factory) {
-        return fractionator.GetExtraState(factory).Products;
-    }
-
-    /// <summary>
-    /// 读取或创建指定分馏塔的扩展运行状态。
-    /// </summary>
-    public static FractionatorExtraState GetExtraState(this FractionatorComponent fractionator,
-        PlanetFactory factory) {
-        int planetId = factory.planetId;
-        int entityId = fractionator.entityId;
-        FractionatorExtraState[] states = EnsureOutputStateArray(planetId, entityId, factory);
-        FractionatorExtraState state = states[entityId];
-        if (state != null) {
-            return state;
-        }
-
-        var key = (planetId, entityId);
-        if (outputDic.TryGetValue(key, out state)) {
-            states[entityId] = state;
-            return state;
-        }
-
-        state = new FractionatorExtraState();
-        states[entityId] = state;
-        outputDic[key] = state;
-        return state;
-    }
-
-    /// <summary>
-    /// 清除指定实体对应的分馏塔扩展状态。
-    /// </summary>
-    public static void ClearExtraState(PlanetFactory factory, int entityId) {
-        if (factory == null || entityId <= 0) {
-            return;
-        }
-        int planetId = factory.planetId;
-        outputDic.TryRemove((planetId, entityId), out _);
-        if (outputStateArraysByPlanet.TryGetValue(planetId, out FractionatorExtraStateArray stateArray)) {
-            lock (stateArray.SyncRoot) {
-                FractionatorExtraState[] states = stateArray.States;
-                if (entityId < states.Length) {
-                    states[entityId] = null;
-                }
-            }
-        }
-        if (cachedOutputStatePlanetId == planetId
-            && cachedOutputStateArray != null
-            && cachedOutputStateGeneration == Volatile.Read(ref outputStateArrayGeneration)) {
-            lock (cachedOutputStateArray.SyncRoot) {
-                FractionatorExtraState[] states = cachedOutputStateArray.States;
-                if (cachedOutputStateVersion == cachedOutputStateArray.Version
-                    && entityId < states.Length) {
-                    states[entityId] = null;
-                }
-            }
-        }
-    }
-
-    #endregion
-}
-
-#endregion
-
-#region 蓝图/复制粘贴/Nebula 边界
-
-/// <summary>
-/// 拆除或销毁基础塔前，清掉它的多产物缓存记录。
-/// </summary>
-public static class FractionatorStateCleanup {
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.RemoveEntityWithComponents))]
-    private static void PlanetFactory_RemoveEntityWithComponents_Prefix(PlanetFactory __instance, int id) {
-        FractionatorOutputState.ClearExtraState(__instance, id);
-    }
-}
-
-/// <summary>
-/// 在同一蓝图参数数组中共存读写 FE 分馏塔的多个实例状态块。
-/// </summary>
-internal static class FractionatorBlueprintParameters {
-    private const int BlockLength = 3;
-
-    /// <summary>
-    /// 更新已有状态块；不存在时在参数尾部追加新的三整数状态块。
-    /// </summary>
-    public static int[] Upsert(int[] parameters, int magic, int version, int value) {
-        int[] result = parameters ?? [];
-        int index = Find(result, magic, version);
-        if (index >= 0) {
-            result = (int[])result.Clone();
-            result[index + 2] = value;
-            return result;
-        }
-
-        int originalLength = result.Length;
-        Array.Resize(ref result, originalLength + BlockLength);
-        result[originalLength] = magic;
-        result[originalLength + 1] = version;
-        result[originalLength + 2] = value;
-        return result;
-    }
-
-    /// <summary>
-    /// 从任意位置读取指定状态块，允许不同 FE 实例状态共用参数数组。
-    /// </summary>
-    public static bool TryRead(int[] parameters, int magic, int version, out int value) {
-        int index = Find(parameters, magic, version);
-        value = index >= 0 ? parameters[index + 2] : 0;
-        return index >= 0;
-    }
-
-    private static int Find(int[] parameters, int magic, int version) {
-        if (parameters == null || parameters.Length < BlockLength) {
-            return -1;
-        }
-
-        for (int i = parameters.Length - BlockLength; i >= 0; i--) {
-            if (parameters[i] == magic && parameters[i + 1] == version) {
-                return i;
-            }
-        }
-        return -1;
-    }
-}
-
-#endregion
-
 }
