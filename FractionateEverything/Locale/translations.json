@@ -2064,12 +2064,12 @@
     "1031": "Außerhalb des Subraums wurden noch keine lebenden Türme errichtet.\n\nNach dem Bau des ersten verbesserten Turms wird hier ihr Betriebszustand nach Planeten aufgelistet.",
     "1041": "亜空間の外には、まだ生命塔が設置されていない。\n\n最初の上級塔を建てると、惑星ごとの稼働状況がここに表示される。"
   },
-  "饥饿 {0}": {
-    "enUS": "Hungry {0}",
-    "zhCN": "饥饿 {0}",
-    "frFR": "Affamées : {0}",
-    "1031": "Hungrig: {0}",
-    "1041": "飢餓 {0}"
+  "缺少矩阵 {0}": {
+    "enUS": "Missing matrices {0}",
+    "zhCN": "缺少矩阵 {0}",
+    "frFR": "Sans matrices : {0}",
+    "1031": "Matrixmangel: {0}",
+    "1041": "マトリックス不足 {0}"
   },
   "停滞 {0}": {
     "enUS": "Stalled {0}",
@@ -2093,18 +2093,18 @@
     "1041": "{0}基 · {1}"
   },
   "FE.LivingTowersPage.Counts": {
-    "enUS": "Planet: {0}\nPlaced: {1}\nHungry: {2}\nMissing materials: {3}\nBlocked: {4}\n\n",
-    "zhCN": "所在星球：{0}\n已放置：{1}\n饥饿：{2}\n缺料：{3}\n堵塞：{4}\n\n",
-    "frFR": "Planète : {0}\nInstallées : {1}\nAffamées : {2}\nSans matières : {3}\nBloquées : {4}\n\n",
-    "1031": "Planet: {0}\nErrichtet: {1}\nHungrig: {2}\nMaterialmangel: {3}\nBlockiert: {4}\n\n",
-    "1041": "所在惑星：{0}\n設置済み：{1}\n飢餓：{2}\n原料不足：{3}\n詰まり：{4}\n\n"
+    "enUS": "Planet: {0}\nPlaced: {1}\nMissing matrices: {2}\nMissing materials: {3}\nBlocked: {4}\n\n",
+    "zhCN": "所在星球：{0}\n已放置：{1}\n缺少矩阵：{2}\n缺料：{3}\n堵塞：{4}\n\n",
+    "frFR": "Planète : {0}\nInstallées : {1}\nSans matrices : {2}\nSans matières : {3}\nBloquées : {4}\n\n",
+    "1031": "Planet: {0}\nErrichtet: {1}\nMatrixmangel: {2}\nMaterialmangel: {3}\nBlockiert: {4}\n\n",
+    "1041": "所在惑星：{0}\n設置済み：{1}\nマトリックス不足：{2}\n原料不足：{3}\n詰まり：{4}\n\n"
   },
   "FE.LivingTowersPage.Advice": {
-    "enUS": "With enough nutrition, towers gradually recover; when hungry, they lose durability. Check the matrix supply first, then every input required by the recipe and the output belts.\n\nEach buffer holds 20 stacks. When the primary consumable cannot support another cycle, remaining partial product stacks continue to leave.",
-    "zhCN": "营养充足时塔体逐渐恢复，饥饿时耐久下降。优先检查矩阵供养，再检查配方所需的全部输入和输出传送带。\n\n缓存容量按20堆计算。主消耗物不足一轮时，产物尾料会继续流出。",
-    "frFR": "Bien nourries, les tours se réparent progressivement ; affamées, elles perdent de la durabilité. Vérifiez d'abord l'apport de matrices, puis toutes les entrées de la recette et les convoyeurs de sortie.\n\nChaque tampon contient 20 piles. Quand le consommable principal ne suffit plus pour un cycle, les piles partielles de produits continuent à sortir.",
-    "1031": "Bei ausreichender Ernährung erholen sich die Türme allmählich; bei Hunger verlieren sie Haltbarkeit. Prüfe zuerst die Matrixversorgung, dann sämtliche Rezepteingaben und Ausgangsbänder.\n\nJeder Puffer fasst 20 Stapel. Reicht der Hauptverbrauchsstoff nicht mehr für einen Zyklus, werden verbliebene Teilstapel der Produkte weiter ausgegeben.",
-    "1041": "栄養が十分なら塔は徐々に回復し、飢えると耐久度が下がる。まずマトリックス供給を確認し、次にレシピに必要な全入力と出力コンベアを確認しよう。\n\nバッファ容量は20スタック。主消費物が1回分に足りなくなると、生産物の端数も流れ出る。"
+    "enUS": "With enough nutrition, towers gradually recover; when matrices run out, they lose durability. Check the matrix supply first, then every input required by the recipe and the output belts.\n\nEach buffer holds 20 stacks. When the primary consumable cannot support another cycle, remaining partial product stacks continue to leave.",
+    "zhCN": "营养充足时塔体逐渐恢复，缺少矩阵时耐久下降。优先检查矩阵供养，再检查配方所需的全部输入和输出传送带。\n\n缓存容量按20堆计算。主消耗物不足一轮时，产物尾料会继续流出。",
+    "frFR": "Bien nourries, les tours se réparent progressivement ; sans matrices, elles perdent de la durabilité. Vérifiez d'abord l'apport de matrices, puis toutes les entrées de la recette et les convoyeurs de sortie.\n\nChaque tampon contient 20 piles. Quand le consommable principal ne suffit plus pour un cycle, les piles partielles de produits continuent à sortir.",
+    "1031": "Bei ausreichender Ernährung erholen sich die Türme allmählich; bei Matrixmangel verlieren sie Haltbarkeit. Prüfe zuerst die Matrixversorgung, dann sämtliche Rezepteingaben und Ausgangsbänder.\n\nJeder Puffer fasst 20 Stapel. Reicht der Hauptverbrauchsstoff nicht mehr für einen Zyklus, werden verbliebene Teilstapel der Produkte weiter ausgegeben.",
+    "1041": "栄養が十分なら塔は徐々に回復し、マトリックスが尽きると耐久度が下がる。まずマトリックス供給を確認し、次にレシピに必要な全入力と出力コンベアを確認しよう。\n\nバッファ容量は20スタック。主消費物が1回分に足りなくなると、生産物の端数も流れ出る。"
   },
   "配方图鉴": {
     "enUS": "Recipe Gallery",
@@ -2974,12 +2974,12 @@
     "1031": "Wartet auf Nahrung",
     "1041": "栄養供給待ち"
   },
-  "饥饿": {
-    "enUS": "Hungry",
-    "zhCN": "饥饿",
-    "frFR": "Affamé",
-    "1031": "Hungrig",
-    "1041": "飢餓"
+  "缺少矩阵": {
+    "enUS": "Missing matrices",
+    "zhCN": "缺少矩阵",
+    "frFR": "Manque de matrices",
+    "1031": "Matrixmangel",
+    "1041": "マトリックス不足"
   },
   "输出堵塞": {
     "enUS": "Output blocked",

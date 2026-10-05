@@ -13,6 +13,24 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Fractionators;
 
+/// <summary>高级塔运行状态；显示文本和配色由界面映射，不参与业务判断。</summary>
+public enum AdvancedTowerStatus {
+    /// <summary>实例尚未建立。</summary>
+    AwaitingNourishment,
+    /// <summary>营养耗尽，需要矩阵供养。</summary>
+    MissingMatrix,
+    /// <summary>尚未选择配方。</summary>
+    AwaitingRecipe,
+    /// <summary>配方原料不足。</summary>
+    MissingInput,
+    /// <summary>产物或流动输出缓存已满。</summary>
+    OutputBlocked,
+    /// <summary>正在运行，产物等待凑足整堆。</summary>
+    Stacking,
+    /// <summary>正常运行。</summary>
+    Running,
+}
+
 /// <summary>
 /// 一座高级分馏塔的多输入、多输出、营养和配方状态。
 /// </summary>
@@ -68,6 +86,8 @@ public static class AdvancedFractionatorRuntime {
     private const float WorkingNutritionPerRound = 0.02f;
     private const float IdleNutritionPerSecond = 0.002f;
     private const int ProgressPerSecond = 60000;
+    /// <summary>持续缺少营养时，扣完一个最大耐久所需的秒结算次数。</summary>
+    private const int StarvationSecondsToDestroy = 360;
     /// <summary>读档时允许的最大缓存件数，按堆叠上限计算；读档时全局堆叠可能尚未同步，不能用当前值裁剪。</summary>
     private const int MaximumBufferCapacity = ProcessManager.BufferStackCount * StackingManager.AbsoluteMaxStack;
     private const int MaximumStateCount = 1000000;
@@ -79,21 +99,23 @@ public static class AdvancedFractionatorRuntime {
 
     /// <summary>供窗口与汇总页共用的工作状态，按营养、配方、原料和输出空间区分原因。</summary>
     /// <param name="state">高级塔状态。</param>
-    /// <returns>玩家可读的状态文案。</returns>
-    public static string GetOperatingStatus(AdvancedFractionatorState state) {
-        if (state == null) { return "等待供养"; }
+    /// <returns>与显示语言无关的运行状态。</returns>
+    public static AdvancedTowerStatus GetOperatingStatus(AdvancedFractionatorState state) {
+        if (state == null) { return AdvancedTowerStatus.AwaitingNourishment; }
         lock (state) {
-            if (state.Nutrition <= 0f) { return "饥饿"; }
+            if (state.Nutrition <= 0f) { return AdvancedTowerStatus.MissingMatrix; }
             WorldviewRecipe recipe = RecipeManager.GetRecipe(state.SelectedRecipeId);
-            if (recipe == null) { return "等待配方"; }
+            if (recipe == null) { return AdvancedTowerStatus.AwaitingRecipe; }
             int rounds = GetAvailableRounds(state, recipe);
-            if (rounds <= 0) { return "缺少原材料"; }
+            if (rounds <= 0) { return AdvancedTowerStatus.MissingInput; }
             if (LimitRoundsByOutputRoom(state, recipe, rounds, ResearchManager.MemorySuccessBoost) <= 0) {
-                return "输出堵塞";
+                return AdvancedTowerStatus.OutputBlocked;
             }
             int stack = StackingManager.CurrentMaxStack;
-            if (stack > 1 && state.Products.Values.Any(count => count > 0 && count < stack)) { return "运行中 · 等待集装"; }
-            return "正常运转";
+            if (stack > 1 && state.Products.Values.Any(count => count > 0 && count < stack)) {
+                return AdvancedTowerStatus.Stacking;
+            }
+            return AdvancedTowerStatus.Running;
         }
     }
 
@@ -112,9 +134,9 @@ public static class AdvancedFractionatorRuntime {
             result.TryGetValue(key, out var counts);
             counts.Total++;
             switch (GetOperatingStatus(pair.Value)) {
-                case "饥饿": counts.Hungry++; break;
-                case "缺少原材料": counts.Missing++; break;
-                case "输出堵塞": counts.Blocked++; break;
+                case AdvancedTowerStatus.MissingMatrix: counts.Hungry++; break;
+                case AdvancedTowerStatus.MissingInput: counts.Missing++; break;
+                case AdvancedTowerStatus.OutputBlocked: counts.Blocked++; break;
             }
             result[key] = counts;
         }
@@ -831,8 +853,11 @@ public static class AdvancedFractionatorRuntime {
             return;
         }
         ref CombatStat combatStat = ref factory.skillSystem.combatStats.buffer[combatStatId];
+        // 累计差额让任意连续 360 次扣血之和恰为 hpMax；周期取模也避免长期存档乘法溢出。
+        long second = GameMain.gameTick / 60L % StarvationSecondsToDestroy;
         int change = losingDurability
-            ? -Math.Max(1, Mathf.CeilToInt(combatStat.hpMax * 0.01f))
+            ? -(int)((long)combatStat.hpMax * (second + 1) / StarvationSecondsToDestroy
+                     - (long)combatStat.hpMax * second / StarvationSecondsToDestroy)
             : Math.Max(1, Mathf.CeilToInt(combatStat.hpMax * 0.005f));
         combatStat.hpRecover = 0;
         combatStat.hp = Math.Max(0, Math.Min(combatStat.hpMax, combatStat.hp + change));

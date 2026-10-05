@@ -92,7 +92,7 @@ Advanced recipes include rare-resource catalysis, tower cultivation and breeding
 | 切换面板外壳 | Ctrl + Shift + F，面板打开时 |
 | 重读教程 | G |
 
-面板分为指引、研究、探索、工业、手记、设置，共十七页。默认当前目标，指南随发现开放；左侧是窄单列目录，右侧是宽阅读区，点击切换内容，长文可以滚动。G手册只在关键节点提供短篇故事，具体操作请看面板指南。中文物品名为“源点”“残片”。高级塔配方在塔窗口选择，窗口区分饥饿、缺料、堵塞和集装。
+面板分为指引、研究、探索、工业、手记、设置，共十七页。默认当前目标，指南随发现开放；左侧是窄单列目录，右侧是宽阅读区，点击切换内容，长文可以滚动。G手册只在关键节点提供短篇故事，具体操作请看面板指南。中文物品名为“源点”“残片”。高级塔配方在塔窗口选择，窗口区分缺少矩阵、缺料、堵塞和集装。
 
 Keys can be changed in the game settings. The panel has seventeen pages across six categories, starting with Current Goals and a stage-based guide.
 

@@ -1042,10 +1042,20 @@ public static class FractionatorWindow {
 
     private static void UpdateAdvancedStateText(AdvancedFractionatorState state, WorldviewRecipe recipe,
         FractionatorComponent fractionator) {
-        string status = AdvancedFractionatorRuntime.GetOperatingStatus(state);
-        modWindow.stateText.text = status.Translate();
-        modWindow.stateText.color = status is "正常运转" or "运行中 · 等待集装"
-            ? modWindow.workNormalColor : status == "等待配方" ? modWindow.idleColor : modWindow.workStoppedColor;
+        AdvancedTowerStatus status = AdvancedFractionatorRuntime.GetOperatingStatus(state);
+        string text = status switch {
+            AdvancedTowerStatus.AwaitingNourishment => "等待供养",
+            AdvancedTowerStatus.MissingMatrix => "缺少矩阵",
+            AdvancedTowerStatus.AwaitingRecipe => "等待配方",
+            AdvancedTowerStatus.MissingInput => "缺少原材料",
+            AdvancedTowerStatus.OutputBlocked => "输出堵塞",
+            AdvancedTowerStatus.Stacking => "运行中 · 等待集装",
+            _ => "正常运转",
+        };
+        modWindow.stateText.text = text.Translate();
+        modWindow.stateText.color = status is AdvancedTowerStatus.Running or AdvancedTowerStatus.Stacking
+            ? modWindow.workNormalColor
+            : status == AdvancedTowerStatus.AwaitingRecipe ? modWindow.idleColor : modWindow.workStoppedColor;
     }
 
     private static void UpdateAdvancedUI(UIFractionatorWindow src, FractionatorComponent fractionator,

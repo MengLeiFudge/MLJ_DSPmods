@@ -12,7 +12,7 @@ public sealed class LivingTowersPage : CardBrowserPage {
     protected override string Title => "生命塔".Translate();
     protected override string Summary => string.Format("FE.LivingTowersPage.Summary".Translate(), ResearchManager.MemorySuccessBoost);
     protected override string EmptyText => "FE.LivingTowersPage.Empty".Translate();
-    /// <summary>按星球与塔体类型列出运行状态，存在饥饿或停滞的星球排在前面。</summary>
+    /// <summary>按星球与塔体类型列出运行状态，存在缺少矩阵或停滞的星球排在前面。</summary>
     protected override IReadOnlyList<PageCard> ReadCards() => AdvancedFractionatorRuntime.GetTowerSummary()
         .OrderByDescending(pair => pair.Value.Hungry + pair.Value.Missing + pair.Value.Blocked)
         .ThenBy(pair => pair.Key.PlanetId).ThenBy(pair => pair.Key.ItemId)
@@ -20,7 +20,7 @@ public sealed class LivingTowersPage : CardBrowserPage {
             var count = pair.Value;
             string planet = GameMain.galaxy?.PlanetById(pair.Key.PlanetId)?.displayName ?? pair.Key.PlanetId.ToString();
             int stalled = count.Missing + count.Blocked;
-            string status = count.Hungry > 0 ? string.Format("饥饿 {0}".Translate(), count.Hungry) : stalled > 0 ? string.Format("停滞 {0}".Translate(), stalled) : "运转正常".Translate();
+            string status = count.Hungry > 0 ? string.Format("缺少矩阵 {0}".Translate(), count.Hungry) : stalled > 0 ? string.Format("停滞 {0}".Translate(), stalled) : "运转正常".Translate();
             return new PageCard { Key = $"{pair.Key.PlanetId}-{pair.Key.ItemId}", ItemId = pair.Key.ItemId,
                 Title = $"{planet} · {LDB.items.Select(pair.Key.ItemId)?.name}",
                 Status = string.Format("{0} 座 · {1}".Translate(), count.Total, status),
