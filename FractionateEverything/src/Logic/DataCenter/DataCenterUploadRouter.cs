@@ -19,7 +19,7 @@ public static class DataCenterUploadRouter {
     public static int UploadRearStack(CargoTraffic cargoTraffic, int beltId) {
         int itemId = cargoTraffic.GetItemIdAtRear(beltId);
         int count = ProcessManager.GetRearCargoStack(cargoTraffic, beltId);
-        if (itemId <= 0 || count <= 0 || Array.IndexOf(needs, itemId) < 0) { return 0; }
+        if (itemId <= 0 || count <= 0 || !IsUploadableItem(itemId)) { return 0; }
 
         long newCount;
         lock (DataCenterInventory.centerItemCount) {
@@ -27,7 +27,7 @@ public static class DataCenterUploadRouter {
             if (!CanUploadStack(itemId, count)) { return 0; }
             itemId = cargoTraffic.TryPickItemAtRear(beltId, itemId, null, out byte stack, out byte inc);
             if (itemId <= 0) { return 0; }
-            // needs 排除了历史面额包裹；整堆容量已在同一锁内确认。
+            // 可上传物品已排除历史面额包裹；整堆容量已在同一锁内确认。
             DataCenterInventory.AddStoredItem(itemId, stack, inc, out newCount);
         }
         DataCenterInventory.OnItemCountIncreased(itemId, newCount);
@@ -52,17 +52,20 @@ public static class DataCenterUploadRouter {
 
         if (IsCurrencyPackageItem(itemId)
             && TryGetCurrencyNormalization(itemId, out int baseItemId, out int faceValue)) {
+            long acceptedValue;
+            long newCount;
             lock (DataCenterInventory.centerItemCount) {
                 long acceptedPackages = Math.Min(count,
                     DataCenterInventory.GetRemainingCapacity(baseItemId) / faceValue);
                 if (acceptedPackages <= 0) {
                     return 0;
                 }
-                long convertedCount = acceptedPackages * faceValue;
-                long acceptedValue = DataCenterInventory.AddItemToModData(
-                    baseItemId, convertedCount, 0, manual);
-                return acceptedValue / faceValue;
+                // 锁内只写库存；研究通知和联机包在释放库存锁后处理。
+                acceptedValue = DataCenterInventory.AddStoredItem(
+                    baseItemId, acceptedPackages * faceValue, 0, out newCount);
             }
+            DataCenterInventory.NotifyItemAdded(baseItemId, acceptedValue, 0, newCount, manual);
+            return acceptedValue / faceValue;
         }
 
         if (!TryNormalizeUpload(itemId, count, inc, out int storeItemId, out long storeCount,
@@ -84,7 +87,7 @@ public static class DataCenterUploadRouter {
     /// </summary>
     public static bool CanUploadStack(int itemId, int count) {
         if (count <= 0 || (itemId == I沙土 && NebulaMultiplayerModAPI.IsMultiplayerActive)
-            || Array.IndexOf(needs, itemId) < 0) {
+            || !IsUploadableItem(itemId)) {
             return false;
         }
         int capacityItemId = GetUploadCapacityItemId(itemId);

@@ -218,6 +218,24 @@ public static class DataCenterInventory {
         return accepted;
     }
 
+    /// <summary>在释放全部库存锁之后，补做入库的研究通知与手动联机同步。</summary>
+    /// <param name="itemId">已规范化的库存物品 ID。</param>
+    /// <param name="accepted">实际入库件数；为 0 时不做任何事。</param>
+    /// <param name="acceptedInc">随入库件数一起写入的增产点。</param>
+    /// <param name="newCount">入库后的库存件数，供高级塔门槛判断。</param>
+    /// <param name="manual">是否为玩家手动操作；只有手动入库需要广播给其他玩家。</param>
+    /// <remarks>与 <see cref="AddStoredItem"/> 配对使用：后者可在调用方的库存锁内执行，本方法不得在锁内调用。</remarks>
+    internal static void NotifyItemAdded(int itemId, long accepted, long acceptedInc, long newCount, bool manual) {
+        if (accepted <= 0) {
+            return;
+        }
+        OnItemCountIncreased(itemId, newCount);
+        if (itemId != I沙土 && NebulaModAPI.IsMultiplayerActive && manual) {
+            NebulaModAPI.MultiplayerSession.Network.SendPacket(
+                new CenterItemChangeLongPacket(itemId, accepted, acceptedInc));
+        }
+    }
+
     private static long AddItemToModDataInternal(int itemId, long count, long inc = 0) {
         if (count <= 0) {
             return 0;

@@ -21,7 +21,8 @@ DataCenter/
 - Expansion子块随DataCenter存档、联机快照与切档清理；仅主机结算游戏秒，停供不缩水、不补算离线时间。库存锁可进入扩容锁，扩容锁内不得反向查询库存或探索。
 - `AddExplorationReward` 允许超容量，只供首遗物和探索奖励调用。
 - 实体上传统一走 `DataCenterUploadRouter`；高级塔按原物品、数量和增产点进入普通库存，并在同类库存首次达到 1000 座时通知研究域永久开放方向；献祭只在基础解析塔发生。
-- 基础塔正面上传必须在取带尾货物前检查真实整堆可接收，不拆分、不先取后丢。
+- 基础塔正面上传必须在取带尾货物前检查真实整堆可接收，不拆分、不先取后丢。可上传判断用 `ItemManager.IsUploadableItem` 的按 ID 索引表，热路径不做线性查找。
+- 持有库存锁时只用 `AddStoredItem` 写库存；研究通知和手动入库的联机包由 `NotifyItemAdded` / `OnItemCountIncreased` 在释放锁后处理。
 - 下载按真实数量拆分增产点；增产点始终满足非负且不超过数量的 10 倍。
 - 实际库存变化设置 `snapshotDirty`，由主机文明快照广播；UI 刷新不得直接改数组。
 - 通信门禁使用 `CivilizationRecoveryManager.HasDataCenterCommunication`。

@@ -99,9 +99,14 @@ public static class ItemManager {
     /// </summary>
     public static readonly float[] itemValue = new float[12000];
     /// <summary>
-    /// 基础塔正面上传可接收的全部物品 ID。
+    /// 基础塔正面上传可接收的物品，按物品 ID 索引；热路径每帧查询，用数组代替线性查找。
     /// </summary>
-    public static int[] needs = [];
+    private static readonly bool[] uploadableItems = new bool[12000];
+
+    /// <summary>判断物品能否由基础塔正面上传：已注册的实体物品，且不是历史面额包裹。</summary>
+    /// <param name="itemId">带上货物的物品 ID。</param>
+    /// <returns>可上传时为 true；越界 ID 为 false。</returns>
+    public static bool IsUploadableItem(int itemId) => itemId > 0 && itemId < 12000 && uploadableItems[itemId];
 
     /// <summary>
     /// 计算所有物品的价值
@@ -379,10 +384,12 @@ public static class ItemManager {
         }
 
         // 基础塔正面上传可接收全部已注册实体物品；上传路由负责容量和历史包裹规范化。
-        needs = LDB.items.dataArray
-            .Where(item => item != null && item.ID > 0 && item.ID < 12000 && !IsCurrencyPackageItem(item.ID))
-            .Select(item => item.ID)
-            .ToArray();
+        Array.Clear(uploadableItems, 0, uploadableItems.Length);
+        foreach (ItemProto item in LDB.items.dataArray) {
+            if (item != null && item.ID > 0 && item.ID < 12000 && !IsCurrencyPackageItem(item.ID)) {
+                uploadableItems[item.ID] = true;
+            }
+        }
     }
 
     #endregion
