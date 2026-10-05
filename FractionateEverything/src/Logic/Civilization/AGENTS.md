@@ -4,7 +4,7 @@
 
 ## 归属与入口
 
-- CivilizationManager.cs：主线程tick、提示队列、文明子块与同步调度。
+- CivilizationManager.cs：主线程tick、提示队列、文明子块与同步调度。Tick 挂在 Unity Update，低帧率时两次调用之间 gameTick 会跳刻；按秒和按 10 刻的逻辑必须按序号变化触发，不得用 `gameTick % N == 0`。
 - ResearchManager.cs：唯一解析样本、共享槽、已探索/解析内容、塔体里程碑。
 - ResearchProgression.cs：矩阵阶段资格、实际Memory投入、分钟窗口和献祭开放状态。
 - ExplorationManager.cs：静默几何、动态广播、主线、终极任务和实际回收记录。

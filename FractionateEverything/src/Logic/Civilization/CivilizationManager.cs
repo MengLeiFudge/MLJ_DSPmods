@@ -16,6 +16,10 @@ public static class CivilizationModule {
     /// <summary>已结算的回收结果，在主线程逐条显示；由 NotificationSync 保护。</summary>
     private static readonly Queue<ExplorationMark> PendingRecoveries = [];
     private static long lastProcessedGameTick = long.MinValue;
+    /// <summary>上次执行按秒逻辑的游戏秒；低帧率时一帧可能推进多刻，不能用 gameTick % 60 判断整秒。</summary>
+    private static long lastProcessedSecond = long.MinValue;
+    /// <summary>上次执行探索认领的 10 刻（六分之一秒）序号，与按秒逻辑同理按序号变化触发。</summary>
+    private static long lastProcessedClaimSlot = long.MinValue;
     private static bool civilizationSnapshotPending;
 
     /// <summary>
@@ -40,8 +44,15 @@ public static class CivilizationModule {
         }
         lastProcessedGameTick = gameTick;
 
-        ExplorationManager.GameTick(gameTick);
-        bool secondBoundary = gameTick % 60L == 0L;
+        // Update 与逻辑帧不同步：帧率低于 60 时两次 Update 之间 gameTick 可能跳过整秒刻，按序号变化判断。
+        long second = gameTick / 60L;
+        bool secondBoundary = second != lastProcessedSecond;
+        lastProcessedSecond = second;
+        long claimSlot = gameTick / 10L;
+        if (claimSlot != lastProcessedClaimSlot) {
+            lastProcessedClaimSlot = claimSlot;
+            ExplorationManager.GameTick(gameTick, secondBoundary);
+        }
         if (secondBoundary) {
             ProcessManager.FlushFractionSuccessWindow(gameTick);
             ResearchManager.UpdateSacrificeBoosts(gameTick);
@@ -144,6 +155,8 @@ public static class CivilizationModule {
         ExplorationManager.IntoOtherSave();
         CivilizationRecoveryManager.IntoOtherSave();
         lastProcessedGameTick = long.MinValue;
+        lastProcessedSecond = long.MinValue;
+        lastProcessedClaimSlot = long.MinValue;
         civilizationSnapshotPending = false;
         lock (NotificationSync) {
             PendingNotifications.Clear();

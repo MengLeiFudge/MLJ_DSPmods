@@ -267,10 +267,12 @@ public static class ExplorationManager {
         }
     }
 
-    /// <summary>主机按秒推进任务和广播，每六分之一秒处理短距离认领。</summary>
+    /// <summary>主机按秒推进任务和广播，每 10 刻（六分之一秒）处理短距离认领。</summary>
     /// <param name="gameTick">当前游戏刻。</param>
-    public static void GameTick(long gameTick) {
-        if (GameMain.mainPlayer == null || GameMain.galaxy == null || gameTick % 10 != 0) { return; }
+    /// <param name="secondBoundary">本次调用是否进入了新的游戏秒；由调用方按秒序号变化判断。</param>
+    /// <remarks>调用方保证每个 10 刻区间最多调用一次，低帧率跳刻时也不会漏掉。</remarks>
+    public static void GameTick(long gameTick, bool secondBoundary) {
+        if (GameMain.mainPlayer == null || GameMain.galaxy == null) { return; }
         if (NebulaMultiplayerModAPI.IsClient) {
             foreach (ExplorationMark mark in NearbyMarks(GameMain.mainPlayer.planetId)) {
                 if (!IsPaymentMark(mark) && IsWithinArrival(mark, GameMain.mainPlayer.uPosition,
@@ -281,7 +283,7 @@ public static class ExplorationManager {
             return;
         }
         lock (Sync) {
-            if (gameTick % 60 == 0) {
+            if (secondBoundary) {
                 EnsureFirstRelicMark();
                 EnsureStory();
                 EnsureMilestones();
