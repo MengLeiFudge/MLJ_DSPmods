@@ -39,12 +39,11 @@ public static class FractionatorBriefInfoPatch {
                         ? fractionator.fluidInputCount / (double)fractionator.fluidInputCargoCount
                         : 4.0;
                 double speed = consumerRatio
-                               * (fractionator.fluidInputCargoCount < MaxBeltSpeed
-                                   ? fractionator.fluidInputCargoCount
-                                   : MaxBeltSpeed)
-                               * fluidInputCountPerCargo
-                               * 60.0;
-                if (!fractionator.isWorking)
+                    * (FractionatorTowerCatalog.IsBasicTower(entityData.protoId)
+                        ? GetBasicProcessingRate(fractionator)
+                        : System.Math.Min(fractionator.fluidInputCargoCount, MaxBeltSpeed) * fluidInputCountPerCargo)
+                    * 60.0;
+                if (!fractionator.isWorking || consumerRatio < 0.1f)
                     speed = 0.0;
                 __instance.reading0 = speed;
             }

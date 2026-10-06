@@ -15,14 +15,14 @@ public sealed class StageRecoveryPage : CardBrowserPage {
         var result = new List<PageCard>();
         for (int stage = 1; stage <= ResearchManager.CurrentMatrixStage; stage++) {
             bool restored = ResearchManager.IsContentUnlocked(ResearchManager.StageContentId(stage));
-            long inputs = ResearchManager.GetStageMemoryInputs(stage);
-            int budget = ResearchManager.GetStageMemoryBudget(stage);
+            float progress = ResearchManager.GetStageRecoveryProgress(stage);
             result.Add(new PageCard { Key = stage.ToString(), Title = LDB.items.Select(matrices[stage - 1])?.name,
-                ItemId = matrices[stage - 1], Status = restored ? "资料已恢复".Translate() : string.Format("拼合中 {0}/{1}".Translate(), System.Math.Min(inputs, budget), budget),
-                Progress = restored ? 1f : System.Math.Min(1f, inputs / (float)budget),
+                ItemId = matrices[stage - 1], Status = restored ? "资料已恢复".Translate()
+                    : string.Format("FE.StageRecoveryPage.Progress".Translate(), progress),
+                Progress = progress,
                 Detail = restored
                     ? "FE.StageRecoveryPage.Restored".Translate()
-                    : string.Format("FE.StageRecoveryPage.Recovering".Translate(), System.Math.Min(inputs, budget), budget) });
+                    : string.Format("FE.StageRecoveryPage.Recovering".Translate(), progress) });
         }
         if (ResearchManager.SacrificeUnlocked) {
             result.Add(new PageCard { Key = "offering", Title = "记忆献祭".Translate(), ItemId = IFE记忆源点,

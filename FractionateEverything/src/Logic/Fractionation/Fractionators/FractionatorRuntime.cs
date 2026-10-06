@@ -149,20 +149,12 @@ public static partial class ProcessManager {
     /// </summary>
     public static void SetPCState(this ref FractionatorComponent fractionator,
         PowerConsumerComponent[] pcPool, int buildingID) {
-        double num1 = fractionator.fluidInputCargoCount > 0.0001
-            ? fractionator.fluidInputCount / (double)fractionator.fluidInputCargoCount
-            : 4.0;
-        double num2 = (double)fractionator.fluidInputCargoCount < MaxBeltSpeed
-            ? (double)fractionator.fluidInputCargoCount
-            : MaxBeltSpeed;
-        num2 = num2 * num1 - MaxBeltSpeed;
-        if (num2 < 0.0)
-            num2 = 0.0;
+        double extraThroughput = Math.Max(0d, GetBasicProcessingRate(fractionator) - MaxBeltSpeed);
         double powerRatio = Cargo.powerTableRatio[fractionator.incLevel] * GetFractionatorEnergyRatio(buildingID);
         ref PowerConsumerComponent pc = ref pcPool[fractionator.pcId];
         pc.workEnergyPerTick = GetFractionatorWorkEnergyPerTick(buildingID);
         pc.idleEnergyPerTick = GetFractionatorIdleEnergyPerTick(buildingID);
-        int permillage = (int)((num2 * 50.0 * 30.0 / MaxBeltSpeed + 1000.0) * powerRatio + 0.5);
+        int permillage = (int)((extraThroughput * 50.0 * 30.0 / MaxBeltSpeed + 1000.0) * powerRatio + 0.5);
         pc.SetRequiredEnergy(fractionator.isWorking, permillage);
     }
 
@@ -273,6 +265,18 @@ public static partial class ProcessManager {
         double ratioAcc = Cargo.accTableMilli[avgPoint];
         double ratioInc = Cargo.incTableMilli[avgPoint] * incTableFixedRatio[avgPoint];
         return ratioAcc > ratioInc ? ratioAcc : ratioInc;
+    }
+
+    /// <summary>计算基础塔满供电时每秒可执行的次数，供运行与两处速度显示共用。</summary>
+    /// <param name="fractionator">当前输入数量与实际货物堆数。</param>
+    /// <returns>每秒处理件数；空输入时为0。</returns>
+    /// <remarks>半缓存达到带速上限，剩余容量吸收收发时序差；堆叠按真实平均件数缩放。</remarks>
+    public static double GetBasicProcessingRate(in FractionatorComponent fractionator) {
+        if (fractionator.fluidInputCount <= 0) { return 0d; }
+        double cargos = fractionator.fluidInputCargoCount;
+        double averageStack = cargos > 0.0001d ? fractionator.fluidInputCount / cargos : 4d;
+        double fullness = Math.Min(1d, Math.Max(0d, cargos) / (BufferStackCount / 2d));
+        return fullness * MaxBeltSpeed * averageStack;
     }
 
     /// <summary>
@@ -387,13 +391,7 @@ public static partial class ProcessManager {
         if (fractionator.fluidInputCount > 0
             && fractionator.fluidOutputCount < fluidOutputMax) {
             //分馏塔正常运转时，计算进度，10000点进度可以处理一次
-            fractionator.progress += (int)(power
-                                         * (500.0 / 3.0)
-                                         * (fractionator.fluidInputCargoCount < MaxBeltSpeed
-                                             ? fractionator.fluidInputCargoCount
-                                             : MaxBeltSpeed)
-                                         * fluidInputCountPerCargo
-                                         + 0.75);
+            fractionator.progress += (int)(power * (10000d / 60d) * GetBasicProcessingRate(fractionator) + 0.75);
             if (fractionator.progress > 300000) {
                 fractionator.progress = 300000;
             }
@@ -456,13 +454,14 @@ public static partial class ProcessManager {
                 }
 
                 if (batchResult.SuccessCount > 0) {
+                    // 成功推进研究也点亮产物方向，但只有outputBuffer中的实体进入物品统计与缓存。
+                    producedMainThisTick = true;
                     successCountThisTick += batchResult.SuccessCount;
                     fractionator.productOutputTotal += batchResult.SuccessCount;
                     for (int i = 0; i < outputBuffer.Count; i++) {
                         ProductOutputInfo p = outputBuffer[i];
                         int itemID = p.itemId;
                         int itemCount = p.count;
-                        producedMainThisTick = true;
                         AddProductRegisterDelta(ref productRegisterDeltas, itemID, itemCount);
                         if (itemID == product0Id) {
                             product0.count += itemCount;

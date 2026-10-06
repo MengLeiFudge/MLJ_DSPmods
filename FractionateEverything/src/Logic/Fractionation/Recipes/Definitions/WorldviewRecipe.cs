@@ -97,8 +97,9 @@ public sealed class WorldviewRecipe : BaseRecipe {
     /// <summary>是否属于需要供养的高级配方。</summary>
     public bool IsAdvanced => Kind is not WorldviewRecipeKind.BasicMineral and not WorldviewRecipeKind.BasicAnalysis;
 
-    /// <summary>基础塔失败物品只进入流动输出，不再沿用 2.x 的损毁判定。</summary>
-    public override float DestroyRatio => 0f;
+    /// <summary>解析样本使用研究域的价值损毁率，生产配方失败仍然回流。</summary>
+    public override float DestroyRatio => Kind == WorldviewRecipeKind.BasicAnalysis
+        && ResearchManager.TryGetAnalysisProbabilities(InputID, out _, out float ratio) ? ratio : 0f;
 
     /// <summary>
     /// 创建一张稳定配方。
@@ -175,7 +176,7 @@ public sealed class WorldviewRecipe : BaseRecipe {
 
         if (Kind == WorldviewRecipeKind.BasicAnalysis) {
             int consumedCount = ResearchManager.ProcessAnalysisBatch(InputID, batchCount, ref seed,
-                out int sacrificeOutputCount);
+                out int sacrificeOutputCount, out int analysisSuccessCount);
             int returnedCount = batchCount - consumedCount;
 
             if (sacrificeOutputCount > 0) {
@@ -186,7 +187,7 @@ public sealed class WorldviewRecipe : BaseRecipe {
             return new FractionationBatchResult {
                 InputRemoveCount = batchCount,
                 ConsumedRegisterCount = consumedCount,
-                SuccessCount = sacrificeOutputCount,
+                SuccessCount = sacrificeOutputCount + analysisSuccessCount,
                 PassThroughCount = returnedCount,
                 PassThroughInc = fluidInputIncAvg * returnedCount,
             };

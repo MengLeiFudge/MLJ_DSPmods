@@ -38,7 +38,7 @@ Fractionation/
 
 - 缓存以堆为单位：五塔各类缓存均为 `ProcessManager.BufferStackCount`（20）堆，一堆等于当前全局堆叠；件数上限统一读取 `ProcessManager.BufferCapacity`，基础塔单输入自动识别。
 - 原版分馏塔输入缓存固定 `FractionatorManager.VanillaFluidInputCargoMax`（40）堆，两项输出缓存为 20 堆；原版更新后由 `ProcessManager.TopUpVanillaOutputs` 把流动输出和产物叠到输出带头部。已放置塔的原版缓存字段由 `FractionatorManager.SetFractionatorCacheSize` 与 `FactorySystem.Import` 补丁同步。
-- 基础塔按带尾真实 stack 做整批准入；失败物进入流动输出，`DestroyRatio` 为 0。
+- 基础塔按带尾真实stack做整批准入；基础矿物失败回流，解析按研究域的价值概率区分成功、损毁和流回，具体公式见GAME_DESIGN_SPEC。
 - 高级塔先验证已研究且塔型匹配的稳定配方 ID，再接收多输入和矩阵食物。
 - 高级每种输入、食物、产物和流动物缓存上限同为 20 堆；食物槽同一时间只存一种矩阵；优先食物、两轮底料、流出、多余输入。
 - 高级结算采用 `floor(expected + U)` 的批量期望取整；基础成功率乘以共享Memory分钟献祭加成，可执行轮数随真实输入货物数量增长，普通输入失败回流，低概率输入只在成功轮结算。

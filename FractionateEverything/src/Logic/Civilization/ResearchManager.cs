@@ -245,13 +245,38 @@ public static partial class ResearchManager {
         return Volatile.Read(ref analysisRuntimeSnapshot).CandidatesByItemId.ContainsKey(itemId);
     }
 
+    /// <summary>查询当前可解析样本的成功与损毁概率；无已知内容时不消耗样本。</summary>
+    /// <param name="itemId">解析样本的物品身份。</param>
+    /// <param name="successRatio">每次通过的成功概率，范围0～1。</param>
+    /// <param name="destroyRatio">每次通过的损毁概率，与成功互斥。</param>
+    /// <returns>是否存在当前可以推进的研究内容。</returns>
+    public static bool TryGetAnalysisProbabilities(int itemId, out float successRatio, out float destroyRatio) {
+        successRatio = 0f;
+        destroyRatio = 0f;
+        if (itemId == IFE记忆源点) {
+            if (GetPendingMemoryStage() == 0) { return false; }
+            successRatio = MemoryAnalysisSuccessRatio;
+            return true;
+        }
+        if (!Volatile.Read(ref analysisRuntimeSnapshot).CandidatesByItemId.ContainsKey(itemId)) {
+            return false;
+        }
+        float value = itemId > 0 && itemId < ItemManager.itemValue.Length ? ItemManager.itemValue[itemId] : 0f;
+        // maxValue表示尚未估值，不能当作极高价值；缺少估值的样本使用原矿基准。
+        double factor = 1d + Math.Log10(value >= 1f && value < ItemManager.maxValue ? value : 1f);
+        successRatio = (float)(0.05d / factor);
+        destroyRatio = (float)Math.Min(0.20d, 0.01d * factor);
+        return true;
+    }
+
+
     /// <summary>返回解析塔对当前输入的工作模式，不公开未知内容。</summary>
     /// <param name="itemId">当前输入。</param>
     /// <returns>模式文案。</returns>
     public static string GetAnalysisMode(int itemId) {
         if (Array.IndexOf(ItemManager.MainProgressMatrixIds, itemId) >= 0) { return "FE.Storage.ExpansionMode"; }
         if (itemId == IFE残片) { return "广播解析"; }
-        if (Volatile.Read(ref analysisRuntimeSnapshot).CandidatesByItemId.ContainsKey(itemId)) { return "解析"; }
+        if (TryGetAnalysisProbabilities(itemId, out _, out _)) { return "解析"; }
         if (SacrificeUnlocked && (itemId == IFE记忆源点 || FractionatorTowerCatalog.IsAdvancedTower(itemId))) {
             return "献祭";
         }
@@ -448,16 +473,18 @@ public static partial class ResearchManager {
     }
 
     /// <summary>
-    /// 结算基础解析塔输入，返回实际消耗数；普通样本仅在解析成功判定后消耗。
+    /// 结算基础解析塔输入，返回成功投入与损毁的总消耗；失败样本回流。
     /// </summary>
     /// <param name="itemId">输入物品 ID。</param>
     /// <param name="count">本批输入数量。</param>
     /// <param name="seed">分馏随机种子。</param>
     /// <param name="sacrificeOutputCount">塔体献祭产出的源点数量。</param>
+    /// <param name="analysisSuccessCount">实际推进研究的成功投入数量，不包括损毁。</param>
     /// <returns>实际消耗数量；其余输入应保留增产点并回流。</returns>
     public static int ProcessAnalysisBatch(int itemId, int count, ref uint seed,
-        out int sacrificeOutputCount) {
+        out int sacrificeOutputCount, out int analysisSuccessCount) {
         sacrificeOutputCount = 0;
+        analysisSuccessCount = 0;
         if (count <= 0) { return 0; }
 
         if (Array.IndexOf(ItemManager.MainProgressMatrixIds, itemId) >= 0) {
@@ -471,7 +498,7 @@ public static partial class ResearchManager {
             }
             return count;
         }
-        if (itemId == IFE记忆源点) { return ProcessMemory(count) ? count : 0; }
+        if (itemId == IFE记忆源点) { return ProcessMemory(count, ref seed, out analysisSuccessCount); }
 
         bool advancedTower = FractionatorTowerCatalog.IsAdvancedTower(itemId);
         AnalysisRuntimeSnapshot runtimeSnapshot = Volatile.Read(ref analysisRuntimeSnapshot);
@@ -481,13 +508,18 @@ public static partial class ResearchManager {
             return count;
         }
 
-        int successCount = WorldviewRecipe.RollExpected(ref seed, count * 0.02d);
-        if (successCount <= 0) { return 0; }
+        if (!TryGetAnalysisProbabilities(itemId, out float successRatio, out float destroyRatio)) { return 0; }
+        // 同一随机偏移划分相邻区间，批量取整后成功与损毁仍互斥，总数不超过输入。
+        double roll = GetRandDouble(ref seed);
+        int successCount = (int)(count * (double)successRatio + roll);
+        int destroyedCount = (int)(count * ((double)successRatio + destroyRatio) + roll) - successCount;
+        if (successCount == 0 && destroyedCount == 0) { return 0; }
         List<int> bootstrapTowers = null;
         int consumed;
         lock (Sync) {
             string[] candidates = GetCandidateIdsUnsafe(itemId);
             if (!EligibleDirections.Contains(itemId) || candidates.Length == 0) { return 0; }
+            if (successCount == 0) { return destroyedCount; }
 
             int progress = GetDirectionProgressUnsafe(itemId);
             int remainingSuccesses = successCount;
@@ -495,7 +527,7 @@ public static partial class ResearchManager {
                 candidates = GetCandidateIdsUnsafe(itemId);
                 if (candidates.Length == 0) { progress = 0; break; }
 
-                // 预算按真正消耗的样本计；2% 判定只决定推进时机，不再吞掉失败输入。
+                // 内部预算按成功投入计；损毁额外消耗，未成功也未损毁的样本继续循环。
                 double progressPerSuccess = 10000d / candidates.Average(GetExpectedSampleCount);
                 int successesToComplete = Math.Max(1,
                     (int)Math.Ceiling((10000 - progress) / progressPerSuccess));
@@ -516,7 +548,8 @@ public static partial class ResearchManager {
             DirectionProgress[itemId] = GetCandidateIdsUnsafe(itemId).Length == 0
                 ? 0 : Math.Max(0, Math.Min(9999, progress));
             snapshotDirty = true;
-            consumed = successCount - remainingSuccesses;
+            analysisSuccessCount = successCount - remainingSuccesses;
+            consumed = analysisSuccessCount + destroyedCount;
         }
         // 先释放研究锁，再写库存；上传通知会反向进入研究域。
         if (bootstrapTowers != null) {

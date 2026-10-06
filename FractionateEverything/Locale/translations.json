@@ -1637,12 +1637,12 @@
     "1031": "Unterlagen wiederhergestellt",
     "1041": "資料復元済み"
   },
-  "拼合中 {0}/{1}": {
-    "enUS": "Reassembling {0}/{1}",
-    "zhCN": "拼合中 {0}/{1}",
-    "frFR": "Reconstitution {0}/{1}",
-    "1031": "Wiederherstellung {0}/{1}",
-    "1041": "復元中 {0}/{1}"
+  "FE.StageRecoveryPage.Progress": {
+    "enUS": "Reassembling {0:P1}",
+    "zhCN": "拼合中 {0:P1}",
+    "frFR": "Reconstitution {0:P1}",
+    "1031": "Wiederherstellung {0:P1}",
+    "1041": "復元中 {0:P1}"
   },
   "FE.StageRecoveryPage.Restored": {
     "enUS": "The scattered fragments have formed a complete schematic. The labs can study this knowledge further; the corresponding upgrade is now available in the tech tree.",
@@ -1652,11 +1652,25 @@
     "1041": "散らばった断片が完全な構造図になった。この知識は研究施設でさらに研究できる。対応する強化が技術ツリーに現れている。"
   },
   "FE.StageRecoveryPage.Recovering": {
-    "enUS": "The new matrix can read this record, but gaps remain. Feed Memory into a basic analysis tower to restore the missing pieces.\n\nReassembly progress: {0}/{1} Memory\n\nEvery Memory contributed counts; your progress is never wasted.",
-    "zhCN": "记录能被新矩阵辨认，内容却仍有缺口。将源点送入基础解析塔，就能一点点补上缺失的部分。\n\n拼合进度：{0}/{1} 份源点\n\n每一份源点都会被记住，进度不会白费。",
-    "frFR": "La nouvelle matrice peut lire cette archive, mais des lacunes subsistent. Envoyez des mémoires dans une tour d'analyse de base pour reconstituer les parties manquantes.\n\nProgression : {0}/{1} mémoires\n\nChaque mémoire apportée est conservée dans la progression ; rien n'est perdu.",
-    "1031": "Die neue Matrix kann diese Aufzeichnung lesen, doch es fehlen noch Teile. Führe einem einfachen Analyseturm Erinnerungen zu, um die Lücken zu schließen.\n\nFortschritt: {0}/{1} Erinnerungen\n\nJede eingesetzte Erinnerung zählt; kein Fortschritt geht verloren.",
-    "1041": "新しいマトリックスで読める記録にも、まだ空白がある。基礎解析塔に記憶コアを送れば、少しずつ欠けた部分を補える。\n\n復元進捗：記憶コア {0}/{1}個\n\n投入した記憶コアはすべて数えられ、進捗が無駄になることはない。"
+    "enUS": "The new matrix can read this record, but gaps remain. Feed Memory into a basic analysis tower to restore the missing pieces.\n\nReassembly progress: {0:P1}\n\nMemory is consumed only when analysis succeeds. Unsuccessful Memory flows out intact and can be looped back to the input.",
+    "zhCN": "记录能被新矩阵辨认，内容却仍有缺口。将源点送入基础解析塔，就能一点点补上缺失的部分。\n\n拼合进度：{0:P1}\n\n源点只在成功解析时消耗。未成功的源点会完整流出，接回入口可以继续循环解析。",
+    "frFR": "La nouvelle matrice peut lire cette archive, mais des lacunes subsistent. Envoyez des mémoires dans une tour d'analyse de base pour reconstituer les parties manquantes.\n\nProgression : {0:P1}\n\nLes mémoires ne sont consommées qu'en cas de réussite. Celles qui échouent ressortent intactes et peuvent être renvoyées vers l'entrée.",
+    "1031": "Die neue Matrix kann diese Aufzeichnung lesen, doch es fehlen noch Teile. Führe einem einfachen Analyseturm Erinnerungen zu, um die Lücken zu schließen.\n\nFortschritt: {0:P1}\n\nErinnerungen werden nur bei erfolgreicher Analyse verbraucht. Bei einem Fehlschlag fließen sie unbeschädigt heraus und können zum Eingang zurückgeführt werden.",
+    "1041": "新しいマトリックスで読める記録にも、まだ空白がある。基礎解析塔に記憶コアを送れば、少しずつ欠けた部分を補える。\n\n復元進捗：{0:P1}\n\n記憶コアは解析が成功したときだけ消費される。失敗したものは無傷で流れ出すため、入口に戻して再び解析できる。"
+  },
+  "FE.Analysis.Output": {
+    "enUS": "Analysis progress",
+    "zhCN": "解析进度",
+    "frFR": "Progression de l'analyse",
+    "1031": "Analysefortschritt",
+    "1041": "解析進捗"
+  },
+  "FE.Analysis.Destruction": {
+    "enUS": "Destruction {0}",
+    "zhCN": "损毁 {0}",
+    "frFR": "Destruction {0}",
+    "1031": "Zerstörung {0}",
+    "1041": "損壊 {0}"
   },
   "记忆献祭": {
     "enUS": "Memory Offering",

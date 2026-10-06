@@ -52,7 +52,7 @@ public static class TechnologyTreePatch {
     }
 
     /// <summary>
-    /// 科技方向解析完成后同时显示整行；已解锁节点和沙盒中前置已完成的后续节点也保持可见。
+    /// FE科技按自身发现或完成资格显现；沙盒沿用同一显隐规则。
     /// </summary>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(UITechNode), nameof(UITechNode.DetermineTechVisible))]
@@ -64,14 +64,7 @@ public static class TechnologyTreePatch {
             return true;
         }
 
-        GameHistoryData history = GameMain.history;
-        bool visible = !tech.IsObsolete
-                       && (GrowthTechnologyManager.IsTechnologyDiscovered(techId)
-                           || history != null
-                           && (history.TechUnlocked(techId)
-                               || GameMain.sandboxToolsEnabled
-                               && tech.PreTechs.Length > 0
-                               && tech.PreTechs.All(preTechId => history.TechUnlocked(preTechId))));
+        bool visible = IsTechnologyVisible(tech);
         tech.IsHiddenTech = !visible;
         __result = visible;
         if (visible) {
@@ -80,6 +73,52 @@ public static class TechnologyTreePatch {
             __instance._Close();
         }
         return false;
+    }
+
+    /// <summary>判断FE节点自身的显现资格，不预告尚未恢复的后续阶段。</summary>
+    /// <param name="tech">已注册的FE科技原型。</param>
+    /// <returns>节点是否应当显示。</returns>
+    private static bool IsTechnologyVisible(TechProto tech) => !tech.IsObsolete
+        && (GrowthTechnologyManager.IsTechnologyDiscovered(tech.ID)
+            || GameMain.history?.TechUnlocked(tech.ID) == true);
+
+    /// <summary>同步连接到FE科技的箭头与公共线段，隐藏目标不留下向外延伸的线。</summary>
+    /// <param name="__instance">刚完成原版连接布局的科技节点。</param>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UITechNode), nameof(UITechNode.UpdateConnDynamic))]
+    private static void UITechNode_UpdateConnDynamic_Postfix(UITechNode __instance) {
+        TechProto tech = __instance.techProto;
+        TechProto[] targets = tech?.postTechArray;
+        if (targets == null || __instance.arrows == null || __instance.connGroup == null) { return; }
+        bool managed = GrowthTechnologyManager.TryGetTechnologyContentId(tech.ID, out _)
+            || targets.Any(target => GrowthTechnologyManager.TryGetTechnologyContentId(target.ID, out _));
+        if (!managed) { return; }
+
+        bool anyVisible = false;
+        float bottom = __instance.inTrunk ? -22f : __instance.tree.zoomed2 > 0.01f ? -3f : -2f;
+        float top = 0f;
+        for (int i = 0; i < targets.Length && i < __instance.arrows.Length; i++) {
+            var arrow = __instance.arrows[i];
+            if (arrow == null) { continue; }
+            bool visible = __instance.tree.nodes.TryGetValue(targets[i].ID, out UITechNode targetNode)
+                && (GrowthTechnologyManager.TryGetTechnologyContentId(targets[i].ID, out _)
+                    ? IsTechnologyVisible(targets[i])
+                    : targetNode.active && arrow.gameObject.activeSelf);
+            arrow.gameObject.SetActive(visible);
+            if (!visible) { continue; }
+            anyVisible = true;
+            float y = arrow.anchoredPosition.y;
+            if (y > 0f) { y -= __instance.inTrunk ? 10f : 0f; }
+            if (y < 0f) { y -= __instance.inTrunk ? 12f : 2f; }
+            bottom = System.Math.Min(bottom, y);
+            top = System.Math.Max(top, y);
+        }
+        __instance.connGroup.gameObject.SetActive(anyVisible);
+        if (!anyVisible) { return; }
+        __instance.outputLine.gameObject.SetActive(true);
+        __instance.expandLine.anchoredPosition = new UnityEngine.Vector2(0f, top);
+        __instance.expandLine.sizeDelta = new UnityEngine.Vector2(
+            __instance.tree.zoomed2 > 0.01f ? 3f : 2f, top - bottom);
     }
 
     /// <summary>

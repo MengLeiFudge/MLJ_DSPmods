@@ -12,6 +12,8 @@ public static partial class ResearchManager {
     private static readonly int[] StageMatrices = [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵];
     private static readonly int[] StageMemoryBudgets = [10, 40, 120, 300, 600, 1200];
     private static readonly int[] SampleBudgets = [100, 200, 300, 1000, 3000, 8000, 20000];
+    /// <summary>源点阶段恢复的逐次成功概率；源点不损毁，失败继续流回。</summary>
+    private const float MemoryAnalysisSuccessRatio = 0.02f;
     private static readonly long[] StageMemoryInputs = new long[6];
     private static bool sacrificeUnlocked;
     private static long memoryMinute = -1;
@@ -54,16 +56,20 @@ public static partial class ResearchManager {
     /// <returns>矩阵物品身份。</returns>
     public static int GetStageMatrix(int stage) => StageMatrices[Math.Max(0, Math.Min(5, stage - 1))];
 
-    /// <summary>返回阶段恢复的期望 Memory 预算。</summary>
+    /// <summary>返回阶段恢复的内部成功投入需求，不向玩家公开数量。</summary>
     /// <param name="stage">矩阵阶段，1～6。</param>
-    /// <returns>长期期望投入量。</returns>
-    public static int GetStageMemoryBudget(int stage) => StageMemoryBudgets[Math.Max(0, Math.Min(5, stage - 1))];
+    /// <returns>完成恢复所需的成功源点数量。</returns>
+    private static int GetStageMemoryBudget(int stage) => StageMemoryBudgets[Math.Max(0, Math.Min(5, stage - 1))];
 
-    /// <summary>获取已实际投入某阶段的 Memory 数量，区别于期望成本。</summary>
+    /// <summary>返回当前阶段的恢复比例，界面只公开进度，不公开内部投入需求。</summary>
     /// <param name="stage">矩阵阶段，1～6。</param>
-    /// <returns>累计实际投入量。</returns>
-    public static long GetStageMemoryInputs(int stage) {
-        lock (Sync) { return StageMemoryInputs[Math.Max(0, Math.Min(5, stage - 1))]; }
+    /// <returns>恢复比例，范围0～1。</returns>
+    public static float GetStageRecoveryProgress(int stage) {
+        lock (Sync) {
+            int index = Math.Max(0, Math.Min(5, stage - 1));
+            return UnlockedContents.Contains(StageContentId(stage)) ? 1f
+                : Math.Min(1f, StageMemoryInputs[index] / (float)StageMemoryBudgets[index]);
+        }
     }
 
     /// <summary>由千塔剧情节点开放献祭，库存里程碑保留各类独立资格。</summary>
@@ -88,7 +94,7 @@ public static partial class ResearchManager {
 
     /// <summary>按内容自身的阶段取得普通样本预算，特质和塔体使用独立预算。</summary>
     /// <param name="contentId">配方或特质身份。</param>
-    /// <returns>完成一份内容所需的期望成功消耗数；失败回流不计入预算。</returns>
+    /// <returns>完成一份内容所需的期望成功投入数；流回和损毁不计入进度。</returns>
     public static int GetExpectedSampleCount(string contentId) {
         if (IsTraitContent(contentId)) { return 20000; }
         WorldviewRecipe recipe = RecipeManager.GetRecipe(contentId);
@@ -116,30 +122,43 @@ public static partial class ResearchManager {
         }
     }
 
-    /// <summary>处理 Memory：阶段按累计进度恢复，全部恢复后提供下一分钟增益。</summary>
-    /// <param name="count">本批实际输入数量。</param>
-    /// <returns>是否消耗输入。</returns>
-    private static bool ProcessMemory(int count) {
-        if (NebulaMultiplayerModAPI.IsClient) { return false; }
+    /// <summary>取得最低未恢复且已开放的源点阶段，与解析窗口共用资格判断。</summary>
+    /// <returns>矩阵阶段1～6；没有待恢复阶段时为0。</returns>
+    private static int GetPendingMemoryStage() {
+        for (int stage = 1; stage <= CurrentMatrixStage; stage++) {
+            if (!IsContentUnlocked(StageContentId(stage))) { return stage; }
+        }
+        return 0;
+    }
+
+    /// <summary>按概率恢复阶段资料，阶段完成后的多余成功源点回流。</summary>
+    /// <param name="count">本批通过数量。</param>
+    /// <param name="seed">分馏随机种子。</param>
+    /// <param name="analysisSuccessCount">实际计入阶段进度的源点数。</param>
+    /// <returns>实际消耗的源点数；献祭另按完整投入计。</returns>
+    private static int ProcessMemory(int count, ref uint seed, out int analysisSuccessCount) {
+        analysisSuccessCount = 0;
+        if (NebulaMultiplayerModAPI.IsClient) { return 0; }
         lock (Sync) {
-            for (int stage = 1; stage <= CurrentMatrixStage; stage++) {
-                string id = StageContentId(stage);
-                if (UnlockedContents.Contains(id)) { continue; }
-                StageMemoryInputs[stage - 1] = Math.Min(long.MaxValue - count, StageMemoryInputs[stage - 1]) + count;
-                // 与样本解析一致使用确定进度，避免几何分布让少数玩家投入数倍预算。
+            int stage = GetPendingMemoryStage();
+            if (stage > 0) {
+                long remaining = Math.Max(0L, GetStageMemoryBudget(stage) - StageMemoryInputs[stage - 1]);
+                int successes = WorldviewRecipe.RollExpected(ref seed, count * (double)MemoryAnalysisSuccessRatio);
+                analysisSuccessCount = (int)Math.Min(remaining, successes);
+                StageMemoryInputs[stage - 1] += analysisSuccessCount;
                 if (StageMemoryInputs[stage - 1] >= GetStageMemoryBudget(stage)) {
-                    // 阶段内容不是配方，不会返回原型塔奖励；若以后改为可能返回奖励，必须像 ProcessAnalysisBatch 一样在研究锁外发放。
-                    _ = UnlockContent(id);
+                    // 阶段内容没有实体原型奖励，完成后只开放本阶段科技资格。
+                    _ = UnlockContent(StageContentId(stage));
                     QueueNotification("FE.ResearchProgression.StageRestored".Translate());
                 }
-                snapshotDirty = true;
-                return true;
+                snapshotDirty |= analysisSuccessCount > 0;
+                return analysisSuccessCount;
             }
-            if (!SacrificeUnlocked) { return false; }
+            if (!SacrificeUnlocked) { return 0; }
             AdvanceMemoryMinute(GameMain.gameTick / 3600L);
             minuteMemoryCount = Math.Min(long.MaxValue - count, minuteMemoryCount) + count;
             snapshotDirty = true;
-            return true;
+            return count;
         }
     }
 

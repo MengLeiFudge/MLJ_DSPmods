@@ -195,7 +195,7 @@ public static class FractionatorWindow {
 
     private static void OnSlotClick(ProductSlot slot, int itemId) {
         UIFractionatorWindow target = sourceWindow ?? modWindow;
-        if (target == null) return;
+        if (target == null || itemId <= 0) return;
         HandleProductSlotClick(target, itemId, slot);
     }
 
@@ -1206,23 +1206,8 @@ public static class FractionatorWindow {
         if (advanced) {
             modWindow.speedText.text = fractionator.isWorking ? "生命反应中".Translate() : string.Empty;
         } else {
-            double fluidInputCountPerCargo = 1.0;
-            if (fractionator.fluidInputCount == 0) {
-                fractionator.fluidInputCargoCount = 0f;
-            } else {
-                fluidInputCountPerCargo = fractionator.fluidInputCargoCount > 1e-4
-                    ? fractionator.fluidInputCount / (double)fractionator.fluidInputCargoCount
-                    : 4.0;
-            }
-            double speed = consumerRatio
-                           * (fractionator.fluidInputCargoCount < MaxBeltSpeed
-                               ? fractionator.fluidInputCargoCount
-                               : MaxBeltSpeed)
-                           * fluidInputCountPerCargo
-                           * 60.0;
-            if (!fractionator.isWorking) {
-                speed = 0.0;
-            }
+            double speed = fractionator.isWorking && consumerRatio >= 0.1f
+                ? consumerRatio * GetBasicProcessingRate(fractionator) * 60d : 0d;
             modWindow.speedText.text = string.Format("次分馏每分".Translate(), Math.Round(speed));
         }
 
@@ -1267,8 +1252,15 @@ public static class FractionatorWindow {
         float recipeSuccessRatio = 0f;
         float destroyRatio = 0f;
         if (recipe != null && RecipeAvailabilityStore.IsAvailable(recipe)) {
-            recipeSuccessRatio = recipe.SuccessRatio * (1 + pointsBonus);
-            destroyRatio = recipe.DestroyRatio;
+            if (recipe.RecipeType == ERecipe.BasicAnalysis) {
+                ResearchManager.TryGetAnalysisProbabilities(fractionator.fluidId, out recipeSuccessRatio, out destroyRatio);
+                if (ResearchManager.GetAnalysisMode(fractionator.fluidId) == "献祭") {
+                    recipeSuccessRatio = FractionatorTowerCatalog.IsAdvancedTower(fractionator.fluidId) ? 0.02f : 1f;
+                }
+            } else {
+                recipeSuccessRatio = Math.Min(1f, recipe.SuccessRatio * (1 + pointsBonus));
+                destroyRatio = recipe.DestroyRatio;
+            }
         }
         UpdateUIElements(src, fractionator, recipe, recipeSuccessRatio, destroyRatio, hasFluid);
     }
@@ -1391,7 +1383,7 @@ public static class FractionatorWindow {
         bool hasCachedWidth = widthByFractionatorId.TryGetValue(fractionatorId, out float cachedWidth);
 
         if (!hasFluid) {
-            ApplyWindowSizeKeepingTopLeft(hasCachedWidth ? cachedWidth : 0f, AddHeight);
+            ApplyWindowSizeKeepingTopLeft(hasCachedWidth ? cachedWidth : 0f, 0f);
             if (_mainArrowText != null) _mainArrowText.gameObject.SetActive(false);
             if (_sideArrowText != null) _sideArrowText.gameObject.SetActive(false);
             if (_fluidArrowText != null) _fluidArrowText.gameObject.SetActive(false);
@@ -1410,7 +1402,14 @@ public static class FractionatorWindow {
         int mainCount = 0;
         float mainSuccessSum = 0f;
 
-        if (recipe != null && RecipeAvailabilityStore.IsAvailable(recipe)) {
+        bool isAnalysis = recipe?.RecipeType == ERecipe.BasicAnalysis;
+        bool hasResearch = isAnalysis
+            && ResearchManager.TryGetAnalysisProbabilities(fractionator.fluidId, out _, out _);
+        if (hasResearch) {
+            FillAnalysisSlot(mainSlots[0], recipeSuccessRatio);
+            mainSuccessSum = recipeSuccessRatio;
+            mainCount = 1;
+        } else if (recipe != null && RecipeAvailabilityStore.IsAvailable(recipe)) {
             foreach (var output in recipe.OutputMain) {
                 if (mainCount >= MaxMainSlots) break;
                 var pInfo = products.Find(p => p.itemId == output.OutputID && p.isMainOutput);
@@ -1425,7 +1424,7 @@ public static class FractionatorWindow {
 
         if (_mainArrowText != null) {
             _mainArrowText.gameObject.SetActive(mainCount > 0);
-            _mainArrowText.text = "主产物".Translate();
+            _mainArrowText.text = (hasResearch ? "FE.Analysis.Output" : "主产物").Translate();
             _mainArrowText.color = ProbColor;
         }
         if (_sideArrowText != null) { _sideArrowText.gameObject.SetActive(false); }
@@ -1447,7 +1446,8 @@ public static class FractionatorWindow {
                     $"<color=#{ColorUtility.ToHtmlStringRGBA(DestroyColor)}>{"配方未解锁".Translate()}</color>";
             } else {
                 bool hasDestroy = destroyRatio > 0f;
-                string destroyStr = hasDestroy ? destroyRatio.FormatP() : "";
+                string destroyStr = hasDestroy
+                    ? string.Format("FE.Analysis.Destruction".Translate(), destroyRatio.FormatP()) : "";
                 fluidRightText.text = hasDestroy
                     ? $"<color=#{ColorUtility.ToHtmlStringRGBA(DestroyColor)}>{destroyStr}</color>"
                     : "";
@@ -1470,7 +1470,10 @@ public static class FractionatorWindow {
         RefreshLayoutX(fluidY);
 
         if (fractionator.fluidId > 0) {
-            float fluidRatio = Mathf.Clamp01(1f - mainSuccessSum);
+            float fluidRatio = Mathf.Clamp01(1f - mainSuccessSum - destroyRatio);
+            if (isAnalysis && !hasResearch && ResearchManager.GetAnalysisMode(fractionator.fluidId) == "献祭") {
+                fluidRatio = 0f;
+            }
             FillFluidSlot(fluidSlot, fractionator.fluidId, fractionator.fluidOutputCount, fluidRatio);
             int fluidInc = fractionator.fluidOutputCount > 0 && fractionator.fluidOutputInc > 0
                 ? fractionator.fluidOutputInc / fractionator.fluidOutputCount
@@ -1480,6 +1483,27 @@ public static class FractionatorWindow {
                 for (int i = 0; i < fluidSlot.incArrows.Length; i++)
                     if (fluidSlot.incArrows[i] != null)
                         ((Behaviour)fluidSlot.incArrows[i]).enabled = (arrowLevel >= i + 1);
+            }
+        }
+    }
+
+    /// <summary>用原版研究站科研图标展示无实体的解析结果，不绑定物品身份和取物动作。</summary>
+    /// <param name="slot">复用的主产物显示槽。</param>
+    /// <param name="successRatio">当前样本的真实解析成功概率。</param>
+    private static void FillAnalysisSlot(ProductSlot slot, float successRatio) {
+        if (slot == null) { return; }
+        slot.go.SetActive(true);
+        slot.kind = ProductSlotKind.Main;
+        if (slot.button != null) { slot.button.data = 0; }
+        if (slot.icon != null) { slot.icon.sprite = UIRoot.instance.uiGame.labWindow.defaultTechIcon; }
+        if (slot.countText != null) { slot.countText.text = string.Empty; }
+        if (slot.probText != null) {
+            slot.probText.text = successRatio.FormatP();
+            slot.probText.color = ProbColor;
+        }
+        if (slot.incArrows != null) {
+            foreach (Image arrow in slot.incArrows) {
+                if (arrow != null) { arrow.enabled = false; }
             }
         }
     }
