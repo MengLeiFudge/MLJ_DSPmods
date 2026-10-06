@@ -51,6 +51,46 @@ public sealed class ResearchDirectionSnapshot(
     public int Progress { get; } = progress;
 }
 
+/// <summary>基础解析塔当前输入的用途；模式不参与存档持久化。</summary>
+public enum AnalysisMode {
+    /// <summary>没有可处理内容，输入原样流出。</summary>
+    Idle,
+    /// <summary>普通样本研究或源点阶段恢复。</summary>
+    Research,
+    /// <summary>残片广播解析。</summary>
+    FragmentBroadcast,
+    /// <summary>矩阵确定性扩容供料。</summary>
+    MatrixExpansion,
+    /// <summary>塔体献祭产生实体源点。</summary>
+    TowerSacrifice,
+    /// <summary>源点投入分钟献祭。</summary>
+    MemorySacrifice,
+}
+
+/// <summary>当前输入一次通过时的只读结果比例；三类结果互斥，取值为0～1。</summary>
+/// <param name="mode">当前输入用途。</param>
+/// <param name="successRatio">有效研究、供料或献祭产出的比例。</param>
+/// <param name="destroyRatio">被消耗但没有有效成果的比例。</param>
+/// <param name="flowRatio">原样流出的比例。</param>
+public readonly struct AnalysisOutcome(AnalysisMode mode, float successRatio, float destroyRatio, float flowRatio) {
+    /// <summary>当前工作模式。</summary>
+    public AnalysisMode Mode { get; } = mode;
+    /// <summary>成功推进或产生有效结果的比例。</summary>
+    public float SuccessRatio { get; } = successRatio;
+    /// <summary>无有效结果而消耗的比例。</summary>
+    public float DestroyRatio { get; } = destroyRatio;
+    /// <summary>原样流出的比例。</summary>
+    public float FlowRatio { get; } = flowRatio;
+    /// <summary>工作状态使用的本地化键，不包含未知研究结果。</summary>
+    public string ModeKey => Mode switch {
+        AnalysisMode.Research => "解析",
+        AnalysisMode.FragmentBroadcast => "广播解析",
+        AnalysisMode.MatrixExpansion => "FE.Storage.ExpansionMode",
+        AnalysisMode.TowerSacrifice or AnalysisMode.MemorySacrifice => "献祭",
+        _ => "待机",
+    };
+}
+
 /// <summary>
 /// 具体内容探索、物品共享解析槽和高级塔取得状态。
 /// </summary>
@@ -269,18 +309,29 @@ public static partial class ResearchManager {
         return true;
     }
 
-
-    /// <summary>返回解析塔对当前输入的工作模式，不公开未知内容。</summary>
-    /// <param name="itemId">当前输入。</param>
-    /// <returns>模式文案。</returns>
-    public static string GetAnalysisMode(int itemId) {
-        if (Array.IndexOf(ItemManager.MainProgressMatrixIds, itemId) >= 0) { return "FE.Storage.ExpansionMode"; }
-        if (itemId == IFE残片) { return "广播解析"; }
-        if (TryGetAnalysisProbabilities(itemId, out _, out _)) { return "解析"; }
-        if (SacrificeUnlocked && (itemId == IFE记忆源点 || FractionatorTowerCatalog.IsAdvancedTower(itemId))) {
-            return "献祭";
+    /// <summary>查询解析塔当前模式及互斥结果比例；界面不自行推断输入用途或概率。</summary>
+    /// <param name="itemId">当前输入物品身份。</param>
+    /// <returns>成功、损毁和原样流出比例；查询不会收料或推进研究。</returns>
+    public static AnalysisOutcome GetAnalysisOutcome(int itemId) {
+        if (Array.IndexOf(ItemManager.MainProgressMatrixIds, itemId) >= 0) {
+            bool canSupply = SubspaceExpansion.CanSupplyMatrix(itemId);
+            return new(AnalysisMode.MatrixExpansion, canSupply ? 1f : 0f, 0f, canSupply ? 0f : 1f);
         }
-        return "待机";
+        if (itemId == IFE残片) {
+            return ExplorationManager.PlanetDetectorUnlocked
+                ? new(AnalysisMode.FragmentBroadcast, 0.02f, 0.98f, 0f)
+                : new(AnalysisMode.FragmentBroadcast, 0f, 0f, 1f);
+        }
+        if (TryGetAnalysisProbabilities(itemId, out float successRatio, out float destroyRatio)) {
+            return new(AnalysisMode.Research, successRatio, destroyRatio, 1f - successRatio - destroyRatio);
+        }
+        if (SacrificeUnlocked) {
+            if (itemId == IFE记忆源点) { return new(AnalysisMode.MemorySacrifice, 1f, 0f, 0f); }
+            if (FractionatorTowerCatalog.IsAdvancedTower(itemId)) {
+                return new(AnalysisMode.TowerSacrifice, 0.02f, 0.98f, 0f);
+            }
+        }
+        return new(AnalysisMode.Idle, 0f, 0f, 1f);
     }
 
     /// <summary>
@@ -549,6 +600,10 @@ public static partial class ResearchManager {
                 ? 0 : Math.Max(0, Math.Min(9999, progress));
             snapshotDirty = true;
             analysisSuccessCount = successCount - remainingSuccesses;
+            if (remainingSuccesses > 0 && candidates.Length == 0) {
+                // 末批内容已经完成，未使用成功所对应的损毁也回流；长整数避免中间乘积溢出。
+                destroyedCount = (int)((long)destroyedCount * analysisSuccessCount / successCount);
+            }
             consumed = analysisSuccessCount + destroyedCount;
         }
         // 先释放研究锁，再写库存；上传通知会反向进入研究域。

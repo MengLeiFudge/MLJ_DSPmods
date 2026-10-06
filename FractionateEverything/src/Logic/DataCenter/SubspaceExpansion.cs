@@ -27,25 +27,46 @@ public static class SubspaceExpansion {
     /// <summary>是否已达到终极仓储任务要求的累计容量。</summary>
     public static bool UltimateQuestReady => CapacityScale >= UltimateRequiredScale;
 
+    /// <summary>查询当前档矩阵是否还有扩容供料空间；客户端读取同步状态，不执行收料。</summary>
+    /// <param name="itemId">矩阵物品身份。</param>
+    /// <returns>通信已恢复、仍可扩容且当前档缓存有空位时为true。</returns>
+    public static bool CanSupplyMatrix(int itemId) {
+        int stage = GetAcceptingMatrixStage(itemId);
+        if (stage < 0) { return false; }
+        lock (Sync) { return GetSupplyRoomUnsafe(stage) > 0; }
+    }
+
     /// <summary>收取本批矩阵作为全局扩容供料；多余输入由解析塔保留增产点回流。</summary>
     /// <param name="itemId">六种主线矩阵之一。</param>
     /// <param name="count">输入件数。</param>
     /// <returns>本次实际消费并转入供料缓存的件数。</returns>
     public static int SupplyMatrix(int itemId, int count) {
-        int stage = Array.IndexOf(ItemManager.MainProgressMatrixIds, itemId);
-        if (stage < 0 || count <= 0 || NebulaMultiplayerModAPI.IsClient
-            || !CivilizationRecoveryManager.HasDataCenterCommunication || GrowthTechnologyManager.UltimateCapacity) {
-            return 0;
-        }
+        if (count <= 0 || NebulaMultiplayerModAPI.IsClient) { return 0; }
+        int stage = GetAcceptingMatrixStage(itemId);
+        if (stage < 0) { return 0; }
         lock (Sync) {
-            if (capacityScale >= MaximumScale) { return 0; }
-            int accepted = Math.Min(count, SupplyLimit - Supplies[stage]);
+            int accepted = Math.Min(count, GetSupplyRoomUnsafe(stage));
             if (accepted <= 0) { return 0; }
             Supplies[stage] += accepted;
             snapshotDirty = true;
             return accepted;
         }
     }
+
+    /// <summary>在扩容锁外检查物品和玩法资格，避免通信查询反向取得探索锁。</summary>
+    /// <param name="itemId">输入物品身份。</param>
+    /// <returns>可接收的矩阵档位；身份无效、通信未恢复或终极仓储已完成时为-1。</returns>
+    private static int GetAcceptingMatrixStage(int itemId) {
+        int stage = Array.IndexOf(ItemManager.MainProgressMatrixIds, itemId);
+        return stage >= 0 && CivilizationRecoveryManager.HasDataCenterCommunication
+               && !GrowthTechnologyManager.UltimateCapacity ? stage : -1;
+    }
+
+    /// <summary>在持有扩容锁时读取本档可收取件数；达到倍率上限后停止收料。</summary>
+    /// <param name="stage">已经通过资格检查的矩阵档位，范围0～5。</param>
+    /// <returns>本档剩余供料空间。</returns>
+    private static int GetSupplyRoomUnsafe(int stage) =>
+        capacityScale >= MaximumScale ? 0 : SupplyLimit - Supplies[stage];
 
     /// <summary>主机按游戏秒消费最高档供料，精确积分容量曲线，不追补离线或跳过的时间。</summary>
     /// <param name="gameTick">60刻每秒的原版游戏时钟。</param>

@@ -1126,6 +1126,13 @@
     "1031": "{0}: Bestand {1:N0} / Kapazität {2}",
     "1041": "{0}：在庫 {1:N0} / 容量 {2}"
   },
+  "FE.Storage.ExpansionSupply": {
+    "enUS": "Expansion supply",
+    "zhCN": "扩容供料",
+    "frFR": "Approvisionnement d'extension",
+    "1031": "Erweiterungszufuhr",
+    "1041": "拡張用供給"
+  },
   "FE.Storage.ExpansionMode": {
     "enUS": "Matrix expansion",
     "zhCN": "矩阵扩容",
@@ -1939,11 +1946,11 @@
     "1041": "基礎解析塔"
   },
   "FE.UsageGuidePage.Analysis": {
-    "enUS": "The incomplete records identify several samples. Sending them into an analysis tower may reveal something unusual…\n\nIn Research / Analysis Samples, choose an item already mentioned in the records. Connect a basic analysis tower to power, feed samples into its side, and loop the flow output on the opposite side back to the input.\n\nMost samples leave intact; only successful analyses consume a small number. You can build other production lines while watching the panel's progress.",
-    "zhCN": "残缺的记录留下了几种样本。将它们送进解析塔，也许就能发现一些奇特的东西……\n\n先在“研究 / 解析样本”里选一种已有记录的物品。给基础解析塔接通电网，从侧面送入样本，再将另一侧的流动出口接回输入，形成循环。\n\n大多数样本会完整地流出；只有解析成功时，才会消耗少量样本。可以一边建设其他产线，一边留意面板中的进度。",
-    "frFR": "Les archives incomplètes désignent plusieurs échantillons. Les envoyer dans une tour d'analyse pourrait révéler des choses étranges…\n\nDans Recherche / Échantillons à analyser, choisissez un objet déjà mentionné. Alimentez une tour d'analyse de base en électricité, introduisez les échantillons par le côté et reliez la sortie en circulation de l'autre côté à l'entrée.\n\nLa plupart des échantillons ressortent intacts ; seules les analyses réussies en consomment quelques-uns. Vous pouvez construire d'autres chaînes tout en surveillant la progression.",
-    "1031": "Die lückenhaften Aufzeichnungen nennen mehrere Proben. Im Analyseturm könnten sie etwas Ungewöhnliches enthüllen …\n\nWähle unter Forschung / Analyseproben einen bereits erwähnten Gegenstand. Versorge einen einfachen Analyseturm mit Strom, führe die Proben seitlich zu und verbinde den Durchflussausgang auf der Gegenseite wieder mit dem Eingang.\n\nDie meisten Proben verlassen den Turm unversehrt; nur erfolgreiche Analysen verbrauchen eine kleine Menge. Währenddessen kannst du andere Anlagen bauen und den Fortschritt im Fenster verfolgen.",
-    "1041": "不完全な記録には、いくつかのサンプルが示されている。解析塔に送れば、不思議なものが見つかるかもしれない……\n\n「研究 / 解析サンプル」で記録のあるアイテムを選ぼう。基礎解析塔に電力をつなぎ、側面からサンプルを入れ、反対側の循環出口を入口に戻してループを作る。\n\nほとんどのサンプルはそのまま流れ出て、解析に成功したときだけ少量消費される。他のラインを作りながら、画面の進捗を確認するとよい。"
+    "enUS": "The incomplete records identify several samples. Sending them into an analysis tower may reveal something unusual…\n\nIn Research / Analysis Samples, choose an item already mentioned in the records. Connect a basic analysis tower to power, feed samples into its side, and loop the flow output on the opposite side back to the input.\n\nMost samples leave intact. Both successful analysis and destruction consume samples; higher-value samples are less likely to succeed and more likely to be destroyed. You can build other production lines while watching the panel's progress.",
+    "zhCN": "残缺的记录留下了几种样本。将它们送进解析塔，也许就能发现一些奇特的东西……\n\n先在“研究 / 解析样本”里选一种已有记录的物品。给基础解析塔接通电网，从侧面送入样本，再将另一侧的流动出口接回输入，形成循环。\n\n大多数样本会完整地流出；解析成功和损毁都会消耗样本。样本价值越高，解析成功率越低，也越容易损毁。可以一边建设其他产线，一边留意面板中的进度。",
+    "frFR": "Les archives incomplètes désignent plusieurs échantillons. Les envoyer dans une tour d'analyse pourrait révéler des choses étranges…\n\nDans Recherche / Échantillons à analyser, choisissez un objet déjà mentionné. Alimentez une tour d'analyse de base en électricité, introduisez les échantillons par le côté et reliez la sortie en circulation de l'autre côté à l'entrée.\n\nLa plupart des échantillons ressortent intacts. Une analyse réussie comme une destruction consomme des échantillons ; plus leur valeur est élevée, plus la réussite est rare et la destruction probable. Vous pouvez construire d'autres chaînes tout en surveillant la progression.",
+    "1031": "Die lückenhaften Aufzeichnungen nennen mehrere Proben. Im Analyseturm könnten sie etwas Ungewöhnliches enthüllen …\n\nWähle unter Forschung / Analyseproben einen bereits erwähnten Gegenstand. Versorge einen einfachen Analyseturm mit Strom, führe die Proben seitlich zu und verbinde den Durchflussausgang auf der Gegenseite wieder mit dem Eingang.\n\nDie meisten Proben verlassen den Turm unversehrt. Erfolgreiche Analysen und Zerstörung verbrauchen Proben; je wertvoller eine Probe ist, desto geringer ist ihre Erfolgschance und desto höher ihr Zerstörungsrisiko. Währenddessen kannst du andere Anlagen bauen und den Fortschritt im Fenster verfolgen.",
+    "1041": "不完全な記録には、いくつかのサンプルが示されている。解析塔に送れば、不思議なものが見つかるかもしれない……\n\n「研究 / 解析サンプル」で記録のあるアイテムを選ぼう。基礎解析塔に電力をつなぎ、側面からサンプルを入れ、反対側の循環出口を入口に戻してループを作る。\n\nほとんどのサンプルはそのまま流れ出るが、解析成功時と損壊時には消費される。価値が高いサンプルほど解析成功率が下がり、損壊しやすくなる。他のラインを作りながら、画面の進捗を確認するとよい。"
   },
   "循着回声寻找": {
     "enUS": "Follow the Echo",
