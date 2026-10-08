@@ -22,6 +22,12 @@ public static class FractionatorBriefInfoPatch {
         if (entityData.fractionatorId > 0) {
             int fractionatorId = entityData.fractionatorId;
             FractionatorComponent fractionator = _factory.factorySystem.fractionatorPool[fractionatorId];
+            if (FractionatorTowerCatalog.IsAdvancedTower(entityData.protoId)) {
+                AdvancedFractionatorState state = AdvancedFractionatorRuntime.GetState(_factory, fractionatorId);
+                if (state == null) { __instance.reading0 = 0d; }
+                else { lock (state) { __instance.reading0 = state.ProcessingRate * 60d; } }
+                return;
+            }
             int fluidId = fractionator.fluidId;
             int productId = fractionator.productId;
             if (fluidId > 0 && productId > 0) {

@@ -20,6 +20,32 @@ public static class LivingTowerPatches {
         return false;
     }
 
+    /// <summary>评分被本域排除的塔不进入机甲和基站的候选表，避免原版把零维修者的负需求提升到1。</summary>
+    /// <param name="value2">由GetRepairValue给出的候选评分。</param>
+    /// <returns>正常建筑继续插入候选表。</returns>
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(ConstructionModuleComponent), nameof(ConstructionModuleComponent.InsertRepairTarget))]
+    private static bool ConstructionModule_InsertRepairTarget_Prefix(float value2) => value2 != float.MinValue;
+
+    /// <summary>出动前清除旧存档保留的生命塔候选及分配，机甲与战场分析基站共用此入口。</summary>
+    /// <param name="__instance">本次准备出动的建造模块。</param>
+    /// <param name="factory">模块所在星球。</param>
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(ConstructionModuleComponent), nameof(ConstructionModuleComponent.PreLaunchDrone))]
+    private static void ConstructionModule_PreLaunchDrone_Prefix(ConstructionModuleComponent __instance,
+        PlanetFactory factory) {
+        if (__instance.repairTargets == null) { return; }
+        for (int i = __instance.repairTargets.Length - 1; i >= 0; i--) {
+            int id = __instance.repairTargets[i].objectId;
+            if (id <= 0 || id >= factory.constructionSystem.constructStats.buffer.Length) { continue; }
+            ref ConstructStat stat = ref factory.constructionSystem.constructStats.buffer[id];
+            if (!IsAdvancedTowerEntity(factory, stat.entityId)) { continue; }
+            stat.repairerModuleId = 0;
+            stat.repairerValue = 0f;
+            __instance.RemoveRepairTarget(id);
+        }
+    }
+
     /// <summary>
     /// 禁止高级塔申请维修无人机。
     /// </summary>
@@ -43,6 +69,11 @@ public static class LivingTowerPatches {
         int entityId, ref bool __result) {
         if (!IsAdvancedTowerEntity(__instance.factory, entityId)) {
             return true;
+        }
+        int id = __instance.factory.entityPool[entityId].constructStatId;
+        if (id > 0 && id < __instance.constructStats.buffer.Length) {
+            ref ConstructStat stat = ref __instance.constructStats.buffer[id];
+            if (stat.repairerCount > 0) { stat.repairerCount--; }
         }
         __result = true;
         return false;

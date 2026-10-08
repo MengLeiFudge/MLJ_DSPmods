@@ -50,14 +50,15 @@ public static class FractionatorManager {
     /// 按当前全局堆叠刷新分馏塔原型和已放置分馏塔的缓存上限。
     /// </summary>
     /// <remarks>
-    /// <para>五座 FE 塔的三项上限都是 20 堆；原版分馏塔输入固定 40 堆，两项输出为 20 堆。</para>
+    /// <para>高级塔输入为40堆件数，基础塔输入为20堆件数；原版输入按40个货物计，两项输出均为20堆件数。</para>
     /// <para>FE 塔运行时直接读当前上限，这些原版字段供原版逻辑、窗口和生产统计读取。</para>
     /// </remarks>
     public static void SetFractionatorCacheSize() {
         foreach (ModelProto modelProto in LDB.models.dataArray) {
             if (modelProto.prefabDesc.isFractionator) {
                 modelProto.prefabDesc.fracFluidInputMax =
-                    GetFluidInputMax(FractionatorTowerCatalog.IsActiveFractionatorModel(modelProto.ID));
+                    GetFluidInputMax(FractionatorTowerCatalog.IsActiveFractionatorModel(modelProto.ID),
+                        modelProto.ID is MFE高级矿物塔 or MFE高级交互塔 or MFE高级转化塔);
                 modelProto.prefabDesc.fracProductOutputMax = BufferCapacity;
                 modelProto.prefabDesc.fracFluidOutputMax = BufferCapacity;
             }
@@ -102,7 +103,8 @@ public static class FractionatorManager {
             int entityId = fractionator.entityId;
             bool activeFractionator = entityId > 0 && entityId < entityPool.Length
                 && FractionatorTowerCatalog.IsActiveFractionator(entityPool[entityId].protoId);
-            fractionator.fluidInputMax = GetFluidInputMax(activeFractionator);
+            fractionator.fluidInputMax = GetFluidInputMax(activeFractionator,
+                activeFractionator && FractionatorTowerCatalog.IsAdvancedTower(entityPool[entityId].protoId));
             fractionator.productOutputMax = BufferCapacity;
             fractionator.fluidOutputMax = BufferCapacity;
         }
@@ -112,16 +114,16 @@ public static class FractionatorManager {
     /// 返回原版字段 fluidInputMax 应写入的值。
     /// </summary>
     /// <param name="activeFractionator">是否为五座 FE 塔之一。</param>
-    /// <returns>FE 塔为件数上限（20 堆），原版塔为堆数上限（40 堆）。</returns>
-    private static int GetFluidInputMax(bool activeFractionator) =>
-        activeFractionator ? BufferCapacity : VanillaFluidInputCargoMax;
+    /// <param name="advanced">是否为高级塔。</param>
+    /// <returns>高级/基础塔为40/20堆件数，原版塔为40个货物。</returns>
+    private static int GetFluidInputMax(bool activeFractionator, bool advanced) =>
+        advanced ? AdvancedFractionatorRuntime.InputCapacity : activeFractionator ? BufferCapacity : VanillaFluidInputCargoMax;
 
     /// <summary>
-    /// 返回流动输入缓存上限：20 堆 × 当前全局堆叠。
+    /// 返回FE流动输入共享件数上限：高级塔40堆，基础塔20堆。
     /// </summary>
-    public static int FluidInputCargoMax(this ItemProto fractionator) {
-        return BufferCapacity;
-    }
+    public static int FluidInputCargoMax(this ItemProto fractionator) =>
+        FractionatorTowerCatalog.IsAdvancedTower(fractionator.ID) ? AdvancedFractionatorRuntime.InputCapacity : BufferCapacity;
 
     /// <summary>
     /// 返回产物输出缓存上限：20 堆 × 当前全局堆叠。

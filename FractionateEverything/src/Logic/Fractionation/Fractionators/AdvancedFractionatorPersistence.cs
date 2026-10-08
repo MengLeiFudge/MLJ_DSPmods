@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using FE.Logic.Enhancements.Stacking;
 using FE.Logic.Fractionation.Recipes;
 using UnityEngine;
 
@@ -24,6 +25,7 @@ public static partial class AdvancedFractionatorRuntime {
     /// <param name="writer">存档或加入时的完整快照。</param>
     public static void Export(BinaryWriter writer) {
         var pairs = States.OrderBy(pair => pair.Key.planetId).ThenBy(pair => pair.Key.fractionatorId).ToArray();
+        writer.Write(-2); // 负数头区分旧版非负实例数量；版本2增加真实货物堆数和速率。
         writer.Write(pairs.Length);
         foreach (var pair in pairs) {
             lock (pair.Value) { WriteState(writer, pair.Key, pair.Value); }
@@ -46,6 +48,7 @@ public static partial class AdvancedFractionatorRuntime {
             writer.Write(key.planetId);
             writer.Write(key.fractionatorId);
         }
+        writer.Write(-2);
         writer.Write(changed.Length);
         foreach (var pair in changed) {
             lock (pair.Value) {
@@ -96,7 +99,12 @@ public static partial class AdvancedFractionatorRuntime {
     /// <param name="reader">由数量和实例记录组成的数据。</param>
     /// <param name="seen">完整快照的存活集合；增量及存档读取传 null。</param>
     private static void ReadStates(BinaryReader reader, HashSet<(int planetId, int fractionatorId)> seen) {
-        int count = ReadStateCount(reader);
+        int header = reader.ReadInt32();
+        bool hasCargo = header == -2;
+        int count = hasCargo ? ReadStateCount(reader) : header;
+        if (count < 0 || count > MaximumStateCount) {
+            throw new InvalidDataException($"Invalid advanced fractionator state header: {header}");
+        }
         for (int i = 0; i < count; i++) {
             var key = (planetId: reader.ReadInt32(), fractionatorId: reader.ReadInt32());
             bool valid = key.planetId > 0 && key.fractionatorId > 0;
@@ -123,6 +131,35 @@ public static partial class AdvancedFractionatorRuntime {
                 RemoveNonFoodEntries(state.Foods, state.FoodInc);
                 ClampIncDictionary(state.FoodInc, state.Foods);
                 ClampIncDictionary(state.FlowOutputInc, state.FlowOutputs);
+                state.InputCargo.Clear();
+                if (hasCargo) {
+                    int cargoCount = reader.ReadInt32();
+                    if (cargoCount < 0 || cargoCount > MaximumDictionaryEntryCount) {
+                        throw new InvalidDataException($"Invalid input cargo count: {cargoCount}");
+                    }
+                    for (int j = 0; j < cargoCount; j++) {
+                        int itemId = reader.ReadInt32();
+                        double cargo = reader.ReadDouble();
+                        int items = GetCount(state.Inputs, itemId);
+                        if (items > 0 && !double.IsNaN(cargo) && !double.IsInfinity(cargo) && cargo > 0d) {
+                            state.InputCargo[itemId] = Math.Max(items / (double)StackingManager.AbsoluteMaxStack,
+                                Math.Min(items, cargo));
+                        }
+                    }
+                    double rate = reader.ReadDouble();
+                    state.ProcessingRate = double.IsNaN(rate) || double.IsInfinity(rate) ? 0d : Math.Max(0d, Math.Min(900d, rate));
+                    double remainder = reader.ReadDouble();
+                    state.ProgressRemainder = double.IsNaN(remainder) || double.IsInfinity(remainder)
+                        ? 0d : Math.Max(0d, Math.Min(1d, remainder));
+                } else {
+                    state.ProcessingRate = 0d;
+                    state.ProgressRemainder = 0d;
+                }
+                // 旧版没有货物数证据，按单件一堆恢复；真实带入后自然替换。库存超出新共享上限时保留并停止收料。
+                foreach (var pair in state.Inputs) {
+                    if (!state.InputCargo.ContainsKey(pair.Key)) { state.InputCargo[pair.Key] = pair.Value; }
+                }
+                if (!hasCargo) { MoveUnprocessedInputs(state, recipe); }
             }
             if (valid) { seen?.Add(key); }
         }
@@ -148,5 +185,12 @@ public static partial class AdvancedFractionatorRuntime {
         WriteDictionary(writer, state.Products);
         WriteDictionary(writer, state.FlowOutputs);
         WriteDictionary(writer, state.FlowOutputInc);
+        writer.Write(state.InputCargo.Count);
+        foreach (var pair in state.InputCargo.OrderBy(pair => pair.Key)) {
+            writer.Write(pair.Key);
+            writer.Write(pair.Value);
+        }
+        writer.Write(state.ProcessingRate);
+        writer.Write(state.ProgressRemainder);
     }
 }

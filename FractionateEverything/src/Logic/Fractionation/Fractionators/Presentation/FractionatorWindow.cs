@@ -920,7 +920,7 @@ public static class FractionatorWindow {
         }
         if (quickMove) {
             int addedToPackage = player.TryAddItemToPackage(
-                itemId, removedCount, removedInc, throwTrash: false);
+                itemId, removedCount, removedInc, throwTrash: true);
             if (addedToPackage > 0) {
                 UIItemup.Up(itemId, addedToPackage);
             }
@@ -962,7 +962,7 @@ public static class FractionatorWindow {
             return false;
         }
         if (quickMove) {
-            int addedToPackage = player.TryAddItemToPackage(itemId, taken, takenInc, throwTrash: false);
+            int addedToPackage = player.TryAddItemToPackage(itemId, taken, takenInc, throwTrash: true);
             if (addedToPackage > 0) {
                 UIItemup.Up(itemId, addedToPackage);
             }
@@ -1021,7 +1021,7 @@ public static class FractionatorWindow {
 
     private static void UpdateAdvancedPowerDisplay(UIFractionatorWindow src, AdvancedFractionatorState state) {
         string text = string.Format("当前营养：{0} / {1}".Translate(),
-            state?.Nutrition.ToString("0.0") ?? "0.0", AdvancedFractionatorRuntime.MaximumNutrition.ToString("0"));
+            Math.Floor(state?.Nutrition ?? 0d).ToString("0"), AdvancedFractionatorRuntime.MaximumNutrition.ToString("0"));
         src.powerText.text = text;
         src.powerText.color = state != null && state.Nutrition > 0f ? src.powerNormalColor : src.powerOffColor;
         src.powerIcon.color = Color.clear;
@@ -1211,7 +1211,9 @@ public static class FractionatorWindow {
         }
 
         if (advanced) {
-            modWindow.speedText.text = fractionator.isWorking ? "生命反应中".Translate() : string.Empty;
+            double speed;
+            lock (advancedState) { speed = advancedState.ProcessingRate * 60d; }
+            modWindow.speedText.text = string.Format("次分馏每分".Translate(), Math.Round(speed));
         } else {
             double speed = fractionator.isWorking && consumerRatio >= 0.1f
                 ? consumerRatio * GetBasicProcessingRate(fractionator) * 60d : 0d;

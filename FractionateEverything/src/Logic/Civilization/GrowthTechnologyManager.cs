@@ -136,6 +136,8 @@ public static class GrowthTechnologyManager {
             ConfigureGrowthTech(tech, techLevel, !experienced && level == 4 ? 4 : techLevel, previousTech,
                 [MatrixItems[stage]], cost);
             tech.Position = GetTechPosition(10, stage - 1);
+            // 深空来敌元驱动链占据y=-107；上移两行，在两条链之间保留一行空白。
+            if (TheyComeFromVoid.Enable) { tech.Position += new Vector2(0f, 8f); }
             if (!experienced && level == 4) {
                 tech.LevelCoef1 = (StandardStackCosts[4] - cost) * MatrixHashPerItem[stage];
                 tech.HashNeeded -= (long)tech.Level * tech.LevelCoef1;
