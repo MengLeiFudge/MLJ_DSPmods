@@ -17,6 +17,16 @@ public enum WorldviewRecipeKind {
     Replacement,
 }
 
+/// <summary>生产配方的取得方式，与塔型和生产概率独立。</summary>
+public enum RecipeUnlockTier {
+    /// <summary>对应矩阵科技研究完成后恢复。</summary>
+    Common,
+    /// <summary>以唯一实物样本概率解析。</summary>
+    Rare,
+    /// <summary>由高级残页或持续献祭恢复。</summary>
+    Legendary,
+}
+
 /// <summary>
 /// 定义一项高级配方输入。消耗概率只在成功轮次结算。
 /// </summary>
@@ -57,6 +67,12 @@ public sealed class WorldviewRecipe : BaseRecipe {
 
     /// <summary>配方所属矩阵阶段，0 为开局，1～6 为蓝至白。</summary>
     public int ResearchStage { get; set; }
+
+    /// <summary>稳定目录对应的研究层级；基础解析是处理入口，不参与解锁。</summary>
+    public RecipeUnlockTier UnlockTier => Kind is WorldviewRecipeKind.BasicMineral or WorldviewRecipeKind.TowerCultivation
+        ? RecipeUnlockTier.Common
+        : Kind == WorldviewRecipeKind.EmbryoBreeding || StableId == "mineral-memory:1016"
+            ? RecipeUnlockTier.Legendary : RecipeUnlockTier.Rare;
 
     /// <summary>跨存档、蓝图和联机稳定的配方整数 ID。</summary>
     public int PersistentId { get; }
@@ -175,6 +191,15 @@ public sealed class WorldviewRecipe : BaseRecipe {
         }
 
         if (Kind == WorldviewRecipeKind.BasicAnalysis) {
+            if (ResearchManager.TryDisassemble(InputID, batchCount, ref seed, out var sample)) {
+                if (sample.Count > 0) { outputs.Add(true, sample.ItemId, sample.Count); }
+                fluidInputInc -= fluidInputIncAvg * batchCount;
+                return new FractionationBatchResult {
+                    InputRemoveCount = batchCount,
+                    ConsumedRegisterCount = batchCount,
+                    SuccessCount = sample.Count,
+                };
+            }
             int consumedCount = ResearchManager.ProcessAnalysisBatch(InputID, batchCount, ref seed,
                 out int sacrificeOutputCount, out int analysisSuccessCount);
             int returnedCount = batchCount - consumedCount;

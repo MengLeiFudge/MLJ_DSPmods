@@ -248,7 +248,9 @@ public static class ItemInteraction {
         var expansion = SubspaceExpansion.GetStatus();
         string supply = expansion.MatrixId == 0 ? "FE.Storage.Paused".Translate()
             : string.Format("FE.Storage.Expanding".Translate(), LDB.items.Select(expansion.MatrixId)?.name ?? "?", expansion.Rate);
-        _capacityText.text = (hoveredItemId > 0
+        _capacityText.text = (hoveredItemId > 0 && IsItemFull(hoveredItemId) && !GrowthTechnologyManager.UltimateCapacity
+            ? "FE.Storage.FullHint".Translate()
+            : hoveredItemId > 0
             ? string.Format("FE.Storage.ItemCapacity".Translate(), LDB.items.Select(hoveredItemId)?.name ?? "?", GetModDataItemCount(hoveredItemId),
                 GrowthTechnologyManager.UltimateCapacity ? "∞" : GetItemCapacity(hoveredItemId).ToString("N0"))
             : GrowthTechnologyManager.UltimateCapacity ? "亚空间容量：无限".Translate()

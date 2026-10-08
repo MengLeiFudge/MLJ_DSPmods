@@ -1,4 +1,84 @@
 {
+  "FE.Encyclopedia.Title": {
+    "enUS": "Encyclopedia",
+    "zhCN": "百科"
+  },
+  "FE.Encyclopedia.Summary": {
+    "enUS": "Restore damaged entries through matrix progress or pages from advanced relics.",
+    "zhCN": "矩阵科技与高级遗迹中的残页，能逐步拼回损坏的文字。"
+  },
+  "FE.Encyclopedia.Readable": {
+    "enUS": "Restored",
+    "zhCN": "已恢复"
+  },
+  "FE.Encyclopedia.Damaged": {
+    "enUS": "Damaged text",
+    "zhCN": "文字损坏"
+  },
+  "FE.Encyclopedia.Locked": {
+    "enUS": "#?% / ??? / %?#\n\nRecover the first relic, advance matrix technology or collect ancient pages to read this entry.",
+    "zhCN": "#?% / ??? / %?#\n\n寻找首个遗物、推进矩阵科技，或回收远古残页后，可以逐步辨认内容。"
+  },
+  "FE.Encyclopedia.PageRecovered": {
+    "enUS": "Recovered an ancient page. Part of the encyclopedia is now readable.",
+    "zhCN": "回收了一份远古残页，百科中的一部分文字已经恢复。"
+  },
+  "FE.Encyclopedia.LegendaryRecovered": {
+    "enUS": "An ancient page restored a legendary recipe: {0}",
+    "zhCN": "远古残页恢复了传说配方：{0}"
+  },
+  "FE.Encyclopedia.LegendaryTitle": {
+    "enUS": "What the pages remember",
+    "zhCN": "残页记得的事"
+  },
+  "FE.Encyclopedia.Analysis": {
+    "enUS": "Common mineral replication and tower cultivation follow matrix technology. Rare recipes require samples. In Research / Analysis Samples, find a known sample, power a basic analysis tower, feed it through a side port and loop the opposite output back. Successful research and destruction consume samples; intact samples retain proliferator points.\n\nWithout pending research, an eligible rare recipe's main product can be disassembled. Each item is consumed, with a 1% chance to produce a sample and reveal its record. Samples leave through the front port. Known research takes priority; after all related recipes are restored, disassembly stops.\n\nAfter researching energy matrices, continuously feed circuit boards for an early sample supply: each board has a 0.1% chance to yield one available replacement research sample and reveal its clue. Preparation stops when all related recipes are restored.",
+    "zhCN": "普通矿物复制与塔体培育随矩阵科技开放，稀有配方需要样本。在“研究 / 解析样本”中选择已有线索的样本，给基础解析塔供电，从侧面送入，将另一侧流出接回输入循环。成功研究和损毁都消耗样本，完整流回的样本保留增产点。\n\n无待解析线索时，可将当前阶段稀有配方的主产物送入解析塔分解。每件都会消耗，有1%概率产出一件对应样本，并发现线索。样本从正面输出；已有线索时优先研究，相关配方全部恢复后停止分解。\n\n红矩阵科技研究完成后，可持续投入电路板低效制样：每件0.1%概率得到一份当前阶段的置换研究样本，并记录线索。相关配方全部恢复后停止制样。"
+  },
+  "FE.Encyclopedia.Explore": {
+    "enUS": "The detector separates ordinary, story and advanced signals. Follow a rising reading; at 100% you are within recovery range. Approach on foot or at low hover altitude.\n\nRocky planets have 6–8 low-level silent relics. Their supplies support industry without Dark Fog combat. Advanced relics may contain pages. Each planet holds at most five ordinary broadcasts, with at least one minute between new broadcasts. Fragment analysis obeys both limits; story signals are separate.\n\nRewards go to subspace. Review brief tips in Guidance / Message Log, and past locations in Exploration / Location Archive.",
+    "zhCN": "探测器分别显示普通、主线和高级信号。沿读数增强的方向寻找，达到100%即进入回收范围；步行或低空悬浮接近即可。\n\n岩石星球有6～8个低级静默点，补给能支持不开黑雾的工业起步。高级遗迹可能留下残页。每颗星球同时最多5个普通广播，新广播至少间隔1分钟，残片解析也受此限制，主线不占名额。\n\n奖励存入亚空间，短暂提示可在“指引 / 消息日志”回看，地点记录在“探索 / 地点档案”。"
+  },
+  "FE.Encyclopedia.Storage": {
+    "enUS": "Each item has its own capacity. To expand subspace, power a basic analysis tower and feed science matrices into a side port. All towers share a buffer of 60 per tier and consume at most one matrix per second for expansion. Higher tiers expand faster; growth slows as capacity rises.\n\nMatrices that cannot enter the buffer are consumed as offerings, with a 0.2% chance per item to produce one Memory at the front port. Reserve enough matrices for science and feeding living towers. Relic rewards may exceed normal capacity and can still be withdrawn.",
+    "zhCN": "每种物品独立计容量。满仓时，给基础解析塔供电，从侧面投入科学矩阵即可扩容。全部塔共享每档60件供料，每秒最多使用1件扩容；高档矩阵更快，已有容量越大增长越慢。\n\n未能进入扩容缓存的过量矩阵会被献祭，每件有0.2%概率从正面产出1源点。请为正常科研与生命塔供养保留足够矩阵。探索奖励可突破普通容量，仍能正常取出。"
+  },
+  "FE.Encyclopedia.Mineral": {
+    "enUS": "After the first relic, researching electromagnetic matrices restores common mineral replication. Power a basic mineral tower, feed minerals from a side and loop the opposite output back. Products leave at the front.\n\nTower cultivation becomes available once the first matrix is produced. The story supplies the first interaction towers and embryos; exploration supplies more embryos.",
+    "zhCN": "回收首个遗物后，完成电磁矩阵科技即可恢复普通矿物复制。给基础矿物塔供电，从侧面送入矿物，另一侧流出接回输入，正面接产物带。\n\n第一枚矩阵实际生产后开放高级塔培育。主线提供首批交互塔与原胚，探索继续提供原胚补给。"
+  },
+  "FE.Encyclopedia.Memory": {
+    "enUS": "For an early automated supply, feed surplus matrices into a powered analysis tower. Expansion takes priority; excess matrices are consumed with a 0.2% Memory yield.\n\nLater, the thousand-tower story opens tower offerings. Towers without pending research yield Memory at 2%. Memory first restores available stage records. Further Memory supplies the next minute's success bonus. A complete minute offering at least 50 Memory also restores one available legendary recipe.\n\nMemory used in production remains separate.",
+    "zhCN": "早期可将过量矩阵持续送入有电的解析塔，扩容优先，剩余矩阵以0.2%的产率低效凝结源点。\n\n中后期千塔主线开放塔体献祭，无待解析内容的塔体以2%概率产源点。源点先恢复当前阶段资料，完成后继续投入，为下一分钟提供成功率增益。完整一分钟实际献祭至少50源点，还会恢复一项当前阶段的传说配方。\n\n生产配方使用的源点与献祭供料分开。"
+  },
+  "FE.Encyclopedia.Legendary": {
+    "enUS": "Embryo breeding and Memory reconstruction are legendary recipes. At the required matrix stage, restore them through advanced relic pages or a complete minute offering at least 50 Memory.\n\nPages first restore the three encyclopedia fragments, then one available legendary recipe. Offerings restore at most one recipe per complete minute. Unlocked recipes are retained.",
+    "zhCN": "反向繁育与源点重构属于传说配方。达到对应矩阵阶段后，通过高级遗迹残页，或完整一分钟至少50源点的献祭恢复。\n\n残页先补全三份百科记录，再恢复当前可用的一项传说配方。献祭每个完整分钟最多恢复一项，已解锁内容永久保留。"
+  },
+  "FE.Research.CommonRecovered": {
+    "enUS": "Matrix research restored: {0}",
+    "zhCN": "矩阵研究恢复了：{0}"
+  },
+  "FE.Analysis.Disassembly": {
+    "enUS": "Sample disassembly",
+    "zhCN": "样本分解"
+  },
+  "FE.MessageLog.Title": {
+    "enUS": "Message Log",
+    "zhCN": "消息日志"
+  },
+  "FE.MessageLog.Summary": {
+    "enUS": "The latest 50 text tips and relic messages in this game, newest first. Cleared when changing saves.",
+    "zhCN": "本次游戏最近50条文字提示与遗迹消息，最新在前；切换存档后清空。"
+  },
+  "FE.Signals.Categories": {
+    "enUS": "Ordinary {0:P0} · Story {1:P0} · Advanced {2:P0}",
+    "zhCN": "普通 {0:P0} · 主线 {1:P0} · 高级 {2:P0}"
+  },
+  "FE.Storage.FullHint": {
+    "enUS": "Storage full: power an analysis tower and feed matrices into a side port to expand it.",
+    "zhCN": "亚空间已满：给基础解析塔供电，从侧面投入矩阵扩容。"
+  },
   "分馏页面": {
     "enUS": "Fractionate",
     "zhCN": "分馏",
@@ -2562,18 +2642,18 @@
     "1041": "古代の記録"
   },
   "FE.ExplorationManager.Story1": {
-    "enUS": "The container's seal was worn, but the devices inside were well preserved. Icarus recovered four basic mineral towers, two basic analysis towers, and incomplete records marked with iron, copper, stone and coal samples.\n\nAs Icarus stepped away, the chassis responded with unexpected ease. The recovered records had recalibrated its walking systems; even distant signals now felt within reach.\n\nThe supplies have entered the newly connected subspace. Press [Shift + F] to view them and their clues.",
-    "zhCN": "容器的封口已经磨损，里面的装置却保存得很完整。伊卡洛斯取出了四座基础矿物塔、两座基础解析塔，以及几份标着铁、铜、石、煤样本的残缺记录。\n\n再次迈步时，伊卡洛斯忽然感到机体的响应轻快了许多。刚才读取的记录似乎重新校准了行走系统，远处的信号也不再那么遥不可及。\n\n回收物资已送入刚刚接通的亚空间。按 [Shift + F] 打开面板，可以查看它们和留下的线索。",
-    "frFR": "Le sceau du conteneur était usé, mais les appareils étaient bien conservés. Icarus a récupéré quatre tours minérales de base, deux tours d'analyse de base et des archives incomplètes marquées de fer, cuivre, pierre et charbon.\n\nEn repartant, Icarus sentit son châssis répondre avec une aisance nouvelle. Les archives avaient recalibré sa marche ; même les signaux lointains semblaient désormais à sa portée.\n\nLes ressources ont rejoint le sous-espace nouvellement connecté. Appuyez sur [Shift + F] pour les consulter avec leurs indices.",
-    "1031": "Die Versiegelung war abgenutzt, doch die Geräte waren gut erhalten. Icarus barg vier einfache Mineraltürme, zwei einfache Analysetürme und lückenhafte Aufzeichnungen mit Eisen-, Kupfer-, Stein- und Kohleproben.\n\nBeim Weitergehen reagierte Icarus plötzlich viel geschmeidiger. Die geborgenen Aufzeichnungen hatten sein Laufsystem neu kalibriert; selbst ferne Signale schienen nun erreichbar.\n\nDie Vorräte liegen im neu verbundenen Subraum. Öffne mit [Shift + F] das Fenster, um sie und ihre Hinweise anzusehen.",
-    "1041": "容器の封は傷んでいたが、中の装置はよく保存されていた。イカロスは基礎鉱物塔4基、基礎解析塔2基、そして鉄・銅・石・石炭のサンプルが記された不完全な記録を取り出した。\n\n再び歩き出すと、機体の反応が驚くほど軽くなっていた。読み込んだ記録が歩行システムを調整したらしい。遠くの信号も、もう手の届かないものには感じられない。\n\n物資は接続したばかりの亜空間へ送られた。[Shift + F]で画面を開き、物資と手掛かりを確認しよう。"
+    "enUS": "The container's seal was worn, but the devices inside were well preserved. Icarus recovered four basic mineral towers and two basic analysis towers. Their common recipes will become readable through matrix technology.\n\nAs Icarus stepped away, the chassis responded with unexpected ease. The recovered records had recalibrated its walking systems.\n\nThe supplies have entered the newly connected subspace. Press [Shift + F] to view them and the encyclopedia.",
+    "zhCN": "容器的封口已经磨损，里面的装置却保存得很完整。伊卡洛斯取出了四座基础矿物塔和两座基础解析塔；矩阵科技将帮助读懂它们的普通配方。\n\n再次迈步时，伊卡洛斯忽然感到机体的响应轻快了许多。刚才读取的记录似乎重新校准了行走系统。\n\n回收物资已送入刚刚接通的亚空间。按 [Shift + F] 打开面板，可以查看物资与百科。",
+    "frFR": "Le sceau était usé, mais les appareils étaient bien conservés. Icarus a récupéré quatre tours minérales de base et deux tours d'analyse de base. La recherche des matrices révélera leurs recettes communes.\n\nLes archives ont aussi recalibré sa marche.\n\nLes ressources sont dans le sous-espace. Appuyez sur [Shift + F] pour les consulter et ouvrir l'encyclopédie.",
+    "1031": "Die Versiegelung war abgenutzt, doch die Geräte waren gut erhalten. Icarus barg vier einfache Mineraltürme und zwei einfache Analysetürme. Matrixforschung wird ihre gewöhnlichen Rezepte erschließen.\n\nDie Aufzeichnungen haben auch sein Laufsystem neu kalibriert.\n\nDie Vorräte liegen im Subraum. Öffne mit [Shift + F] das Fenster für Vorräte und Enzyklopädie.",
+    "1041": "容器の封は傷んでいたが、装置はよく保存されていた。イカロスは基礎鉱物塔4基と基礎解析塔2基を回収した。通常レシピはマトリックス技術の研究で復元できる。\n\n記録は歩行システムも調整し、機体の反応が軽くなった。\n\n物資は亜空間へ送られた。[Shift + F]で物資と百科を確認しよう。"
   },
   "FE.ExplorationManager.Story2": {
-    "enUS": "A thin plate covered in fine lines lay at the bottom of the container, with an ordinary grain of ore set beside it. Icarus placed it next to the earlier records, and the missing parts began to take shape.\n\nThese minerals may be the keys to the records. Send samples with known clues into a basic analysis tower and see how it responds.",
-    "zhCN": "容器底部夹着一块刻满细线的薄片，旁边嵌着一粒普通矿石。伊卡洛斯把薄片与先前的记录放在一起，缺失的部分恰好有了轮廓。\n\n这些矿石或许就是记录的钥匙。将已有线索的样本送入基础解析塔，看看它会作出怎样的回应。",
-    "frFR": "Une fine plaque gravée de lignes reposait au fond du conteneur, près d'un grain de minerai ordinaire. Icarus l'a rapprochée des archives précédentes et les parties manquantes ont pris forme.\n\nCes minerais sont peut-être les clés des archives. Envoyez les échantillons déjà signalés dans une tour d'analyse de base pour voir sa réponse.",
-    "1031": "Am Boden lag eine dünne Platte voller feiner Linien neben einem gewöhnlichen Erzstück. Icarus legte sie zu den früheren Aufzeichnungen, und die fehlenden Teile nahmen Gestalt an.\n\nVielleicht sind diese Mineralien der Schlüssel. Schicke Proben mit bekannten Hinweisen in einen einfachen Analyseturm und beobachte die Antwort.",
-    "1041": "容器の底には細い線が刻まれた薄板があり、その横には普通の鉱石が埋め込まれていた。以前の記録と並べると、欠けた部分の輪郭が見えてきた。\n\nこの鉱石が記録の鍵なのかもしれない。手掛かりのあるサンプルを基礎解析塔へ送り、応答を見てみよう。"
+    "enUS": "The fine lines on the plate resemble a matrix structure. Icarus finally recognized how to read the devices.\n\nResearch electromagnetic matrices to restore common mineral replication. Then power a basic mineral tower, feed minerals into a side port and collect products at the front.",
+    "zhCN": "薄片上的细线与矩阵结构十分相似。伊卡洛斯终于找到了读懂这些装置的方向。\n\n研究电磁矩阵科技，恢复普通矿物复制。随后给基础矿物塔供电，从侧面投入矿物，正面接出产物。",
+    "frFR": "Les lignes de la plaque ressemblent à une matrice. Icarus comprend enfin comment lire les appareils.\n\nRecherchez les matrices électromagnétiques pour restaurer la réplication minérale. Alimentez une tour minérale, introduisez le minerai par un côté et récupérez les produits à l'avant.",
+    "1031": "Die Linien der Platte ähneln einer Matrixstruktur. Icarus erkennt endlich einen Zugang zu den Geräten.\n\nErforsche elektromagnetische Matrizen für die gewöhnliche Mineralreplikation. Versorge einen einfachen Mineralturm mit Strom, führe Mineralien seitlich zu und entnimm die Produkte vorne.",
+    "1041": "薄板の線はマトリックスの構造に似ている。イカロスは装置を理解する手掛かりを得た。\n\n電磁マトリックス技術を研究すると通常の鉱物複製が復元される。基礎鉱物塔に給電し、側面から鉱物を入れ、正面から製品を取り出そう。"
   },
   "FE.ExplorationManager.Story3": {
     "enUS": "The first restored record finally gave the unfamiliar devices a purpose Icarus could understand. Following its design, he tried once, and a clear, rhythmic sound came from within the tower.\n\nA few unreadable fragments remained in the container. He put them away to read when new clues arrived.",
@@ -2590,18 +2670,18 @@
     "1041": "マトリックスの光が容器を透かすと、中の装置がかすかに動いた。表面には細かなひびがあるが、食物を待つようにゆっくり開閉している。\n\n上級交互塔2基、原胚60個、記憶コア30個が亜空間へ送られた。まずマトリックスの供給をつなぎ、その後で働いてもらおう。"
   },
   "FE.ExplorationManager.Story5": {
-    "enUS": "Beside the shutdown checklist, the chronicler repeatedly wrote: keep feeding them even at rest. Remembering the cracks in the towers' shells, Icarus checked the matrix belt again.\n\nEmbryo clues recovered with the record have been archived. These beings may still hold another way to grow.",
-    "zhCN": "记录者在停工清单旁重复写下了一行字：休息时也要保留供养。伊卡洛斯想起塔壳上的裂纹，再次检查了矩阵传送带。\n\n随记录回收的原胚线索已经归档。这些生命也许还保存着另一种生长的可能。",
-    "frFR": "À côté de la liste d'arrêt, le chroniqueur répétait : les nourrir même au repos. Se souvenant des fissures, Icarus a revérifié le convoyeur de matrices.\n\nLes indices sur les embryons ont été archivés. Ces êtres recèlent peut-être une autre possibilité de croissance.",
-    "1031": "Neben der Stilllegungsliste schrieb der Chronist wiederholt: Auch in Ruhe weiter versorgen. Icarus erinnerte sich an die Risse und prüfte das Matrixband erneut.\n\nDie geborgenen Embryonenhinweise wurden archiviert. Vielleicht besitzen diese Lebewesen noch eine andere Wachstumsmöglichkeit.",
-    "1041": "記録者は停止点検表の横に何度も書いていた。「休んでいるときも供養を続けること」。塔のひびを思い出し、イカロスは再びマトリックスのコンベアを確認した。\n\n記録と共に回収した原胚の手掛かりは整理された。この生命には、別の成長の可能性が残っているのかもしれない。"
+    "enUS": "The chronicler repeatedly wrote: keep feeding them even at rest. Icarus checked the matrix belt again.\n\nMatrix technology has restored cultivation. Select advanced mineral tower cultivation in an interaction tower, then supply embryos and matrices.",
+    "zhCN": "记录者在停工清单旁重复写下了一行字：休息时也要保留供养。伊卡洛斯再次检查了矩阵传送带。\n\n矩阵科技已经恢复培育记录。在高级交互塔中选择高级矿物塔培育，接入原胚和矩阵，就能尝试培育新的生命。",
+    "frFR": "Le chroniqueur répétait : nourrir les tours même au repos. Icarus a revérifié le convoyeur de matrices.\n\nLa technologie des matrices a restauré la culture. Sélectionnez la culture de tours minérales avancées dans une tour d'interaction, puis fournissez embryons et matrices.",
+    "1031": "Der Chronist schrieb wiederholt: Auch in Ruhe weiter versorgen. Icarus prüfte das Matrixband erneut.\n\nDie Matrixtechnologie hat die Aufzucht erschlossen. Wähle die Aufzucht verbesserter Mineraltürme im Interaktionsturm und liefere Embryonen und Matrizen.",
+    "1041": "記録者は繰り返し書いていた。「休んでいるときも供養を続けること」。イカロスはマトリックスのベルトを確認した。\n\nマトリックス技術で培養記録が復元された。上級交互塔で上級鉱物塔の培養を選び、原胚とマトリックスを供給しよう。"
   },
   "FE.ExplorationManager.Story6": {
-    "enUS": "Only neatly arranged bases remained in the old greenhouse. Near the central recorder, Icarus heard pulses like those of the living towers, one after another, as if this place had once bustled with life.\n\nAnalyze the records carried by embryos, then select a restored recipe in an advanced interaction tower. New life may yet break this silence.",
-    "zhCN": "旧温室里只剩下排列整齐的底座。靠近中央的记录仪时，伊卡洛斯听见了与生命塔相似的脉冲，一声接着一声，仿佛这里曾经十分热闹。\n\n解析原胚留下的记录，再到高级交互塔里选择已经恢复的配方。也许这片安静还能被新的生命打破。",
-    "frFR": "Il ne restait que des socles alignés dans l'ancienne serre. Près de l'enregistreur central, Icarus a entendu des pulsations semblables à celles des tours vivantes, comme l'écho d'un lieu autrefois animé.\n\nAnalysez les archives portées par les embryons, puis choisissez une recette restaurée dans une tour d'interaction avancée. Une nouvelle vie pourrait rompre ce silence.",
-    "1031": "Im alten Gewächshaus standen nur noch ordentlich gereihte Sockel. Beim zentralen Rekorder hörte Icarus Impulse wie die der lebenden Türme, einen nach dem anderen, als wäre hier einst reges Leben gewesen.\n\nAnalysiere die Embryonenaufzeichnungen und wähle ein wiederhergestelltes Rezept im verbesserten Interaktionsturm. Neues Leben könnte die Stille beenden.",
-    "1041": "古い温室には整然と並ぶ台座だけが残っていた。中央の記録装置に近づくと、生命塔に似た脈動が次々と聞こえる。かつてはにぎやかだったのだろう。\n\n原胚に残された記録を解析し、上級交互塔で復元済みのレシピを選ぼう。新しい生命が、この静けさを破るかもしれない。"
+    "enUS": "Only neatly arranged bases remained in the old greenhouse. Icarus heard pulses like those of the living towers.\n\nSelect a restored cultivation recipe in an advanced interaction tower. Feed embryos from a side port and keep matrices available for food; new towers leave at the front.",
+    "zhCN": "旧温室里只剩下排列整齐的底座。伊卡洛斯听见了与生命塔相似的脉冲，仿佛这里曾经十分热闹。\n\n到高级交互塔里选择已经恢复的培育配方，从侧面送入原胚并保持矩阵供养，正面接出新的塔体。",
+    "frFR": "Des socles alignés subsistaient dans la serre. Icarus entendit les pulsations des tours vivantes.\n\nChoisissez une recette de culture restaurée dans une tour d'interaction avancée. Fournissez les embryons par un côté et des matrices comme nourriture ; les nouvelles tours sortent à l'avant.",
+    "1031": "Im Gewächshaus standen noch geordnete Sockel. Icarus hörte Impulse wie die der lebenden Türme.\n\nWähle ein erschlossenes Aufzuchtrezept im verbesserten Interaktionsturm. Führe Embryonen seitlich zu und liefere Matrizen als Nahrung; neue Türme kommen vorne heraus.",
+    "1041": "温室には整然と並ぶ台座が残っていた。生命塔に似た脈動が聞こえる。\n\n上級交互塔で復元済みの培養レシピを選ぼう。側面から原胚を入れ、マトリックスの供養を維持すると、新しい塔が正面から出てくる。"
   },
   "FE.ExplorationManager.Story7": {
     "enUS": "As the container opened, twelve Memory slowly lit up along its inner wall. The chronicler had numbered each, naming the living beings that once worked beside them.\n\nThe Memory has entered subspace. Bring it to a basic analysis tower to continue assembling the newly readable stage records.",
@@ -2611,11 +2691,11 @@
     "1041": "容器を開くと、内壁に沿って12個の記憶コアがゆっくり光った。記録者は一つずつ番号を付け、共に働いていた生命を書き添えていた。\n\n記憶コアは亜空間へ送られた。基礎解析塔に渡せば、読めるようになった段階記録をさらに復元できるかもしれない。"
   },
   "FE.ExplorationManager.Story8": {
-    "enUS": "This record depicts devices of several different forms. Its edges are damaged, but their shared interfaces remain recognizable. Samples will be needed to discover the work each once performed.\n\nNew embryo clues have been archived, and twelve Memory have entered subspace.",
-    "zhCN": "这份记录画着几种形态不同的装置。边角已经破损，只有共同使用的接口仍能辨认。它们曾经各自承担什么工作，还需要样本来回答。\n\n新的原胚线索已经归档，十二份源点也已送入亚空间。",
-    "frFR": "Cette archive dessine plusieurs appareils de formes différentes. Les bords sont abîmés, mais leurs interfaces communes restent reconnaissables. Des échantillons révéleront leurs anciennes fonctions.\n\nDe nouveaux indices sur les embryons sont archivés et douze mémoires ont rejoint le sous-espace.",
-    "1031": "Diese Aufzeichnung zeigt Geräte verschiedener Gestalt. Die Ränder sind beschädigt, doch ihre gemeinsamen Anschlüsse erkennbar. Proben müssen zeigen, welche Aufgaben sie einst erfüllten.\n\nNeue Embryonenhinweise wurden archiviert und zwölf Erinnerungen im Subraum eingelagert.",
-    "1041": "記録には、いくつかの異なる姿の装置が描かれている。端は破れているが、共通の接続口だけは判別できる。それぞれ何を担っていたのかは、サンプルが答えてくれるだろう。\n\n新しい原胚の手掛かりが整理され、記憶コア12個も亜空間へ送られた。"
+    "enUS": "The record depicts several devices with shared interfaces. Their cultivation recipes are already readable; rare transformations still require sample research.\n\nTwelve Memory have entered subspace.",
+    "zhCN": "这份记录画着几种形态不同的装置，共同使用的接口仍能辨认。它们的培育配方已经可以阅读，稀有的物质置换仍需样本解析。\n\n十二份源点已送入亚空间。",
+    "frFR": "Les appareils dessinés partagent les mêmes interfaces. Leurs recettes de culture sont lisibles ; les transformations rares nécessitent encore des échantillons.\n\nDouze mémoires ont rejoint le sous-espace.",
+    "1031": "Die gezeichneten Geräte teilen gemeinsame Anschlüsse. Ihre Aufzuchtrezepte sind lesbar; seltene Umwandlungen brauchen weiterhin Probenforschung.\n\nZwölf Erinnerungen liegen nun im Subraum.",
+    "1041": "異なる装置が共通の接続口を使っている。培養レシピは読めるようになったが、希少な物質置換にはサンプル解析が必要だ。\n\n記憶コア12個が亜空間へ送られた。"
   },
   "FE.ExplorationManager.Story9": {
     "enUS": "An unfinished sentence remained at the end. Icarus could not read the names, but could clearly see a route leading beyond the homeworld.\n\nThe twelve Memory in the container have been recovered. Once supplies for the journey are ready, visit that planet and see what remains.",

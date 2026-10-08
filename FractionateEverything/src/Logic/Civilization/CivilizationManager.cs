@@ -99,6 +99,7 @@ public static class CivilizationModule {
             QueueNotification(ExplorationManager.GetRecoveryText(mark));
             return;
         }
+        MessageLog.Add(ExplorationManager.GetRecoveryText(mark));
         lock (NotificationSync) { PendingRecoveries.Enqueue(mark); }
     }
 
@@ -155,6 +156,7 @@ public static class CivilizationModule {
         ResearchManager.IntoOtherSave();
         ExplorationManager.IntoOtherSave();
         CivilizationRecoveryManager.IntoOtherSave();
+        MessageLog.Clear();
         lastProcessedGameTick = long.MinValue;
         lastProcessedSecond = long.MinValue;
         lastProcessedClaimSlot = long.MinValue;

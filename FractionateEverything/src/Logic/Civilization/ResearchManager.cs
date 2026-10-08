@@ -65,6 +65,10 @@ public enum AnalysisMode {
     TowerSacrifice,
     /// <summary>源点投入分钟献祭。</summary>
     MemorySacrifice,
+    /// <summary>过量矩阵低效凝结源点。</summary>
+    MatrixSacrifice,
+    /// <summary>分解稀有配方主产物取得实物样本。</summary>
+    Disassembly,
 }
 
 /// <summary>当前输入一次通过时的只读结果比例；三类结果互斥，取值为0～1。</summary>
@@ -86,7 +90,8 @@ public readonly struct AnalysisOutcome(AnalysisMode mode, float successRatio, fl
         AnalysisMode.Research => "解析",
         AnalysisMode.FragmentBroadcast => "广播解析",
         AnalysisMode.MatrixExpansion => "FE.Storage.ExpansionMode",
-        AnalysisMode.TowerSacrifice or AnalysisMode.MemorySacrifice => "献祭",
+        AnalysisMode.TowerSacrifice or AnalysisMode.MemorySacrifice or AnalysisMode.MatrixSacrifice => "献祭",
+        AnalysisMode.Disassembly => "FE.Analysis.Disassembly",
         _ => "待机",
     };
 }
@@ -224,6 +229,7 @@ public static partial class ResearchManager {
             AddToPool(IFE高级交互塔, AdvancedInteractionTraitId);
             AddToPool(IFE高级转化塔, AdvancedConversionTraitId);
             AddStageContentDefinitions();
+            BuildUnlockCatalog();
             RebuildRemainingDirectionPoolsUnsafe();
             PublishAnalysisRuntimeSnapshotUnsafe();
         }
@@ -234,7 +240,7 @@ public static partial class ResearchManager {
     /// </summary>
     public static int[] GetAnalyzableItemIds() {
         lock (Sync) {
-            HashSet<int> itemIds = [.. DirectionPools.Keys, .. ItemManager.MainProgressMatrixIds,
+            HashSet<int> itemIds = [.. DirectionPools.Keys, .. DisassemblyRecipes.Keys, .. ItemManager.MainProgressMatrixIds,
                 IFE残片, IFE高级矿物塔, IFE高级交互塔, IFE高级转化塔];
             return itemIds.OrderBy(itemId => itemId).ToArray();
         }
@@ -253,13 +259,10 @@ public static partial class ResearchManager {
     }
 
     /// <summary>
-    /// 首遗物提供四种矿物与正向培育的样本线索，配方仍需解析。
+    /// 首遗物后按当前矩阵资格投影普通配方，稀有样本仍由探索取得。
     /// </summary>
     public static void GrantStarterResearchState() {
-        foreach (int itemId in new[] { I铁矿, I铜矿, I石矿, I煤矿 }) {
-            DiscoverContent($"mineral-basic:{itemId}", itemId, false);
-        }
-        DiscoverContent($"interaction-culture:{IFE高级交互塔}", IFE通用原胚, false);
+        RefreshMatrixRecipes();
     }
 
     /// <summary>
@@ -314,8 +317,10 @@ public static partial class ResearchManager {
     /// <returns>成功、损毁和原样流出比例；查询不会收料或推进研究。</returns>
     public static AnalysisOutcome GetAnalysisOutcome(int itemId) {
         if (Array.IndexOf(ItemManager.MainProgressMatrixIds, itemId) >= 0) {
-            bool canSupply = SubspaceExpansion.CanSupplyMatrix(itemId);
-            return new(AnalysisMode.MatrixExpansion, canSupply ? 1f : 0f, 0f, canSupply ? 0f : 1f);
+            if (SubspaceExpansion.CanSupplyMatrix(itemId)) { return new(AnalysisMode.MatrixExpansion, 1f, 0f, 0f); }
+            return ExplorationManager.FirstRelicClaimed
+                ? new(AnalysisMode.MatrixSacrifice, MatrixMemoryRatio, 1f - MatrixMemoryRatio, 0f)
+                : new(AnalysisMode.Idle, 0f, 0f, 1f);
         }
         if (itemId == IFE残片) {
             return ExplorationManager.PlanetDetectorUnlocked
@@ -330,6 +335,10 @@ public static partial class ResearchManager {
             if (FractionatorTowerCatalog.IsAdvancedTower(itemId)) {
                 return new(AnalysisMode.TowerSacrifice, 0.02f, 0.98f, 0f);
             }
+        }
+        if (GetDisassemblyCount(itemId) > 0) {
+            float ratio = GetDisassemblyRatio(itemId);
+            return new(AnalysisMode.Disassembly, ratio, 1f - ratio, 0f);
         }
         return new(AnalysisMode.Idle, 0f, 0f, 1f);
     }
@@ -363,6 +372,7 @@ public static partial class ResearchManager {
                                      && !UnlockedContents.Contains(definition.Id)
                                      && !ExploredContents.Contains(definition.Id)
                                      && definition.Tier <= CurrentMatrixStage
+                                     && IsSampleContent(definition.Id)
                                      && IsContentExplorableUnsafe(definition.Id))
                 .OrderBy(definition => definition.Tier)
                 .ThenBy(definition => definition.Id, StringComparer.Ordinal)
@@ -536,10 +546,13 @@ public static partial class ResearchManager {
         out int sacrificeOutputCount, out int analysisSuccessCount) {
         sacrificeOutputCount = 0;
         analysisSuccessCount = 0;
-        if (count <= 0) { return 0; }
+        if (count <= 0 || NebulaMultiplayerModAPI.IsClient) { return 0; }
 
         if (Array.IndexOf(ItemManager.MainProgressMatrixIds, itemId) >= 0) {
-            return SubspaceExpansion.SupplyMatrix(itemId, count);
+            if (!ExplorationManager.FirstRelicClaimed) { return 0; }
+            int supplied = SubspaceExpansion.SupplyMatrix(itemId, count);
+            sacrificeOutputCount = WorldviewRecipe.RollExpected(ref seed, (count - supplied) * (double)MatrixMemoryRatio);
+            return count;
         }
         if (itemId == IFE残片) {
             if (!ExplorationManager.PlanetDetectorUnlocked) { return 0; }
@@ -681,6 +694,7 @@ public static partial class ResearchManager {
         if (NebulaMultiplayerModAPI.IsClient) {
             return;
         }
+        RefreshMatrixRecipes();
         RefreshStageResearch();
         lock (Sync) {
             AdvanceMemoryMinute(gameTick / 3600L);
@@ -699,17 +713,20 @@ public static partial class ResearchManager {
     /// </summary>
     public static bool FlushMainThreadNotifications() {
         Queue<string> notifications = [];
+        List<int> prototypeRewards = [];
         int signalAccelerations;
         bool dirty;
         lock (Sync) {
             while (PendingNotifications.Count > 0) {
                 notifications.Enqueue(PendingNotifications.Dequeue());
             }
+            while (PendingPrototypeRewards.Count > 0) { prototypeRewards.Add(PendingPrototypeRewards.Dequeue()); }
             signalAccelerations = pendingSignalAccelerations;
             pendingSignalAccelerations = 0;
             dirty = snapshotDirty;
             snapshotDirty = false;
         }
+        foreach (int towerId in prototypeRewards) { DataCenterInventory.AddExplorationReward(towerId, 1); }
         if (signalAccelerations > 0) {
             ExplorationManager.AccelerateNextSignal(signalAccelerations);
         }
@@ -738,6 +755,7 @@ public static partial class ResearchManager {
             AdvancedTowerInventoryMilestones.Clear();
             discoveredContentCount = 0;
             pendingSignalAccelerations = 0;
+            PendingPrototypeRewards.Clear();
             ResetProgression();
             r.ReadBlocks(
                 ("Generation", br => belongsToGeneration3 = br.ReadBoolean()),
@@ -843,6 +861,7 @@ public static partial class ResearchManager {
             AdvancedTowerInventoryMilestones.Clear();
             ResetProgression();
             PendingNotifications.Clear();
+            PendingPrototypeRewards.Clear();
             discoveredContentCount = 0;
             pendingSignalAccelerations = 0;
             belongsToGeneration3 = false;
@@ -949,7 +968,8 @@ public static partial class ResearchManager {
             return Array.Empty<string>();
         }
         return remaining
-            .Where(contentId => ExploredContentDirections.TryGetValue(contentId, out int directionItemId)
+            .Where(contentId => IsSampleContent(contentId)
+                                && ExploredContentDirections.TryGetValue(contentId, out int directionItemId)
                                 && directionItemId == itemId)
             .OrderBy(contentId => contentId, StringComparer.Ordinal)
             .ToArray();
@@ -998,6 +1018,7 @@ public static partial class ResearchManager {
     private static bool CanDiscoverContentUnsafe(string contentId, int itemId) =>
         contentId != null
         && ContentDefinitions.ContainsKey(contentId)
+        && IsSampleContent(contentId)
         && ContentDirections.TryGetValue(contentId, out List<int> directions)
         && directions.Contains(itemId)
         && IsExplorationDirectionUnsafe(contentId, itemId)

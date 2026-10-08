@@ -217,8 +217,9 @@ internal static class ExplorationSignalHud {
         lastRefreshFrame = Time.frameCount;
 
         ExplorationMark[] keySignals = ExplorationManager.GetActiveMarks().Where(ExplorationManager.IsKeySignal).ToArray();
-        float strength = ExplorationManager.GetHighestStrength();
-        RowTexts[0].text = strength > 0 ? string.Format("附近信号：{0:P0}".Translate(), strength) : "附近暂无可探测信号".Translate();
+        RowTexts[0].text = string.Format("FE.Signals.Categories".Translate(),
+            ExplorationManager.GetHighestStrength(1), ExplorationManager.GetHighestStrength(2),
+            ExplorationManager.GetHighestStrength(3));
         RowTexts[0].gameObject.SetActive(true);
         if (keySignals.Length > 0) {
             ExplorationMark first = keySignals[0];

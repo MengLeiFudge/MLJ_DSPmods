@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using FE.Logic.Civilization;
 using FE.UI.Foundation.Window;
 using FE.UI.MainPanel.Archive;
 using FE.UI.MainPanel.Civilization;
@@ -24,7 +25,8 @@ public static class MainWindowPageRegistry {
     private static readonly MainWindowPageDefinition[] allPages = [
         Browser("指引", "当前目标", new CurrentGoalPage()),
         Browser("指引", "主线记录", new StoryRecordsPage()),
-        Browser("指引", "使用指南", new UsageGuidePage()),
+        Browser("指引", "FE.Encyclopedia.Title", new UsageGuidePage()),
+        Browser("指引", "FE.MessageLog.Title", new MessageLogPage()),
         Browser("研究", "解析样本", new AnalysisSamplesPage()),
         Browser("研究", "阶段恢复", new StageRecoveryPage()),
         Browser("研究", "塔体特质", new TowerTraitsPage()),
@@ -40,6 +42,10 @@ public static class MainWindowPageRegistry {
         new("设置", "亚空间存取", Miscellaneous.CreateStorageUI, Miscellaneous.UpdateUI),
         new("设置", "界面与兼容", Miscellaneous.CreateInterfaceUI, Miscellaneous.UpdateUI),
     ];
+
+    /// <summary>通信建立前仅创建百科，其他页面不生成控件和操作入口。</summary>
+    private static readonly IReadOnlyList<MainWindowCategoryDefinition> encyclopediaCategories =
+        new MainWindowCategoryDefinition[] { new("指引", new[] { allPages[2] }) };
 
     /// <summary>将卡片页实例接入两种外壳共用的注册表。</summary>
     /// <param name="category">分类。</param>
@@ -65,6 +71,9 @@ public static class MainWindowPageRegistry {
             return BuildCategories(panelType, sandboxMode, includeAllPages);
         }
 
+        if (!includeAllPages && !CivilizationRecoveryManager.HasDataCenterCommunication) {
+            return encyclopediaCategories;
+        }
         return categoryCache[panelIndex, sandboxMode ? 1 : 0, includeAllPages ? 1 : 0];
     }
 

@@ -2,9 +2,7 @@
 using System.IO;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
-using FE.UI.MainPanel.Archive;
 using FE.UI.MainPanel.Civilization;
-using FE.UI.MainPanel.CoreOperate;
 using FE.UI.MainPanel.ResourceInteraction;
 using FE.UI.MainPanel.Setting;
 using FE.UI.MainPanel.Shell.Analysis;
@@ -30,6 +28,8 @@ public static class MainWindow {
     private static bool _analysisMainWindowInitialized;
     private static AnalysisMainPanelWindow _analysisMainWindow;
     private static bool sandboxMode = false;
+    /// <summary>当前窗口创建时的通信资格；变化后必须重建目录与页面。</summary>
+    private static bool openedWithCommunication;
     private static bool legacyPageCategoriesInitialized;
     private static bool legacyPageCategoriesSandboxMode;
     private static IReadOnlyList<MainWindowCategoryDefinition> legacyPageCategories = [];
@@ -113,15 +113,11 @@ public static class MainWindow {
             return;
         }
         ExplorationSignalHud.Update();
-        if (VFInput.inputing) {
-            return;
+        if (OpenedMainPanelType != FEMainPanelType.None
+            && openedWithCommunication != CivilizationRecoveryManager.HasDataCenterCommunication) {
+            OpenMainPanel(OpenedMainPanelType);
         }
-
-        if (!CivilizationRecoveryManager.HasDataCenterCommunication) {
-            // 首遗物回收前面板尚未接通，用浮现提示把玩家引回信号源。
-            if (_toggleKey.keyValue) {
-                UIRealtimeTip.Popup(ExplorationManager.FirstSignalHint.Translate(), false);
-            }
+        if (VFInput.inputing) {
             return;
         }
 
@@ -167,6 +163,10 @@ public static class MainWindow {
     }
 
     public static void NavigateToPage(string categoryName, int internalTabIndex = 0) {
+        if (!CivilizationRecoveryManager.HasDataCenterCommunication) {
+            categoryName = "指引";
+            internalTabIndex = 0;
+        }
         if (OpenedMainPanelType == FEMainPanelType.Legacy && _legacyConfigWin != null) {
             _legacyConfigWin.JumpToGroup(categoryName, internalTabIndex);
             RememberCurrentPageRouteFromLegacy();
@@ -207,6 +207,7 @@ public static class MainWindow {
         }
 
         CloseAllMainPanels();
+        openedWithCommunication = CivilizationRecoveryManager.HasDataCenterCommunication;
         switch (panelType) {
             case FEMainPanelType.Legacy:
                 OpenLegacyMainPanel();
@@ -218,7 +219,11 @@ public static class MainWindow {
                 break;
         }
 
-        ApplyCurrentPageRouteToOpenedPanel();
+        if (openedWithCommunication) {
+            ApplyCurrentPageRouteToOpenedPanel();
+        } else {
+            NavigateToPage("指引");
+        }
 
     }
 

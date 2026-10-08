@@ -187,10 +187,8 @@ public static class RecipeManager {
             if (item == null || item.ID <= 0 || item.ID >= 12000) {
                 continue;
             }
-            IReadOnlyList<WorldviewRecipeOutput> outputs =
-                Fractionators.FractionatorTowerCatalog.IsAdvancedTower(itemId)
-                    ? [new WorldviewRecipeOutput(IFE记忆源点, 1f)]
-                    : [];
+            IReadOnlyList<WorldviewRecipeOutput> outputs = ResearchManager.GetAnalysisProductIds(itemId)
+                .Select(id => new WorldviewRecipeOutput(id, 1f)).ToArray();
             AddRecipe(new WorldviewRecipe($"analysis:{item.ID}", 100000 + item.ID,
                 string.Format("{0}解析".Translate(), item.name), ERecipe.BasicAnalysis,
                 WorldviewRecipeKind.BasicAnalysis, 0.02f,

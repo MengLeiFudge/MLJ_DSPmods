@@ -1283,18 +1283,26 @@ public static partial class FractionatorWindow {
             : Math.Min(1f, recipe.SuccessRatio * (1f + (float)MaxTableMilli(avgInc)));
         float destroyRatio = !available ? 0f : isAnalysis ? analysis.DestroyRatio : recipe.DestroyRatio;
         bool hasVirtualOutput = available && isAnalysis && analysis.SuccessRatio > 0f
-            && analysis.Mode != AnalysisMode.TowerSacrifice;
+            && analysis.Mode is not AnalysisMode.TowerSacrifice and not AnalysisMode.MatrixSacrifice and not AnalysisMode.Disassembly;
         if (hasVirtualOutput) {
             FillAnalysisSlot(mainSlots[0], recipeSuccessRatio);
             mainSuccessSum = recipeSuccessRatio;
             mainCount = 1;
-        } else if (available) {
+        }
+        if (available) {
+            int disassemblyCount = isAnalysis && analysis.Mode == AnalysisMode.Disassembly
+                ? ResearchManager.GetDisassemblyCount(fractionator.fluidId) : 0;
             foreach (var output in recipe.OutputMain) {
                 if (mainCount >= MaxMainSlots) break;
                 var pInfo = products.Find(p => p.itemId == output.OutputID && p.isMainOutput);
-                float ratio = recipeSuccessRatio * output.SuccessRatio;
-                FillSlot(mainSlots[mainCount], output, pInfo?.count ?? 0,
-                    ratio, ProductSlotKind.Main);
+                // 模式切换不能隐藏已经产出的实物；仅显示当前可产物或仍有缓存的物品。
+                float ratio = !isAnalysis ? recipeSuccessRatio * output.SuccessRatio
+                    : analysis.Mode is AnalysisMode.TowerSacrifice or AnalysisMode.MatrixSacrifice
+                        ? output.OutputID == IFE记忆源点 ? recipeSuccessRatio : 0f
+                        : analysis.Mode == AnalysisMode.Disassembly
+                            ? recipeSuccessRatio * ResearchManager.GetDisassemblyCount(fractionator.fluidId, output.OutputID) / Math.Max(1, disassemblyCount) : 0f;
+                if (isAnalysis && ratio <= 0f && (pInfo?.count ?? 0) <= 0) { continue; }
+                FillSlot(mainSlots[mainCount], output, pInfo?.count ?? 0, ratio, ProductSlotKind.Main);
                 mainSuccessSum += ratio;
                 mainCount++;
             }

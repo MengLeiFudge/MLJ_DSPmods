@@ -92,14 +92,11 @@ public static partial class ResearchManager {
         }
     }
 
-    /// <summary>按内容自身的阶段取得普通样本预算，特质和塔体使用独立预算。</summary>
+    /// <summary>按稀有内容自身的阶段取得样本预算，特质使用独立预算。</summary>
     /// <param name="contentId">配方或特质身份。</param>
     /// <returns>完成一份内容所需的期望成功投入数；流回和损毁不计入进度。</returns>
     public static int GetExpectedSampleCount(string contentId) {
         if (IsTraitContent(contentId)) { return 20000; }
-        WorldviewRecipe recipe = RecipeManager.GetRecipe(contentId);
-        if (recipe?.Kind == WorldviewRecipeKind.EmbryoBreeding) { return 200; }
-        if (recipe?.Kind == WorldviewRecipeKind.TowerCultivation) { return 50; }
         int stage = ContentDefinitions.TryGetValue(contentId, out ResearchContentDefinition definition)
             ? definition.Tier : 0;
         return SampleBudgets[Math.Max(0, Math.Min(6, stage))];
@@ -166,6 +163,9 @@ public static partial class ResearchManager {
     /// <param name="minute">当前游戏分钟。</param>
     private static void AdvanceMemoryMinute(long minute) {
         if (memoryMinute == minute) { return; }
+        if (memoryMinute == minute - 1 && minuteMemoryCount >= 50 && SacrificeUnlocked) {
+            RecoverOfferingLegendaryUnsafe();
+        }
         memoryBoost = memoryMinute == minute - 1
             ? (float)Math.Min(0.75d, 0.05d * Math.Floor(Math.Sqrt(minuteMemoryCount))) : 0f;
         minuteMemoryCount = 0;
