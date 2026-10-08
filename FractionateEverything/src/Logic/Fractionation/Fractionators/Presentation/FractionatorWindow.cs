@@ -963,10 +963,10 @@ public static partial class FractionatorWindow {
     #region 渲染更新
 
     private static void UpdateAdvancedPowerDisplay(UIFractionatorWindow src, AdvancedFractionatorState state) {
-        string text = string.Format("当前营养：{0} / {1}".Translate(),
-            Math.Floor(state?.Nutrition ?? 0d).ToString("0"), AdvancedFractionatorRuntime.MaximumNutrition.ToString("0"));
+        // 高级塔能量由独立消化槽进度条显示，底部不再显示数值。
+        string text = string.Empty;
         src.powerText.text = text;
-        src.powerText.color = state != null && state.Nutrition > 0f ? src.powerNormalColor : src.powerOffColor;
+        src.powerText.color = state != null && state.DigestingEnergy > 0d ? src.powerNormalColor : src.powerOffColor;
         src.powerIcon.color = Color.clear;
         if (_modPowerText != null) {
             _modPowerText.text = text;

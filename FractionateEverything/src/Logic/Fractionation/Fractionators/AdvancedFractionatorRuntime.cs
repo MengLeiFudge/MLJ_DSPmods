@@ -17,7 +17,7 @@ namespace FE.Logic.Fractionation.Fractionators;
 public enum AdvancedTowerStatus {
     /// <summary>实例尚未建立。</summary>
     AwaitingNourishment,
-    /// <summary>营养耗尽，需要矩阵供养。</summary>
+    /// <summary>食物能量耗尽，需要矩阵供养。</summary>
     MissingMatrix,
     /// <summary>尚未选择配方。</summary>
     AwaitingRecipe,
@@ -32,7 +32,7 @@ public enum AdvancedTowerStatus {
 }
 
 /// <summary>
-/// 一座高级分馏塔的多输入、多输出、营养和配方状态。
+/// 一座高级分馏塔的多输入、多输出、食物能量和配方状态。
 /// </summary>
 public sealed class AdvancedFractionatorState {
     /// <summary>选定配方的稳定整数 ID；0 表示未选择。</summary>
@@ -56,10 +56,10 @@ public sealed class AdvancedFractionatorState {
     /// <summary>反应输入增产点。</summary>
     public readonly Dictionary<int, int> InputInc = [];
 
-    /// <summary>尚未转化为营养的矩阵食物数量。</summary>
+    /// <summary>尚未转化为食物能量的矩阵食物数量。</summary>
     public readonly Dictionary<int, int> Foods = [];
 
-    /// <summary>矩阵食物增产点，仅用于拆除时原样返还。</summary>
+    /// <summary>备用矩阵增产点，点燃时增加该件能量，取出或拆除时原样返还。</summary>
     public readonly Dictionary<int, int> FoodInc = [];
 
     /// <summary>配方产物数量。</summary>
@@ -71,12 +71,17 @@ public sealed class AdvancedFractionatorState {
     /// <summary>流动输出增产点。</summary>
     public readonly Dictionary<int, int> FlowOutputInc = [];
 
-    /// <summary>当前营养点数，范围 0..1000。</summary>
-    /// <remarks>运行时用 double 逐帧扣减：float 在 512 以上的精度约 6e-5，会把待机每帧 3.3e-5 的消耗放大近一倍。存档仍写 float。</remarks>
-    public double Nutrition;
+    /// <summary>正在消化的一件矩阵；0表示消化槽为空。</summary>
+    public int DigestingItemId;
 
-    /// <summary>最近一次转入营养的矩阵层次，范围 0..5。</summary>
-    public int LastFoodTier;
+    /// <summary>当前件剩余的能量，按实际主料消费或待机时间扣减。</summary>
+    public double DigestingEnergy;
+
+    /// <summary>当前件点燃时的增产点，只增加可用能量。</summary>
+    public int DigestingInc;
+
+    /// <summary>当前消化物的本地代次，用于取消已经换件的长按操作；不持久化。</summary>
+    internal long DigestionVersion;
 
     /// <summary>按比例轮询产物的游标。</summary>
     public int OutputCursor;
@@ -84,7 +89,7 @@ public sealed class AdvancedFractionatorState {
     /// <summary>按配方输入顺序轮询流动输出的游标。</summary>
     public int FlowOutputCursor;
 
-    /// <summary>实例有待广播的营养、配方或缓存变化；在实例锁内写入，切档不持久化。</summary>
+    /// <summary>实例有待广播的食物能量、配方或缓存变化；在实例锁内写入，切档不持久化。</summary>
     internal bool SnapshotDirty = true;
 }
 
@@ -92,14 +97,11 @@ public sealed class AdvancedFractionatorState {
 /// 三类高级塔的多输入反应运行时。
 /// </summary>
 public static partial class AdvancedFractionatorRuntime {
-    public const float MaximumNutrition = 1000f;
-    private const float WorkingNutritionPerRound = 0.02f;
-    private const float IdleNutritionPerSecond = 0.002f;
     /// <summary>与原版一致，每满10000进度结算一轮配方。</summary>
     private const int ProgressPerRound = 10000;
     /// <summary>流动输入总件数上限，以原版40堆为基准，随全局堆叠缩放。</summary>
     public static int InputCapacity => FractionatorManager.VanillaFluidInputCargoMax * StackingManager.CurrentMaxStack;
-    /// <summary>持续缺少营养时，扣完一个最大耐久所需的秒结算次数。</summary>
+    /// <summary>持续缺少食物能量时，扣完一个最大耐久所需的秒结算次数。</summary>
     private const int StarvationSecondsToDestroy = 360;
     /// <summary>读档时允许的最大缓存件数，按堆叠上限计算；读档时全局堆叠可能尚未同步，不能用当前值裁剪。</summary>
     private const int MaximumBufferCapacity = (FractionatorManager.VanillaFluidInputCargoMax + ProcessManager.BufferStackCount + 1) * StackingManager.AbsoluteMaxStack;
@@ -107,16 +109,14 @@ public static partial class AdvancedFractionatorRuntime {
     private const int MaximumDictionaryEntryCount = 12000;
     private static readonly ConcurrentDictionary<(int planetId, int fractionatorId), AdvancedFractionatorState>
         States = [];
-    private static readonly float[] FoodNutrition = [1f, 2f, 4f, 8f, 16f, 32f];
-    private static readonly float[] FoodSpeed = [1f, 1.1f, 1.2f, 1.3f, 1.4f, 1.5f];
 
-    /// <summary>供窗口与汇总页共用的工作状态，按营养、配方、原料和输出空间区分原因。</summary>
+    /// <summary>供窗口与汇总页共用的工作状态，按食物能量、配方、原料和输出空间区分原因。</summary>
     /// <param name="state">高级塔状态。</param>
     /// <returns>与显示语言无关的运行状态。</returns>
     public static AdvancedTowerStatus GetOperatingStatus(AdvancedFractionatorState state) {
         if (state == null) { return AdvancedTowerStatus.AwaitingNourishment; }
         lock (state) {
-            if (state.Nutrition <= 0f) { return AdvancedTowerStatus.MissingMatrix; }
+            if (state.DigestingEnergy <= 0d) { return AdvancedTowerStatus.MissingMatrix; }
             WorldviewRecipe recipe = RecipeManager.GetRecipe(state.SelectedRecipeId);
             if (recipe == null) { return AdvancedTowerStatus.AwaitingRecipe; }
             int rounds = GetAvailableRounds(state, recipe);
@@ -209,7 +209,7 @@ public static partial class AdvancedFractionatorRuntime {
     }
 
     /// <summary>
-    /// 选择高级配方。共同输入与营养保留，旧输入转到流动输出，旧产物继续从正面排出。
+    /// 选择高级配方。共同输入与食物能量保留，旧输入转到流动输出，旧产物继续从正面排出。
     /// </summary>
     public static bool SetSelectedRecipe(PlanetFactory factory, int fractionatorId, int persistentRecipeId) {
         if (factory == null || fractionatorId <= 0
@@ -285,7 +285,7 @@ public static partial class AdvancedFractionatorRuntime {
                 state.SnapshotDirty |= TryOutputProducts(state, recipe, cargoTraffic, fractionator.belt0,
                     Math.Max(1, StackingManager.CurrentMaxStack), RequireFullStack(state, recipe));
             }
-            ConvertFoodToNutrition(state, consumeRegister);
+            EnsureDigestingFood(state, consumeRegister);
 
             int availableRounds = recipe == null ? 0 : GetAvailableRounds(state, recipe);
             float sacrificeBoost = ResearchManager.GetAdvancedTowerSacrificeBoost(buildingId);
@@ -297,13 +297,13 @@ public static partial class AdvancedFractionatorRuntime {
             float processingRate = 0f;
             int successfulRounds = 0;
             if (canWork) {
-                float speed = FoodSpeed[Math.Max(0, Math.Min(FoodSpeed.Length - 1, state.LastFoodTier))];
+                float speed = GetFoodSpeed(state);
                 processingRate = (float)(GetBaseProcessingRate(state, recipe) * speed * durabilityEfficiency);
                 double progress = state.ProgressRemainder + (500d / 3d) * processingRate;
                 int wholeProgress = (int)progress;
                 state.ProgressRemainder = progress - wholeProgress;
                 fractionator.progress = Math.Min(fractionator.progress + wholeProgress,
-                    ProgressPerRound * Math.Max(10, StackingManager.CurrentMaxStack));
+                    ProgressPerRound * Math.Max(10, StackingManager.CurrentMaxStack * 2));
                 int rounds = Math.Min(fractionator.progress / ProgressPerRound, executableRounds);
                 if (rounds > 0) {
                     state.SnapshotDirty = true;
@@ -317,7 +317,9 @@ public static partial class AdvancedFractionatorRuntime {
             state.ProcessingRate = processingRate;
             fractionator.fractionSuccess = successfulRounds > 0;
             fractionator.isWorking = canWork;
-            ConsumeNutritionAndApplyDurability(factory, entityId, state, processingRate);
+            if (!canWork) { ConsumeFoodEnergy(state, IdleFoodEnergyPerSecond / 60d, consumeRegister); }
+            EnsureDigestingFood(state, consumeRegister);
+            ApplyDigestionDurability(factory, entityId, state);
             MirrorVanillaFields(ref fractionator, state, signPool, entityId, buildingId);
             return fractionator.isWorking ? 1U : 0U;
         }
@@ -417,36 +419,6 @@ public static partial class AdvancedFractionatorRuntime {
         remainingInc -= movedInc;
     }
 
-    private static void ConvertFoodToNutrition(AdvancedFractionatorState state, int[] consumeRegister) {
-        if (state.Nutrition >= MaximumNutrition) {
-            return;
-        }
-        bool convertedFood = false;
-        for (int tier = FoodNutrition.Length - 1; tier >= 0; tier--) {
-            int itemId = I电磁矩阵 + tier;
-            float nutritionPerItem = FoodNutrition[tier];
-            int available = GetCount(state.Foods, itemId);
-            if (available <= 0) {
-                continue;
-            }
-            int consumed = Math.Min(available,
-                (int)Math.Floor((MaximumNutrition - state.Nutrition) / nutritionPerItem));
-            if (consumed <= 0) {
-                // 营养空间装不下一件时等待，不拿低层矩阵填小缺口。
-                break;
-            }
-            state.SnapshotDirty = true;
-            TakeCount(state.Foods, state.FoodInc, itemId, consumed);
-            state.Nutrition += nutritionPerItem * consumed;
-            if (!convertedFood) {
-                state.LastFoodTier = tier;
-                convertedFood = true;
-            }
-            lock (consumeRegister) { consumeRegister[itemId] += consumed; }
-        }
-        state.Nutrition = Math.Min(MaximumNutrition, state.Nutrition);
-    }
-
     /// <summary>
     /// 食物槽只有一个位置：槽内已有某种矩阵时只接收同种，空槽时传送带先来哪种就收哪种。
     /// </summary>
@@ -464,7 +436,7 @@ public static partial class AdvancedFractionatorRuntime {
 
     private static bool IsFoodItem(int itemId) {
         int tier = itemId - I电磁矩阵;
-        return tier >= 0 && tier < FoodNutrition.Length;
+        return tier >= 0 && tier < FoodShare.Length;
     }
 
     private static int SettleRounds(ref uint seed, AdvancedFractionatorState state, WorldviewRecipe recipe,
@@ -474,6 +446,7 @@ public static partial class AdvancedFractionatorRuntime {
         int successCount = WorldviewRecipe.RollExpected(ref seed, rounds * successProbability);
         successCount = Math.Min(successCount, rounds);
         int failedCount = rounds - successCount;
+        int consumedMain = 0;
 
         foreach (WorldviewRecipeInput input in recipe.InputArray) {
             if (input.ConsumeProbability >= 0.9999f) {
@@ -486,6 +459,7 @@ public static partial class AdvancedFractionatorRuntime {
                         removed <= 0 ? 0 : removedInc * failedOutput / removed);
                 }
                 int consumed = successCount * input.Count;
+                consumedMain += consumed;
                 if (consumed > 0) {
                     lock (consumeRegister) { consumeRegister[input.ItemId] += consumed; }
                 }
@@ -504,6 +478,7 @@ public static partial class AdvancedFractionatorRuntime {
             }
         }
 
+        ConsumeFoodEnergy(state, consumedMain, consumeRegister);
         if (successCount <= 0) {
             return 0;
         }
@@ -710,7 +685,7 @@ public static partial class AdvancedFractionatorRuntime {
 
     private static float GetDurabilityEfficiency(PlanetFactory factory, int entityId,
         AdvancedFractionatorState state) {
-        if (state.Nutrition > 0f) {
+        if (state.DigestingEnergy > 0d) {
             return 1f;
         }
         int combatStatId = factory.entityPool[entityId].combatStatId;
@@ -721,15 +696,8 @@ public static partial class AdvancedFractionatorRuntime {
         return combatStat.hpMax <= 0 ? 1f : Mathf.Clamp01(combatStat.hp / (float)combatStat.hpMax);
     }
 
-    private static void ConsumeNutritionAndApplyDurability(PlanetFactory factory, int entityId,
-        AdvancedFractionatorState state, float processingRate) {
-        double drain = processingRate > 0f
-            ? WorkingNutritionPerRound * processingRate / 60d
-            : IdleNutritionPerSecond / 60d;
-        double before = state.Nutrition;
-        state.Nutrition = Math.Max(0d, before - drain);
-        state.SnapshotDirty |= IsNutritionSyncChange(before, state.Nutrition);
-
+    private static void ApplyDigestionDurability(PlanetFactory factory, int entityId,
+        AdvancedFractionatorState state) {
         int combatStatId = factory.entityPool[entityId].combatStatId;
         if (combatStatId > 0) {
             factory.skillSystem.combatStats.buffer[combatStatId].hpRecover = 0;
@@ -744,10 +712,10 @@ public static partial class AdvancedFractionatorRuntime {
             astroId = factory.planetId,
         };
 
-        bool losingDurability = state.Nutrition <= 0f;
-        if (!losingDurability && state.Nutrition <= MaximumNutrition * 0.5f) {
-            return;
-        }
+        bool hasReserve = SumCounts(state.Foods) > 0;
+        bool losingDurability = state.DigestingEnergy <= 0d && !hasReserve;
+        bool recovering = state.DigestingEnergy > 0d && hasReserve;
+        if (!losingDurability && !recovering) { return; }
         if (!losingDurability && combatStatId <= 0) {
             return;
         }
@@ -767,14 +735,6 @@ public static partial class AdvancedFractionatorRuntime {
         combatStat.hpRecover = 0;
         combatStat.hp = Math.Max(0, Math.Min(combatStat.hpMax, combatStat.hp + change));
     }
-
-    /// <summary>判断营养消耗是否需要联机同步：只在窗口显示精度 0.1 变化或营养归零时同步。</summary>
-    /// <param name="before">本帧扣减前的营养。</param>
-    /// <param name="after">本帧扣减后的营养。</param>
-    /// <returns>客户端可见的显示值或状态发生变化时为 true；500 耐久阈值同为 0.1 的整数倍，已被显示精度覆盖。</returns>
-    /// <remarks>营养每帧都在变化，逐帧置脏会让增量同步退化为全量；按显示精度同步后待机塔约 50 秒同步一次。</remarks>
-    private static bool IsNutritionSyncChange(double before, double after) =>
-        (before > 0d) != (after > 0d) || Math.Floor(before * 10d) != Math.Floor(after * 10d);
 
     private static void MirrorVanillaFields(ref FractionatorComponent fractionator,
         AdvancedFractionatorState state, SignData[] signPool, int entityId, int buildingId) {

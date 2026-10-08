@@ -1,18 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using CommonAPI.Systems;
+using CommonAPI.Systems.ModLocalization;
+using FE.Compatibility.Nebula;
 using FE.Logic.Fractionation.Recipes;
 using FE.UI.Foundation;
 using FE.UI.MainPanel.Theme;
 using HarmonyLib;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using static FE.FractionateEverything;
 using static FE.Logic.Fractionation.Fractionators.ProcessManager;
 
 namespace FE.Logic.Fractionation.Fractionators.Presentation;
 
-/// <summary>高级塔配方槽与独立输入、产物、流动输出和营养区域。</summary>
+/// <summary>高级塔配方槽与独立输入、产物、流动输出、备用食物与消化区域。</summary>
 public static partial class FractionatorWindow {
     private const float AdvancedRowHeight = 70f;
     private const float MaximumAdvancedViewportHeight = 390f;
@@ -20,6 +23,11 @@ public static partial class FractionatorWindow {
     private static UIFractionatorWindow advancedSlotTemplate;
     private static ProductSlot advancedRecipeSlot;
     private static ProductSlot advancedFoodSlot;
+    private static ProductSlot advancedDigestionSlot;
+    private static RectTransform digestionProgressFill;
+    private static AdvancedFractionatorState digestionHoldState;
+    private static long digestionHoldVersion;
+    private static float digestionHoldStart;
     private static Text advancedRecipeText;
     private static Text advancedSpeedText;
     private static AdvancedColumn advancedInputs;
@@ -41,6 +49,9 @@ public static partial class FractionatorWindow {
     }
 
     private static void CreateAdvancedLayout(UIFractionatorWindow window, UIFractionatorWindow vanillaWindow) {
+        LocalizationModule.RegisterTranslation("FE.ReserveFood", "Reserve food", "备用食物", "");
+        LocalizationModule.RegisterTranslation("FE.Digestion", "Digestion", "消化槽", "");
+        LocalizationModule.RegisterTranslation("FE.DiscardDigestion", "Hold to destroy", "长按销毁", "");
         advancedSlotTemplate = vanillaWindow;
         advancedRoot = new GameObject("fe-advanced-fractionator", typeof(RectTransform)).GetComponent<RectTransform>();
         RectTransformUtils.NormalizeRectWithTopLeft(advancedRoot, 20f, 50f, window.transform);
@@ -56,8 +67,34 @@ public static partial class FractionatorWindow {
         advancedProducts = CreateAdvancedColumn(columnWidth, columnWidth, ProductSlotKind.Main, true);
         advancedFlow = CreateAdvancedColumn(columnWidth * 2f, columnWidth, ProductSlotKind.Side, true);
         Text foodTitle = CreateAdvancedLabel(advancedRoot, width - 80f, 80f, 80f, 35f);
-        foodTitle.text = "营养食物".Translate();
+        foodTitle.text = "FE.ReserveFood".Translate();
         advancedFoodSlot = CreateAdvancedSlot(advancedRoot, width - 52f, 140f);
+        advancedFoodSlot.button.onClick += TakeAdvancedFood;
+        Text digestionTitle = CreateAdvancedLabel(advancedRoot, width - 80f, 185f, 80f, 35f);
+        digestionTitle.text = "FE.Digestion".Translate();
+        advancedDigestionSlot = CreateAdvancedSlot(advancedRoot, width - 52f, 240f);
+        Text discardHint = CreateAdvancedLabel(advancedRoot, width - 86f, 293f, 86f, 36f);
+        discardHint.text = "FE.DiscardDigestion".Translate();
+        discardHint.fontSize = 12;
+        Image progressTrack = new GameObject("digestion-progress", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+        RectTransformUtils.NormalizeRectWithTopLeft(progressTrack, width - 80f, 278f, advancedRoot).sizeDelta = new Vector2(56f, 6f);
+        progressTrack.color = new Color(0.1f, 0.1f, 0.1f, 0.9f);
+        progressTrack.raycastTarget = false;
+        Image fill = new GameObject("remaining", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+        digestionProgressFill = RectTransformUtils.NormalizeRectWithTopLeft(fill, 0f, 0f, progressTrack.transform);
+        fill.color = new Color(1f, 0.75f, 0.35f);
+        fill.raycastTarget = false;
+        EventTrigger trigger = advancedDigestionSlot.go.AddComponent<EventTrigger>();
+        EventTrigger.Entry down = new() { eventID = EventTriggerType.PointerDown };
+        down.callback.AddListener(data => {
+            if (data is PointerEventData pointer && pointer.button == PointerEventData.InputButton.Left) { BeginDigestionDiscard(); }
+        });
+        trigger.triggers.Add(down);
+        foreach (EventTriggerType type in new[] { EventTriggerType.PointerUp, EventTriggerType.PointerExit }) {
+            EventTrigger.Entry cancel = new() { eventID = type };
+            cancel.callback.AddListener(_ => CancelDigestionDiscard());
+            trigger.triggers.Add(cancel);
+        }
         // 食物用独立暖色框，与三个库存区域的原版白色槽区分。
         Image foodFrame = advancedFoodSlot.go.GetComponent<Image>();
         if (foodFrame != null) { foodFrame.color = new Color(1f, 0.75f, 0.35f, 0.65f); }
@@ -164,6 +201,62 @@ public static partial class FractionatorWindow {
             UIRecipePicker.Close();
         }
         advancedPickerCallback = null;
+        CancelDigestionDiscard();
+    }
+
+    /// <summary>备用食物与产物流出分开取物，先扣真实库存，再转移到手持或背包。</summary>
+    private static void TakeAdvancedFood(int itemId) {
+        UIFractionatorWindow window = sourceWindow;
+        if (window?.factory == null || window.player == null || !window.active
+            || window.factory != displayedFactory || window.fractionatorId != displayedFractionatorId) { return; }
+        if (NebulaMultiplayerModAPI.IsClient) {
+            UIRealtimeTip.Popup("高级塔客户端手动取出受限".Translate());
+            return;
+        }
+        Player player = window.player;
+        if (player.inhandItemId > 0 || player.inhandItemCount > 0) { return; }
+        int taken = AdvancedFractionatorRuntime.TakeFood(window.factory, window.fractionatorId, itemId, out int inc);
+        if (taken <= 0) { return; }
+        if (VFInput.control || VFInput.shift) {
+            int added = player.TryAddItemToPackage(itemId, taken, inc, throwTrash: true);
+            if (added > 0) { UIItemup.Up(itemId, added); }
+        } else {
+            player.SetHandItems(itemId, taken, inc);
+        }
+    }
+
+    /// <summary>按下时固定实例和当前件代次，持续按住一秒才允许销毁。</summary>
+    private static void BeginDigestionDiscard() {
+        CancelDigestionDiscard();
+        if (NebulaMultiplayerModAPI.IsClient) {
+            UIRealtimeTip.Popup("高级塔客户端手动取出受限".Translate());
+            return;
+        }
+        if (sourceWindow?.active != true || sourceWindow.factory != displayedFactory
+            || sourceWindow.fractionatorId != displayedFractionatorId) { return; }
+        AdvancedFractionatorState state = AdvancedFractionatorRuntime.GetState(displayedFactory, displayedFractionatorId);
+        if (state == null) { return; }
+        lock (state) {
+            if (state.DigestingEnergy <= 0d) { return; }
+            digestionHoldState = state;
+            digestionHoldVersion = state.DigestionVersion;
+            digestionHoldStart = Time.unscaledTime;
+        }
+    }
+
+    private static void CancelDigestionDiscard() => digestionHoldState = null;
+
+    /// <summary>由可见窗口更新驱动；松键、失焦、换件或实例失效均取消，不重复销毁后续食物。</summary>
+    private static void UpdateDigestionDiscard(AdvancedFractionatorState state) {
+        if (digestionHoldState == null) { return; }
+        if (!Input.GetMouseButton(0) || !Application.isFocused || !ReferenceEquals(state, digestionHoldState)
+            || state.DigestionVersion != digestionHoldVersion || sourceWindow?.active != true) {
+            CancelDigestionDiscard();
+            return;
+        }
+        if (Time.unscaledTime - digestionHoldStart < 1f) { return; }
+        AdvancedFractionatorRuntime.DiscardDigestion(displayedFactory, displayedFractionatorId, state, digestionHoldVersion);
+        CancelDigestionDiscard();
     }
 
     private static void UpdateAdvancedUI(UIFractionatorWindow src, FractionatorComponent fractionator,
@@ -197,7 +290,7 @@ public static partial class FractionatorWindow {
             AppendStoredIds(advancedFlow.ItemIds, state.FlowOutputs);
             int maxCount = Math.Max(advancedInputs.ItemIds.Count, Math.Max(advancedProducts.ItemIds.Count, advancedFlow.ItemIds.Count));
             float contentHeight = Math.Max(1, (maxCount + 1) / 2) * AdvancedRowHeight + 10f;
-            float viewportHeight = Math.Min(MaximumAdvancedViewportHeight, Math.Max(150f, contentHeight));
+            float viewportHeight = Math.Min(MaximumAdvancedViewportHeight, Math.Max(220f, contentHeight));
             ApplyWindowSizeKeepingTopLeft(AddWidth, Math.Max(AddHeight, 235f + viewportHeight - rootBaseSize.y));
             advancedRoot.sizeDelta = new Vector2(advancedRoot.sizeDelta.x, 115f + viewportHeight);
             UpdateAdvancedColumn(advancedInputs, state.Inputs, state.InputInc, "流动输入", AdvancedFractionatorRuntime.InputCapacity, viewportHeight);
@@ -215,6 +308,12 @@ public static partial class FractionatorWindow {
             }
             RenderAdvancedSlot(advancedFoodSlot, foodId, foodCount, foodInc, ProductSlotKind.Fluid);
             advancedFoodSlot.probText.text = $"{foodCount}/{BufferCapacity}";
+            UpdateDigestionDiscard(state);
+            bool digesting = state.DigestingEnergy > 0d;
+            RenderAdvancedSlot(advancedDigestionSlot, state.DigestingItemId, digesting ? 1 : 0,
+                state.DigestingInc, ProductSlotKind.Fluid);
+            advancedDigestionSlot.countText.text = string.Empty;
+            digestionProgressFill.sizeDelta = new Vector2(56f * AdvancedFractionatorRuntime.GetDigestionProgress(state), 6f);
             RecipeProto proto = LDB.recipes.Select(AdvancedRecipeCatalog.GetProtoId(state.SelectedRecipeId));
             advancedRecipeSlot.go.SetActive(true);
             advancedRecipeSlot.icon.sprite = proto?.iconSprite ?? UIRoot.instance?.uiGame?.labWindow?.defaultTechIcon;

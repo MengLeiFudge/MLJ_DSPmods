@@ -24,7 +24,7 @@ namespace FE.Compatibility.Nebula;
 public static class NebulaMultiplayerModAPI {
     public const string GUID = NebulaModAPI.API_GUID;
     /// <summary>联机协议修订号；高级塔全量与增量快照必须由相同版本的主机和客户端处理。</summary>
-    public const int ProtocolVersion = 5;
+    public const int ProtocolVersion = 6;
     public static bool Enable;
     public static Assembly assembly;
 

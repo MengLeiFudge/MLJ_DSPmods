@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading;
 using FE.Logic.Enhancements.Stacking;
 using FE.Logic.Fractionation.Recipes;
-using UnityEngine;
 
 namespace FE.Logic.Fractionation.Fractionators;
 
@@ -25,7 +24,7 @@ public static partial class AdvancedFractionatorRuntime {
     /// <param name="writer">存档或加入时的完整快照。</param>
     public static void Export(BinaryWriter writer) {
         var pairs = States.OrderBy(pair => pair.Key.planetId).ThenBy(pair => pair.Key.fractionatorId).ToArray();
-        writer.Write(-2); // 负数头区分旧版非负实例数量；版本2增加真实货物堆数和速率。
+        writer.Write(-3); // 版本3以独立消化物和double能量替代营养池。
         writer.Write(pairs.Length);
         foreach (var pair in pairs) {
             lock (pair.Value) { WriteState(writer, pair.Key, pair.Value); }
@@ -48,7 +47,7 @@ public static partial class AdvancedFractionatorRuntime {
             writer.Write(key.planetId);
             writer.Write(key.fractionatorId);
         }
-        writer.Write(-2);
+        writer.Write(-3);
         writer.Write(changed.Length);
         foreach (var pair in changed) {
             lock (pair.Value) {
@@ -100,7 +99,8 @@ public static partial class AdvancedFractionatorRuntime {
     /// <param name="seen">完整快照的存活集合；增量及存档读取传 null。</param>
     private static void ReadStates(BinaryReader reader, HashSet<(int planetId, int fractionatorId)> seen) {
         int header = reader.ReadInt32();
-        bool hasCargo = header == -2;
+        bool hasDigestion = header == -3;
+        bool hasCargo = hasDigestion || header == -2;
         int count = hasCargo ? ReadStateCount(reader) : header;
         if (count < 0 || count > MaximumStateCount) {
             throw new InvalidDataException($"Invalid advanced fractionator state header: {header}");
@@ -115,10 +115,25 @@ public static partial class AdvancedFractionatorRuntime {
                 int recipeId = reader.ReadInt32();
                 WorldviewRecipe recipe = RecipeManager.GetRecipe(recipeId);
                 state.SelectedRecipeId = recipeId != 0 && recipe?.IsAdvanced != true ? 0 : recipeId;
-                float nutrition = reader.ReadSingle();
-                state.Nutrition = float.IsNaN(nutrition) || float.IsInfinity(nutrition)
-                    ? 0f : Mathf.Clamp(nutrition, 0f, MaximumNutrition);
-                state.LastFoodTier = Math.Max(0, Math.Min(5, reader.ReadInt32()));
+                if (hasDigestion) {
+                    int itemId = reader.ReadInt32();
+                    double energy = reader.ReadDouble();
+                    int inc = Math.Max(0, Math.Min(10, reader.ReadInt32()));
+                    double capacity = GetFoodEnergy(itemId, inc);
+                    if (capacity > 0d && !double.IsNaN(energy) && !double.IsInfinity(energy) && energy > 0d) {
+                        state.DigestingItemId = itemId;
+                        state.DigestingEnergy = Math.Min(energy, capacity);
+                        state.DigestingInc = inc;
+                        state.DigestionVersion++;
+                    } else {
+                        ClearDigestion(state);
+                    }
+                } else {
+                    // 旧营养及最近矩阵层次只消费字节，不能折算进新消化槽。
+                    reader.ReadSingle();
+                    reader.ReadInt32();
+                    ClearDigestion(state);
+                }
                 state.OutputCursor = Math.Max(0, reader.ReadInt32());
                 ReadDictionary(reader, state.Inputs, MaximumBufferCapacity);
                 ReadDictionary(reader, state.InputInc, MaximumBufferCapacity * 10);
@@ -147,7 +162,7 @@ public static partial class AdvancedFractionatorRuntime {
                         }
                     }
                     double rate = reader.ReadDouble();
-                    state.ProcessingRate = double.IsNaN(rate) || double.IsInfinity(rate) ? 0d : Math.Max(0d, Math.Min(900d, rate));
+                    state.ProcessingRate = double.IsNaN(rate) || double.IsInfinity(rate) ? 0d : Math.Max(0d, Math.Min(30d * StackingManager.AbsoluteMaxStack * FoodSpeed[FoodSpeed.Length - 1], rate));
                     double remainder = reader.ReadDouble();
                     state.ProgressRemainder = double.IsNaN(remainder) || double.IsInfinity(remainder)
                         ? 0d : Math.Max(0d, Math.Min(1d, remainder));
@@ -174,9 +189,9 @@ public static partial class AdvancedFractionatorRuntime {
         writer.Write(key.planetId);
         writer.Write(key.fractionatorId);
         writer.Write(state.SelectedRecipeId);
-        // 运行时用 double 累计，存档与联机字段保持 float，格式不变。
-        writer.Write((float)state.Nutrition);
-        writer.Write(state.LastFoodTier);
+        writer.Write(state.DigestingItemId);
+        writer.Write(state.DigestingEnergy);
+        writer.Write(state.DigestingInc);
         writer.Write(state.OutputCursor);
         WriteDictionary(writer, state.Inputs);
         WriteDictionary(writer, state.InputInc);

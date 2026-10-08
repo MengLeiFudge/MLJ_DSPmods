@@ -145,9 +145,9 @@ public static class AdvancedRecipeCatalog {
             : $"{GetItemName(output.ItemId, false)} · 每成功轮平均 {output.Count:0.##}"));
         string rules = english
             ? $"Success chance per cycle: {recipe.CycleSuccessProbability:P0}. Failed inputs flow back; catalysts are consumed probabilistically on successful cycles only.\n"
-                + "Processing speed depends on incoming cargo, stacking, nutrition and durability. Diagram quantities show material ratios.\n"
+                + "Processing speed depends on incoming cargo, stacking, the matrix being digested and durability. Diagram quantities show material ratios.\n"
             : $"每轮成功率 {recipe.CycleSuccessProbability:P0}。失败原料回流，催化剂仅在成功轮次按概率消耗。\n"
-                + "处理速率随传入货物、堆叠、营养与耐久变化；图中物料数量表示比例。\n";
+                + "处理速率随传入货物、堆叠、消化中的矩阵与耐久变化；图中物料数量表示比例。\n";
         return rules + inputs + "\n" + outputs;
     }
 
