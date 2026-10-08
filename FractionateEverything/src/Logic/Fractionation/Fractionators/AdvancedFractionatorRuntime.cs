@@ -523,8 +523,6 @@ public static partial class AdvancedFractionatorRuntime {
                 ResearchManager.NotifyAdvancedTowerObtained(output.ItemId);
             }
         }
-        recipe.RecordSuccesses(successCount);
-        ProcessManager.RecordFractionSuccess(successCount);
         return successCount;
     }
 

@@ -7,7 +7,7 @@ using static FE.Utils.Utils;
 
 namespace FE.UI.MainPanel.CoreOperate;
 
-/// <summary>仅以已解析配方构建图鉴卡片，不受完整信息偏好影响而泄露未知结果。</summary>
+/// <summary>仅以已解析配方构建完整图鉴卡片，不展示未知结果。</summary>
 public sealed class RecipeGalleryPage : CardBrowserPage {
     protected override string Title => "配方图鉴".Translate();
     protected override string Summary => "FE.RecipeGalleryPage.Summary".Translate();

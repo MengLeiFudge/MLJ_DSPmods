@@ -39,6 +39,8 @@ public abstract class CardBrowserPage {
     private readonly List<Image> detailIcons = [];
     private RectTransform root;
     private RectTransform detailRoot;
+    /// <summary>独立标题使用字体样式加粗，避免依赖游戏不支持的加粗标签。</summary>
+    private Text detailTitle;
     private Text detailText;
     private Text summaryText;
     private Text pagerText;
@@ -96,6 +98,13 @@ public abstract class CardBrowserPage {
         pagerText = PageLayout.AddCenteredText(list, "", 13, White, TextAnchor.MiddleCenter, 90, 622, 90, 36, "page-count");
         for (int i = 0; i < 10; i++) { detailIcons.Add(CreateIcon(detail, 22 + i * 46, 20, 40)); }
         detailRoot = PageLayout.CreateScrollableArea(detail, "description-scroll", 22, 22, DetailWidth - 44, 635, 635);
+        detailTitle = PageLayout.AddCenteredText(detailRoot, "", 16, White, TextAnchor.UpperLeft, 0, 0, DetailWidth - 57, 24, "description-title", true);
+        detailTitle.fontStyle = FontStyle.Bold;
+        detailTitle.supportRichText = false;
+        detailTitle.material = null;
+        detailTitle.maskable = true;
+        detailTitle.raycastTarget = false;
+        detailTitle.resizeTextForBestFit = false;
         detailText = PageLayout.AddCenteredText(detailRoot, "", 16, White, TextAnchor.UpperLeft, 0, 0, DetailWidth - 57, 635, "description", true);
         // 默认 UI 字体材质支持 RectMask2D，建筑状态文字的专用材质不保证执行视口裁剪。
         detailText.material = null;
@@ -144,14 +153,25 @@ public abstract class CardBrowserPage {
             PageLayout.SetCardState(slot.Root, card.Key == selectedKey ? CardVisualState.Selected : CardVisualState.Normal);
         }
         pagerText.text = $"{pageIndex + 1} / {Math.Max(1, (cards.Count + PageSize - 1) / PageSize)}";
-        detailText.text = selected == null ? EmptyText : $"<b>{selected.Title}</b>\n\n{selected.Detail}";
+        // 游戏不解析加粗标签，标题使用独立 Text 的字体样式。
+        detailTitle.text = selected?.Title ?? "";
+        detailTitle.gameObject.SetActive(selected != null);
+        detailText.text = selected == null ? EmptyText : selected.Detail;
         bool hasIcons = selected?.DetailItems.Length > 0;
         bool hasAction = selected?.Action != null;
         RectTransform scrollRoot = detailRoot.parent.parent as RectTransform;
         float top = hasIcons ? 78f : 22f;
         scrollRoot.anchoredPosition = new Vector2(22f, -top);
         scrollRoot.sizeDelta = new Vector2(DetailWidth - 44, (hasAction ? 604f : 657f) - top);
-        PageLayout.ResizeScrollableText(detailRoot, detailText);
+        float titleHeight = selected == null ? 0f : Mathf.Ceil(detailTitle.preferredHeight);
+        float bodyTop = selected == null ? 0f : titleHeight + 16f;
+        float bodyHeight = Mathf.Ceil(detailText.preferredHeight);
+        detailTitle.rectTransform.sizeDelta = new Vector2(DetailWidth - 57, titleHeight);
+        detailText.rectTransform.anchoredPosition = new Vector2(0f, -bodyTop);
+        detailText.rectTransform.sizeDelta = new Vector2(DetailWidth - 57, bodyHeight);
+        float viewportHeight = ((RectTransform)detailRoot.parent).rect.height;
+        detailRoot.sizeDelta = new Vector2(detailRoot.sizeDelta.x,
+            Mathf.Max(viewportHeight, bodyTop + bodyHeight + 20f));
         if (renderedKey != selectedKey) {
             PageLayout.ScrollToTop(detailRoot);
             renderedKey = selectedKey;

@@ -17,12 +17,13 @@ namespace FE.Lifecycle;
 public static class FeatureSaveRegistry {
     public static void Import(BinaryReader r) {
         r.ReadBlocks(
-            ("Recipe", RecipeManager.Import),
+            // 旧配方与过程统计块由ReadBlock按长度隔离，识别标签后整块跳过。
+            ("Recipe", _ => { }),
             ("VanillaRecipes", VanillaRecipeManager.Import),
             ("Stacking", StackingManager.Import),
             ("Building", FractionatorManager.Import),
             ("Item", DataCenterInventory.Import),
-            ("Process", ProcessManager.Import),
+            ("Process", _ => { }),
             ("Civilization3", CivilizationModule.Import),
             ("UI", MainWindow.Import),
             ("Station", StationManager.Import)
@@ -33,12 +34,10 @@ public static class FeatureSaveRegistry {
 
     public static void Export(BinaryWriter w) {
         w.WriteBlocks(
-            ("Recipe", RecipeManager.Export),
             ("VanillaRecipes", VanillaRecipeManager.Export),
             ("Stacking", StackingManager.Export),
             ("Building", FractionatorManager.Export),
             ("Item", DataCenterInventory.Export),
-            ("Process", ProcessManager.Export),
             ("Civilization3", CivilizationModule.Export),
             ("UI", MainWindow.Export),
             ("Station", StationManager.Export)
@@ -51,7 +50,6 @@ public static class FeatureSaveRegistry {
         StackingManager.IntoOtherSave();
         FractionatorManager.IntoOtherSave();
         DataCenterInventory.IntoOtherSave();
-        ProcessManager.IntoOtherSave();
         CivilizationModule.IntoOtherSave();
         MainWindow.IntoOtherSave();
         StationManager.IntoOtherSave();

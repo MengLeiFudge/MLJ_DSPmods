@@ -13,10 +13,13 @@ internal static class ExplorationSignalHud {
     private const float RowHeight = 24f;
     private static readonly Text[] RowTexts = new Text[3];
     private static GameObject root;
-    /// <summary>HUD所在层的局部矩形；布局每帧跟随原版面板动画。</summary>
+    /// <summary>HUD所在层的局部矩形。</summary>
     private static RectTransform rootRect;
     /// <summary>复用原版面板四角，避免动态布局每帧分配数组。</summary>
     private static readonly Vector3[] PanelCorners = new Vector3[4];
+    /// <summary>教学、黑雾、手动研究、研究队列与科技提示的可见边界。</summary>
+    private static readonly Rect[] PanelBounds = new Rect[5];
+    private static int panelCount;
     private static int lastRefreshFrame = -1;
 
     /// <summary>
@@ -74,49 +77,101 @@ internal static class ExplorationSignalHud {
         root.SetActive(false);
     }
 
-    /// <summary>随可见教学与黑雾列表排在下方；底部不足时放到它们右侧。</summary>
+    /// <summary>优先排在原版面板下方或右侧，再在屏幕安全区内寻找空位。</summary>
     /// <param name="uiGame">当前原版界面。</param>
     private static void UpdatePosition(UIGame uiGame) {
         RectTransform parent = (RectTransform)rootRect.parent;
         Rect screen = parent.rect;
-        float top = screen.yMax - 110f;
-        float bottom = top + 10f;
-        float right = screen.xMin + 22f;
-        IncludePanelBounds(uiGame.goalPanel?.rect, parent, ref bottom, ref right);
+        Rect safe = Rect.MinMaxRect(screen.xMin + 10f, screen.yMin + 100f,
+            screen.xMax - 10f, screen.yMax - 110f);
+        panelCount = 0;
+        IncludePanelBounds(uiGame.goalPanel?.rect, parent);
         UIDarkFogMonitor monitor = uiGame.dfMonitor;
-        IncludePanelBounds(monitor?.contentRect, parent, ref bottom, ref right,
+        IncludePanelBounds(monitor?.contentRect, parent,
             monitor?.scrollRect?.viewport ?? monitor?.entryGroup);
+        UIMechaLab lab = uiGame.mechaLab;
+        // 与原版每项50像素的目标高度一致；提前为展开预留空间，避免跟随Lerp逐像素下移。
+        float labHeight = lab == null ? 0f : lab.minBgSize + 50f * (lab.labItems?.Count ?? 0);
+        IncludePanelBounds(lab?.miniLabBg, parent, minimumHeight: labHeight);
+        IncludePanelBounds(uiGame.researchQueue?.trans, parent);
+        IncludePanelBounds(uiGame.researchQueue?.techTip?.panelRect, parent);
 
-        float x = screen.xMin + 22f;
-        float y = Mathf.Min(top, bottom - 10f);
-        // 底部留出原版建造栏区域，不把被遮挡问题转移到屏幕下沿。
-        if (y - rootRect.rect.height < screen.yMin + 100f) {
-            x = right + 10f;
-            y = top;
+        float bottom = safe.yMax + 10f;
+        float right = safe.xMin;
+        for (int i = 0; i < panelCount; i++) {
+            bottom = Mathf.Min(bottom, PanelBounds[i].yMin);
+            right = Mathf.Max(right, PanelBounds[i].xMax);
         }
-        x = Mathf.Clamp(x, screen.xMin + 10f, Mathf.Max(screen.xMin + 10f, screen.xMax - HudWidth - 10f));
-        rootRect.anchoredPosition = new Vector2(Mathf.Round(x - screen.xMin), Mathf.Round(y - screen.yMax));
+        Vector2 position = new(screen.xMin + 22f, Mathf.Min(safe.yMax, bottom - 10f));
+        float scale = GetAvailableScale(position, safe);
+        if (scale < 1f) {
+            position = new Vector2(right + 10f, safe.yMax);
+            scale = GetAvailableScale(position, safe);
+        }
+        if (scale < 1f) {
+            // 空位的左边界和上边界只需考虑安全区边缘及面板边缘；不把越界位置钳回面板上。
+            scale = 0f;
+            for (int x = -1; x < panelCount; x++) {
+                for (int y = -1; y < panelCount; y++) {
+                    Vector2 candidate = new(x < 0 ? safe.xMin : PanelBounds[x].xMax + 10f,
+                        y < 0 ? safe.yMax : PanelBounds[y].yMin - 10f);
+                    float available = GetAvailableScale(candidate, safe);
+                    if (available > scale) { position = candidate; scale = available; }
+                }
+            }
+        }
+        if (scale <= 0f) { return; }
+        Vector2 current = new(screen.xMin + rootRect.anchoredPosition.x,
+            screen.yMax + rootRect.anchoredPosition.y);
+        // 小幅收缩仍能容纳当前HUD时保留位置，避免面板缓动产生反复跳动。
+        if ((position - current).sqrMagnitude <= RowHeight * RowHeight
+            && GetAvailableScale(current, safe) >= scale) {
+            position = current;
+        }
+        rootRect.localScale = new Vector3(scale, scale, 1f);
+        rootRect.anchoredPosition = new Vector2(position.x - screen.xMin, position.y - screen.yMax);
     }
 
-    /// <summary>把当前可见面板边界加入避让范围；滚动内容只计视口内部分。</summary>
+    /// <summary>计算指定左上角可容纳的最大整体比例，保持三行完整并与所有面板留出间隔。</summary>
+    /// <param name="position">父节点局部坐标下的左上角。</param>
+    /// <param name="safe">避开屏幕边缘和建造栏的区域。</param>
+    /// <returns>0表示没有空位，1表示能够使用原尺寸。</returns>
+    private static float GetAvailableScale(Vector2 position, Rect safe) {
+        if (position.x < safe.xMin || position.y > safe.yMax) { return 0f; }
+        float height = RowHeight * RowTexts.Length;
+        float scale = Mathf.Min(1f, Mathf.Min((safe.xMax - position.x) / HudWidth,
+            (position.y - safe.yMin) / height));
+        for (int i = 0; i < panelCount; i++) {
+            Rect panel = PanelBounds[i];
+            if (panel.xMax + 10f <= position.x || panel.yMin - 10f >= position.y) { continue; }
+            // HUD向右下方展开；在面板左侧或上方任一方向留出空间即可避免交叠。
+            scale = Mathf.Min(scale, Mathf.Max((panel.xMin - 10f - position.x) / HudWidth,
+                (position.y - panel.yMax - 10f) / height));
+        }
+        return Mathf.Max(0f, scale);
+    }
+
+    /// <summary>记录当前可见面板边界；滚动内容只计视口内部分。</summary>
     /// <param name="panel">面板实际内容矩形。</param>
     /// <param name="parent">HUD父节点，所有边界均转换到其局部坐标。</param>
-    /// <param name="bottom">所有面板最低的局部Y坐标。</param>
-    /// <param name="right">所有面板最右的局部X坐标。</param>
     /// <param name="viewport">可选的滚动裁剪边界。</param>
+    /// <param name="minimumHeight">面板本地坐标中的展开目标高度，0表示只使用当前高度。</param>
     private static void IncludePanelBounds(RectTransform panel, RectTransform parent,
-        ref float bottom, ref float right, RectTransform viewport = null) {
+        RectTransform viewport = null, float minimumHeight = 0f) {
         if (panel == null || !panel.gameObject.activeInHierarchy) { return; }
         Rect bounds = GetPanelBounds(panel, parent);
-        if (viewport != null) {
-            Rect clip = GetPanelBounds(viewport, parent);
-            bounds = Rect.MinMaxRect(Mathf.Max(bounds.xMin, clip.xMin), Mathf.Max(bounds.yMin, clip.yMin),
-                Mathf.Min(bounds.xMax, clip.xMax), Mathf.Min(bounds.yMax, clip.yMax));
+        if (minimumHeight > panel.rect.height) {
+            Vector3 extra = parent.InverseTransformVector(
+                panel.TransformVector(Vector3.up * (minimumHeight - panel.rect.height)));
+            bounds.yMin -= Mathf.Abs(extra.y);
         }
-        if (bounds.width <= 0 || bounds.height <= 0 || bounds.xMax <= parent.rect.xMin
-            || bounds.xMin >= parent.rect.xMax) { return; }
-        bottom = Mathf.Min(bottom, bounds.yMin);
-        right = Mathf.Max(right, bounds.xMax);
+        Rect clip = viewport == null ? parent.rect : GetPanelBounds(viewport, parent);
+        bounds = Rect.MinMaxRect(Mathf.Max(bounds.xMin, Mathf.Max(clip.xMin, parent.rect.xMin)),
+            Mathf.Max(bounds.yMin, Mathf.Max(clip.yMin, parent.rect.yMin)),
+            Mathf.Min(bounds.xMax, Mathf.Min(clip.xMax, parent.rect.xMax)),
+            Mathf.Min(bounds.yMax, Mathf.Min(clip.yMax, parent.rect.yMax)));
+        if (bounds.width <= 0 || bounds.height <= 0) { return; }
+        PanelBounds[panelCount++] = bounds;
     }
 
     /// <summary>读取矩形本身的边界，避免把隐藏或滚出视口的子节点算入布局。</summary>

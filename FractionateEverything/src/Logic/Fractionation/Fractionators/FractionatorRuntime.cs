@@ -1,11 +1,9 @@
-﻿// 基础分馏塔逐帧处理、共享堆叠配置、功耗适配与累计成功统计。
+﻿// 基础分馏塔逐帧处理、共享堆叠配置与功耗适配。
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Threading;
 using UnityEngine;
 using HarmonyLib;
 using FE.Logic.DataCenter;
@@ -210,22 +208,6 @@ public static partial class ProcessManager {
     /// 表示当前缓存包含流动物品输出。
     /// </summary>
     public const byte OutputFlagFluid = 1 << 2;
-    /// <summary>
-    /// 累计分馏成功次数（用于任务系统）
-    /// </summary>
-    public static long totalFractionSuccesses;
-    private const int FractionRateWindowSeconds = 60;
-    private static readonly long[] fractionSuccessBuckets = new long[FractionRateWindowSeconds];
-    private static readonly object fractionRateWindowLock = new();
-    /// <summary>并行塔线程的当前秒成功计数，主线程每秒交换后推进滚动窗口。</summary>
-    private static long pendingFractionSuccesses;
-    private static long currentFractionRateSecond = -1;
-    private static long currentFractionSuccessesPerMinute;
-    /// <summary>
-    /// 记录当前存档历史峰值每分钟成功分馏次数。
-    /// </summary>
-    public static long peakFractionSuccessesPerMinute;
-
 
     /// <summary>
     /// 读取分馏塔当前输出缓存包含的产物类型标记。
@@ -386,7 +368,6 @@ public static partial class ProcessManager {
         bool hasFullProduct = extraState.HasFullProduct(productOutputMax);
         bool needRecheckFullProduct = false;
         int consumedInputThisTick = 0;
-        int successCountThisTick = 0;
         List<ProductOutputInfo> productRegisterDeltas = null;
         if (fractionator.fluidInputCount > 0
             && fractionator.fluidOutputCount < fluidOutputMax) {
@@ -435,7 +416,6 @@ public static partial class ProcessManager {
                         batchCount, fluidInputIncAvg, ref fractionator.fluidInputInc, outputBuffer);
                 }
 
-                recipe?.RecordSuccesses(batchResult.SuccessCount);
                 fractionator.fractionSuccess = batchResult.HasOutput;
 
                 if (batchResult.InputRemoveCount > 0) {
@@ -456,7 +436,6 @@ public static partial class ProcessManager {
                 if (batchResult.SuccessCount > 0) {
                     // 成功推进研究也点亮产物方向，但只有outputBuffer中的实体进入物品统计与缓存。
                     producedMainThisTick = true;
-                    successCountThisTick += batchResult.SuccessCount;
                     fractionator.productOutputTotal += batchResult.SuccessCount;
                     for (int i = 0; i < outputBuffer.Count; i++) {
                         ProductOutputInfo p = outputBuffer[i];
@@ -489,8 +468,7 @@ public static partial class ProcessManager {
             fractionator.fractionSuccess = false;
         }
 
-        FlushProcessingDeltas(fluidId, consumedInputThisTick, successCountThisTick,
-            productRegisterDeltas, productRegister, consumeRegister);
+        FlushProcessingDeltas(fluidId, consumedInputThisTick, productRegisterDeltas, productRegister, consumeRegister);
 
         SetCurrentOutputFlags(factory,
             extraState,
@@ -638,7 +616,7 @@ public static partial class ProcessManager {
     }
 
     private static void FlushProcessingDeltas(int fluidId, int consumedInputCount,
-        int successCount, List<ProductOutputInfo> productRegisterDeltas,
+        List<ProductOutputInfo> productRegisterDeltas,
         int[] productRegister, int[] consumeRegister) {
         if (consumedInputCount > 0) {
             lock (consumeRegister) { consumeRegister[fluidId] += consumedInputCount; }
@@ -649,77 +627,6 @@ public static partial class ProcessManager {
                     productRegister[delta.itemId] += delta.count;
                 }
             }
-        }
-        if (successCount > 0) {
-            RecordFractionSuccess(successCount);
-        }
-    }
-
-    /// <summary>并行结算只原子累计成功数，不进入每分钟窗口的全局锁。</summary>
-    /// <param name="count">本批成功轮数。</param>
-    internal static void RecordFractionSuccess(int count) {
-        if (count <= 0) { return; }
-        long current;
-        long updated;
-        do {
-            current = Interlocked.Read(ref totalFractionSuccesses);
-            updated = current > long.MaxValue - count ? long.MaxValue : current + count;
-        } while (Interlocked.CompareExchange(ref totalFractionSuccesses, updated, current) != current);
-        Interlocked.Add(ref pendingFractionSuccesses, count);
-    }
-
-    /// <summary>主线程每秒收集并行成功计数，推进一分钟窗口并记录历史峰值。</summary>
-    /// <param name="gameTick">当前游戏刻，60 刻为一秒。</param>
-    public static void FlushFractionSuccessWindow(long gameTick) {
-        long second = Math.Max(0L, gameTick / 60L);
-        lock (fractionRateWindowLock) {
-            long count = Interlocked.Exchange(ref pendingFractionSuccesses, 0);
-            AdvanceFractionRateWindow(second);
-
-            int bucketIndex = (int)(second % FractionRateWindowSeconds);
-            fractionSuccessBuckets[bucketIndex] += count;
-            currentFractionSuccessesPerMinute += count;
-            if (currentFractionSuccessesPerMinute > peakFractionSuccessesPerMinute) {
-                peakFractionSuccessesPerMinute = currentFractionSuccessesPerMinute;
-            }
-        }
-    }
-
-    private static void AdvanceFractionRateWindow(long second) {
-        if (currentFractionRateSecond < 0) {
-            currentFractionRateSecond = second;
-            return;
-        }
-
-        if (second <= currentFractionRateSecond) {
-            return;
-        }
-
-        long delta = second - currentFractionRateSecond;
-        if (delta >= FractionRateWindowSeconds) {
-            Array.Clear(fractionSuccessBuckets, 0, fractionSuccessBuckets.Length);
-            currentFractionSuccessesPerMinute = 0;
-            currentFractionRateSecond = second;
-            return;
-        }
-
-        for (long bucketSecond = currentFractionRateSecond + 1; bucketSecond <= second; bucketSecond++) {
-            int bucketIndex = (int)(bucketSecond % FractionRateWindowSeconds);
-            currentFractionSuccessesPerMinute -= fractionSuccessBuckets[bucketIndex];
-            if (currentFractionSuccessesPerMinute < 0) {
-                currentFractionSuccessesPerMinute = 0;
-            }
-            fractionSuccessBuckets[bucketIndex] = 0;
-        }
-        currentFractionRateSecond = second;
-    }
-
-    private static void ResetFractionRateWindow() {
-        lock (fractionRateWindowLock) {
-            Interlocked.Exchange(ref pendingFractionSuccesses, 0);
-            Array.Clear(fractionSuccessBuckets, 0, fractionSuccessBuckets.Length);
-            currentFractionRateSecond = -1;
-            currentFractionSuccessesPerMinute = 0;
         }
     }
 
@@ -871,42 +778,6 @@ public static partial class ProcessManager {
             }
             RemoveFluidOutput(ref fractionator, insertedStack, fluidOutputIncAvg);
         }
-    }
-
-    #endregion
-
-    #region 模组存档接口实现
-
-    /// <summary>
-    /// 将该分馏域状态写入存档。
-    /// </summary>
-    public static void Export(BinaryWriter w) {
-        w.WriteBlocks(
-            ("TotalFractionSuccesses", bw => bw.Write(Interlocked.Read(ref totalFractionSuccesses))),
-            ("PeakFractionSuccessesPerMinute", bw => bw.Write(Interlocked.Read(ref peakFractionSuccessesPerMinute)))
-        );
-    }
-
-    /// <summary>
-    /// 从存档读取该分馏域状态。
-    /// </summary>
-    public static void Import(BinaryReader r) {
-        ResetFractionRateWindow();
-        r.ReadBlocks(
-            ("TotalFractionSuccesses", br =>
-                Interlocked.Exchange(ref totalFractionSuccesses, Math.Max(0, br.ReadInt64()))),
-            ("PeakFractionSuccessesPerMinute", br =>
-                Interlocked.Exchange(ref peakFractionSuccessesPerMinute, Math.Max(0, br.ReadInt64())))
-        );
-    }
-
-    /// <summary>
-    /// 切换或进入其他存档时重置该分馏域状态。
-    /// </summary>
-    public static void IntoOtherSave() {
-        Interlocked.Exchange(ref totalFractionSuccesses, 0);
-        Interlocked.Exchange(ref peakFractionSuccessesPerMinute, 0);
-        ResetFractionRateWindow();
     }
 
     #endregion

@@ -19,7 +19,7 @@ public static class InserterStackPatch {
 
     [HarmonyTranspiler]
     public static IEnumerable<CodeInstruction> InserterComponent_InternalUpdate_Transpiler(
-        IEnumerable<CodeInstruction> instructions) {
+        IEnumerable<CodeInstruction> instructions, MethodBase __originalMethod) {
         var result = new List<CodeInstruction>(instructions);
         int replaced = 0;
         for (int i = 0; i <= result.Count - 7; i++) {
@@ -33,7 +33,9 @@ public static class InserterStackPatch {
                 continue;
             }
 
-            result[i + 3] = new CodeInstruction(OpCodes.Ldarg_0);
+            // 只替换除数，保留原指令上的跳转标签与异常块；第三方循环次数补丁不触碰此表达式。
+            result[i + 3].opcode = OpCodes.Ldarg_0;
+            result[i + 3].operand = null;
             result.Insert(i + 4, new CodeInstruction(OpCodes.Ldfld,
                 AccessTools.Field(typeof(InserterComponent), nameof(InserterComponent.stackOutput))));
             replaced++;
@@ -41,7 +43,8 @@ public static class InserterStackPatch {
         }
 
         if (replaced != 1) {
-            LogWarning("InserterStackPatch: 未找到分拣器 stackCount 固定 4 的替换点。");
+            LogWarning($"InserterStackPatch: {__originalMethod.DeclaringType?.Name}.{__originalMethod.Name}"
+                + $" 的 stackCount 固定4替换点数量为{replaced}，预期1。");
         }
         return result;
     }

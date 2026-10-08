@@ -23,7 +23,7 @@ Fractionation/
     ├── Definitions/BaseRecipe.cs
     ├── Definitions/WorldviewRecipe.cs
     ├── Models/                       # ERecipe、输出模型
-    ├── RecipeManager.cs              # 目录、索引、稳定 ID、统计存档
+    ├── RecipeManager.cs              # 目录、索引、稳定 ID、已解析配方缓存
     └── RecipeRuntime.cs              # 基础配方可用性投影
 ```
 

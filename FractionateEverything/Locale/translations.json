@@ -1266,13 +1266,6 @@
     "1031": "Damit die Verarbeitung einheitlich bleibt, kann dieser Wert im Mehrspielermodus nicht geändert werden. Ändere und speichere ihn im Einzelspielermodus, bevor du online spielst.",
     "1041": "処理の一貫性を保つため、マルチプレイ中は変更できません。シングルプレイで変更して保存してから、オンラインで遊んでください。"
   },
-  "始终显示完整分馏配方信息": {
-    "enUS": "Always show complete fractionation recipe information",
-    "zhCN": "始终显示完整分馏配方信息",
-    "frFR": "Toujours afficher les informations complètes des recettes de fractionnement",
-    "1031": "Vollständige Fraktionierungsrezepte immer anzeigen",
-    "1041": "分留レシピの全情報を常に表示"
-  },
   "启用确认弹窗": {
     "enUS": "Enable confirmation dialogs",
     "zhCN": "启用确认弹窗",

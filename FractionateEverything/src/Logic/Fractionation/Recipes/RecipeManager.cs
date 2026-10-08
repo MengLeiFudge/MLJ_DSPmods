@@ -9,7 +9,7 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Fractionation.Recipes;
 
 /// <summary>
-/// 配方创建、稳定身份索引和存档聚合入口。
+/// 配方创建、稳定身份索引和已解析配方查询入口。
 /// </summary>
 public static class RecipeManager {
     private static readonly List<BaseRecipe> RecipeList = [];
@@ -164,39 +164,10 @@ public static class RecipeManager {
         OutputRecipeIndex.TryGetValue(itemId, out List<WorldviewRecipe> recipes) ? recipes : [];
 
     /// <summary>
-    /// 读取配方累计统计；配方身份按稳定 ID 定位。
-    /// </summary>
-    public static void Import(BinaryReader r) {
-        r.ReadBlocks(("Recipes", br => br.ReadList(reader => {
-            string stableId = reader.ReadString();
-            WorldviewRecipe recipe = GetRecipe(stableId);
-            reader.ReadBlocks(("Data", data => recipe?.Import(data)));
-        })));
-    }
-
-    /// <summary>
-    /// 写入配方累计统计。
-    /// </summary>
-    public static void Export(BinaryWriter w) {
-        // 基础解析入口的进度归研究域所有，本身不会累计配方产出统计，无需写入每次快照。
-        List<WorldviewRecipe> recipes = StableRecipeIndex.Values
-            .Where(recipe => recipe.Kind != WorldviewRecipeKind.BasicAnalysis)
-            .OrderBy(recipe => recipe.PersistentId)
-            .ToList();
-        w.WriteBlocks(("Recipes", bw => bw.WriteList(recipes, (writer, recipe) => {
-            writer.Write(recipe.StableId);
-            writer.WriteBlocks(("Data", recipe.Export));
-        })));
-    }
-
-    /// <summary>
-    /// 清除存档级配方统计。
+    /// 切档时清除依赖研究状态的可选配方缓存。
     /// </summary>
     public static void IntoOtherSave() {
         UnlockedRecipeCache.Clear();
-        foreach (BaseRecipe recipe in RecipeList) {
-            recipe.IntoOtherSave();
-        }
     }
 
     private static void AddAnalysisDirections() {

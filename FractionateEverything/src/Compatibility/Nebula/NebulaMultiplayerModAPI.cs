@@ -5,7 +5,6 @@ using BepInEx.Bootstrap;
 using FE.Logic.Civilization;
 using FE.Logic.DataCenter;
 using FE.Logic.Enhancements.Stacking;
-using FE.Logic.Fractionation.Recipes;
 using FE.Logic.Fractionation.Fractionators;
 using HarmonyLib;
 using NebulaAPI;
@@ -76,7 +75,7 @@ public static class NebulaMultiplayerModAPI {
     }
 
     /// <summary>
-    /// 广播研究、探索、配方统计、亚空间库存与过程统计的主机状态。
+    /// 广播研究、探索和亚空间库存的主机状态，并同步全局堆叠。
     /// </summary>
     public static void BroadcastCivilizationState() {
         if (!NebulaModAPI.IsMultiplayerActive
@@ -90,11 +89,8 @@ public static class NebulaMultiplayerModAPI {
             BinaryWriter writer = provider.BinaryWriter;
             writer.WriteBlocks(
                 ("Civilization", CivilizationModule.Export),
-                ("Recipes", RecipeManager.Export),
                 // 亚空间快照覆盖完整稀疏库存，避免仅同步 Frag/Memory 时遗漏普通物资。
-                ("DataCenter", Export),
-                // 过程统计只由主机累计，客户端通过 Import 刷新显示。
-                ("Process", ProcessManager.Export)
+                ("DataCenter", Export)
             );
             stateData = provider.CloseAndGetBytes();
         }
@@ -314,7 +310,7 @@ internal static class CenterItemChangeApply {
 }
 
 /// <summary>
-/// 研究、探索、配方统计、亚空间库存与过程统计的联机同步快照。
+/// 研究、探索、亚空间库存和全局堆叠的联机同步快照。
 /// </summary>
 public class CivilizationStatePacket {
     public byte[] data { get; set; }
@@ -351,14 +347,14 @@ public class CivilizationStatePacketProcessor : BasePacketProcessor<Civilization
             BinaryReader reader = provider.BinaryReader;
             reader.ReadBlocks(
                 ("Civilization", CivilizationModule.Import),
-                ("Recipes", RecipeManager.Import),
+                // 旧版统计块已按长度隔离；静默跳过，不恢复配方或过程计数。
+                ("Recipes", _ => { }),
                 ("DataCenter", br => {
                     // 稀疏 Import 不会清除缺席槽；先清空旧库存再导入主机全量快照。
                     IntoOtherSave();
                     Import(br);
                 }),
-                // 仅客户端 Import 主机过程统计；主机拒绝本包，不会被客户端 Process 覆盖。
-                ("Process", ProcessManager.Import)
+                ("Process", _ => { })
             );
         }
         StackingManager.ConfiguredMaxStack = packet.configuredMaxStack;

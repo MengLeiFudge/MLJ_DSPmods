@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using static FE.Utils.Utils;
+﻿using System.Collections.Generic;
 
 namespace FE.Logic.Fractionation.Recipes;
 
 /// <summary>
-/// 分馏配方基类
+/// 分馏配方定义与批量结算接口；研究状态由文明研究域管理。
 /// </summary>
 public abstract class BaseRecipe(
     int inputID,
@@ -24,29 +20,6 @@ public abstract class BaseRecipe(
     /// 类型
     /// </summary>
     public abstract ERecipe RecipeType { get; }
-
-    /// <summary>
-    /// 获取该配方累计成功结算次数。
-    /// </summary>
-    public long TotalSuccessCount => Interlocked.Read(ref totalSuccessCount);
-
-    private long totalSuccessCount;
-
-    /// <summary>
-    /// 累计该配方的成功结算次数。
-    /// </summary>
-    public void RecordSuccesses(int count) {
-        if (count <= 0) {
-            return;
-        }
-
-        long current;
-        long updated;
-        do {
-            current = Interlocked.Read(ref totalSuccessCount);
-            updated = current > long.MaxValue - count ? long.MaxValue : current + count;
-        } while (Interlocked.CompareExchange(ref totalSuccessCount, updated, current) != current);
-    }
 
     /// <summary>
     /// 输入物品的ID
@@ -87,63 +60,6 @@ public abstract class BaseRecipe(
     /// <returns>本批实际消耗、产出与回流数量。</returns>
     public abstract FractionationBatchResult GetOutputsBatchFast(ref uint seed, float pointsBonus, float successBoost,
         int batchCount, int fluidInputIncAvg, ref int fluidInputInc, ProductOutputBuffer outputs);
-
-    #endregion
-
-    #region 模组存档接口实现
-
-    /// <summary>
-    /// 从存档读取该分馏域状态。
-    /// </summary>
-    public virtual void Import(BinaryReader r) {
-        r.ReadBlocks(
-            ("TotalSuccessCount", br => Interlocked.Exchange(ref totalSuccessCount, Math.Max(0, br.ReadInt64()))),
-            ("OutputMain", br => br.ReadList(reader => {
-                int id = reader.ReadInt32();
-                int total = reader.ReadInt32();
-                var info = OutputMain.Find(x => x.OutputID == id);
-                if (info != null) info.OutputTotalCount = total;
-                else LogWarning($"Output {id} not found in {TypeName} main outputs");
-            })),
-            ("OutputAppend", br => br.ReadList(reader => {
-                int id = reader.ReadInt32();
-                int total = reader.ReadInt32();
-                var info = OutputAppend.Find(x => x.OutputID == id);
-                if (info != null) info.OutputTotalCount = total;
-                else LogWarning($"Output {id} not found in {TypeName} append outputs");
-            }))
-        );
-    }
-
-    /// <summary>
-    /// 将该分馏域状态写入存档。
-    /// </summary>
-    public virtual void Export(BinaryWriter w) {
-        w.WriteBlocks(
-            ("TotalSuccessCount", bw => bw.Write(TotalSuccessCount)),
-            ("OutputMain", bw => bw.WriteList(OutputMain, (writer, info) => {
-                writer.Write(info.OutputID);
-                writer.Write(info.OutputTotalCount);
-            })),
-            ("OutputAppend", bw => bw.WriteList(OutputAppend, (writer, info) => {
-                writer.Write(info.OutputID);
-                writer.Write(info.OutputTotalCount);
-            }))
-        );
-    }
-
-    /// <summary>
-    /// 切换或进入其他存档时重置该分馏域状态。
-    /// </summary>
-    public virtual void IntoOtherSave() {
-        Interlocked.Exchange(ref totalSuccessCount, 0);
-        foreach (OutputInfo info in OutputMain) {
-            info.OutputTotalCount = 0;
-        }
-        foreach (OutputInfo info in OutputAppend) {
-            info.OutputTotalCount = 0;
-        }
-    }
 
     #endregion
 }

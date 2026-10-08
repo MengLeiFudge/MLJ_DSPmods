@@ -7,7 +7,6 @@ using FE.Logic.DataCenter;
 using FE.Logic.Fractionation.Recipes;
 using FE.UI.Controls;
 using FE.UI.Foundation;
-using FE.UI.MainPanel.Setting;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
@@ -1158,6 +1157,14 @@ public static class FractionatorWindow {
             ? null
             : RecipeManager.GetRecipe(advancedState.SelectedRecipeId);
         bool hasFluid = advanced ? advancedRecipe != null : fractionator.fluidId > 0;
+        // 与基础塔正面上传的运行条件一致；状态文字和整个输出区域共用此结果。
+        bool interactionMode = FractionatorTowerCatalog.IsBasicTower(buildingID)
+                               && fractionator.belt0 > 0
+                               && !fractionator.isOutput0
+                               && fractionator.belt1 <= 0
+                               && fractionator.belt2 <= 0
+                               && fractionator.GetProducts(src.factory).All(product => product.count <= 0);
+        bool showOutputs = hasFluid && !interactionMode;
 
         modWindow.titleText.text = building.name;
         UpdateAdvancedControls(src, buildingID, advancedState);
@@ -1185,7 +1192,7 @@ public static class FractionatorWindow {
             ((Behaviour)modWindow.needCountText).enabled = true;
             modWindow.inputTitleText.text = "流动输入".Translate();
             ((Behaviour)modWindow.inputTitleText).enabled = true;
-            ((Behaviour)modWindow.speedText).enabled = true;
+            ((Behaviour)modWindow.speedText).enabled = !interactionMode;
             int inputInc = fractionator.fluidInputCount > 0 && fractionator.fluidInputInc > 0
                 ? fractionator.fluidInputInc / fractionator.fluidInputCount
                 : 0;
@@ -1227,8 +1234,8 @@ public static class FractionatorWindow {
             }
         }
 
-        if (modWindow.sepLine0 != null) ((Behaviour)modWindow.sepLine0).enabled = hasFluid;
-        if (modWindow.sepLine1 != null) ((Behaviour)modWindow.sepLine1).enabled = hasFluid;
+        if (modWindow.sepLine0 != null) ((Behaviour)modWindow.sepLine0).enabled = showOutputs;
+        if (modWindow.sepLine1 != null) ((Behaviour)modWindow.sepLine1).enabled = showOutputs;
         if (modWindow.remindText != null) ((Behaviour)modWindow.remindText).enabled = !hasFluid;
 
         if (advanced) {
@@ -1241,30 +1248,24 @@ public static class FractionatorWindow {
         byte outputFlags = fractionator.GetCurrentOutputFlags(src.factory);
         bool mainLit = workingNow && (outputFlags & OutputFlagMain) != 0;
         bool fluidLit = workingNow && ((outputFlags & OutputFlagFluid) != 0 || !mainLit);
-        SetArrowGroup(_mainArrows, hasFluid, mainLit ? modWindow.marqueeOnColor : modWindow.marqueeOffColor);
+        SetArrowGroup(_mainArrows, showOutputs, mainLit ? modWindow.marqueeOnColor : modWindow.marqueeOffColor);
         SetArrowGroup(_sideArrows, false, modWindow.marqueeOffColor);
-        SetArrowGroup(_fluidArrows, hasFluid, fluidLit ? modWindow.marqueeOnColor : modWindow.marqueeOffColor);
+        SetArrowGroup(_fluidArrows, showOutputs, fluidLit ? modWindow.marqueeOnColor : modWindow.marqueeOffColor);
 
-        AnalysisOutcome analysis = buildingID == IFE基础解析塔
+        AnalysisOutcome analysis = buildingID == IFE基础解析塔 && !interactionMode
             ? ResearchManager.GetAnalysisOutcome(fractionator.fluidId) : default;
-        UpdateModStateText(src, fractionator, building, buildingID, consumerRatio, analysis);
+        UpdateModStateText(src, fractionator, building, consumerRatio, analysis, interactionMode);
         BaseRecipe recipe = GetRecipeForBuilding(buildingID, fractionator.fluidId);
-        UpdateUIElements(src, fractionator, recipe, analysis, hasFluid);
+        UpdateUIElements(src, fractionator, recipe, analysis, showOutputs);
     }
 
     private static void UpdateModStateText(UIFractionatorWindow src,
-        FractionatorComponent fractionator, ItemProto building, int buildingID, float consumerRatio,
-        AnalysisOutcome analysis) {
+        FractionatorComponent fractionator, ItemProto building, float consumerRatio,
+        AnalysisOutcome analysis, bool interactionMode) {
 
         int fluidOutputMax = building.FluidOutputMax();
         int productOutputMax = building.ProductOutputMax();
         List<ProductOutputInfo> products = fractionator.GetProducts(src.factory);
-        bool interactionMode = FractionatorTowerCatalog.IsBasicTower(buildingID)
-                               && fractionator.belt0 > 0
-                               && !fractionator.isOutput0
-                               && fractionator.belt1 <= 0
-                               && fractionator.belt2 <= 0
-                               && products.All(product => product.count <= 0);
         if (interactionMode) {
             int rearItemId = src.factory.cargoTraffic.GetItemIdAtRear(fractionator.belt0);
             int rearStack = GetRearCargoStack(src.factory.cargoTraffic, fractionator.belt0);
@@ -1308,7 +1309,7 @@ public static class FractionatorWindow {
                 modWindow.stateText.color = modWindow.workStoppedColor;
             }
         }
-        if (buildingID == IFE基础解析塔 && fractionator.fluidId > 0) {
+        if (building.ID == IFE基础解析塔 && fractionator.fluidId > 0) {
             modWindow.stateText.text = analysis.ModeKey.Translate()
                 + " · " + modWindow.stateText.text;
         }
@@ -1355,12 +1356,9 @@ public static class FractionatorWindow {
 
     private static void UpdateUIElements(UIFractionatorWindow src,
         FractionatorComponent fractionator, BaseRecipe recipe,
-        AnalysisOutcome analysis, bool hasFluid) {
+        AnalysisOutcome analysis, bool showOutputs) {
 
         List<ProductOutputInfo> products = fractionator.GetProducts(src.factory);
-        bool showCompleteRecipeInformation = GameMain.sandboxToolsEnabled
-                                             || Miscellaneous.ShowFractionateRecipeDetails;
-
         foreach (var slot in mainSlots)
             slot?.go?.SetActive(false);
         foreach (var slot in sideSlots)
@@ -1370,7 +1368,7 @@ public static class FractionatorWindow {
         int fractionatorId = src.fractionatorId;
         bool hasCachedWidth = widthByFractionatorId.TryGetValue(fractionatorId, out float cachedWidth);
 
-        if (!hasFluid) {
+        if (!showOutputs) {
             ApplyWindowSizeKeepingTopLeft(hasCachedWidth ? cachedWidth : 0f, 0f);
             if (_mainArrowText != null) _mainArrowText.gameObject.SetActive(false);
             if (_sideArrowText != null) _sideArrowText.gameObject.SetActive(false);
@@ -1408,8 +1406,7 @@ public static class FractionatorWindow {
                 var pInfo = products.Find(p => p.itemId == output.OutputID && p.isMainOutput);
                 float ratio = recipeSuccessRatio * output.SuccessRatio;
                 FillSlot(mainSlots[mainCount], output, pInfo?.count ?? 0,
-                    ratio, output.ShowSuccessRatio || showCompleteRecipeInformation,
-                    ProductSlotKind.Main);
+                    ratio, ProductSlotKind.Main);
                 mainSuccessSum += ratio;
                 mainCount++;
             }
@@ -1518,7 +1515,7 @@ public static class FractionatorWindow {
         }
     }
 
-    private static void FillSlot(ProductSlot slot, OutputInfo output, int count, float ratio, bool showRatio,
+    private static void FillSlot(ProductSlot slot, OutputInfo output, int count, float ratio,
         ProductSlotKind kind) {
         slot.go.SetActive(true);
         slot.kind = kind;
@@ -1527,7 +1524,7 @@ public static class FractionatorWindow {
         if (itemProto != null && slot.icon != null) slot.icon.sprite = itemProto.iconSprite;
         if (slot.countText != null) slot.countText.text = count.ToString();
         if (slot.probText != null) {
-            slot.probText.text = showRatio ? ratio.FormatP() : "???";
+            slot.probText.text = ratio.FormatP();
             slot.probText.color = ProbColor;
         }
     }

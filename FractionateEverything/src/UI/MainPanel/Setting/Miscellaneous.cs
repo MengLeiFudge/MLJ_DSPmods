@@ -57,7 +57,6 @@ public static class Miscellaneous {
     private static UIButton UploadThresholdTipsButton2;
     private static ConfigEntry<float> UploadThresholdEntry;
 
-    private static ConfigEntry<bool> ShowFractionateRecipeDetailsEntry;
     private static ConfigEntry<bool> EnableConfirmationDialogEntry;
 
     private static MyCheckBox PackageSortTwiceCheckBox;
@@ -72,7 +71,6 @@ public static class Miscellaneous {
     public static int[] TakeItemPriority => TakeItemPriorityArr[TakeItemPriorityEntry.Value];
     public static float DownloadThreshold => DownloadThresholdEntry.Value;
     public static float UploadThreshold => UploadThresholdEntry.Value;
-    public static bool ShowFractionateRecipeDetails => ShowFractionateRecipeDetailsEntry.Value;
     public static bool EnableConfirmationDialog => EnableConfirmationDialogEntry.Value;
     public static bool EnablePackageSortTwice => EnablePackageSortTwiceEntry.Value;
     public static bool EnablePackageAutoSortTwice => EnablePackageAutoSortTwiceEntry.Value;
@@ -106,8 +104,6 @@ public static class Miscellaneous {
             UploadThresholdEntry.Value = 0.8f;
         }
 
-        ShowFractionateRecipeDetailsEntry =
-            configFile.Bind("Miscellaneous", "ShowFractionateRecipeDetails", false, "始终显示完整分馏配方信息");
         EnableConfirmationDialogEntry =
             configFile.Bind("Miscellaneous", "EnableConfirmationDialog", true, "启用确认弹窗");
 
@@ -146,10 +142,9 @@ public static class Miscellaneous {
     public static void CreateInterfaceUI(MyWindow wnd, RectTransform trans) {
         interfaceTab = trans;
         List<LayoutNode> children = [
-            CheckBoxNode(ShowFractionateRecipeDetailsEntry, "始终显示完整分馏配方信息", pos: (0, 0)),
-            CheckBoxNode(EnableConfirmationDialogEntry, "启用确认弹窗", pos: (1, 0)),
+            CheckBoxNode(EnableConfirmationDialogEntry, "启用确认弹窗", pos: (0, 0)),
             CheckBoxNode(EnablePackageSortTwiceEntry, "双击背包排序按钮将多余物品收入分馏亚空间",
-                onBuilt: cb => PackageSortTwiceCheckBox = cb, pos: (2, 0)),
+                onBuilt: cb => PackageSortTwiceCheckBox = cb, pos: (1, 0)),
         ];
         if (AutoSorter.Enable) {
             children.Add(CheckBoxNode(EnablePackageAutoSortTwiceEntry, "AutoSorter模组将背包中多余物品收入分馏亚空间",

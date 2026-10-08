@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using FE.Logic.Civilization;
 using FE.Logic.Fractionation.Fractionators;
@@ -7,7 +8,7 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Enhancements.Stacking;
 
 /// <summary>
-/// 统一堆叠系统。普通档在实际集装设备解锁前维持1；已玩过档在首级FE成长科技前维持1。
+/// 统一堆叠系统。普通档在定位到的集装科技完成前维持1；已玩过档在首级FE成长科技前维持1。
 /// </summary>
 public static class StackingManager {
     public const int LockedMaxStack = 1;
@@ -16,7 +17,7 @@ public static class StackingManager {
     public static readonly int[] StackMilestones = [4, 8, 12, 16, 20];
     private static readonly int[] HiddenSorterTechs = [
         T集装分拣器改良, T集装分拣器改良 + 1, T集装分拣器改良 + 2,
-        T集装分拣器改良 + 3, T集装分拣器改良 + 4, T集装分拣器改良 + 5
+        T集装分拣器改良 + 3, T集装分拣器改良 + 4
     ];
     private static readonly int[] HiddenStationPilerTechs = [
         T运输站集装物流, T运输站集装物流 + 1, T运输站集装物流 + 2
@@ -24,23 +25,76 @@ public static class StackingManager {
     private static int configuredMaxStack = BaseUnlockedMaxStack;
     private static int lastSyncedStack = -1;
     private static bool lastSyncedUnlocked;
+    /// <summary>去重后的集装触发科技；null表示尚未定位，空集合表示两设备都没有前置科技。</summary>
+    private static IReadOnlyList<int> pilingTechnologyIds;
+    /// <summary>当前定位结果所属的游戏历史，用于识别切档。</summary>
+    private static GameHistoryData pilingHistory;
+    /// <summary>定位时的物品原型数组，用于识别原型重载。</summary>
+    private static ItemProto[] pilingItems;
+    /// <summary>定位时的科技原型数组，用于识别原型重载。</summary>
+    private static TechProto[] pilingTechs;
 
     public static bool IsUnlocked => GameMain.history != null
         && (GrowthTechnologyManager.UsesExperiencedStackProgression
             ? GameMain.history.TechUnlocked(TFE分馏堆叠成长 + 1)
             : HasPilingTechnology);
 
-    /// <summary>当前科技树已经允许制造自动集装机或集装分拣器，不绑定原版科技编号。</summary>
-    public static bool HasPilingTechnology => GameMain.history != null
-        && (IsPilingItemUnlocked(I自动集装机) || IsPilingItemUnlocked(I集装分拣器));
+    /// <summary>任一集装设备的主配方或显式前置科技已完成；其他产出配方的制造资格不参与判断。</summary>
+    public static bool HasPilingTechnology {
+        get {
+            GameHistoryData history = GameMain.history;
+            if (history == null) { return false; }
+            IReadOnlyList<int> techIds = PilingTechnologyIds;
+            for (int i = 0; i < techIds.Count; i++) {
+                if (history.TechUnlocked(techIds[i])) { return true; }
+            }
+            return false;
+        }
+    }
 
-    /// <summary>检查物品仍有集装语义，并使用当前配方解锁状态判断制造资格。</summary>
-    /// <param name="itemId">集装设备物品身份。</param>
-    /// <returns>设备有效且任一制造配方已解锁时为true。</returns>
-    private static bool IsPilingItemUnlocked(int itemId) {
-        PrefabDesc prefab = LDB.items.Select(itemId)?.prefabDesc;
-        return prefab != null && (prefab.isPiler || prefab.isInserter && prefab.inserterCanStack)
-               && GameMain.history.ItemUnlocked(itemId);
+    /// <summary>当前科技树中两个集装设备的去重前置科技，供触发判断与首遗物补给共同使用；不进入存档。</summary>
+    public static IReadOnlyList<int> PilingTechnologyIds {
+        get {
+            // 原型预加载及各模组的最终修改先于游戏历史创建；菜单查询不得提前固定触发科技。
+            GameHistoryData history = GameMain.history;
+            if (history == null) { return Array.Empty<int>(); }
+            if (pilingTechnologyIds == null || !ReferenceEquals(pilingHistory, history)
+                || !ReferenceEquals(pilingItems, LDB.items.dataArray)
+                || !ReferenceEquals(pilingTechs, LDB.techs.dataArray)) {
+                pilingTechnologyIds = ResolvePilingTechnologies();
+                pilingHistory = history;
+                pilingItems = LDB.items.dataArray;
+                pilingTechs = LDB.techs.dataArray;
+            }
+            return pilingTechnologyIds;
+        }
+    }
+
+    /// <summary>收集两设备的前置科技，去除重复身份，并在本次定位时记录主配方与前置证据。</summary>
+    /// <returns>只读的触发科技集合；两设备都没有前置科技时为空并记录警告。</returns>
+    private static IReadOnlyList<int> ResolvePilingTechnologies() {
+        TechProto sorter = GetPilingTechnology(I集装分拣器, out string sorterInfo);
+        TechProto piler = GetPilingTechnology(I自动集装机, out string pilerInfo);
+        bool sameTech = sorter != null && piler != null && sorter.ID == piler.ID;
+        List<int> techIds = [];
+        if (sorter != null) { techIds.Add(sorter.ID); }
+        if (piler != null && !sameTech) { techIds.Add(piler.ID); }
+        string message = $"集装触发科技定位：{sorterInfo}；{pilerInfo}；同一科技={sameTech}"
+            + $"，触发科技=[{string.Join(",", techIds)}]";
+        if (techIds.Count == 0) { LogWarning(message); } else { LogInfo(message); }
+        return techIds.AsReadOnly();
+    }
+
+    /// <summary>读取设备主配方或显式覆盖形成的前置科技，并保留对应定位信息。</summary>
+    /// <param name="itemId">集装设备物品ID。</param>
+    /// <param name="description">含物品、主配方、覆盖值与触发科技身份的诊断文字。</param>
+    /// <returns>设备的前置科技；设备不存在或没有前置时返回null。</returns>
+    private static TechProto GetPilingTechnology(int itemId, out string description) {
+        ItemProto item = LDB.items.Select(itemId);
+        TechProto tech = item?.preTech;
+        description = $"物品={itemId}/{item?.name ?? "无"}，maincraft={item?.maincraft?.ID ?? 0}/{item?.maincraft?.name ?? "无"}"
+            + $"，PreTechOverride={item?.PreTechOverride ?? 0}，触发科技={tech?.ID ?? 0}/{tech?.name ?? "无"}";
+        return tech;
     }
 
     public static int ConfiguredMaxStack {
@@ -94,6 +148,9 @@ public static class StackingManager {
     public static void ApplyVanillaTechProtoOverrides() {
         SetHiddenTechs(HiddenSorterTechs);
         SetHiddenTechs(HiddenStationPilerTechs);
+        // 第六级只开启双向运输，独立显示并由玩家研究，不属于堆叠数量成长。
+        TechProto bidirectionalTech = LDB.techs.Select(T集装分拣器改良 + 5);
+        if (IsStackOnlyTech(bidirectionalTech)) { bidirectionalTech.IsHiddenTech = false; }
     }
 
     public static void SyncRuntimeState() {
@@ -113,6 +170,7 @@ public static class StackingManager {
     }
 
     public static void Import(BinaryReader r) {
+        pilingTechnologyIds = null;
         r.ReadBlocks(
             ("ConfiguredMaxStack", br => { configuredMaxStack = ClampConfiguredMaxStack(br.ReadInt32()); })
         );
@@ -127,6 +185,10 @@ public static class StackingManager {
     }
 
     public static void IntoOtherSave() {
+        pilingTechnologyIds = null;
+        pilingHistory = null;
+        pilingItems = null;
+        pilingTechs = null;
         configuredMaxStack = BaseUnlockedMaxStack;
         lastSyncedStack = -1;
         lastSyncedUnlocked = false;
@@ -179,13 +241,14 @@ public static class StackingManager {
 
     private static void SyncHistoryStackFields(int stack) {
         GameHistoryData history = GameMain.history;
+        bool bidirectional = history.TechUnlocked(T集装分拣器改良 + 5);
         bool inserterChanged = history.inserterStackInput != stack
                                || history.inserterStackOutput != stack
-                               || !history.inserterBidirectional;
+                               || history.inserterBidirectional != bidirectional;
         if (inserterChanged) {
             history.inserterStackInput = stack;
             history.inserterStackOutput = stack;
-            history.inserterBidirectional = true;
+            history.inserterBidirectional = bidirectional;
             GameMain.data?.OnInserterTechChange();
         }
 

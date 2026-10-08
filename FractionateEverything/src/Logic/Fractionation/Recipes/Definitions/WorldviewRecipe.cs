@@ -181,7 +181,6 @@ public sealed class WorldviewRecipe : BaseRecipe {
 
             if (sacrificeOutputCount > 0) {
                 outputs.Add(true, IFE记忆源点, sacrificeOutputCount);
-                OutputMain[0].AddOutputCount(sacrificeOutputCount);
             }
             fluidInputInc -= fluidInputIncAvg * batchCount;
             return new FractionationBatchResult {
@@ -201,7 +200,6 @@ public sealed class WorldviewRecipe : BaseRecipe {
         int passThroughCount = batchCount - successCount;
         if (successCount > 0) {
             outputs.Add(true, InputID, successCount * 2);
-            OutputMain[0].AddOutputCount(successCount * 2);
         }
 
         fluidInputInc -= fluidInputIncAvg * batchCount;
