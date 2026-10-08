@@ -26,6 +26,7 @@ public static class FeatureBootstrap {
         // 添加指引手册
         TutorialManager.AddTutorials();
         StackingManager.ApplyVanillaTechProtoOverrides();
+        RecipeManager.RegisterAdvancedRecipeProtos();
     }
 
     public static void PostAddData() {
@@ -42,6 +43,7 @@ public static class FeatureBootstrap {
             return;
         }
 
+        AdvancedRecipeCatalog.DetachFromItemRecipes();
         PreloadAndInitAll();
         // 获取部分数据，例如传送带最大速度等
         ProcessManager.Init();

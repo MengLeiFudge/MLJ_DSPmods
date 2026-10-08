@@ -1003,6 +1003,14 @@ public static partial class Utils {
     internal const int RFE星际物流交互站 = 1062;
     internal const int RFE基础矿物塔 = 1063;
     internal const int RFE基础解析塔 = 1064;
+    /// <summary>高级矿物展示配方1065～1071，对应稳定运行身份30101～30107。</summary>
+    internal const int RFE高级矿物展示起始 = 1065;
+    /// <summary>高级塔培育展示配方1072～1074，对应稳定运行身份30201～30203。</summary>
+    internal const int RFE高级培育展示起始 = 1072;
+    /// <summary>高级原胚繁育展示配方1075～1077，对应稳定运行身份30211～30213。</summary>
+    internal const int RFE高级繁育展示起始 = 1075;
+    /// <summary>高级转化展示配方1078～1081，对应稳定运行身份30301～30304。</summary>
+    internal const int RFE高级转化展示起始 = 1078;
 
     internal const int T戴森球计划 = 1;
     internal const int T电磁学 = 1001;

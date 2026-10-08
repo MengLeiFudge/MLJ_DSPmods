@@ -50,7 +50,7 @@ public static class AdvancedConversionTower {
     /// </summary>
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE高级转化塔, "转化塔", "I转化塔",
-            "Assets/fe/conversion-tower", tab分馏 * 1000 + 304, 30, EItemType.Production,
+            "Assets/fe/conversion-tower", tab分馏 * 1000 + 104, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         // 高级塔由高级交互塔培育，制造来源沿用其物品名的本地化键。
         item.ProduceFrom = "培养塔";

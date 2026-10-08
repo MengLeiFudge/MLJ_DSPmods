@@ -50,7 +50,7 @@ public static class AdvancedInteractionTower {
     /// </summary>
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE高级交互塔, "培养塔", "I培养塔",
-            "Assets/fe/interaction-tower", tab分馏 * 1000 + 301, 30, EItemType.Production,
+            "Assets/fe/interaction-tower", tab分馏 * 1000 + 101, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         // 高级塔由高级交互塔培育，制造来源沿用其物品名的本地化键。
         item.ProduceFrom = "培养塔";

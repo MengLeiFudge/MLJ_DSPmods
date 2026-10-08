@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using FE.Logic.Enhancements.Stacking;
 using FE.Logic.Civilization;
+using FE.Logic.Fractionation.Recipes;
 using static FE.Logic.Items.ItemManager;
 using static FE.Utils.Utils;
 
@@ -24,7 +25,7 @@ public static class VanillaRecipeManager {
         VanillaRecipeList.Clear();
         VanillaRecipeDic.Clear();
         foreach (RecipeProto recipe in LDB.recipes.dataArray) {
-            if (recipe == null || recipe.Type == ERecipeType.Fractionate) {
+            if (recipe == null || recipe.Type == ERecipeType.Fractionate || AdvancedRecipeCatalog.IsAdvancedProto(recipe.ID)) {
                 continue;
             }
 

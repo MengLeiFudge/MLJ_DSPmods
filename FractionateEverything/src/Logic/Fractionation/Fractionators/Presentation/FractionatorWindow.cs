@@ -5,7 +5,6 @@ using System.Text;
 using FE.Logic.Civilization;
 using FE.Logic.DataCenter;
 using FE.Logic.Fractionation.Recipes;
-using FE.UI.Controls;
 using FE.UI.Foundation;
 using HarmonyLib;
 using UnityEngine;
@@ -22,7 +21,7 @@ namespace FE.Logic.Fractionation.Fractionators.Presentation;
 /// 复制原版窗口实例，在创建时一次性修改布局，后续只需控制显示/隐藏。
 /// 原版分馏塔直接使用原版窗口，不做任何修改。
 /// </summary>
-public static class FractionatorWindow {
+public static partial class FractionatorWindow {
     #region 状态/初始化
 
     // ===== 窗口实例 =====
@@ -76,12 +75,6 @@ public static class FractionatorWindow {
     private static GameObject _fluidArrowParent;
     private static ProductSlot fluidSlot;
     private static Text fluidRightText;
-    private static Text recipeSelectorLabel;
-    private static MyComboBox recipeSelector;
-    private static List<int> selectableRecipeIds = [];
-    private static IReadOnlyList<WorldviewRecipe> selectableRecipes;
-    private static bool suppressRecipeSelection;
-
     // 一次性记录的原版元素 localPosition
     private static Vector3 _itemBoxLocalPos;
     private static Vector3 _oriBoxLocalPos;
@@ -161,6 +154,7 @@ public static class FractionatorWindow {
     }
 
     private static void UnbindSlotClickHandlers() {
+        CancelAdvancedPicker();
         if (!slotClickBound) {
             return;
         }
@@ -380,15 +374,7 @@ public static class FractionatorWindow {
             frGo.SetActive(false);
         }
 
-        recipeSelectorLabel = CreateTopLabel(window, window.stateText, "配方选择".Translate(), 24f, 47f, 104f);
-        MyComboBox.InitBaseObject();
-        recipeSelector = MyComboBox.CreateComboBox(126f, 43f, window.GetComponent<RectTransform>())
-            .WithFontSize(14)
-            .WithSize(300f, 30f)
-            .WithItems("未选择配方")
-            .WithIndex(0)
-            .WithOnSelChanged(OnAdvancedRecipeSelected);
-        recipeSelector.gameObject.SetActive(false);
+        CreateAdvancedLayout(window, vanillaWindow);
     }
 
     private static Text CreateTopLabel(UIFractionatorWindow window, Text reference, string text,
@@ -976,49 +962,6 @@ public static class FractionatorWindow {
 
     #region 渲染更新
 
-    private static void OnAdvancedRecipeSelected(int index) {
-        if (suppressRecipeSelection || sourceWindow?.factory == null || sourceWindow.fractionatorId <= 0
-            || index < 0 || index >= selectableRecipeIds.Count) {
-            return;
-        }
-        FractionatorComponent fractionator =
-            sourceWindow.factorySystem.fractionatorPool[sourceWindow.fractionatorId];
-        if (fractionator.id != sourceWindow.fractionatorId) {
-            return;
-        }
-        int recipeId = selectableRecipeIds[index];
-        AdvancedRecipeSelectionSync.SetSelectedRecipeAndSync(
-            sourceWindow.factory, fractionator.entityId, recipeId, manual: true);
-    }
-
-    private static void UpdateAdvancedControls(UIFractionatorWindow src, int buildingId,
-        AdvancedFractionatorState state) {
-        bool advanced = FractionatorTowerCatalog.IsAdvancedTower(buildingId);
-        recipeSelectorLabel?.gameObject.SetActive(advanced);
-        recipeSelector?.gameObject.SetActive(advanced);
-        if (!advanced || recipeSelector == null || state == null) {
-            return;
-        }
-
-        IReadOnlyList<WorldviewRecipe> recipes = GetUnlockedRecipesForTower(buildingId);
-        if (!ReferenceEquals(recipes, selectableRecipes)) {
-            selectableRecipes = recipes;
-            selectableRecipeIds = [0, .. recipes.Select(recipe => recipe.PersistentId)];
-            string[] names = ["未选择配方", .. recipes.Select(recipe => recipe.DisplayName)];
-            suppressRecipeSelection = true;
-            recipeSelector.SetItems(names);
-            suppressRecipeSelection = false;
-        }
-
-        int selectedIndex = selectableRecipeIds.IndexOf(state.SelectedRecipeId);
-        if (selectedIndex < 0) {
-            selectedIndex = 0;
-        }
-        suppressRecipeSelection = true;
-        recipeSelector.SetIndex(selectedIndex);
-        suppressRecipeSelection = false;
-    }
-
     private static void UpdateAdvancedPowerDisplay(UIFractionatorWindow src, AdvancedFractionatorState state) {
         string text = string.Format("当前营养：{0} / {1}".Translate(),
             Math.Floor(state?.Nutrition ?? 0d).ToString("0"), AdvancedFractionatorRuntime.MaximumNutrition.ToString("0"));
@@ -1050,63 +993,6 @@ public static class FractionatorWindow {
         modWindow.stateText.color = status is AdvancedTowerStatus.Running or AdvancedTowerStatus.Stacking
             ? modWindow.workNormalColor
             : status == AdvancedTowerStatus.AwaitingRecipe ? modWindow.idleColor : modWindow.workStoppedColor;
-    }
-
-    private static void UpdateAdvancedUI(UIFractionatorWindow src, FractionatorComponent fractionator,
-        WorldviewRecipe recipe, AdvancedFractionatorState state) {
-        foreach (ProductSlot slot in mainSlots) {
-            slot?.go?.SetActive(false);
-        }
-        foreach (ProductSlot slot in sideSlots) {
-            slot?.go?.SetActive(false);
-        }
-        fluidSlot?.go.SetActive(false);
-        fluidRightText?.gameObject.SetActive(false);
-
-        int productCount = 0;
-        int flowCount = 0;
-        lock (state) {
-            if (recipe != null) {
-                foreach (WorldviewRecipeOutput output in recipe.Products) {
-                    if (productCount >= MaxMainSlots) {
-                        break;
-                    }
-                    int count = state.Products.TryGetValue(output.ItemId, out int stored) ? stored : 0;
-                    FillAdvancedSlot(mainSlots[productCount], output.ItemId, count,
-                        fractionator.produceProb.FormatP(), ProductSlotKind.Main);
-                    productCount++;
-                }
-            }
-            foreach (KeyValuePair<int, int> output in state.FlowOutputs.OrderBy(pair => pair.Key)) {
-                if (flowCount >= MaxSideSlots || output.Value <= 0) {
-                    break;
-                }
-                FillAdvancedSlot(sideSlots[flowCount], output.Key, output.Value, string.Empty,
-                    ProductSlotKind.Side);
-                flowCount++;
-            }
-        }
-
-        if (_mainArrowText != null) {
-            _mainArrowText.gameObject.SetActive(productCount > 0);
-            _mainArrowText.text = "配方产物".Translate();
-            _mainArrowText.color = ProbColor;
-        }
-        if (_sideArrowText != null) {
-            _sideArrowText.gameObject.SetActive(flowCount > 0);
-            _sideArrowText.text = "流动输出".Translate();
-            _sideArrowText.color = ProbColor;
-        }
-        _fluidArrowText?.gameObject.SetActive(false);
-        SetArrowGroup(_mainArrows, productCount > 0,
-            fractionator.fractionSuccess ? modWindow.marqueeOnColor : modWindow.marqueeOffColor);
-        SetArrowGroup(_sideArrows, flowCount > 0, modWindow.marqueeOffColor);
-        SetArrowGroup(_fluidArrows, false, modWindow.marqueeOffColor);
-
-        int visibleCount = Math.Max(productCount, flowCount);
-        float width = Math.Max(AddWidth, Math.Max(0, visibleCount - 1) * SlotSpacing);
-        ApplyWindowSizeKeepingTopLeft(width, flowCount > 0 ? AddHeight : AddHeight - 60f);
-        RefreshLayoutX(flowCount > 0 ? FluidY : SideY);
     }
 
     private static void FillAdvancedSlot(ProductSlot slot, int itemId, int count, string probability,

@@ -51,7 +51,7 @@ public static class BasicMineralTower {
     /// </summary>
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE基础矿物塔, "复制塔", "I复制塔",
-            "Assets/fe/mineral-copy-tower", tab分馏 * 1000 + 302, 30, EItemType.Production,
+            "Assets/fe/mineral-copy-tower", tab分馏 * 1000 + 102, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE基础矿物塔,
             ERecipeType.Assemble, 240, [I石材, I铁块, I电路板], [10, 20, 5], [IFE基础矿物塔], [1],

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using FE.Compatibility.Nebula;
 using FE.Logic.DataCenter;
+using FE.Logic.Fractionation.Recipes;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Civilization;
@@ -36,6 +37,7 @@ public static class CivilizationModule {
             return;
         }
 
+        AdvancedRecipeCatalog.SyncUnlocks();
         FlushRecoveryPopups();
         long gameTick = GameMain.gameTick;
         if (gameTick == lastProcessedGameTick) {
@@ -136,6 +138,7 @@ public static class CivilizationModule {
     /// 导入后恢复所有会影响运行的状态。
     /// </summary>
     public static void AfterImport() {
+        AdvancedRecipeCatalog.SyncUnlocks(force: true);
         ResearchManager.RefreshAdvancedTowerInventoryMilestones();
         GrowthTechnologyManager.ConsolidateWhiteMatrixResearch();
         GrowthTechnologyManager.SyncResearchWorkload();

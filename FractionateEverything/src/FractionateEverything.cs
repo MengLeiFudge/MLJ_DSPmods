@@ -34,7 +34,7 @@ namespace FE;
 [BepInDependency(NebulaModAPI.API_GUID)]
 [BepInDependency(CheckPlugins.GUID)]
 [CommonAPISubmoduleDependency(nameof(CustomKeyBindSystem), nameof(ProtoRegistry), nameof(TabSystem),
-    nameof(LocalizationModule))]
+    nameof(LocalizationModule), nameof(AssemblerRecipeSystem), nameof(PickerExtensionsSystem))]
 public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerModWithSettings {
     #region 字段
 

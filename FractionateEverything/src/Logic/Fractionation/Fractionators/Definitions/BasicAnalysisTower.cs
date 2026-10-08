@@ -51,7 +51,7 @@ public static class BasicAnalysisTower {
     /// </summary>
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE基础解析塔, "解析塔", "I解析塔",
-            "Assets/fe/deconstruction-tower", tab分馏 * 1000 + 305, 30, EItemType.Production,
+            "Assets/fe/deconstruction-tower", tab分馏 * 1000 + 105, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE基础解析塔,
             ERecipeType.Assemble, 240, [I铁块, I棱镜, I电路板], [20, 10, 5], [IFE基础解析塔], [1],

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CommonAPI.Systems;
 using FE.Compatibility.Mods;
+using FE.Logic.Fractionation.Recipes;
 using UnityEngine;
 using static FE.FractionateEverything;
 using static FE.Utils.Utils;
@@ -42,9 +43,9 @@ public static class ItemManager {
         // RecipeUnlocked Patch 用于调整配方解锁状态（Item直接用UnlockKey=-1，就不需要patch item的）
 
         RegisterFrag();
-        RegisterInternalItem(IFE记忆源点, "记忆源点", "I记忆源点", 102, 100,
+        RegisterInternalItem(IFE记忆源点, "记忆源点", "I记忆源点", 109, 100,
             new Color(0.55f, 0.82f, 1f), new Color(0.08f, 0.18f, 0.34f), "memory-core");
-        RegisterTowerProto(IFE通用原胚, "通用原胚", "I通用原胚", 205,
+        RegisterTowerProto(IFE通用原胚, "通用原胚", "I通用原胚", 110,
             "Assets/fe/frac-proto-directional", Color.red, "common-proto");
     }
 
@@ -71,7 +72,7 @@ public static class ItemManager {
 
     private static void RegisterFrag() {
         ItemProto item = ProtoRegistry.RegisterItem(IFE残片, "残片", "I残片",
-            "Assets/fe/copy-essence", tab分馏 * 1000 + 101, 100, EItemType.DarkFog,
+            "Assets/fe/copy-essence", tab分馏 * 1000 + 108, 100, EItemType.DarkFog,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.black));
         item.UnlockKey = -2;
         item.IconTag = "cpfragment";
@@ -184,7 +185,8 @@ public static class ItemManager {
         CalculateItemValue:
         //获取所有配方（排除含有多功能集成组件的配方、GridIndex超限配方）
         var iEnumerable = LDB.recipes.dataArray.Where(r =>
-            !r.Items.Contains(IMS多功能集成组件)
+            !AdvancedRecipeCatalog.IsAdvancedProto(r.ID)
+            && !r.Items.Contains(IMS多功能集成组件)
             && !r.Results.Contains(IMS多功能集成组件)
             && !r.Items.Contains(IFE通用原胚)
             && !r.Results.Contains(IFE通用原胚)

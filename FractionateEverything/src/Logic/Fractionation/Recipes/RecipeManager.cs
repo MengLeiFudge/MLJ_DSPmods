@@ -46,6 +46,17 @@ public static class RecipeManager {
     /// </summary>
     public static IEnumerable<WorldviewRecipe> WorldviewRecipes => StableRecipeIndex.Values;
 
+    /// <summary>在LDB预注册阶段建立高级配方展示原型；此时不依赖物品估值和研究状态。</summary>
+    public static void RegisterAdvancedRecipeProtos() {
+        for (int i = 0; i < RecipeTypeArr.Length; i++) {
+            RecipeTypeArr[i] = new BaseRecipe[12000];
+        }
+        AddRareCatalysisRecipes();
+        AddInteractionRecipes();
+        AddReplacementRecipes();
+        AdvancedRecipeCatalog.RegisterProtos(WorldviewRecipes);
+    }
+
     /// <summary>
     /// 建立基础自动配方、解析方向和高级多输入目录。
     /// </summary>
@@ -255,15 +266,20 @@ public static class RecipeManager {
         for (int i = 0; i < towers.Length; i++) {
             int towerId = towers[i];
             ItemProto tower = LDB.items.Select(towerId);
+            string towerName = (towerId switch {
+                IFE高级矿物塔 => "高级矿物塔",
+                IFE高级交互塔 => "培养塔",
+                _ => "转化塔",
+            }).Translate();
             AddRecipe(new WorldviewRecipe($"interaction-culture:{towerId}", 30201 + i,
-                string.Format("培育{0}".Translate(), tower?.name ?? towerId.ToString()),
+                string.Format("培育{0}".Translate(), tower?.name ?? towerName),
                 ERecipe.AdvancedInteraction,
                 WorldviewRecipeKind.TowerCultivation, 0.2f,
                 [new WorldviewRecipeInput(IFE通用原胚, 1)], [new WorldviewRecipeOutput(towerId, 1f)]) {
                     AnalysisItemId = IFE通用原胚, ResearchStage = towerId == IFE高级交互塔 ? 0 : 1,
                 });
             AddRecipe(new WorldviewRecipe($"interaction-breed:{towerId}", 30211 + i,
-                string.Format("{0}原胚繁育".Translate(), tower?.name ?? towerId.ToString()),
+                string.Format("{0}原胚繁育".Translate(), tower?.name ?? towerName),
                 ERecipe.AdvancedInteraction,
                 WorldviewRecipeKind.EmbryoBreeding, 0.2f,
                 [new WorldviewRecipeInput(towerId, 1), new WorldviewRecipeInput(IFE通用原胚, 1, 0.05f)],
