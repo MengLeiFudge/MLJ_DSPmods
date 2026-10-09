@@ -71,6 +71,10 @@
     "enUS": "The latest 50 text tips and relic messages in this game, newest first. Cleared when changing saves.",
     "zhCN": "本次游戏最近50条文字提示与遗迹消息，最新在前；切换存档后清空。"
   },
+  "FE.TowerFactory.FractionatorUnsupported": {
+    "enUS": "FE fractionator towers must run as placed buildings; use an assembler in slot 1 to manufacture them.",
+    "zhCN": "FE分馏塔须作为实体建筑运行；制作塔体请在第一格放制造台。"
+  },
   "FE.Signals.Categories": {
     "enUS": "Ordinary {0:P0} · Story {1:P0} · Advanced {2:P0}",
     "zhCN": "普通 {0:P0} · 主线 {1:P0} · 高级 {2:P0}"

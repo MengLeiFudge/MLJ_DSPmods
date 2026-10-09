@@ -20,51 +20,6 @@ public static partial class StationManager {
             GetOrCacheOriginal(windowOriginalWidth, __instance.windowTrans, x => x.sizeDelta.x);
         }
 
-        for (int index = 0; index < 6; ++index) {
-            UIStationStorage storage = __instance.storageUIs[index];
-            // 每个栏位都要注入自定义的传输/容量按钮
-            try {
-                // 原版本地物流模式的按钮
-                RectTransform refRect = storage.localSdButton.GetComponent<RectTransform>();
-                // 原版按钮的宽度
-                float btnWidth = refRect.sizeDelta.x;
-                // 按钮的宽度+间隔=外面盒子需要增加的宽度
-                spacingX = btnWidth + ExtraSpacing;
-                // 创建交互模式按钮
-                // 希望每个栏位都只有一个同名按钮，不存在时才复制
-                string tName = "FE_transferModeButton_" + index;
-                Transform tTrans = storage.transform.Find(tName);
-                if (tTrans == null) {
-                    GameObject go =
-                        GameObject.Instantiate(storage.localSdButton.gameObject,
-                            storage.localSdButton.transform.parent, false);
-                    go.name = tName;
-                    Button transferBtn = go.GetComponent<Button>();
-                    transferBtn?.onClick.RemoveAllListeners();
-                    transferGameObjects.TryAdd(storage, go);
-                }
-
-                // 创建容量按钮
-                // 同理为容量模式复制一个按钮，并缓存备用
-                string cName = "FE_capacityModeButton_" + index;
-                Transform cTrans = storage.transform.Find(cName);
-                if (cTrans == null) {
-                    GameObject go =
-                        GameObject.Instantiate(storage.localSdButton.gameObject,
-                            storage.localSdButton.transform.parent, false);
-                    go.name = cName;
-                    Button capacityBtn = go.GetComponent<Button>();
-                    capacityBtn?.onClick.RemoveAllListeners();
-                    capacityGameObjects.TryAdd(storage, go);
-                }
-
-                // 保证弹窗层级高于新增按钮，避免遮挡
-                storage.popupBoxRect.SetSiblingIndex(storage.popupBoxRect.GetSiblingIndex() + 10);
-            }
-            catch (Exception ex) {
-                LogError($"FE StationManager: create mode buttons failed: {ex}");
-            }
-        }
     }
 
     /// <summary>窗口销毁前清理缓存的窗口尺寸和按钮状态</summary>
@@ -86,28 +41,35 @@ public static partial class StationManager {
         slotPopupBoxRect.Clear();
     }
 
-    /// <summary>打开独立物流站存储槽时初始化自定义按钮并绑定点击事件</summary>
-    /// <param name="__instance">当前的 UIStationStorage 实例</param>
-    [HarmonyPostfix]
+    /// <summary>每个实际打开的槽位独立注入按钮，覆盖其他模组动态新增的行。</summary>
+    /// <param name="__instance">当前的 UIStationStorage 实例。</param>
+    [HarmonyPrefix]
     [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage._OnOpen))]
-    public static void UIStationStorage__OnOpen_Postfix(UIStationStorage __instance) {
-        string tName = "FE_transferModeButton_" + __instance.index;
-        Transform tTrans = __instance.transform.Find(tName);
-        if (tTrans != null) {
-            // 给自定义传输按钮绑定弹窗展示，替代原选项逻辑
-            Button transferBtn = tTrans.GetComponent<Button>();
-            transferBtn.onClick.RemoveAllListeners();
-            transferBtn.onClick.AddListener(() => ShowTransferPopup(__instance));
-        }
+    public static void UIStationStorage__OnOpen_Prefix(UIStationStorage __instance) {
+        // 原始 _OnOpen 会先调用 RefreshValues，按钮必须在此之前就绪。
+        transferGameObjects[__instance] = CreateStorageModeButton(__instance, "FE_transferModeButton",
+            () => ShowTransferPopup(__instance));
+        capacityGameObjects[__instance] = CreateStorageModeButton(__instance, "FE_capacityModeButton",
+            () => ShowCapacityPopup(__instance));
+        __instance.popupBoxRect.SetAsLastSibling();
+    }
 
-        string cName = "FE_capacityModeButton_" + __instance.index;
-        Transform cTrans = __instance.transform.Find(cName);
-        if (cTrans != null) {
-            // 同步为容量按钮绑定弹窗入口
-            Button capBtn = cTrans.GetComponent<Button>();
-            capBtn.onClick.RemoveAllListeners();
-            capBtn.onClick.AddListener(() => ShowCapacityPopup(__instance));
-        }
+    /// <summary>按本行按钮名复用控件，每次打开只绑定当前行的一个回调。</summary>
+    /// <param name="storage">按钮所属的物流槽。</param>
+    /// <param name="name">本行内部唯一的对象名。</param>
+    /// <param name="onClick">本次打开时的模式弹窗操作。</param>
+    /// <returns>本行创建或复用的模式按钮。</returns>
+    private static GameObject CreateStorageModeButton(UIStationStorage storage, string name, Action onClick) {
+        Transform parent = storage.localSdButton.transform.parent;
+        Transform existing = parent.Find(name);
+        GameObject go = existing != null ? existing.gameObject
+            : GameObject.Instantiate(storage.localSdButton.gameObject, parent, false);
+        go.name = name;
+        Button button = go.GetComponent<Button>();
+        button.onClick.RemoveAllListeners();
+        button.onClick.AddListener(() => onClick());
+        go.SetActive(false);
+        return go;
     }
 
     /// <summary>关闭独立物流站存储槽时移除模式按钮事件</summary>
@@ -115,20 +77,11 @@ public static partial class StationManager {
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage._OnClose))]
     public static void UIStationStorage__OnClose_Postfix(UIStationStorage __instance) {
-        string tName = "FE_transferModeButton_" + __instance.index;
-        Transform tTrans = __instance.transform.Find(tName);
-        if (tTrans != null) {
-            Button transferBtn = tTrans.GetComponent<Button>();
-            // 关闭时断开自定义按钮事件，防止下一次打开时重复绑定
-            transferBtn.onClick.RemoveAllListeners();
+        if (transferGameObjects.TryGetValue(__instance, out GameObject transfer)) {
+            transfer.GetComponent<Button>().onClick.RemoveAllListeners();
         }
-
-        string cName = "FE_capacityModeButton_" + __instance.index;
-        Transform cTrans = __instance.transform.Find(cName);
-        if (cTrans != null) {
-            Button capBtn = cTrans.GetComponent<Button>();
-            // 容量按钮同样清理事件
-            capBtn.onClick.RemoveAllListeners();
+        if (capacityGameObjects.TryGetValue(__instance, out GameObject capacity)) {
+            capacity.GetComponent<Button>().onClick.RemoveAllListeners();
         }
     }
 
@@ -139,7 +92,7 @@ public static partial class StationManager {
     public static void UIStationStorage_RefreshValues_Postfix(UIStationStorage __instance) {
         // 重命名
         UIStationStorage storage = __instance;
-        // 给局部变量起个名字便于以后对 UI 进行操作
+        float spacingX = GetStorageSpacing(storage);
         // 获取塔对应的物品ID
         int buildingID = storage.stationWindow.factory.entityPool[storage.station.entityId].protoId;
 
@@ -149,12 +102,11 @@ public static partial class StationManager {
         if (!IsInteractionStation(buildingID)) {
             SetStoragePopupShift(storage, false);
             // 还原栏位宽度、沙盒锁位置
-            if (rectTransform != null && storageWidth.ContainsKey(storage)) {
-                storageWidth.TryRemove(storage, out _);
+            if (rectTransform != null && storageWidth.TryRemove(storage, out float addedWidth)) {
                 rectTransform.sizeDelta =
-                    new Vector2(rectTransform.sizeDelta.x - spacingX, rectTransform.sizeDelta.y);
+                    new Vector2(rectTransform.sizeDelta.x - addedWidth, rectTransform.sizeDelta.y);
                 RectTransform keepModeComponent = storage.keepModeButton.GetComponent<RectTransform>();
-                keepModeComponent.anchoredPosition = new Vector2(keepModeComponent.anchoredPosition.x + spacingX,
+                keepModeComponent.anchoredPosition = new Vector2(keepModeComponent.anchoredPosition.x + addedWidth,
                     keepModeComponent.anchoredPosition.y);
             }
 
@@ -173,7 +125,7 @@ public static partial class StationManager {
         // 增加栏位宽度、向前移动沙盒锁位置
         // 初次遇到自定义塔时扩展栏位宽度，并把沙盒锁按钮向前移
         if (rectTransform != null && !storageWidth.ContainsKey(storage)) {
-            storageWidth.TryAdd(storage, true);
+            storageWidth.TryAdd(storage, spacingX);
             rectTransform.sizeDelta =
                 new Vector2(rectTransform.sizeDelta.x + spacingX, rectTransform.sizeDelta.y);
             RectTransform keepModeComponent = storage.keepModeButton.GetComponent<RectTransform>();
@@ -298,6 +250,7 @@ public static partial class StationManager {
         if (!IsInteractionStation(buildingID)) {
             return;
         }
+        float spacingX = GetWindowSpacing(stationWindow);
 
         // 是否解锁曲速
         bool logisticShipWarpDrive = GameMain.history.logisticShipWarpDrive;
@@ -367,7 +320,7 @@ public static partial class StationManager {
         }
 
         float originalWidth = GetOrCacheOriginal(windowOriginalWidth, windowTrans, x => x.sizeDelta.x);
-        float targetWidth = originalWidth + (isModStation ? spacingX : 0f);
+        float targetWidth = originalWidth + (isModStation ? GetWindowSpacing(__instance) : 0f);
         windowTrans.sizeDelta = new Vector2(targetWidth, windowTrans.sizeDelta.y);
 
         if (!isModStation) {
@@ -658,7 +611,7 @@ public static partial class StationManager {
     private static readonly Dictionary<RectTransform, Vector2> sliderOriginalPosition = [];
 
     /// <summary>独立物流站面板：记录栏位是否已加宽</summary>
-    private static readonly ConcurrentDictionary<UIStationStorage, bool> storageWidth = new();
+    private static readonly ConcurrentDictionary<UIStationStorage, float> storageWidth = new();
     /// <summary>独立物流站面板：记录弹窗当前是否处于偏移状态</summary>
     private static readonly ConcurrentDictionary<UIStationStorage, bool> storagePopup = new();
     /// <summary>独立物流站面板：记录弹窗原始X坐标，避免多次点击累加偏移</summary>
@@ -745,8 +698,8 @@ public static partial class StationManager {
             return;
         }
 
-        // 计算宽度变化量：如果需要加宽则使用spacingX，否则为0
-        float delta = shouldWiden ? spacingX : 0f;
+        // 窗口扩宽使用实际槽位的最大按钮宽度，不受其他面板的布局缓存影响。
+        float delta = shouldWiden ? GetWindowSpacing(window) : 0f;
 
         // 定义需要调整的所有滑块控件及其对应的数值文本组件
         (Slider slider, Component valueText)[] controls = [
@@ -837,7 +790,7 @@ public static partial class StationManager {
         // 第一次遇到该弹窗时，缓存“原始 X 坐标”。
         float originalX = GetOrCacheOriginal(storagePopupOriginalX, popupRect, x => x.anchoredPosition.x);
         // 独立面板规则：mod 按钮 -> 右移；原版按钮 -> 回归。
-        float targetX = shiftRight ? originalX + spacingX : originalX;
+        float targetX = shiftRight ? originalX + GetStorageSpacing(storage) : originalX;
         popupRect.anchoredPosition = new Vector2(targetX, popupRect.anchoredPosition.y);
 
         // 记录当前是否处于“偏移态”，用于后续恢复。
@@ -853,8 +806,27 @@ public static partial class StationManager {
     private const float BtnHeight = 26f;
     /// <summary>按钮Y轴偏移量</summary>
     private const float BtnYOffset = 14f;
-    /// <summary>按钮宽度+间距，用于UI宽度调整计算</summary>
-    private static float spacingX;
+    /// <summary>读取当前行模式按钮需要的横向空间，单位为像素。</summary>
+    /// <param name="storage">物流窗口中的实际槽位。</param>
+    /// <returns>本地物流按钮宽度加额外间距；无槽位时为0。</returns>
+    private static float GetStorageSpacing(UIStationStorage storage) {
+        RectTransform button = storage?.localSdButton?.GetComponent<RectTransform>();
+        return button != null ? button.sizeDelta.x + ExtraSpacing : 0f;
+    }
+
+    /// <summary>按窗口当前站点的实际槽位取得扩宽量，兼容不同数量与宽度的行。</summary>
+    /// <param name="window">当前物流站窗口。</param>
+    /// <returns>实际槽位中模式按钮所需的最大横向空间，单位为像素。</returns>
+    private static float GetWindowSpacing(UIStationWindow window) {
+        UIStationStorage[] rows = window?.storageUIs;
+        if (rows == null) { return 0f; }
+        StationComponent station = window.stationId > 0 && window.transport != null
+            ? window.transport.stationPool[window.stationId] : null;
+        int count = Math.Min(rows.Length, station?.storage?.Length ?? rows.Length);
+        float spacing = 0f;
+        for (int i = 0; i < count; i++) { spacing = Math.Max(spacing, GetStorageSpacing(rows[i])); }
+        return spacing;
+    }
     /// <summary>槽位弹窗状态：记录弹窗是否由本Mod接管</summary>
     private static readonly ConcurrentDictionary<(long stationEntityId, int slotIndex), bool> slotIsMyPopup = new();
     /// <summary>槽位弹窗状态：记录当前是传输模式(true)还是容量模式(false)</summary>

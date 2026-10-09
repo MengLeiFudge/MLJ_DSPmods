@@ -12,6 +12,9 @@ namespace FE.Logic.Station;
 /// 物流站总控面板槽位刷新与交互按钮逻辑。
 /// </summary>
 public static partial class StationManager {
+    /// <summary>总控面板的按钮间距缓存，独立于单站窗口的逐行布局。</summary>
+    private static float controlPanelSpacingX;
+
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UIControlPanelWindow), nameof(UIControlPanelWindow._OnCreate))]
     public static void UIControlPanelWindow_OnCreate_Postfix(UIControlPanelWindow __instance) {
@@ -33,7 +36,7 @@ public static partial class StationManager {
                 RectTransform refRect = storage.localSdButton.GetComponent<RectTransform>();
                 if (refRect != null) {
                     // 计算间距：按钮宽度 + 额外间距
-                    spacingX = refRect.sizeDelta.x + ExtraSpacing;
+                    controlPanelSpacingX = refRect.sizeDelta.x + ExtraSpacing;
                 }
 
                 // 每个存储槽需要注入传输模式按钮，若已存在就直接缓存
@@ -209,17 +212,17 @@ public static partial class StationManager {
     /// <returns>计算得到的间距值</returns>
     private static float EnsureControlPanelSpacing(UIControlPanelStationInspector inspector) {
         // 如果间距已计算过，直接返回缓存值
-        if (spacingX > 0f) {
-            return spacingX;
+        if (controlPanelSpacingX > 0f) {
+            return controlPanelSpacingX;
         }
 
         // 通过存储槽位预置体的原版按钮尺寸计算间距
         RectTransform rectTransform = inspector?.storageUIPrefab?.localSdButton?.GetComponent<RectTransform>();
         if (rectTransform != null) {
-            spacingX = rectTransform.sizeDelta.x + ExtraSpacing;
+            controlPanelSpacingX = rectTransform.sizeDelta.x + ExtraSpacing;
         }
 
-        return spacingX;
+        return controlPanelSpacingX;
     }
 
     /// <summary>
@@ -234,7 +237,7 @@ public static partial class StationManager {
         // 第一次遇到该弹窗时，缓存“原始 X 坐标”。
         float originalX = GetOrCacheOriginal(controlPanelStoragePopupOriginalX, popupRect, x => x.anchoredPosition.x);
         // 总控面板规则：原版按钮 -> 左移；mod 按钮 -> 回归。
-        float targetX = shiftLeft ? originalX - spacingX : originalX;
+        float targetX = shiftLeft ? originalX - controlPanelSpacingX : originalX;
         popupRect.anchoredPosition = new Vector2(targetX, popupRect.anchoredPosition.y);
 
         // 记录当前是否处于“偏移态”，用于后续恢复。
@@ -273,7 +276,7 @@ public static partial class StationManager {
             }
 
             float localOriginal = controlPanelSdButtonOriginalPosition[localRect];
-            localRect.anchoredPosition = new Vector2(localOriginal - spacingX, localRect.anchoredPosition.y);
+            localRect.anchoredPosition = new Vector2(localOriginal - controlPanelSpacingX, localRect.anchoredPosition.y);
         }
 
         // 远程按钮也需要移动以保持整体对齐
@@ -283,7 +286,7 @@ public static partial class StationManager {
             }
 
             float remoteOriginal = controlPanelSdButtonOriginalPosition[remoteRect];
-            remoteRect.anchoredPosition = new Vector2(remoteOriginal - spacingX, remoteRect.anchoredPosition.y);
+            remoteRect.anchoredPosition = new Vector2(remoteOriginal - controlPanelSpacingX, remoteRect.anchoredPosition.y);
         }
 
         // 保证沙盒锁按钮也向左移动，与新增按钮保持一致
@@ -294,7 +297,7 @@ public static partial class StationManager {
             }
 
             float keepModeOriginal = controlPanelSdButtonOriginalPosition[keepModeRect];
-            keepModeRect.anchoredPosition = new Vector2(keepModeOriginal - spacingX, keepModeRect.anchoredPosition.y);
+            keepModeRect.anchoredPosition = new Vector2(keepModeOriginal - controlPanelSpacingX, keepModeRect.anchoredPosition.y);
         }
 
         var localImgRT = storage.localSdImage?.rectTransform;
@@ -365,8 +368,8 @@ public static partial class StationManager {
             }
 
             RectTransform transferRt = transferGO.GetComponent<RectTransform>();
-            // 调整按钮坐标与高度，匹配我们预留的 spacingX 和 BtnHeight
-            transferRt.anchoredPosition = new Vector2(localRect.anchoredPosition.x + spacingX, topY);
+            // 调整按钮坐标与高度，匹配我们预留的 controlPanelSpacingX 和 BtnHeight
+            transferRt.anchoredPosition = new Vector2(localRect.anchoredPosition.x + controlPanelSpacingX, topY);
             transferRt.sizeDelta = new Vector2(transferRt.sizeDelta.x, BtnHeight);
         }
 
@@ -398,7 +401,7 @@ public static partial class StationManager {
 
             RectTransform capRt = capacityGO.GetComponent<RectTransform>();
             // 宽高调整保证新按钮位于原位置之上
-            capRt.anchoredPosition = new Vector2(localRect.anchoredPosition.x + spacingX, bottomY);
+            capRt.anchoredPosition = new Vector2(localRect.anchoredPosition.x + controlPanelSpacingX, bottomY);
             capRt.sizeDelta = new Vector2(capRt.sizeDelta.x, BtnHeight);
         }
     }
@@ -779,14 +782,14 @@ public static partial class StationManager {
             if (topGroup != null) {
                 float originalTopGroupWidth = GetOrCacheOriginal(inspectorOriginalTopGroupWidth, topGroup,
                     x => x.rect.width > 0f ? x.rect.width : x.sizeDelta.x);
-                topGroup.sizeDelta = new Vector2(originalTopGroupWidth + spacingX, topGroup.sizeDelta.y);
+                topGroup.sizeDelta = new Vector2(originalTopGroupWidth + controlPanelSpacingX, topGroup.sizeDelta.y);
             }
 
             RectTransform bg = storage.transform.Find("bg") as RectTransform;
             if (bg != null) {
                 float originalBgWidth = GetOrCacheOriginal(inspectorOriginalBgWidth, bg,
                     x => x.rect.width > 0f ? x.rect.width : x.sizeDelta.x);
-                bg.sizeDelta = new Vector2(originalBgWidth + spacingX, bg.sizeDelta.y);
+                bg.sizeDelta = new Vector2(originalBgWidth + controlPanelSpacingX, bg.sizeDelta.y);
             }
         }
     }
@@ -899,13 +902,13 @@ public static partial class StationManager {
             ? (logisticShipWarpDrive ? 320f : 380f)
             : 440f;
         // 设置能量条宽度（加上额外的间距）
-        powerRect.sizeDelta = new Vector2(basePowerWidth + spacingX, 40f);
+        powerRect.sizeDelta = new Vector2(basePowerWidth + controlPanelSpacingX, 40f);
 
-        // 调整能量数值的位置（基于原始长度+spacingX）
+        // 调整能量数值的位置（基于原始长度+controlPanelSpacingX）
         // 计算当前能量百分比
         float num2 = (float)station.energy / (float)station.energyMax;
         // 计算能量数值显示位置的基础长度
-        float num4 = (station.isStellar ? (logisticShipWarpDrive ? 180f : 240f) : 300f) + spacingX;
+        float num4 = (station.isStellar ? (logisticShipWarpDrive ? 180f : 240f) : 300f) + controlPanelSpacingX;
 
         // 根据能量百分比决定数值显示位置，避免与能量条填充部分重叠
         if (num2 > 0.7f) {
@@ -929,7 +932,7 @@ public static partial class StationManager {
             }
             // 设置主窗口宽度为原始宽度加上额外间距
             masterRect.sizeDelta =
-                new Vector2(inspectorOriginalMasterWidth[masterRect] + spacingX, masterRect.sizeDelta.y);
+                new Vector2(inspectorOriginalMasterWidth[masterRect] + controlPanelSpacingX, masterRect.sizeDelta.y);
         }
 
         // 调整状态筛选组的位置
@@ -942,7 +945,7 @@ public static partial class StationManager {
 
             // 设置状态筛选组位置为原始位置加上额外间距
             stateGroupTrans.anchoredPosition =
-                new Vector2(filterOriginalStateGroupPosition[stateGroupTrans] + spacingX,
+                new Vector2(filterOriginalStateGroupPosition[stateGroupTrans] + controlPanelSpacingX,
                     stateGroupTrans.anchoredPosition.y);
         }
 
@@ -955,7 +958,7 @@ public static partial class StationManager {
 
             // 设置右侧组宽度为原始宽度加上额外间距
             rightGroupRect.sizeDelta = new Vector2(
-                inspectorOriginalRightGroupWidth[rightGroupRect] + spacingX, rightGroupRect.sizeDelta.y);
+                inspectorOriginalRightGroupWidth[rightGroupRect] + controlPanelSpacingX, rightGroupRect.sizeDelta.y);
         }
     }
 
