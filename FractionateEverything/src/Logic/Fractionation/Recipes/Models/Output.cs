@@ -72,6 +72,8 @@ public struct FractionationBatchResult {
     /// 记录本批次成功分馏的次数。
     /// </summary>
     public int SuccessCount;
+    /// <summary>正面产物中返还原输入的件数，不应计入新制造统计。</summary>
+    public int ReturnedProductCount;
     /// <summary>
     /// 记录本批次失败直通的输入数量。
     /// </summary>

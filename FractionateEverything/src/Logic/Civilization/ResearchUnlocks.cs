@@ -10,18 +10,24 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Civilization;
 
-/// <summary>研究域的分级恢复、残页和低效样本分解入口。</summary>
+/// <summary>研究域的分级恢复、残页、实物样本发现与电路板制样入口。</summary>
 public static partial class ResearchManager {
-    /// <summary>矩阵过量献祭的逐件源点产率，不受矩阵档位或增产点影响。</summary>
-    public const float MatrixMemoryRatio = 0.002f;
-    /// <summary>分解稀有配方主产物时取得实物样本的逐件概率。</summary>
-    private const float DisassemblyRatio = 0.01f;
-    /// <summary>电路板制样的逐件概率，供早期低效自动化使用。</summary>
-    private const float PreparationRatio = 0.001f;
+    /// <summary>纯消耗入口每件经过时被吃掉的概率，未选中部分保留增产点侧流。</summary>
+    private const double AnalysisProcessingRatio = 0.08d;
+    /// <summary>残片及塔体被吃掉后产生一份成果的概率，保持平均每份实际消费50件。</summary>
+    private const double OfferingYieldRatio = 0.02d;
+    /// <summary>蓝至白矩阵平均实际消耗这些件数才能换得一份源点。</summary>
+    private static readonly int[] MatrixMemoryBudgets = [100, 60, 40, 25, 15, 10];
+    /// <summary>电路板每件经过时成功制取一件样本的概率。</summary>
+    private const float PreparationSuccessRatio = 0.01f;
+    /// <summary>电路板每件经过时无成果损毁的概率，与制样成功互斥。</summary>
+    private const float PreparationDestroyRatio = 0.03f;
     /// <summary>研究锁内登记、主线程在锁外入库的原型奖励。</summary>
     private static readonly Queue<int> PendingPrototypeRewards = [];
-    /// <summary>主产物分解和电路板制样的静态索引；不混入基础解析入口。</summary>
-    private static readonly Dictionary<int, WorldviewRecipe[]> DisassemblyRecipes = [];
+    /// <summary>按唯一实物样本建立的稀有配方目录，用于无线索样本的首次研究。</summary>
+    private static readonly Dictionary<int, WorldviewRecipe[]> SampleRecipes = [];
+    /// <summary>电路板可制样的置换配方目录；阶段和完成状态在使用时检查。</summary>
+    private static WorldviewRecipe[] preparationRecipes = [];
 
     /// <summary>判断内容是否走共享样本槽；普通和传说配方使用各自的恢复入口。</summary>
     /// <param name="contentId">配方、特质或阶段身份。</param>
@@ -31,21 +37,21 @@ public static partial class ResearchManager {
         return recipe == null ? !IsRecoveredPageId(contentId) : recipe.UnlockTier == RecipeUnlockTier.Rare;
     }
 
-    /// <summary>建立残页身份和可分解产物目录，不改变任何游玩进度。</summary>
+    /// <summary>建立百科残页、实物样本和置换制样目录，不改变任何游玩进度。</summary>
     private static void BuildUnlockCatalog() {
         for (int i = 1; i <= 3; i++) {
             AddContentDefinition(new ResearchContentDefinition($"encyclopedia:{i}", "FE.Encyclopedia.Title".Translate(), 0));
         }
-        DisassemblyRecipes.Clear();
+        SampleRecipes.Clear();
         foreach (var group in RecipeManager.WorldviewRecipes
                      .Where(recipe => recipe.Kind != WorldviewRecipeKind.BasicAnalysis
-                         && recipe.UnlockTier == RecipeUnlockTier.Rare && recipe.PrimaryProductId > 0)
-                     .GroupBy(recipe => recipe.PrimaryProductId)) {
-            DisassemblyRecipes.Add(group.Key, group.OrderBy(recipe => recipe.PersistentId).ToArray());
+                         && recipe.UnlockTier == RecipeUnlockTier.Rare && recipe.AnalysisItemId > 0)
+                     .GroupBy(recipe => recipe.AnalysisItemId)) {
+            SampleRecipes.Add(group.Key, group.OrderBy(recipe => recipe.PersistentId).ToArray());
         }
-        DisassemblyRecipes.Add(I电路板, RecipeManager.WorldviewRecipes
+        preparationRecipes = RecipeManager.WorldviewRecipes
             .Where(recipe => recipe.Kind == WorldviewRecipeKind.Replacement)
-            .OrderBy(recipe => recipe.PersistentId).ToArray());
+            .OrderBy(recipe => recipe.PersistentId).ToArray();
     }
 
     /// <summary>按已经完成的矩阵科技恢复普通配方；培育还等待第一枚矩阵实际生产。</summary>
@@ -113,27 +119,13 @@ public static partial class ResearchManager {
         if (towerId > 0) { PendingPrototypeRewards.Enqueue(towerId); }
     }
 
-    /// <summary>读取静态分解目录和不可变研究快照，不创建候选数组。</summary>
-    /// <param name="itemId">投入的配方主产物或电路板。</param>
-    /// <param name="recipes">静态目录，调用方不得修改。</param>
-    /// <param name="snapshot">本次判断使用的研究快照。</param>
-    /// <returns>是否允许检查分解候选；已知研究和塔体献祭优先。</returns>
-    private static bool TryGetDisassemblyCatalog(int itemId, out WorldviewRecipe[] recipes,
-        out AnalysisRuntimeSnapshot snapshot) {
-        snapshot = Volatile.Read(ref analysisRuntimeSnapshot);
-        recipes = null;
-        return !snapshot.CandidatesByItemId.ContainsKey(itemId)
-            && !(SacrificeUnlocked && FractionatorTowerCatalog.IsAdvancedTower(itemId))
-            && DisassemblyRecipes.TryGetValue(itemId, out recipes);
-    }
-
-    /// <summary>无分配统计当前阶段尚未恢复的候选，生产结算与窗口共用。</summary>
-    /// <param name="recipes">静态分解目录。</param>
-    /// <param name="snapshot">本次判断使用的研究快照。</param>
+    /// <summary>无分配统计当前阶段未恢复的配方，研究发现、制样及窗口共用。</summary>
+    /// <param name="recipes">固定配方目录，调用方不得修改。</param>
+    /// <param name="snapshot">本次判断使用的不可变研究快照。</param>
     /// <param name="stage">已经取得资格的矩阵阶段。</param>
     /// <param name="sampleId">0统计全部，非0只统计指定样本。</param>
-    /// <returns>符合条件的候选数。</returns>
-    private static int CountDisassemblyRecipes(WorldviewRecipe[] recipes, AnalysisRuntimeSnapshot snapshot,
+    /// <returns>符合阶段、完成状态及样本条件的候选数。</returns>
+    private static int CountPendingRecipes(WorldviewRecipe[] recipes, AnalysisRuntimeSnapshot snapshot,
         int stage, int sampleId = 0) {
         int count = 0;
         foreach (WorldviewRecipe recipe in recipes) {
@@ -143,57 +135,83 @@ public static partial class ResearchManager {
         return count;
     }
 
-    /// <summary>无锁、无候选数组分配地查询分解数量；不公开未知配方身份。</summary>
-    /// <param name="itemId">当前投入物品。</param>
+    /// <summary>判断样本是否有已知研究，或有当前阶段可由首次成功建立的稀有线索。</summary>
+    /// <param name="itemId">实物样本身份。</param>
+    /// <param name="snapshot">本次查询使用的研究快照。</param>
+    /// <returns>是否允许抽取研究成功和损毁结果。</returns>
+    private static bool CanResearchSample(int itemId, AnalysisRuntimeSnapshot snapshot) =>
+        snapshot.CandidatesByItemId.ContainsKey(itemId)
+        || SampleRecipes.TryGetValue(itemId, out WorldviewRecipe[] recipes)
+            && CountPendingRecipes(recipes, snapshot, CurrentMatrixStage) > 0;
+
+    /// <summary>在研究锁内为无线索样本登记一项当前阶段的稀有内容，不自动发现特质。</summary>
+    /// <param name="itemId">本次已经抽到研究成功的样本。</param>
+    /// <param name="seed">该塔随机种子，候选等概率选择。</param>
+    /// <returns>是否登记了一项尚未知晓的线索。</returns>
+    private static bool DiscoverSampleUnsafe(int itemId, ref uint seed) {
+        if (!SampleRecipes.TryGetValue(itemId, out WorldviewRecipe[] recipes)) { return false; }
+        int stage = CurrentMatrixStage;
+        AnalysisRuntimeSnapshot snapshot = Volatile.Read(ref analysisRuntimeSnapshot);
+        int count = CountPendingRecipes(recipes, snapshot, stage);
+        if (count == 0) { return false; }
+        int index = Math.Min(count - 1, (int)(GetRandDouble(ref seed) * count));
+        foreach (WorldviewRecipe recipe in recipes) {
+            if (recipe.ResearchStage > stage || snapshot.UnlockedContents.Contains(recipe.StableId)) { continue; }
+            if (index-- == 0) { return DiscoverContent(recipe.StableId, itemId); }
+        }
+        return false;
+    }
+
+    /// <summary>查询红矩阵资格起可用的置换制样候选，不公开未知配方身份。</summary>
     /// <param name="sampleId">0统计全部，非0只统计指定实物样本。</param>
-    /// <returns>当前可分解的候选数。</returns>
-    public static int GetDisassemblyCount(int itemId, int sampleId = 0) =>
-        TryGetDisassemblyCatalog(itemId, out WorldviewRecipe[] recipes, out AnalysisRuntimeSnapshot snapshot)
-            ? CountDisassemblyRecipes(recipes, snapshot, CurrentMatrixStage, sampleId) : 0;
+    /// <returns>当前可制取的候选数，全部恢复后为0。</returns>
+    public static int GetPreparationCount(int sampleId = 0) {
+        int stage = CurrentMatrixStage;
+        return stage < 2 ? 0 : CountPendingRecipes(preparationRecipes,
+            Volatile.Read(ref analysisRuntimeSnapshot), stage, sampleId);
+    }
 
-    /// <summary>取得该输入的实物样本产率，运行态和窗口共用。</summary>
-    /// <param name="itemId">当前投入物品。</param>
-    /// <returns>每件投入取得样本的概率。</returns>
-    public static float GetDisassemblyRatio(int itemId) => itemId == I电路板 ? PreparationRatio : DisassemblyRatio;
-
-    /// <summary>分解产物或以电路板制样，仅发现新线索时更新研究快照。</summary>
-    /// <param name="itemId">投入物品。</param>
-    /// <param name="count">本批实际分解件数。</param>
+    /// <summary>电路板按互斥成功与损毁结果制样，同批样本共用一次等概率候选选择。</summary>
+    /// <param name="count">本批经过的电路板件数。</param>
     /// <param name="seed">该塔随机种子。</param>
-    /// <param name="sample">本批实物样本及数量，未成功时数量为零。</param>
-    /// <returns>是否使用了分解路径；true时整批投入均消耗。</returns>
-    public static bool TryDisassemble(int itemId, int count, ref uint seed, out (int ItemId, int Count) sample) {
-        sample = default;
-        if (NebulaMultiplayerModAPI.IsClient || count <= 0 || GetDisassemblyCount(itemId) == 0) { return false; }
+    /// <returns>实际消费和实体样本；未处理部分由运行器保留增产点侧流。</returns>
+    private static AnalysisBatchResult ProcessPreparationBatch(int count, ref uint seed) {
         lock (Sync) {
-            // 锁外排除无用途输入，锁内重新读取快照，避免并发研究完成后继续消耗。
-            if (!TryGetDisassemblyCatalog(itemId, out WorldviewRecipe[] recipes, out AnalysisRuntimeSnapshot snapshot)) { return false; }
-            int stage = CurrentMatrixStage;
-            int candidates = CountDisassemblyRecipes(recipes, snapshot, stage);
-            if (candidates == 0) { return false; }
+            int candidates = GetPreparationCount();
+            if (candidates == 0) { return default; }
+            var (successCount, destroyedCount) = RollAnalysisCounts(count,
+                PreparationSuccessRatio, PreparationDestroyRatio, ref seed);
+            if (successCount == 0) { return new(destroyedCount); }
             int index = Math.Min(candidates - 1, (int)(GetRandDouble(ref seed) * candidates));
-            foreach (WorldviewRecipe recipe in recipes) {
-                if (recipe.ResearchStage > stage || snapshot.UnlockedContents.Contains(recipe.StableId)) { continue; }
+            int stage = CurrentMatrixStage;
+            foreach (WorldviewRecipe recipe in preparationRecipes) {
+                if (recipe.ResearchStage > stage || UnlockedContents.Contains(recipe.StableId)) { continue; }
                 if (index-- != 0) { continue; }
-                int output = WorldviewRecipe.RollExpected(ref seed, count * (double)GetDisassemblyRatio(itemId));
-                if (output > 0) { DiscoverContent(recipe.StableId, recipe.AnalysisItemId); }
-                sample = (recipe.AnalysisItemId, output);
-                return true;
+                DiscoverContent(recipe.StableId, recipe.AnalysisItemId);
+                return new(successCount + destroyedCount, successCount, recipe.AnalysisItemId, successCount);
             }
-            return false;
+            return default;
         }
     }
 
-    /// <summary>返回基础解析入口必须保留的全部潜在实物产物，以便缓存架构保持稳定。</summary>
+    /// <summary>读取指定矩阵被吃掉后换得一份源点的概率，运行与窗口使用同一档位表。</summary>
+    /// <param name="itemId">蓝至白六种主线矩阵之一。</param>
+    /// <returns>处理后的源点产率，非主线矩阵为0。</returns>
+    public static float GetMatrixMemoryRatio(int itemId) {
+        int stage = Array.IndexOf(StageMatrices, itemId);
+        return stage < 0 ? 0f : 1f / MatrixMemoryBudgets[stage];
+    }
+
+    /// <summary>返回解析入口全部潜在实体产物，目录不随研究或临时模式改变。</summary>
     /// <param name="itemId">输入物品身份。</param>
-    /// <returns>去重的实物产物身份，不依据当前临时模式删减缓存。</returns>
+    /// <returns>去重的样本返还、制样或源点身份，供稳定缓存架构使用。</returns>
     public static int[] GetAnalysisProductIds(int itemId) {
         HashSet<int> ids = [];
-        if (FractionatorTowerCatalog.IsAdvancedTower(itemId) || Array.IndexOf(StageMatrices, itemId) >= 0) {
-            ids.Add(IFE记忆源点);
-        }
-        if (DisassemblyRecipes.TryGetValue(itemId, out WorldviewRecipe[] recipes)) {
-            foreach (WorldviewRecipe recipe in recipes) { ids.Add(recipe.AnalysisItemId); }
+        bool tower = FractionatorTowerCatalog.IsAdvancedTower(itemId);
+        if (SampleRecipes.ContainsKey(itemId) || tower) { ids.Add(itemId); }
+        if (tower || Array.IndexOf(StageMatrices, itemId) >= 0) { ids.Add(IFE记忆源点); }
+        if (itemId == I电路板) {
+            foreach (WorldviewRecipe recipe in preparationRecipes) { ids.Add(recipe.AnalysisItemId); }
         }
         return ids.OrderBy(id => id).ToArray();
     }

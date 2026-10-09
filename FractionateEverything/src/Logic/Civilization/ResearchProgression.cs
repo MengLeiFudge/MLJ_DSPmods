@@ -131,8 +131,8 @@ public static partial class ResearchManager {
     /// <summary>按概率恢复阶段资料，阶段完成后的多余成功源点回流。</summary>
     /// <param name="count">本批通过数量。</param>
     /// <param name="seed">分馏随机种子。</param>
-    /// <param name="analysisSuccessCount">实际计入阶段进度的源点数。</param>
-    /// <returns>实际消耗的源点数；献祭另按完整投入计。</returns>
+    /// <param name="analysisSuccessCount">实际计入阶段进度或分钟献祭的源点数。</param>
+    /// <returns>实际消耗的源点数；献祭只登记被处理的件数。</returns>
     private static int ProcessMemory(int count, ref uint seed, out int analysisSuccessCount) {
         analysisSuccessCount = 0;
         if (NebulaMultiplayerModAPI.IsClient) { return 0; }
@@ -153,9 +153,10 @@ public static partial class ResearchManager {
             }
             if (!SacrificeUnlocked) { return 0; }
             AdvanceMemoryMinute(GameMain.gameTick / 3600L);
-            minuteMemoryCount = Math.Min(long.MaxValue - count, minuteMemoryCount) + count;
-            snapshotDirty = true;
-            return count;
+            analysisSuccessCount = WorldviewRecipe.RollExpected(ref seed, count * AnalysisProcessingRatio);
+            minuteMemoryCount = Math.Min(long.MaxValue - analysisSuccessCount, minuteMemoryCount) + analysisSuccessCount;
+            snapshotDirty |= analysisSuccessCount > 0;
+            return analysisSuccessCount;
         }
     }
 

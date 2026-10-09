@@ -32,24 +32,24 @@
     "zhCN": "残页记得的事"
   },
   "FE.Encyclopedia.Analysis": {
-    "enUS": "Common mineral replication and tower cultivation follow matrix technology. Rare recipes require samples. In Research / Analysis Samples, find a known sample, power a basic analysis tower, feed it through a side port and loop the opposite output back. Successful research and destruction consume samples; intact samples retain proliferator points.\n\nWithout pending research, an eligible rare recipe's main product can be disassembled. Each item is consumed, with a 1% chance to produce a sample and reveal its record. Samples leave through the front port. Known research takes priority; after all related recipes are restored, disassembly stops.\n\nAfter researching energy matrices, continuously feed circuit boards for an early sample supply: each board has a 0.1% chance to yield one available replacement research sample and reveal its clue. Preparation stops when all related recipes are restored.",
-    "zhCN": "普通矿物复制与塔体培育随矩阵科技开放，稀有配方需要样本。在“研究 / 解析样本”中选择已有线索的样本，给基础解析塔供电，从侧面送入，将另一侧流出接回输入循环。成功研究和损毁都消耗样本，完整流回的样本保留增产点。\n\n无待解析线索时，可将当前阶段稀有配方的主产物送入解析塔分解。每件都会消耗，有1%概率产出一件对应样本，并发现线索。样本从正面输出；已有线索时优先研究，相关配方全部恢复后停止分解。\n\n红矩阵科技研究完成后，可持续投入电路板低效制样：每件0.1%概率得到一份当前阶段的置换研究样本，并记录线索。相关配方全部恢复后停止制样。"
+    "enUS": "Common mineral replication and tower cultivation follow matrix technology. Rare recipes require samples. Power a basic analysis tower, feed samples through a side port, loop the opposite output back to the input and collect returned samples at the front. Successful research advances progress and returns the same sample without creating another one; only destruction consumes it. Unprocessed samples flow back with proliferator points. A full product buffer pauses processing and intake until products are removed.\n\nAn eligible rare recipe's unique analysis sample can be fed in directly. Without a known record, the first success reveals one available clue and begins its research. Known clues take priority; after all related research is restored, samples flow through intact.\n\nAfter researching energy matrices, circuit boards can prepare replacement samples: each board has a 1% success chance and a 3% destruction chance; the other 96% flows back with proliferator points. A success produces one sample for an available replacement recipe at the current stage and reveals its clue. Preparation stops when all available recipes are restored.",
+    "zhCN": "普通矿物复制与塔体培育随矩阵科技开放，稀有配方需要样本。给基础解析塔供电，从侧面送入样本，将另一侧流出接回输入循环，正面接样本回收带。成功会推进解析并返还同件样本，不增加样本数量；只有损毁才消耗样本。未处理样本侧面流回并保留增产点。正面缓存满时暂停处理和收料，排出或取出产物后继续。\n\n当前阶段未恢复稀有配方的唯一解析样本可直接投入。没有线索时，首次成功会登记一项可用线索，并参与本次研究。已有线索优先，相关研究全部恢复后，样本完整流回。\n\n红矩阵科技研究完成后，可投入电路板制取置换样本：每次经过成功率1%、损毁率3%，其余96%保留增产点侧流。成功时产出一件当前阶段可用置换配方的样本，并记录线索；全部可用配方恢复后停止制样。"
   },
   "FE.Encyclopedia.Explore": {
     "enUS": "The detector separates ordinary, story and advanced signals. Follow a rising reading; at 100% you are within recovery range. Approach on foot or at low hover altitude.\n\nRocky planets have 6–8 low-level silent relics. Their supplies support industry without Dark Fog combat. Advanced relics may contain pages. Each planet holds at most five ordinary broadcasts, with at least one minute between new broadcasts. Fragment analysis obeys both limits; story signals are separate.\n\nRewards go to subspace. Review brief tips in Guidance / Message Log, and past locations in Exploration / Location Archive.",
     "zhCN": "探测器分别显示普通、主线和高级信号。沿读数增强的方向寻找，达到100%即进入回收范围；步行或低空悬浮接近即可。\n\n岩石星球有6～8个低级静默点，补给能支持不开黑雾的工业起步。高级遗迹可能留下残页。每颗星球同时最多5个普通广播，新广播至少间隔1分钟，残片解析也受此限制，主线不占名额。\n\n奖励存入亚空间，短暂提示可在“指引 / 消息日志”回看，地点记录在“探索 / 地点档案”。"
   },
   "FE.Encyclopedia.Storage": {
-    "enUS": "Each item has its own capacity. To expand subspace, power a basic analysis tower and feed science matrices into a side port. All towers share a buffer of 60 per tier and consume at most one matrix per second for expansion. Higher tiers expand faster; growth slows as capacity rises.\n\nMatrices that cannot enter the buffer are consumed as offerings, with a 0.2% chance per item to produce one Memory at the front port. Reserve enough matrices for science and feeding living towers. Relic rewards may exceed normal capacity and can still be withdrawn.",
-    "zhCN": "每种物品独立计容量。满仓时，给基础解析塔供电，从侧面投入科学矩阵即可扩容。全部塔共享每档60件供料，每秒最多使用1件扩容；高档矩阵更快，已有容量越大增长越慢。\n\n未能进入扩容缓存的过量矩阵会被献祭，每件有0.2%概率从正面产出1源点。请为正常科研与生命塔供养保留足够矩阵。探索奖励可突破普通容量，仍能正常取出。"
+    "enUS": "Each item has its own capacity. To expand subspace, power a basic analysis tower and feed science matrices into a side port. Only 8% is processed on each pass; the other 92% flows back with proliferator points. Processed matrices first fill the shared buffer of 60 per tier. Expansion consumes at most one matrix per second across all towers, preferring the highest tier. Higher tiers expand faster; growth slows as capacity rises.\n\nProcessed matrices that cannot enter the buffer are consumed as offerings and may produce one Memory at the front. The average consumption per Memory for blue, red, yellow, purple, green and white matrices is 100, 60, 40, 25, 15 and 10 respectively. Relic rewards may exceed normal capacity and can still be withdrawn.",
+    "zhCN": "每种物品独立计容量。满仓时，给基础解析塔供电，从侧面投入科学矩阵即可扩容。每次经过只处理8%，其余92%保留增产点侧流。被处理矩阵先填入全部塔共享的每档60件供料缓存，每秒全局最多使用最高档的1件扩容；高档矩阵更快，已有容量越大增长越慢。\n\n未能进入缓存的已处理矩阵会被献祭，可能从正面产出1源点。蓝、红、黄、紫、绿、白矩阵每份源点的平均实际消耗依次为100、60、40、25、15、10件。探索奖励可突破普通容量，仍能正常取出。"
   },
   "FE.Encyclopedia.Mineral": {
     "enUS": "After the first relic, researching electromagnetic matrices restores common mineral replication. Power a basic mineral tower, feed minerals from a side and loop the opposite output back. Products leave at the front.\n\nTower cultivation becomes available once the first matrix is produced. The story supplies the first interaction towers and embryos; exploration supplies more embryos.",
     "zhCN": "回收首个遗物后，完成电磁矩阵科技即可恢复普通矿物复制。给基础矿物塔供电，从侧面送入矿物，另一侧流出接回输入，正面接产物带。\n\n第一枚矩阵实际生产后开放高级塔培育。主线提供首批交互塔与原胚，探索继续提供原胚补给。"
   },
   "FE.Encyclopedia.Memory": {
-    "enUS": "For an early automated supply, feed surplus matrices into a powered analysis tower. Expansion takes priority; excess matrices are consumed with a 0.2% Memory yield.\n\nLater, the thousand-tower story opens tower offerings. Towers without pending research yield Memory at 2%. Memory first restores available stage records. Further Memory supplies the next minute's success bonus. A complete minute offering at least 50 Memory also restores one available legendary recipe.\n\nMemory used in production remains separate.",
-    "zhCN": "早期可将过量矩阵持续送入有电的解析塔，扩容优先，剩余矩阵以0.2%的产率低效凝结源点。\n\n中后期千塔主线开放塔体献祭，无待解析内容的塔体以2%概率产源点。源点先恢复当前阶段资料，完成后继续投入，为下一分钟提供成功率增益。完整一分钟实际献祭至少50源点，还会恢复一项当前阶段的传说配方。\n\n生产配方使用的源点与献祭供料分开。"
+    "enUS": "For an early automated supply, feed surplus matrices into a powered analysis tower. Only 8% is processed on each pass. Expansion takes priority; processed matrices left over may produce Memory, with higher tiers yielding more. Unprocessed matrices flow back with proliferator points.\n\nLater, the thousand-tower story opens tower offerings. Towers without pending research are processed at 8%, and 2% of those produce one Memory. Memory first restores available stage records with a 2% success chance and no destruction. Once all available stages are restored and offerings are unlocked, only the 8% actually consumed contributes to the next minute's success bonus. A complete minute offering at least 50 Memory also restores one available legendary recipe.\n\nMemory used in production remains separate.",
+    "zhCN": "早期可将过量矩阵持续送入有电的解析塔，每次经过只处理8%。被处理件数先用于扩容，剩余部分可能凝结源点，矩阵档位越高产率越高；未处理矩阵保留增产点侧流。\n\n中后期千塔主线开放塔体献祭，无待解析内容的塔体每次经过处理8%，被处理件数的2%产出1源点。源点先以2%成功率恢复当前阶段资料，无损毁；已开放阶段全部恢复且献祭开放后，只有实际吃掉的8%计入本分钟，为下一分钟提供成功率增益。完整一分钟实际献祭至少50源点，还会恢复一项当前阶段的传说配方。\n\n生产配方使用的源点与献祭供料分开。"
   },
   "FE.Encyclopedia.Legendary": {
     "enUS": "Embryo breeding and Memory reconstruction are legendary recipes. At the required matrix stage, restore them through advanced relic pages or a complete minute offering at least 50 Memory.\n\nPages first restore the three encyclopedia fragments, then one available legendary recipe. Offerings restore at most one recipe per complete minute. Unlocked recipes are retained.",
@@ -59,9 +59,9 @@
     "enUS": "Matrix research restored: {0}",
     "zhCN": "矩阵研究恢复了：{0}"
   },
-  "FE.Analysis.Disassembly": {
-    "enUS": "Sample disassembly",
-    "zhCN": "样本分解"
+  "FE.Analysis.Preparation": {
+    "enUS": "Sample preparation",
+    "zhCN": "电路板制样"
   },
   "FE.MessageLog.Title": {
     "enUS": "Message Log",

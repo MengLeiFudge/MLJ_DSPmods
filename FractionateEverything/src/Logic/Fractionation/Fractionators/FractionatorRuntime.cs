@@ -317,14 +317,14 @@ public static partial class ProcessManager {
         //检测products和recipe的输出是否一致
         ProductOutputInfo product0 = null;
         if (recipe == null) {
-            bool needResetProducts = !extraState.TryGetRuntimeSchema(recipeType, fluidId, null, fractionator.productId,
-                                         out _)
-                                     || products.Count > 0
-                                     || fractionator.productId != fluidId
-                                     || fractionator.productOutputCount != 0;
+            int firstProductId = products.Count > 0 ? products[0].itemId : fluidId;
+            bool needResetProducts = !extraState.TryGetRuntimeSchema(recipeType, fluidId, null, firstProductId,
+                                         out product0)
+                                     || fractionator.productId != firstProductId;
             if (needResetProducts) {
                 ResetProductsForRecipe(ref fractionator, extraState, null, signPool);
-                extraState.MarkRuntimeSchema(recipeType, fluidId, null, fractionator.productId, null);
+                product0 = products.Count > 0 ? products[0] : null;
+                extraState.MarkRuntimeSchema(recipeType, fluidId, null, fractionator.productId, product0);
             }
         } else if (!extraState.TryGetRuntimeSchema(recipeType, fluidId, recipe, fractionator.productId,
                        out product0)) {
@@ -340,7 +340,7 @@ public static partial class ProcessManager {
                 : FindProduct(products, productId);
             extraState.MarkRuntimeSchema(recipeType, fluidId, recipe, productId, product0);
         }
-        //第一个主输出，recipe有则必定有，recipe没有则必定没有
+        // 原版首产物镜像可对应当前目录或尚未排出的既有实体。
         int product0Id = fractionator.productId;
         //如果通过面板取了物品，需要同步数目到products
         if (product0 != null && product0.count != fractionator.productOutputCount) {
@@ -370,7 +370,8 @@ public static partial class ProcessManager {
         int consumedInputThisTick = 0;
         List<ProductOutputInfo> productRegisterDeltas = null;
         if (fractionator.fluidInputCount > 0
-            && fractionator.fluidOutputCount < fluidOutputMax) {
+            && fractionator.fluidOutputCount < fluidOutputMax
+            && (recipeType != ERecipe.BasicAnalysis || !hasFullProduct)) {
             //分馏塔正常运转时，计算进度，10000点进度可以处理一次
             fractionator.progress += (int)(power * (10000d / 60d) * GetBasicProcessingRate(fractionator) + 0.75);
             if (fractionator.progress > 300000) {
@@ -386,7 +387,7 @@ public static partial class ProcessManager {
                 if (!fractionator.incUsed)
                     fractionator.incUsed = fluidInputIncAvg > 0;
 
-                // 无可用配方或产物缓存已满时，输入直接进入流动输出。
+                // 矿物塔保留满载直通规则；解析产物满载在进入本批之前暂停处理。
                 bool isForcedPassthrough = moveDirectly || hasFullProduct;
                 FractionationBatchResult batchResult;
                 if (isForcedPassthrough) {
@@ -406,6 +407,11 @@ public static partial class ProcessManager {
                     float successBoost = 0f;
                     if (recipe is WorldviewRecipe worldviewRecipe) {
                         int availableOutput = productOutputMax - (product0?.count ?? fractionator.productOutputCount);
+                        if (recipeType == ERecipe.BasicAnalysis) {
+                            foreach (ProductOutputInfo product in products) {
+                                availableOutput = Math.Min(availableOutput, productOutputMax - product.count);
+                            }
+                        }
                         batchCount = worldviewRecipe.LimitBasicBatchCountByOutputRoom(
                             batchCount, availableOutput, pointsBonus, successBoost);
                         if (batchCount < reservedBatchCount) {
@@ -434,14 +440,15 @@ public static partial class ProcessManager {
                 }
 
                 if (batchResult.SuccessCount > 0) {
-                    // 成功推进研究也点亮产物方向，但只有outputBuffer中的实体进入物品统计与缓存。
+                    // 虚拟成果点亮正面方向，原样本返还不计新制造，实体仍正常进入缓存。
                     producedMainThisTick = true;
                     fractionator.productOutputTotal += batchResult.SuccessCount;
                     for (int i = 0; i < outputBuffer.Count; i++) {
                         ProductOutputInfo p = outputBuffer[i];
                         int itemID = p.itemId;
                         int itemCount = p.count;
-                        AddProductRegisterDelta(ref productRegisterDeltas, itemID, itemCount);
+                        int manufacturedCount = itemCount - (itemID == fluidId ? batchResult.ReturnedProductCount : 0);
+                        AddProductRegisterDelta(ref productRegisterDeltas, itemID, manufacturedCount);
                         if (itemID == product0Id) {
                             product0.count += itemCount;
                             fractionator.productOutputCount = product0.count;
@@ -567,6 +574,7 @@ public static partial class ProcessManager {
                     fluidInputCountPerCargo, forceSingleStack: moveDirectly);
                 return;
             }
+            if (recipeType == ERecipe.BasicAnalysis && hasFullProduct) { return; }
             for (int i = 0; i < MaxOutputTimes
                  && CanAcceptBasicInputStack(cargoTraffic, beltId, fluidInputCargoMax, tower.fluidInputCount); i++) {
                 int itemId = cargoTraffic.TryPickItemAtRear(beltId, tower.fluidId, null, out byte stack, out byte inc);
@@ -650,34 +658,42 @@ public static partial class ProcessManager {
         return best;
     }
 
-    /// <summary>按当前基础配方统一重建产物、原版首产物镜像和实体图标。</summary>
+    /// <summary>重建基础塔产物目录与镜像，保留读档或目录变化前已经存在的实体。</summary>
     /// <param name="fractionator">需要重建显示与缓存的基础塔。</param>
     /// <param name="state">该塔扩展缓存。</param>
-    /// <param name="recipe">当前识别的配方；没有配方时清空产物。</param>
+    /// <param name="recipe">当前识别的配方；没有配方时仍保留已有实体直到排空。</param>
     /// <param name="signPool">实体图标池。</param>
     private static void ResetProductsForRecipe(ref FractionatorComponent fractionator,
         FractionatorOutputState.FractionatorExtraState state, BaseRecipe recipe, SignData[] signPool) {
+        ProductOutputInfo[] retained = state.Products.Where(product => product.count > 0).ToArray();
         state.Products.Clear();
+        if (recipe != null) {
+            foreach (OutputInfo output in recipe.OutputMain) {
+                int count = retained.Where(product => product.itemId == output.OutputID).Sum(product => product.count);
+                state.Products.Add(new(true, output.OutputID, count));
+            }
+        }
+        foreach (ProductOutputInfo product in retained) {
+            if (FindProduct(state.Products, product.itemId) == null) { state.Products.Add(product); }
+        }
         state.InvalidateFullProductCache();
         state.ClearRuntimeSchema();
-        fractionator.productId = recipe?.OutputMain.Count > 0 ? recipe.OutputMain[0].OutputID : fractionator.fluidId;
-        fractionator.productOutputCount = 0;
+        fractionator.productId = state.Products.Count > 0 ? state.Products[0].itemId : fractionator.fluidId;
+        fractionator.productOutputCount = state.Products.Count > 0 ? state.Products[0].count : 0;
         fractionator.produceProb = 0.01f;
         signPool[fractionator.entityId].iconId0 = recipe == null ? 0U : (uint)fractionator.fluidId;
         signPool[fractionator.entityId].iconType = recipe == null ? 0U : 1U;
-        if (recipe == null) { return; }
-        foreach (OutputInfo output in recipe.OutputMain) { state.Products.Add(new(true, output.OutputID, 0)); }
     }
 
-    /// <summary>判断产物缓存是否与配方主产物逐项一致，包括数量、顺序和主产物标记。</summary>
+    /// <summary>检查固定配方产物前缀，允许后面保留目录变化前尚未排出的实体缓存。</summary>
     /// <param name="products">当前扩展产物列表。</param>
     /// <param name="recipe">当前识别的配方。</param>
-    /// <returns>完全一致时为 true。</returns>
+    /// <returns>当前配方产物前缀一致时为true。</returns>
     private static bool MatchesRecipeOutputs(List<ProductOutputInfo> products, BaseRecipe recipe) {
-        if (products.Count != recipe.OutputMain.Count) {
+        if (products.Count < recipe.OutputMain.Count) {
             return false;
         }
-        for (int i = 0; i < products.Count; i++) {
+        for (int i = 0; i < recipe.OutputMain.Count; i++) {
             if (!products[i].isMainOutput || products[i].itemId != recipe.OutputMain[i].OutputID) {
                 return false;
             }

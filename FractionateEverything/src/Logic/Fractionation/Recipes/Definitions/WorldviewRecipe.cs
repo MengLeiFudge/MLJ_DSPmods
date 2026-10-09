@@ -159,14 +159,24 @@ public sealed class WorldviewRecipe : BaseRecipe {
     /// </summary>
     internal bool ContainsProduct(int itemId) => productItemIds.Contains(itemId);
 
-    /// <summary>
-    /// 按基础矿物塔剩余产物空间限制本批轮数，确保一次成功的完整产物不会越过缓存上限。
-    /// </summary>
+    /// <summary>按实体产物剩余空间限制基础塔批量，解析最多每件输入产生一件实体。</summary>
+    /// <param name="batchCount">由基础塔速率和输入库存确定的经过件数。</param>
+    /// <param name="availableOutput">当前实体产物缓存的最小剩余件数。</param>
+    /// <param name="pointsBonus">基础矿物的增产加成，解析不使用。</param>
+    /// <param name="successBoost">基础矿物额外成功率，解析不使用。</param>
+    /// <returns>保证所有实体产物都能缓存的经过件数；纯虚拟成果不占实体空间。</returns>
     public int LimitBasicBatchCountByOutputRoom(int batchCount, int availableOutput,
         float pointsBonus, float successBoost) {
-        if (Kind != WorldviewRecipeKind.BasicMineral || batchCount <= 0 || Products.Count == 0) {
-            return batchCount;
+        if (batchCount <= 0 || Products.Count == 0) { return batchCount; }
+        if (Kind == WorldviewRecipeKind.BasicAnalysis) {
+            AnalysisMode mode = ResearchManager.GetAnalysisOutcome(InputID).Mode;
+            bool hasPhysicalOutput = mode == AnalysisMode.Research && InputID != IFE记忆源点
+                || mode is AnalysisMode.SamplePreparation or AnalysisMode.TowerSacrifice
+                    or AnalysisMode.MatrixSacrifice or AnalysisMode.MatrixExpansion;
+            // 预留最坏情况下每件输入一件成果；扩容批次填满供料后也可能产源点。
+            return hasPhysicalOutput ? Math.Min(batchCount, Math.Max(0, availableOutput)) : batchCount;
         }
+        if (Kind != WorldviewRecipeKind.BasicMineral) { return batchCount; }
         int outputPerSuccess = System.Math.Max(1, UnityEngine.Mathf.CeilToInt(Products[0].Count));
         int maximumSuccesses = System.Math.Max(0, availableOutput) / outputPerSuccess;
         if (maximumSuccesses <= 0) {
@@ -191,27 +201,15 @@ public sealed class WorldviewRecipe : BaseRecipe {
         }
 
         if (Kind == WorldviewRecipeKind.BasicAnalysis) {
-            if (ResearchManager.TryDisassemble(InputID, batchCount, ref seed, out var sample)) {
-                if (sample.Count > 0) { outputs.Add(true, sample.ItemId, sample.Count); }
-                fluidInputInc -= fluidInputIncAvg * batchCount;
-                return new FractionationBatchResult {
-                    InputRemoveCount = batchCount,
-                    ConsumedRegisterCount = batchCount,
-                    SuccessCount = sample.Count,
-                };
-            }
-            int consumedCount = ResearchManager.ProcessAnalysisBatch(InputID, batchCount, ref seed,
-                out int sacrificeOutputCount, out int analysisSuccessCount);
-            int returnedCount = batchCount - consumedCount;
-
-            if (sacrificeOutputCount > 0) {
-                outputs.Add(true, IFE记忆源点, sacrificeOutputCount);
-            }
+            AnalysisBatchResult result = ResearchManager.ProcessAnalysisBatch(InputID, batchCount, ref seed);
+            int returnedCount = batchCount - result.ConsumedCount - result.ReturnedSampleCount;
+            if (result.ProductCount > 0) { outputs.Add(true, result.ProductItemId, result.ProductCount); }
             fluidInputInc -= fluidInputIncAvg * batchCount;
             return new FractionationBatchResult {
                 InputRemoveCount = batchCount,
-                ConsumedRegisterCount = consumedCount,
-                SuccessCount = sacrificeOutputCount + analysisSuccessCount,
+                ConsumedRegisterCount = result.ConsumedCount,
+                SuccessCount = result.SuccessCount,
+                ReturnedProductCount = result.ReturnedSampleCount,
                 PassThroughCount = returnedCount,
                 PassThroughInc = fluidInputIncAvg * returnedCount,
             };

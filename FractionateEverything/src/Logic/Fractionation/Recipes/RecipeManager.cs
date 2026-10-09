@@ -80,6 +80,10 @@ public static class RecipeManager {
         AddRareCatalysisRecipes();
         AddInteractionRecipes();
         AddReplacementRecipes();
+        // 物品分类已完成，置换线索按主产物阶段开放；展示原型预注册不依赖此阶段。
+        foreach (WorldviewRecipe recipe in WorldviewRecipes.Where(recipe => recipe.Kind == WorldviewRecipeKind.Replacement)) {
+            recipe.ResearchStage = Math.Max(1, GetMatrixStageIndex(itemToMatrix[recipe.PrimaryProductId]) + 1);
+        }
         ResearchManager.BuildResearchCatalog();
         AddAnalysisDirections();
         LogInfo($"Added {RecipeList.Count} fractionation recipes.");
