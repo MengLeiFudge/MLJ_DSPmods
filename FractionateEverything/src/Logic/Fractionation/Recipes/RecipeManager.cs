@@ -243,7 +243,7 @@ public static class RecipeManager {
         ]);
         AddRecipe(new WorldviewRecipe("mineral-memory:1016", 30107,
             "单极磁石记忆重构".Translate(), ERecipe.AdvancedMineral,
-            WorldviewRecipeKind.RareCatalysis, 0.2f,
+            WorldviewRecipeKind.RareCatalysis, 0.08f,
             [new(IFE记忆源点, 1), new(I单极磁石, 1, 0.05f)],
             [new(I单极磁石, 20f)]) { AnalysisItemId = I单极磁石, ResearchStage = 6 });
     }
@@ -256,7 +256,7 @@ public static class RecipeManager {
         }
         List<WorldviewRecipeInput> inputs = [..commonInputs, new(rareItemId, 1, 0.05f)];
         AddRecipe(new WorldviewRecipe($"mineral-rare:{rareItemId}", persistentId,
-            string.Format("{0}催化增殖".Translate(), rare.name), ERecipe.AdvancedMineral, WorldviewRecipeKind.RareCatalysis, 0.2f,
+            string.Format("{0}催化增殖".Translate(), rare.name), ERecipe.AdvancedMineral, WorldviewRecipeKind.RareCatalysis, 0.08f,
             inputs, [new WorldviewRecipeOutput(rareItemId, 1f)]) {
                 AnalysisItemId = rareItemId,
                 ResearchStage = rareItemId == I单极磁石 ? 5 : 3,
@@ -276,14 +276,14 @@ public static class RecipeManager {
             AddRecipe(new WorldviewRecipe($"interaction-culture:{towerId}", 30201 + i,
                 string.Format("培育{0}".Translate(), tower?.name ?? towerName),
                 ERecipe.AdvancedInteraction,
-                WorldviewRecipeKind.TowerCultivation, 0.2f,
+                WorldviewRecipeKind.TowerCultivation, 0.08f,
                 [new WorldviewRecipeInput(IFE通用原胚, 1)], [new WorldviewRecipeOutput(towerId, 1f)]) {
                     AnalysisItemId = IFE通用原胚, ResearchStage = towerId == IFE高级交互塔 ? 0 : 1,
                 });
             AddRecipe(new WorldviewRecipe($"interaction-breed:{towerId}", 30211 + i,
                 string.Format("{0}原胚繁育".Translate(), tower?.name ?? towerName),
                 ERecipe.AdvancedInteraction,
-                WorldviewRecipeKind.EmbryoBreeding, 0.2f,
+                WorldviewRecipeKind.EmbryoBreeding, 0.08f,
                 [new WorldviewRecipeInput(towerId, 1), new WorldviewRecipeInput(IFE通用原胚, 1, 0.05f)],
                 [new WorldviewRecipeOutput(IFE通用原胚, 1.5f)]) {
                     AnalysisItemId = towerId, ResearchStage = 3,
@@ -293,19 +293,19 @@ public static class RecipeManager {
 
     private static void AddReplacementRecipes() {
         AddRecipe(new WorldviewRecipe("conversion:fuel-hydrogen-deuterium", 30301,
-            "液氢燃料棒重氢置换".Translate(), ERecipe.AdvancedConversion, WorldviewRecipeKind.Replacement, 0.2f,
+            "液氢燃料棒重氢置换".Translate(), ERecipe.AdvancedConversion, WorldviewRecipeKind.Replacement, 0.08f,
             [new(I液氢燃料棒, 1), new(I重氢, 10)],
             [new(I氘核燃料棒, 1f), new(I氢, 5f, true)]));
         AddRecipe(new WorldviewRecipe("conversion:fuel-deuterium-antimatter", 30302,
-            "氘核燃料棒反物质置换".Translate(), ERecipe.AdvancedConversion, WorldviewRecipeKind.Replacement, 0.2f,
+            "氘核燃料棒反物质置换".Translate(), ERecipe.AdvancedConversion, WorldviewRecipeKind.Replacement, 0.08f,
             [new(I氘核燃料棒, 1), new(I反物质, 2), new(I湮灭约束球, 1)],
             [new(I反物质燃料棒, 1f), new(I重氢, 10f, true)]));
         AddRecipe(new WorldviewRecipe("conversion:mining-drill", 30303,
-            "采矿机重构为大型采矿机".Translate(), ERecipe.AdvancedConversion, WorldviewRecipeKind.Replacement, 0.2f,
+            "采矿机重构为大型采矿机".Translate(), ERecipe.AdvancedConversion, WorldviewRecipeKind.Replacement, 0.08f,
             [new(I采矿机, 1), new(I处理器, 1)],
             [new(I大型采矿机, 1f), new(I齿轮, 2f, true)]));
         AddRecipe(new WorldviewRecipe("conversion:smelter", 30304,
-            "电弧熔炉重构为位面熔炉".Translate(), ERecipe.AdvancedConversion, WorldviewRecipeKind.Replacement, 0.2f,
+            "电弧熔炉重构为位面熔炉".Translate(), ERecipe.AdvancedConversion, WorldviewRecipeKind.Replacement, 0.08f,
             [new(I电弧熔炉, 1), new(I卡西米尔晶体, 1)],
             [new(I位面熔炉, 1f), new(I磁线圈, 2f, true)]));
     }
