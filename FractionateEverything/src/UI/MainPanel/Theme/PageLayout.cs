@@ -406,7 +406,8 @@ public static class PageLayout {
     /// 将滚动区域恢复到顶部。
     /// </summary>
     public static void ScrollToTop(RectTransform contentRoot) {
-        ScrollRect scroll = contentRoot?.GetComponentInParent<ScrollRect>();
+        // CreateScrollableArea 返回 content，其两级父节点为滚动区根；隐藏时也必须复位。
+        ScrollRect scroll = contentRoot?.parent?.parent?.GetComponent<ScrollRect>();
         if (scroll != null) {
             scroll.verticalNormalizedPosition = 1f;
         }

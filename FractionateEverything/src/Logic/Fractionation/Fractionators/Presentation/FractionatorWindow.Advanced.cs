@@ -105,7 +105,8 @@ public static partial class FractionatorWindow {
         RectTransform content = PageLayout.CreateScrollableArea(advancedRoot, $"advanced-{kind}-{extractable}",
             left, 115f, width - 6f, 150f, 150f);
         return new AdvancedColumn {
-            Content = content, Scroll = content.GetComponentInParent<ScrollRect>(),
+            // 窗口初始化时父层级未激活，按滚动区的固定层级直接取组件。
+            Content = content, Scroll = content.parent.parent.GetComponent<ScrollRect>(),
             Title = CreateAdvancedLabel(advancedRoot, left, 80f, width - 6f, 35f),
             Kind = kind, Extractable = extractable,
         };
