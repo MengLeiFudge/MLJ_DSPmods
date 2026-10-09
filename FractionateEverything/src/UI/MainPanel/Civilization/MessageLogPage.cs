@@ -14,9 +14,12 @@ public sealed class MessageLogPage : CardBrowserPage {
 
     /// <inheritdoc />
     protected override IReadOnlyList<PageCard> ReadCards() => MessageLog.GetEntries()
-        .Select(entry => new PageCard {
-            Key = entry.Id.ToString(),
-            Title = entry.Text.Split('\n')[0],
-            Detail = entry.Text,
+        .Select(entry => {
+            string repeats = entry.RepeatCount > 1 ? $" ×{entry.RepeatCount}" : string.Empty;
+            return new PageCard {
+                Key = entry.Id.ToString(),
+                Title = entry.Text.Split('\n')[0] + repeats,
+                Detail = entry.Text + repeats,
+            };
         }).ToArray();
 }

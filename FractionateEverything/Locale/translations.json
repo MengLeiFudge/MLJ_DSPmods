@@ -68,8 +68,8 @@
     "zhCN": "消息日志"
   },
   "FE.MessageLog.Summary": {
-    "enUS": "The latest 50 text tips and relic messages in this game, newest first. Cleared when changing saves.",
-    "zhCN": "本次游戏最近50条文字提示与遗迹消息，最新在前；切换存档后清空。"
+    "enUS": "The latest 50 text tips and relic messages in this game, newest first. Consecutive identical messages are merged and show ×N. Cleared when changing saves.",
+    "zhCN": "本次游戏最近50条文字提示与遗迹消息，最新在前；连续相同消息合并并显示×N，切换存档后清空。"
   },
   "FE.TowerFactory.FractionatorUnsupported": {
     "enUS": "FE fractionator towers must run as placed buildings; use an assembler in slot 1 to manufacture them.",
