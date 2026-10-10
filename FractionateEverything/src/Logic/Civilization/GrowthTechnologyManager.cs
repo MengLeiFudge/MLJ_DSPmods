@@ -49,6 +49,8 @@ public static class GrowthTechnologyManager {
     public const string ExplorationTechnologyContentId = "technology:exploration-signal";
 
     private const int FiniteGrowthLevelCount = 6;
+    /// <summary>成长首行相对第二页宇宙探索的网格行，护盾链下方留出一行空白。</summary>
+    private const int FirstGrowthRow = 36;
 
     private static readonly int[] MatrixItems = [
         I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵,
@@ -66,6 +68,8 @@ public static class GrowthTechnologyManager {
     private static readonly int[] ExperiencedStackMatrixStages = [0, 1, 2, 3, 4];
     private static readonly int[] StandardStackMatrixStages = [0, 3, 4, 5, 5];
     private static readonly TechProto[] StackTechs = new TechProto[6];
+    /// <summary>成长节点相对成长首行的行列，注册和路线切换时记录，最终加载后统一应用。</summary>
+    private static readonly Dictionary<int, (int Row, int Column)> GrowthTechPositions = [];
     private static bool stackProgressionModeApplied;
 
     /// <summary>当前存档是否采用已玩过分馏的堆叠路线。</summary>
@@ -135,9 +139,8 @@ public static class GrowthTechnologyManager {
             int techLevel = experienced ? level : Math.Max(1, level - 1);
             ConfigureGrowthTech(tech, techLevel, !experienced && level == 4 ? 4 : techLevel, previousTech,
                 [MatrixItems[stage]], cost);
-            tech.Position = GetTechPosition(10, stage - 1);
-            // 深空来敌元驱动链占据y=-107；上移两行，在两条链之间保留一行空白。
-            if (TheyComeFromVoid.Enable) { tech.Position += new Vector2(0f, 8f); }
+            GrowthTechPositions[tech.ID] = (0, stage);
+            tech.Position = GetGrowthTechPosition(0, stage);
             if (!experienced && level == 4) {
                 tech.LevelCoef1 = (StandardStackCosts[4] - cost) * MatrixHashPerItem[stage];
                 tech.HashNeeded -= (long)tech.Level * tech.LevelCoef1;
@@ -292,13 +295,22 @@ public static class GrowthTechnologyManager {
         StackingManager.SyncRuntimeState();
     }
 
+    /// <summary>在所有模组原型修改完成后，按各页最终基准统一应用FE科技布局。</summary>
+    public static void ApplyTechLayout() {
+        LDB.techs.Select(TFE行星内物流交互).Position = GetInteractionTechPosition(false);
+        LDB.techs.Select(TFE星际物流交互).Position = GetInteractionTechPosition(true);
+        foreach (var entry in GrowthTechPositions) {
+            LDB.techs.Select(entry.Key).Position = GetGrowthTechPosition(entry.Value.Row, entry.Value.Column);
+        }
+    }
+
     private static void AddInfrastructureTechs() {
         TechProto planetaryVanilla = LDB.techs.Select(T行星物流系统);
         TechProto planetary = ProtoRegistry.RegisterTech(
             TFE行星内物流交互, "T行星内物流交互", "行星内物流交互描述", "行星内物流交互结果",
             planetaryVanilla.IconPath, [],
             [.. planetaryVanilla.Items], [.. planetaryVanilla.ItemPoints], planetaryVanilla.HashNeeded,
-            [RFE行星内物流交互站], GetTechPosition(-23, 4));
+            [RFE行星内物流交互站], GetInteractionTechPosition(false));
         planetary.PreTechsImplicit = [T行星物流系统];
         planetary.PropertyOverrideItems = [.. planetaryVanilla.PropertyOverrideItems];
         planetary.PropertyItemCounts = [.. planetaryVanilla.PropertyItemCounts];
@@ -310,7 +322,7 @@ public static class GrowthTechnologyManager {
             TFE星际物流交互, "T星际物流交互", "星际物流交互描述", "星际物流交互结果",
             interstellarVanilla.IconPath, [],
             [.. interstellarVanilla.Items], [.. interstellarVanilla.ItemPoints], interstellarVanilla.HashNeeded,
-            [RFE星际物流交互站], GetTechPosition(-23, 6));
+            [RFE星际物流交互站], GetInteractionTechPosition(true));
         interstellar.PreTechsImplicit = [T星际物流系统];
         interstellar.PropertyOverrideItems = [.. interstellarVanilla.PropertyOverrideItems];
         interstellar.PropertyItemCounts = [.. interstellarVanilla.PropertyItemCounts];
@@ -363,7 +375,8 @@ public static class GrowthTechnologyManager {
             techId, nodeNameKey, series.DescriptionKey, "FE成长科技结果", series.IconPath,
             previousTech > 0 ? [previousTech] : [],
             matrixItemIds, itemPoints, baseHash,
-            [], GetTechPosition(series.Row + 10, levelDefinition.Level - 2));
+            [], GetGrowthTechPosition(series.Row, levelDefinition.Level - 1));
+        GrowthTechPositions[tech.ID] = (series.Row, levelDefinition.Level - 1);
         tech.Level = levelDefinition.Level;
         tech.MaxLevel = levelDefinition.MaxLevel;
         tech.LevelCoef1 = linearHashIncrement;
@@ -541,22 +554,47 @@ public static class GrowthTechnologyManager {
     /// <param name="id">稳定科技身份。</param>
     /// <param name="name">名称键。</param>
     /// <param name="previous">常规分支末节点；仓储由容量里程碑开启，取0。</param>
-    /// <param name="row">科技树布局行。</param>
+    /// <param name="row">相对第二页成长首行的行索引。</param>
     private static void AddUltimateTech(int id, string name, int previous, int row) {
         TechProto tech = ProtoRegistry.RegisterTech(id, name, "终极任务科技描述", "FE成长科技结果",
-            "Assets/fe/tech分馏数据中心", previous > 0 ? [previous] : [], [], [], 0, [], GetTechPosition(row + 10, 5));
+            "Assets/fe/tech分馏数据中心", previous > 0 ? [previous] : [], [], [], 0, [], GetGrowthTechPosition(row, 6));
+        GrowthTechPositions[tech.ID] = (row, 6);
         tech.Level = 11;
         tech.MaxLevel = 11;
         tech.IsHiddenTech = true;
     }
 
-    private static Vector2 GetTechPosition(int row, int column) {
+    /// <summary>获取第一页物流交互节点的空位，沿用当前启用模组的基础布局。</summary>
+    /// <param name="interstellar">为true时定位星际交互，否则定位行星交互。</param>
+    /// <returns>对应第一页基准的科技原型坐标。</returns>
+    private static Vector2 GetInteractionTechPosition(bool interstellar) {
         if (GenesisBook.Enable) {
-            return new Vector2(9 + column * 4, -47 - row * 4);
+            return GetTechPosition(1, interstellar ? -6 : -7, -1);
         }
         if (OrbitalRing.Enable) {
-            return new Vector2(8 + column * 4, -76 - row * 4);
+            return GetTechPosition(1, interstellar ? -2 : -5, interstellar ? 13 : 5);
         }
-        return new Vector2(13 + column * 4, -67 - row * 4);
+        return GetTechPosition(1, -6, interstellar ? 8 : 6);
+    }
+
+    /// <summary>获取第二页成长节点的位置；深空元驱动链启用时，整个成长块下移两行。</summary>
+    /// <param name="row">相对成长首行的行索引，向下为正。</param>
+    /// <param name="column">矩阵或终极节点的列索引，向右为正。</param>
+    /// <returns>当前第二页基准下的科技原型坐标。</returns>
+    private static Vector2 GetGrowthTechPosition(int row, int column) =>
+        GetTechPosition(2, FirstGrowthRow + row + (TheyComeFromVoid.Enable ? 2 : 0), column);
+
+    /// <summary>以当前页基准科技的实际Position为原点，按4单位网格计算节点位置。</summary>
+    /// <param name="page">玩家看到的页数，1为主科技页，2为升级页。</param>
+    /// <param name="row">相对页基准的网格行，向下为正。</param>
+    /// <param name="column">相对页基准的网格列，向右为正。</param>
+    /// <returns>以游戏科技树坐标表示的位置。</returns>
+    private static Vector2 GetTechPosition(int page, int row, int column) {
+        int originTechId = page switch {
+            1 => T戴森球计划,
+            2 => T宇宙探索,
+            _ => throw new ArgumentOutOfRangeException(nameof(page), page, "科技页数必须为1或2。"),
+        };
+        return LDB.techs.Select(originTechId).Position + new Vector2(column * 4, -row * 4);
     }
 }

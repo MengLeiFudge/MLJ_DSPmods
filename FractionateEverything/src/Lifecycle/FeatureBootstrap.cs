@@ -43,6 +43,7 @@ public static class FeatureBootstrap {
             return;
         }
 
+        GrowthTechnologyManager.ApplyTechLayout();
         AdvancedRecipeCatalog.DetachFromItemRecipes();
         PreloadAndInitAll();
         // 获取部分数据，例如传送带最大速度等
