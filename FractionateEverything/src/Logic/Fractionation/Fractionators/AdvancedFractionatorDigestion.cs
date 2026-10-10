@@ -1,5 +1,7 @@
 ﻿using System;
 using FE.Compatibility.Nebula;
+using FE.Logic.Civilization;
+using FE.Logic.Fractionation.Recipes;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Fractionators;
@@ -24,9 +26,33 @@ public static partial class AdvancedFractionatorRuntime {
         return capacity <= 0d ? 0f : (float)Math.Max(0d, Math.Min(1d, state.DigestingEnergy / capacity));
     }
 
-    private static float GetFoodSpeed(AdvancedFractionatorState state) {
+    /// <summary>读取当前正在消化的矩阵速度倍率，供运行器与窗口共用。</summary>
+    /// <param name="state">调用方已持有实例锁的消化状态。</param>
+    /// <returns>当前矩阵对应的速度；没有消化物时为1。</returns>
+    public static float GetFoodSpeed(AdvancedFractionatorState state) {
         int tier = state.DigestingItemId - I电磁矩阵;
         return state.DigestingEnergy > 0d && tier >= 0 && tier < FoodSpeed.Length ? FoodSpeed[tier] : 1f;
+    }
+
+    /// <summary>读取当前矩阵的预计消耗与工作配比，不将失败回流计入供养消耗。</summary>
+    /// <param name="state">调用方已持有实例锁的消化与运行状态。</param>
+    /// <param name="recipe">当前配方；未选择时按待机消耗计算。</param>
+    /// <param name="buildingId">当前塔体物品ID，用于读取献祭成功率。</param>
+    /// <returns>矩阵件数/分钟，以及食物在工作实际消耗的食物与主料总件数中的占比；空消化槽均为0。</returns>
+    public static (double ConsumptionPerMinute, double Share) GetFoodRates(AdvancedFractionatorState state,
+        WorldviewRecipe recipe, int buildingId) {
+        double energy = GetFoodEnergy(state.DigestingItemId, state.DigestingInc);
+        if (state.DigestingEnergy <= 0d || energy <= 0d) { return (0d, 0d); }
+        double consumption = IdleFoodEnergyPerSecond * 60d;
+        if (recipe != null && state.ProcessingRate > 0d) {
+            int mainPerRound = 0;
+            foreach (WorldviewRecipeInput input in recipe.InputArray) {
+                if (input.ConsumeProbability >= 0.9999f) { mainPerRound += input.Count; }
+            }
+            float success = GetSuccessProbability(recipe, ResearchManager.GetAdvancedTowerSacrificeBoost(buildingId));
+            consumption = state.ProcessingRate * 60d * success * mainPerRound;
+        }
+        return (consumption / energy, 1d / (1d + energy));
     }
 
     /// <summary>只在空槽点燃一件；旧档若有多种备用食物，依矩阵层次逐种排空，不混合能量。</summary>

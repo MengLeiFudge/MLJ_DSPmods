@@ -1,4 +1,116 @@
 {
+  "FE.ReserveFood": {
+    "enUS": "Reserve food",
+    "zhCN": "备用食物",
+    "frFR": "Réserve alimentaire",
+    "1031": "Nahrungsvorrat",
+    "1041": "予備食料"
+  },
+  "FE.Digestion": {
+    "enUS": "Digestion",
+    "zhCN": "消化槽",
+    "frFR": "Digestion",
+    "1031": "Verdauung",
+    "1041": "消化スロット"
+  },
+  "FE.DiscardDigestion": {
+    "enUS": "Hold to destroy",
+    "zhCN": "长按销毁",
+    "frFR": "Maintenir pour détruire",
+    "1031": "Zum Vernichten halten",
+    "1041": "長押しで破棄"
+  },
+  "FE.Advanced.RecipeRate": {
+    "enUS": "Recipe rate",
+    "zhCN": "配方速率",
+    "frFR": "Cadence de recette",
+    "1031": "Rezeptdurchsatz",
+    "1041": "レシピ速度"
+  },
+  "FE.Advanced.RateSummary": {
+    "enUS": "{0:0.#} cycles/min\nSuccess {1:P1}\nFood speed ×{2:0.0}\nEst. {3:0.#} successes/min",
+    "zhCN": "每分钟 {0:0.#} 轮\n成功率 {1:P1}\n食物速度 ×{2:0.0}\n预计成功 {3:0.#}/分",
+    "frFR": "{0:0.#} cycles/min\nRéussite {1:P1}\nVitesse ×{2:0.0}\nPrévu : {3:0.#} réussites/min",
+    "1031": "{0:0.#} Zyklen/min\nErfolg {1:P1}\nNahrungstempo ×{2:0.0}\nErwartet {3:0.#} Erfolge/min",
+    "1041": "毎分 {0:0.#} サイクル\n成功率 {1:P1}\n食料速度 ×{2:0.0}\n推定成功 {3:0.#}/分"
+  },
+  "FE.Advanced.RecipeRatio": {
+    "enUS": "Input ratio\n{0}\nOutput ratio on success\n{1}",
+    "zhCN": "投入比例\n{0}\n成功产出比例\n{1}",
+    "frFR": "Ratio des entrées\n{0}\nRatio produit en réussite\n{1}",
+    "1031": "Eingangsverhältnis\n{0}\nAusgänge bei Erfolg\n{1}",
+    "1041": "投入比率\n{0}\n成功時の産出比率\n{1}"
+  },
+  "FE.Advanced.InputRule": {
+    "enUS": "{0}/cycle · Consume {1:P1}",
+    "zhCN": "{0}/轮 · 消耗 {1:P1}",
+    "frFR": "{0}/cycle · Consommé {1:P1}",
+    "1031": "{0}/Zyklus · Verbrauch {1:P1}",
+    "1041": "{0}/回 · 消費 {1:P1}"
+  },
+  "FE.Advanced.CatalystRule": {
+    "enUS": "{0}/cycle · {1:P0} loss on success",
+    "zhCN": "{0}/轮 · 成功耗 {1:P0}",
+    "frFR": "{0}/cycle · Perte si réussite {1:P0}",
+    "1031": "{0}/Zyklus · Verlust bei Erfolg {1:P0}",
+    "1041": "{0}/回 · 成功時消費 {1:P0}"
+  },
+  "FE.Advanced.InputRates": {
+    "enUS": "Process {0:0.#}/min\nEst. consume {1:0.#}/min",
+    "zhCN": "处理 {0:0.#}/分\n预计耗 {1:0.#}/分",
+    "frFR": "Traité {0:0.#}/min\nConso. prévue {1:0.#}/min",
+    "1031": "Durchsatz {0:0.#}/min\nVerbrauch ca. {1:0.#}/min",
+    "1041": "処理 {0:0.#}/分\n推定消費 {1:0.#}/分"
+  },
+  "FE.Advanced.CatalystRates": {
+    "enUS": "Participates {0:0.#}/min\nEst. consume {1:0.###}/min",
+    "zhCN": "参与 {0:0.#}/分\n预计耗 {1:0.###}/分",
+    "frFR": "Participations {0:0.#}/min\nConso. prévue {1:0.###}/min",
+    "1031": "Beteiligung {0:0.#}/min\nVerbrauch ca. {1:0.###}/min",
+    "1041": "反応参加 {0:0.#}/分\n推定消費 {1:0.###}/分"
+  },
+  "FE.Advanced.ProductRule": {
+    "enUS": "{0:0.##} on success\nSuccess {1:P1}\nEst. {2:0.#}/min",
+    "zhCN": "成功产 {0:0.##}\n成功率 {1:P1}\n预计 {2:0.#}/分",
+    "frFR": "{0:0.##} si réussite\nRéussite {1:P1}\nPrévu {2:0.#}/min",
+    "1031": "{0:0.##} bei Erfolg\nErfolg {1:P1}\nErwartet {2:0.#}/min",
+    "1041": "成功時 {0:0.##}\n成功率 {1:P1}\n推定 {2:0.#}/分"
+  },
+  "FE.Advanced.FlowRule": {
+    "enUS": "Return {0:P1}\nFailed inputs pass through\nEst. return {1:0.#}/min",
+    "zhCN": "回流 {0:P1}\n失败料原样流出\n预计回流 {1:0.#}/分",
+    "frFR": "Retour {0:P1}\nEntrées intactes si échec\nRetour prévu {1:0.#}/min",
+    "1031": "Rückfluss {0:P1}\nBei Misserfolg unverändert\nRückfluss ca. {1:0.#}/min",
+    "1041": "還流 {0:P1}\n失敗した原料はそのまま排出\n推定還流 {1:0.#}/分"
+  },
+  "FE.Advanced.ExcessCatalyst": {
+    "enUS": "Reserve full: pass through\nExcess returns intact",
+    "zhCN": "储备满后流出\n超量原样回流",
+    "frFR": "Réserve pleine : transit\nSurplus restitué intact",
+    "1031": "Vorrat voll: Durchfluss\nÜberschuss bleibt erhalten",
+    "1041": "備蓄満杯で排出\n余剰はそのまま還流"
+  },
+  "FE.Advanced.RemainingProduct": {
+    "enUS": "Previous recipe's products\nWaiting for output",
+    "zhCN": "原配方剩余产物\n等待输出",
+    "frFR": "Produits de l'ancienne recette\nEn attente de sortie",
+    "1031": "Produkte des vorigen Rezepts\nWarten auf Ausgabe",
+    "1041": "前のレシピの残り産物\n排出待ち"
+  },
+  "FE.Advanced.PassThrough": {
+    "enUS": "Excess or unrelated item\nPasses through intact",
+    "zhCN": "超量或无关物\n原样流出",
+    "frFR": "Surplus ou objet hors recette\nTransite intact",
+    "1031": "Überschuss oder rezeptfremd\nUnveränderter Durchfluss",
+    "1041": "余剰またはレシピ外の物品\nそのまま排出"
+  },
+  "FE.Advanced.FoodRates": {
+    "enUS": "Est. food {0:0.##}/min\nFood in working mix {1:P1}",
+    "zhCN": "预计耗 {0:0.##}/分\n工作占比 {1:P1}",
+    "frFR": "Aliment prévu {0:0.##}/min\nPart en activité {1:P1}",
+    "1031": "Nahrung ca. {0:0.##}/min\nArbeitsanteil {1:P1}",
+    "1041": "推定消費 {0:0.##}/分\n稼働時の食料比率 {1:P1}"
+  },
   "FE.Encyclopedia.Title": {
     "enUS": "Encyclopedia",
     "zhCN": "百科"

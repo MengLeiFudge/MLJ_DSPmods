@@ -170,11 +170,11 @@ public static partial class AdvancedFractionatorRuntime {
                     state.ProcessingRate = 0d;
                     state.ProgressRemainder = 0d;
                 }
-                // 旧版没有货物数证据，按单件一堆恢复；真实带入后自然替换。库存超出新共享上限时保留并停止收料。
+                // 旧版没有货物数证据，按单件一堆恢复；真实带入后自然替换。超限库存保留，运行时逐步侧流排空。
                 foreach (var pair in state.Inputs) {
                     if (!state.InputCargo.ContainsKey(pair.Key)) { state.InputCargo[pair.Key] = pair.Value; }
                 }
-                if (!hasCargo) { MoveUnprocessedInputs(state, recipe); }
+                if (!hasCargo) { DrainExcessInputs(state, recipe); }
             }
             if (valid) { seen?.Add(key); }
         }
