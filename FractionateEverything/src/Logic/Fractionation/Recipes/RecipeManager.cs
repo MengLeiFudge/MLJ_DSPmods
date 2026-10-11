@@ -226,41 +226,58 @@ public static class RecipeManager {
         }
     }
 
+    /// <summary>注册珍奇催化增殖及对应的源点重构配方，保留已发布的稳定身份。</summary>
     private static void AddRareCatalysisRecipes() {
-        AddRareRecipe(30101, I光栅石, [new(I石矿, 10)]);
-        AddRareRecipe(30102, I分形硅石, [new(I硅石, 10)]);
-        AddRareRecipe(30103, I金伯利矿石, [new(I煤矿, 10), new(I石矿, 10)]);
-        AddRareRecipe(30104, I可燃冰, [new(I水, 10), new(I原油, 10)]);
-        AddRareRecipe(30105, I刺笋结晶, [new(I植物燃料, 10), new(I煤矿, 10)]);
-        AddRareRecipe(30106, I单极磁石, [
-            new(I铁矿, 10),
-            new(I钛石, 10),
-            new(I光栅石, 2),
-            new(I分形硅石, 2),
-            new(I金伯利矿石, 2),
-            new(I可燃冰, 2),
-            new(I刺笋结晶, 2),
-        ]);
-        AddRecipe(new WorldviewRecipe("mineral-memory:1016", 30107,
-            "单极磁石记忆重构".Translate(), ERecipe.AdvancedMineral,
-            WorldviewRecipeKind.RareCatalysis, 0.08f,
-            [new(IFE记忆源点, 1), new(I单极磁石, 1, 0.05f)],
-            [new(I单极磁石, 20f)]) { AnalysisItemId = I单极磁石, ResearchStage = 6 });
+        AddRareRecipe(30101, I光栅石, [new(I石矿, 3)]);
+        AddRareRecipe(30102, I分形硅石, [new(I硅石, 3), new(I石矿, 3)]);
+        AddRareRecipe(30103, I金伯利矿石, [new(I煤矿, 3)]);
+        AddRareRecipe(30104, I可燃冰, [new(I原油, 3)]);
+        AddRareRecipe(30105, I刺笋结晶, [new(I植物燃料, 3), new(I煤矿, 3)]);
+        AddRareRecipe(30106, I单极磁石, [new(I分形硅石, 1), new(I有机晶体, 1), new(I刺笋结晶, 1)]);
+        AddRareRecipe(30108, I有机晶体, [new(I原油, 3), new(I水, 3)]);
+
+        AddRareMemoryRecipe(30107, I单极磁石, 20);
+        AddRareMemoryRecipe(30109, I分形硅石, 60);
+        AddRareMemoryRecipe(30110, I有机晶体, 60);
+        AddRareMemoryRecipe(30111, I刺笋结晶, 60);
+        AddRareMemoryRecipe(30112, I可燃冰, 120);
+        AddRareMemoryRecipe(30113, I金伯利矿石, 120);
+        AddRareMemoryRecipe(30114, I光栅石, 120);
     }
 
+    /// <summary>以指定原料和同种珍奇催化剂注册稀有增殖配方。</summary>
+    /// <param name="persistentId">配方跨存档和联机稳定的整数身份。</param>
+    /// <param name="rareItemId">兼作催化剂、解析样本和产物的珍奇物品。</param>
+    /// <param name="rawInputs">成功轮消耗、失败轮回流的主原料。</param>
     private static void AddRareRecipe(int persistentId, int rareItemId,
-        IReadOnlyList<WorldviewRecipeInput> commonInputs) {
+        IReadOnlyList<WorldviewRecipeInput> rawInputs) {
         ItemProto rare = LDB.items.Select(rareItemId);
         if (rare == null) {
             return;
         }
-        List<WorldviewRecipeInput> inputs = [..commonInputs, new(rareItemId, 1, 0.05f)];
+        List<WorldviewRecipeInput> inputs = [..rawInputs, new(rareItemId, 1, 0.05f)];
         AddRecipe(new WorldviewRecipe($"mineral-rare:{rareItemId}", persistentId,
             string.Format("{0}催化增殖".Translate(), rare.name), ERecipe.AdvancedMineral, WorldviewRecipeKind.RareCatalysis, 0.08f,
             inputs, [new WorldviewRecipeOutput(rareItemId, 1f)]) {
                 AnalysisItemId = rareItemId,
                 ResearchStage = rareItemId == I单极磁石 ? 5 : 3,
             });
+    }
+
+    /// <summary>以一件源点和同种珍奇催化剂注册白糖阶段的传说重构配方。</summary>
+    /// <param name="persistentId">配方跨存档和联机稳定的整数身份。</param>
+    /// <param name="rareItemId">兼作催化剂和产物的珍奇物品。</param>
+    /// <param name="productCount">每成功轮新产出的数量，催化剂损耗另行结算。</param>
+    private static void AddRareMemoryRecipe(int persistentId, int rareItemId, int productCount) {
+        ItemProto rare = LDB.items.Select(rareItemId);
+        if (rare == null) {
+            return;
+        }
+        AddRecipe(new WorldviewRecipe($"mineral-memory:{rareItemId}", persistentId,
+            string.Format("{0}记忆重构".Translate(), rare.name), ERecipe.AdvancedMineral,
+            WorldviewRecipeKind.RareCatalysis, 0.08f,
+            [new(IFE记忆源点, 1), new(rareItemId, 1, 0.05f)],
+            [new(rareItemId, productCount)]) { AnalysisItemId = rareItemId, ResearchStage = 6 });
     }
 
     private static void AddInteractionRecipes() {

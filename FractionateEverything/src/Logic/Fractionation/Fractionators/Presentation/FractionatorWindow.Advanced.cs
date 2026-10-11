@@ -495,7 +495,8 @@ public static partial class FractionatorWindow {
             WorldviewRecipeOutput output = recipe.ProductArray.FirstOrDefault(candidate => candidate.ItemId == itemId);
             if (output != null) {
                 float perSuccess = AdvancedFractionatorRuntime.GetOutputPerSuccess(recipe, output);
-                return $"{count}/{BufferCapacity}\n" + string.Format("FE.Advanced.ProductRule".Translate(), perSuccess, success,
+                int capacity = AdvancedFractionatorRuntime.GetProductCapacity(recipe, output);
+                return $"{count}/{capacity}\n" + string.Format("FE.Advanced.ProductRule".Translate(), perSuccess, success,
                     rounds * success * perSuccess);
             }
         }

@@ -540,8 +540,9 @@ public static partial class AdvancedFractionatorRuntime {
             int successes = Math.Min(candidate, Mathf.CeilToInt(candidate * probability));
             bool fits = true;
             foreach (WorldviewRecipeOutput output in recipe.ProductArray) {
+                int capacity = GetProductCapacity(recipe, output);
                 int maximumOutput = Mathf.CeilToInt(successes * GetOutputPerSuccess(recipe, output));
-                if (maximumOutput > Math.Max(0, BufferCapacity - GetCount(state.Products, output.ItemId))) {
+                if (maximumOutput > Math.Max(0, capacity - GetCount(state.Products, output.ItemId))) {
                     fits = false;
                     break;
                 }
@@ -727,6 +728,8 @@ public static partial class AdvancedFractionatorRuntime {
         fractionator.fluidOutputInc = SumCounts(state.FlowOutputInc);
         fractionator.productId = productItemId;
         fractionator.productOutputCount = GetCount(state.Products, productItemId);
+        fractionator.productOutputMax = GetProductCapacity(recipe,
+            recipe != null && recipe.ProductArray.Length > 0 ? recipe.ProductArray[0] : null);
         fractionator.produceProb = recipe == null
             ? 0f
             : Math.Min(1f, recipe.CycleSuccessProbability
@@ -751,6 +754,14 @@ public static partial class AdvancedFractionatorRuntime {
         }
         return output.Count;
     }
+
+    /// <summary>读取产物槽独立容量，至少容纳一个成功轮的完整产量。</summary>
+    /// <param name="recipe">当前生产配方；未选配方时使用基础容量。</param>
+    /// <param name="output">该槽产物；残留或未定义产物使用基础容量。</param>
+    /// <returns>随集装增长的20堆容量与单轮最大整数产量中的较大值。</returns>
+    public static int GetProductCapacity(WorldviewRecipe recipe, WorldviewRecipeOutput output) =>
+        recipe == null || output == null ? BufferCapacity
+            : Math.Max(BufferCapacity, Mathf.CeilToInt(GetOutputPerSuccess(recipe, output)));
 
     private static void RemoveNonFoodEntries(Dictionary<int, int> foods, Dictionary<int, int> foodInc) {
         foreach (int itemId in foods.Keys.Where(itemId => !IsFoodItem(itemId)).ToArray()) {

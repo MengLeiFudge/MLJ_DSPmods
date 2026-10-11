@@ -93,6 +93,7 @@ public static class AdvancedRecipeCatalog {
     /// <summary>将稳定运行身份映射到图标索引范围内的原型身份；未知身份返回0。</summary>
     public static int GetProtoId(int persistentId) => persistentId switch {
         >= 30101 and <= 30107 => RFE高级矿物展示起始 + persistentId - 30101,
+        >= 30108 and <= 30114 => RFE高级矿物扩展展示起始 + persistentId - 30108,
         >= 30201 and <= 30203 => RFE高级培育展示起始 + persistentId - 30201,
         >= 30211 and <= 30213 => RFE高级繁育展示起始 + persistentId - 30211,
         >= 30301 and <= 30304 => RFE高级转化展示起始 + persistentId - 30301,

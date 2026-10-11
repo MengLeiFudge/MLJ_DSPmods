@@ -1005,6 +1005,8 @@ public static partial class Utils {
     internal const int RFE基础解析塔 = 1064;
     /// <summary>高级矿物展示配方1065～1071，对应稳定运行身份30101～30107。</summary>
     internal const int RFE高级矿物展示起始 = 1065;
+    /// <summary>高级矿物扩展展示配方1082～1088，对应稳定运行身份30108～30114。</summary>
+    internal const int RFE高级矿物扩展展示起始 = 1082;
     /// <summary>高级塔培育展示配方1072～1074，对应稳定运行身份30201～30203。</summary>
     internal const int RFE高级培育展示起始 = 1072;
     /// <summary>高级原胚繁育展示配方1075～1077，对应稳定运行身份30211～30213。</summary>

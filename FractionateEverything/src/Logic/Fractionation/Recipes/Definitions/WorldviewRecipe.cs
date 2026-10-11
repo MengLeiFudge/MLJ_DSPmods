@@ -71,7 +71,7 @@ public sealed class WorldviewRecipe : BaseRecipe {
     /// <summary>稳定目录对应的研究层级；基础解析是处理入口，不参与解锁。</summary>
     public RecipeUnlockTier UnlockTier => Kind is WorldviewRecipeKind.BasicMineral or WorldviewRecipeKind.TowerCultivation
         ? RecipeUnlockTier.Common
-        : Kind == WorldviewRecipeKind.EmbryoBreeding || StableId == "mineral-memory:1016"
+        : Kind == WorldviewRecipeKind.EmbryoBreeding || StableId.StartsWith("mineral-memory:", StringComparison.Ordinal)
             ? RecipeUnlockTier.Legendary : RecipeUnlockTier.Rare;
 
     /// <summary>跨存档、蓝图和联机稳定的配方整数 ID。</summary>
