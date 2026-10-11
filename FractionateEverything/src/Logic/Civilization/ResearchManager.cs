@@ -14,7 +14,7 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Civilization;
 
 /// <summary>
-/// 一项可由探索或实物样本首次成功建立线索、再由对应共享槽解析的内容。
+/// 一项先由探索、信号或专用制样取得线索，再由对应共享槽解析的内容。
 /// </summary>
 public sealed class ResearchContentDefinition(string id, string displayName, int tier) {
     /// <summary>稳定内容 ID。</summary>
@@ -308,7 +308,7 @@ public static partial class ResearchManager {
         return CanResearchSample(itemId, Volatile.Read(ref analysisRuntimeSnapshot));
     }
 
-    /// <summary>查询可研究样本的成功与损毁概率，无已知或可发现内容时不判定损毁。</summary>
+    /// <summary>查询已有待解析线索样本的成功与损毁概率，无线索或内容全部完成时不判定损毁。</summary>
     /// <param name="itemId">解析样本的物品身份。</param>
     /// <param name="successRatio">每次通过的成功概率，范围0～1。</param>
     /// <param name="destroyRatio">每次通过的损毁概率，与成功互斥。</param>
@@ -448,7 +448,7 @@ public static partial class ResearchManager {
     }
 
     /// <summary>
-    /// 将探索或实物样本首次成功取得的内容加入对应共享解析槽。
+    /// 将探索、信号或电路板制样取得的线索加入对应共享解析槽。
     /// </summary>
     public static bool DiscoverContent(string contentId, int itemId, bool notify = true) {
         lock (Sync) {
@@ -637,10 +637,7 @@ public static partial class ResearchManager {
             if (!CanResearchSample(itemId, Volatile.Read(ref analysisRuntimeSnapshot))) { return default; }
             if (successCount == 0) { return new(destroyedCount); }
             string[] candidates = GetCandidateIdsUnsafe(itemId);
-            if (candidates.Length == 0) {
-                if (!DiscoverSampleUnsafe(itemId, ref seed)) { return default; }
-                candidates = GetCandidateIdsUnsafe(itemId);
-            }
+            if (candidates.Length == 0) { return default; }
 
             int progress = GetDirectionProgressUnsafe(itemId);
             int remainingSuccesses = successCount;

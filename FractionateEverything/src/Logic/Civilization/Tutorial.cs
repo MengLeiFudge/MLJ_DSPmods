@@ -19,7 +19,7 @@ public static class TutorialManager {
         "{$Text|fontsize=16;linespacing=1.1;textalignment=0,1;color=#FFFFFF52;material=UI/Materials/widget-text-alpha-5x-thick;margins=20,20,20,30}\n";
     private const string PostText =
         "{$Text|fontsize=14;linespacing=1.1;textalignment=0,1;color=#FFFFFF52;material=UI/Materials/widget-text-alpha-5x-thick;margins=20,20,20,20}\n";
-    private static readonly string[] TutorialNames = ["神秘信号？", "沉默的装置", "它们还活着", "留下来的光", "遥远的回应"];
+    private static readonly string[] TutorialNames = ["神秘信号？", "沉默的装置", "它们还活着", "留下来的光", "遥远的回应", "培育开发案"];
     private static MethodInfo genesisBookIsLayoutMethod;
     private static MethodInfo genesisBookGetLayoutMethod;
     private static bool genesisBookLayoutMethodsInitialized;
@@ -54,6 +54,8 @@ public static class TutorialManager {
             ResearchManager.SacrificeUnlocked,
             ResearchManager.IsContentUnlocked(GrowthTechnologyManager.PlanetaryInteractionTechnologyContentId)
                 || ResearchManager.IsContentUnlocked(GrowthTechnologyManager.InterstellarInteractionTechnologyContentId),
+            ExplorationManager.FirstRelicClaimed && ResearchManager.CurrentMatrixStage >= 1
+                && ExplorationManager.HasProducedFirstMatrix(),
         ];
         for (int index = 0; index < reached.Length; index++) {
             int id = FirstTutorialId + index;

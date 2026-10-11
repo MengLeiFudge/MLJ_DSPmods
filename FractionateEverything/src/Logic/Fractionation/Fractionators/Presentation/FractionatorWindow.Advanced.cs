@@ -15,25 +15,41 @@ using static FE.Logic.Fractionation.Fractionators.ProcessManager;
 
 namespace FE.Logic.Fractionation.Fractionators.Presentation;
 
-/// <summary>高级塔以左上输入、右上流出、下方产物展示反应，左侧显示速率，右侧显示供养。</summary>
+/// <summary>高级塔窗口：左侧配方、食物与速率；右侧左上流动输入、右上流动输出、下方产物，并用两组三箭头连接。</summary>
 public static partial class FractionatorWindow {
-    private const float AdvancedWindowWidth = 900f;
+    private const float AdvancedWindowWidth = 1104f;
     private const float AdvancedPadding = 24f;
+    private const float AdvancedTopOffset = 64f;
     private const float AdvancedInfoWidth = 170f;
-    private const float AdvancedFoodWidth = 94f;
     private const float AdvancedGap = 20f;
-    private const float AdvancedRowHeight = 146f;
-    private const float AdvancedSectionHeader = 36f;
-    private const float MaximumAdvancedViewportHeight = AdvancedRowHeight * 3f + 8f;
+    /// <summary>输入与流出之间、输入与产物之间留给三箭头的间距。</summary>
+    private const float AdvancedArrowGap = 56f;
+    private const float AdvancedRowHeight = 132f;
+    private const float AdvancedSectionHeader = 32f;
+    /// <summary>输入与流出可见网格固定为 2 行×4 列；超出的残料在区域内滚动，不改变窗口尺寸。</summary>
+    private const int AdvancedGridColumns = 4;
+    private const int AdvancedGridRows = 2;
+    private const float AdvancedTopViewport = AdvancedRowHeight * AdvancedGridRows + 8f;
+    private const float AdvancedProductViewport = AdvancedRowHeight + 8f;
+    private const float AdvancedProductTop = AdvancedSectionHeader + AdvancedTopViewport + AdvancedArrowGap;
+    /// <summary>内容区固定高度，任何配方、库存与状态下都不变，避免窗口伸缩闪烁。</summary>
+    private const float AdvancedRootHeight = AdvancedProductTop + AdvancedSectionHeader + AdvancedProductViewport;
     private static RectTransform advancedRoot;
     private static UIFractionatorWindow advancedSlotTemplate;
     private static ProductSlot advancedRecipeSlot;
+    /// <summary>备用与正在消化的同种矩阵合用的食物格。</summary>
     private static ProductSlot advancedFoodSlot;
-    private static ProductSlot advancedDigestionSlot;
-    private static RectTransform digestionProgressFill;
+    /// <summary>食物格上的燃烧室式遮罩，覆盖当前一件已消耗的比例。</summary>
+    private static RectTransform digestionMask;
+    private static Text advancedFoodTitle;
+    private static Text advancedDiscardHint;
+    private static Image[] advancedFlowArrows;
+    private static Image[] advancedProductArrows;
     private static AdvancedFractionatorState digestionHoldState;
     private static long digestionHoldVersion;
     private static float digestionHoldStart;
+    /// <summary>本次按下食物格时是否有备用；只有有备用的按下才取出，空备用的按下才可长按销毁。</summary>
+    private static bool foodPressHadReserve;
     private static Text advancedRecipeText;
     private static Text advancedSpeedText;
     private static Text advancedFoodText;
@@ -45,13 +61,14 @@ public static partial class FractionatorWindow {
     private static int displayedFractionatorId;
     private static Action<RecipeProto> advancedPickerCallback;
 
-    /// <summary>独立缓存区域的固定宽度、槽位网格和裁剪视口；只保存界面引用，不保存业务库存。</summary>
+    /// <summary>独立缓存区域的固定尺寸、槽位网格和裁剪视口；只保存界面引用，不保存业务库存。</summary>
     private sealed class AdvancedSection {
         internal RectTransform Root;
         internal RectTransform Content;
         internal ScrollRect Scroll;
         internal Text Title;
         internal float Width;
+        internal float Viewport;
         internal int Columns;
         internal ProductSlotKind Kind;
         internal readonly List<ProductSlot> Slots = [];
@@ -59,59 +76,161 @@ public static partial class FractionatorWindow {
         internal readonly List<int> ItemIds = [];
     }
 
-    /// <summary>按窗口内边距建立三区域；食物与消化物保留独立点击语义。</summary>
+    /// <summary>一次性建立固定几何布局；之后只刷新内容，不再改变任何区域的位置或尺寸。</summary>
     private static void CreateAdvancedLayout(UIFractionatorWindow window, UIFractionatorWindow vanillaWindow) {
         advancedSlotTemplate = vanillaWindow;
         advancedRoot = new GameObject("fe-advanced-fractionator", typeof(RectTransform)).GetComponent<RectTransform>();
-        RectTransformUtils.NormalizeRectWithTopLeft(advancedRoot, AdvancedPadding, 64f, window.transform);
+        RectTransformUtils.NormalizeRectWithTopLeft(advancedRoot, AdvancedPadding, AdvancedTopOffset, window.transform);
         float width = Math.Max(AdvancedWindowWidth, rootBaseSize.x + AddWidth) - AdvancedPadding * 2f;
-        advancedRoot.sizeDelta = new Vector2(width, 450f);
-        advancedRecipeSlot = CreateAdvancedSlot(advancedRoot, 28f, 28f);
+        advancedRoot.sizeDelta = new Vector2(width, AdvancedRootHeight);
+        CreateAdvancedLeftColumn();
+        float dataLeft = AdvancedInfoWidth + AdvancedGap;
+        float dataWidth = width - dataLeft;
+        float sectionWidth = (dataWidth - AdvancedArrowGap) / 2f;
+        CreateAdvancedRule(AdvancedInfoWidth + AdvancedGap / 2f, 0f, 1f, AdvancedRootHeight);
+        advancedInputs = CreateAdvancedSection(dataLeft, 0f, sectionWidth, AdvancedGridColumns,
+            AdvancedTopViewport, ProductSlotKind.Fluid);
+        advancedFlow = CreateAdvancedSection(dataLeft + sectionWidth + AdvancedArrowGap, 0f, sectionWidth,
+            AdvancedGridColumns, AdvancedTopViewport, ProductSlotKind.Side);
+        advancedProducts = CreateAdvancedSection(dataLeft, AdvancedProductTop, dataWidth, AdvancedGridColumns * 2,
+            AdvancedProductViewport, ProductSlotKind.Main);
+        // 右向箭头：输入 → 流动输出；下向箭头：输入 → 产物。沿用原版三箭头样式。
+        GameObject vanillaArrowParent = vanillaWindow.speedArrows[0].transform.parent.gameObject;
+        float topCenterY = AdvancedSectionHeader + AdvancedTopViewport / 2f;
+        advancedFlowArrows = CreateAdvancedArrows(vanillaArrowParent, vanillaWindow, "advanced-flow-arrows",
+            dataLeft + sectionWidth + AdvancedArrowGap / 2f, topCenterY, 0f);
+        advancedProductArrows = CreateAdvancedArrows(vanillaArrowParent, vanillaWindow, "advanced-product-arrows",
+            dataLeft + sectionWidth / 2f, AdvancedSectionHeader + AdvancedTopViewport + AdvancedArrowGap / 2f, -90f);
+        advancedRoot.gameObject.SetActive(false);
+    }
+
+    /// <summary>左栏从上到下：配方、供养食物单格、速率与投产比例。</summary>
+    private static void CreateAdvancedLeftColumn() {
+        const float slotCenter = 28f;
+        const float textLeft = 64f;
+        const float textWidth = AdvancedInfoWidth - textLeft;
+        advancedRecipeSlot = CreateAdvancedSlot(advancedRoot, slotCenter, 30f);
         advancedRecipeSlot.button.onClick += _ => OpenAdvancedPicker();
         advancedRecipeSlot.button.onRightClick += _ => ClearAdvancedRecipe();
-        advancedRecipeText = CreateAdvancedLabel(advancedRoot, 0f, 66f, AdvancedInfoWidth, 66f);
-        Text pickerHint = CreateAdvancedLabel(advancedRoot, 0f, 134f, AdvancedInfoWidth, 38f);
+        advancedRecipeText = CreateAdvancedLabel(advancedRoot, textLeft, 6f, textWidth, 48f);
+        Text pickerHint = CreateAdvancedLabel(advancedRoot, 0f, 62f, AdvancedInfoWidth, 20f);
         pickerHint.text = "点击选择配方（右键清空）".Translate();
-        pickerHint.fontSize = 12;
-        CreateAdvancedLabel(advancedRoot, 0f, 184f, AdvancedInfoWidth, 28f).text = "FE.Advanced.RecipeRate".Translate();
-        advancedSpeedText = CreateAdvancedLabel(advancedRoot, 0f, 214f, AdvancedInfoWidth, 110f);
-        advancedRatioText = CreateAdvancedLabel(advancedRoot, 0f, 340f, AdvancedInfoWidth, 110f);
-        advancedRatioText.fontSize = 12;
-        float dataLeft = AdvancedInfoWidth + AdvancedGap;
-        float dataWidth = width - dataLeft - AdvancedFoodWidth - AdvancedGap;
-        float sectionWidth = (dataWidth - AdvancedGap) / 2f;
-        advancedInputs = CreateAdvancedSection(dataLeft, sectionWidth, 2, ProductSlotKind.Fluid);
-        advancedFlow = CreateAdvancedSection(dataLeft + sectionWidth + AdvancedGap, sectionWidth, 2, ProductSlotKind.Side);
-        advancedProducts = CreateAdvancedSection(dataLeft, dataWidth, 4, ProductSlotKind.Main);
-        float foodLeft = width - AdvancedFoodWidth;
-        Text foodTitle = CreateAdvancedLabel(advancedRoot, foodLeft, 0f, AdvancedFoodWidth, 32f);
-        foodTitle.text = "FE.ReserveFood".Translate();
-        foodTitle.alignment = TextAnchor.UpperCenter;
-        advancedFoodSlot = CreateAdvancedSlot(advancedRoot, foodLeft + AdvancedFoodWidth / 2f, 62f);
+        pickerHint.fontSize = 11;
+        pickerHint.color = AdvancedMutedColor;
+        CreateAdvancedRule(0f, 90f, AdvancedInfoWidth, 1f);
+        advancedFoodTitle = CreateAdvancedLabel(advancedRoot, 0f, 98f, AdvancedInfoWidth, 20f);
+        advancedFoodTitle.text = "FE.Advanced.FoodSlot".Translate();
+        advancedFoodSlot = CreateAdvancedSlot(advancedRoot, slotCenter, 148f);
         advancedFoodSlot.button.onClick += TakeAdvancedFood;
-        Text digestionTitle = CreateAdvancedLabel(advancedRoot, foodLeft, 150f, AdvancedFoodWidth, 32f);
-        digestionTitle.text = "FE.Digestion".Translate();
-        digestionTitle.alignment = TextAnchor.UpperCenter;
-        advancedDigestionSlot = CreateAdvancedSlot(advancedRoot, foodLeft + AdvancedFoodWidth / 2f, 214f);
-        Text discardHint = CreateAdvancedLabel(advancedRoot, foodLeft, 264f, AdvancedFoodWidth, 36f);
-        discardHint.text = "FE.DiscardDigestion".Translate();
-        discardHint.fontSize = 12;
-        discardHint.alignment = TextAnchor.UpperCenter;
-        advancedFoodText = CreateAdvancedLabel(advancedRoot, foodLeft, 312f, AdvancedFoodWidth, 110f);
+        CreateDigestionMask(advancedFoodSlot);
+        advancedFoodText = CreateAdvancedLabel(advancedRoot, textLeft, 124f, textWidth, 34f);
         advancedFoodText.fontSize = 12;
-        advancedFoodText.alignment = TextAnchor.UpperCenter;
-        Image progressTrack = new GameObject("digestion-progress", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
-        RectTransformUtils.NormalizeRectWithTopLeft(progressTrack, foodLeft + 19f, 246f, advancedRoot).sizeDelta = new Vector2(56f, 6f);
-        progressTrack.color = new Color(0.1f, 0.1f, 0.1f, 0.9f);
-        progressTrack.raycastTarget = false;
-        Image fill = new GameObject("remaining", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
-        digestionProgressFill = RectTransformUtils.NormalizeRectWithTopLeft(fill, 0f, 0f, progressTrack.transform);
-        fill.color = new Color(1f, 0.75f, 0.35f);
-        fill.raycastTarget = false;
-        EventTrigger trigger = advancedDigestionSlot.go.AddComponent<EventTrigger>();
+        advancedDiscardHint = CreateAdvancedLabel(advancedRoot, textLeft, 160f, textWidth, 18f);
+        advancedDiscardHint.text = "FE.DiscardDigestion".Translate();
+        advancedDiscardHint.fontSize = 11;
+        advancedDiscardHint.color = AdvancedMutedColor;
+        AttachFoodPressHandlers(advancedFoodSlot);
+        CreateAdvancedRule(0f, 190f, AdvancedInfoWidth, 1f);
+        CreateAdvancedLabel(advancedRoot, 0f, 198f, AdvancedInfoWidth, 22f).text = "FE.Advanced.RecipeRate".Translate();
+        advancedSpeedText = CreateAdvancedLabel(advancedRoot, 0f, 224f, AdvancedInfoWidth, 100f);
+        advancedSpeedText.fontSize = 13;
+        advancedRatioText = CreateAdvancedLabel(advancedRoot, 0f, 334f, AdvancedInfoWidth, AdvancedRootHeight - 334f);
+        advancedRatioText.fontSize = 12;
+    }
+
+    private static readonly Color AdvancedMutedColor = new(0.72f, 0.78f, 0.82f, 0.62f);
+    private static readonly Color AdvancedRuleColor = new(0.62f, 0.78f, 0.9f, 0.16f);
+    private static readonly Color AdvancedPanelColor = new(0f, 0f, 0f, 0.2f);
+    private static readonly Color AdvancedCellColor = new(1f, 1f, 1f, 0.035f);
+    /// <summary>燃烧室遮罩颜色：覆盖已消耗的部分。</summary>
+    private static readonly Color DigestionMaskColor = new(0f, 0f, 0f, 0.62f);
+
+    /// <summary>建立固定尺寸的库存区域：底板、标题、可见网格底格与裁剪滚动区。</summary>
+    private static AdvancedSection CreateAdvancedSection(float left, float top, float width, int columns,
+        float viewport, ProductSlotKind kind) {
+        RectTransform root = new GameObject($"advanced-{kind}", typeof(RectTransform), typeof(Image)).GetComponent<RectTransform>();
+        RectTransformUtils.NormalizeRectWithTopLeft(root, left, top, advancedRoot);
+        root.sizeDelta = new Vector2(width, AdvancedSectionHeader + viewport);
+        Image panel = root.GetComponent<Image>();
+        panel.color = AdvancedPanelColor;
+        panel.raycastTarget = false;
+        RectTransform content = PageLayout.CreateScrollableArea(root, "slots", 8f, AdvancedSectionHeader,
+            width - 16f, viewport, viewport);
+        float cellWidth = (width - 16f - 13f) / columns;
+        int visibleRows = Math.Max(1, (int)(viewport / AdvancedRowHeight));
+        for (int i = 0; i < columns * visibleRows; i++) {
+            Image cell = new GameObject("cell", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+            RectTransformUtils.NormalizeRectWithTopLeft(cell, i % columns * cellWidth + 3f,
+                i / columns * AdvancedRowHeight + 3f, content).sizeDelta = new Vector2(cellWidth - 6f, AdvancedRowHeight - 6f);
+            cell.color = AdvancedCellColor;
+            cell.raycastTarget = false;
+        }
+        Text title = CreateAdvancedLabel(root, 10f, 6f, width - 20f, 24f);
+        title.fontSize = 14;
+        return new AdvancedSection {
+            Root = root, Content = content, Scroll = content.parent.parent.GetComponent<ScrollRect>(),
+            Title = title, Width = width, Viewport = viewport, Columns = columns, Kind = kind,
+        };
+    }
+
+    /// <summary>细分隔线，只做视觉分区，不接收点击。</summary>
+    private static void CreateAdvancedRule(float left, float top, float width, float height) {
+        Image rule = new GameObject("rule", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+        RectTransformUtils.NormalizeRectWithTopLeft(rule, left, top, advancedRoot).sizeDelta = new Vector2(width, height);
+        rule.color = AdvancedRuleColor;
+        rule.raycastTarget = false;
+    }
+
+    /// <summary>复制原版三箭头并按中心点放置；旋转 -90° 即为向下。原版箭头上的概率文字隐藏。</summary>
+    private static Image[] CreateAdvancedArrows(GameObject vanillaArrowParent, UIFractionatorWindow vanillaWindow,
+        string name, float centerX, float centerY, float rotation) {
+        GameObject clone = UnityEngine.Object.Instantiate(vanillaArrowParent, advancedRoot);
+        clone.name = name;
+        if (clone.transform is RectTransform rect) {
+            rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = new Vector2(centerX, -centerY);
+        }
+        clone.transform.localRotation = Quaternion.Euler(0f, 0f, rotation);
+        foreach (Text text in clone.GetComponentsInChildren<Text>(true)) { text.gameObject.SetActive(false); }
+        Image[] arrows = CloneArrowImagesOrdered(vanillaArrowParent, clone, vanillaWindow);
+        foreach (Image arrow in arrows) {
+            if (arrow == null) { continue; }
+            arrow.gameObject.SetActive(true);
+            arrow.raycastTarget = false;
+        }
+        clone.SetActive(true);
+        return arrows;
+    }
+
+    /// <summary>在食物图标上叠加从顶部向下覆盖的遮罩，表示当前一件已消耗的比例。</summary>
+    private static void CreateDigestionMask(ProductSlot slot) {
+        Transform parent = slot.icon != null ? slot.icon.transform : slot.go.transform;
+        Image mask = new GameObject("digestion-mask", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+        digestionMask = mask.GetComponent<RectTransform>();
+        digestionMask.SetParent(parent, false);
+        digestionMask.pivot = new Vector2(0.5f, 1f);
+        digestionMask.offsetMin = digestionMask.offsetMax = Vector2.zero;
+        SetDigestionMask(0f);
+        mask.color = DigestionMaskColor;
+        mask.raycastTarget = false;
+    }
+
+    /// <param name="consumed">当前一件已消耗比例，0 为未点燃或刚点燃，1 为即将耗尽。</param>
+    private static void SetDigestionMask(float consumed) {
+        if (digestionMask == null) { return; }
+        consumed = Mathf.Clamp01(consumed);
+        digestionMask.anchorMin = new Vector2(0f, 1f - consumed);
+        digestionMask.anchorMax = Vector2.one;
+        digestionMask.gameObject.SetActive(consumed > 0.001f);
+    }
+
+    /// <summary>按下时记录是否有备用：有备用只取出，空备用才开始长按销毁。</summary>
+    private static void AttachFoodPressHandlers(ProductSlot slot) {
+        EventTrigger trigger = slot.go.AddComponent<EventTrigger>();
         EventTrigger.Entry down = new() { eventID = EventTriggerType.PointerDown };
         down.callback.AddListener(data => {
-            if (data is PointerEventData pointer && pointer.button == PointerEventData.InputButton.Left) { BeginDigestionDiscard(); }
+            if (data is PointerEventData pointer && pointer.button == PointerEventData.InputButton.Left) { OnFoodPointerDown(); }
         });
         trigger.triggers.Add(down);
         foreach (EventTriggerType type in new[] { EventTriggerType.PointerUp, EventTriggerType.PointerExit }) {
@@ -119,23 +238,12 @@ public static partial class FractionatorWindow {
             cancel.callback.AddListener(_ => CancelDigestionDiscard());
             trigger.triggers.Add(cancel);
         }
-        Image foodFrame = advancedFoodSlot.go.GetComponent<Image>();
-        if (foodFrame != null) { foodFrame.color = new Color(1f, 0.75f, 0.35f, 0.65f); }
-        advancedRoot.gameObject.SetActive(false);
     }
 
-    /// <summary>建立带内边距的库存网格，标题和滚动条均留在区域内部。</summary>
-    private static AdvancedSection CreateAdvancedSection(float left, float width, int columns, ProductSlotKind kind) {
-        RectTransform root = new GameObject($"advanced-{kind}", typeof(RectTransform)).GetComponent<RectTransform>();
-        RectTransformUtils.NormalizeRectWithTopLeft(root, left, 0f, advancedRoot);
-        root.sizeDelta = new Vector2(width, 200f);
-        RectTransform content = PageLayout.CreateScrollableArea(root, "slots", 8f, AdvancedSectionHeader,
-            width - 16f, 160f, 160f);
-        return new AdvancedSection {
-            Root = root, Content = content, Scroll = content.parent.parent.GetComponent<ScrollRect>(),
-            Title = CreateAdvancedLabel(root, 8f, 0f, width - 16f, 30f),
-            Width = width, Columns = columns, Kind = kind,
-        };
+    private static int CountReserveFood(AdvancedFractionatorState state) {
+        int total = 0;
+        foreach (var pair in state.Foods) { if (pair.Value > 0) { total += pair.Value; } }
+        return total;
     }
 
     private static Text CreateAdvancedLabel(RectTransform parent, float left, float top, float width, float height) {
@@ -258,8 +366,9 @@ public static partial class FractionatorWindow {
         TransferAdvancedItems(player, itemId, taken, takenInc);
     }
 
-    /// <summary>备用食物与反应库存分开取物，先扣真实库存，再转移到手持或背包。</summary>
+    /// <summary>食物格点击只取出备用；按下时备用为空的这次点击属于长按销毁流程，不取物。</summary>
     private static void TakeAdvancedFood(int itemId) {
+        if (!foodPressHadReserve) { return; }
         UIFractionatorWindow window = sourceWindow;
         if (window?.factory == null || window.player == null || !window.active
             || window.factory != displayedFactory || window.fractionatorId != displayedFractionatorId) { return; }
@@ -284,19 +393,18 @@ public static partial class FractionatorWindow {
         }
     }
 
-    /// <summary>按下时固定实例和当前件代次，持续按住一秒才允许销毁。</summary>
-    private static void BeginDigestionDiscard() {
+    /// <summary>食物格按下：有备用时本次按下只用于取出；空备用且正在消化时才开始一秒长按销毁。</summary>
+    private static void OnFoodPointerDown() {
         CancelDigestionDiscard();
-        if (NebulaMultiplayerModAPI.IsClient) {
-            UIRealtimeTip.Popup("高级塔客户端手动取出受限".Translate());
-            return;
-        }
+        foodPressHadReserve = true;
+        if (NebulaMultiplayerModAPI.IsClient) { return; }
         if (sourceWindow?.active != true || sourceWindow.factory != displayedFactory
             || sourceWindow.fractionatorId != displayedFractionatorId) { return; }
         AdvancedFractionatorState state = AdvancedFractionatorRuntime.GetState(displayedFactory, displayedFractionatorId);
         if (state == null) { return; }
         lock (state) {
-            if (state.DigestingEnergy <= 0d) { return; }
+            foodPressHadReserve = CountReserveFood(state) > 0;
+            if (foodPressHadReserve || state.DigestingEnergy <= 0d) { return; }
             digestionHoldState = state;
             digestionHoldVersion = state.DigestionVersion;
             digestionHoldStart = Time.unscaledTime;
@@ -305,11 +413,12 @@ public static partial class FractionatorWindow {
 
     private static void CancelDigestionDiscard() => digestionHoldState = null;
 
-    /// <summary>由可见窗口更新驱动；松键、失焦、换件或实例失效均取消，不重复销毁后续食物。</summary>
+    /// <summary>由可见窗口更新驱动；松键、失焦、换件、补入备用或实例失效均取消，不重复销毁后续食物。</summary>
     private static void UpdateDigestionDiscard(AdvancedFractionatorState state) {
         if (digestionHoldState == null) { return; }
         if (!Input.GetMouseButton(0) || !Application.isFocused || !ReferenceEquals(state, digestionHoldState)
-            || state.DigestionVersion != digestionHoldVersion || sourceWindow?.active != true) {
+            || state.DigestionVersion != digestionHoldVersion || sourceWindow?.active != true
+            || CountReserveFood(state) > 0 || state.DigestingEnergy <= 0d) {
             CancelDigestionDiscard();
             return;
         }
@@ -350,40 +459,18 @@ public static partial class FractionatorWindow {
             AppendStoredIds(advancedInputs.ItemIds, state.Inputs);
             AppendStoredIds(advancedProducts.ItemIds, state.Products);
             AppendStoredIds(advancedFlow.ItemIds, state.FlowOutputs);
-            float topHeight = Math.Max(160f, Math.Min(MaximumAdvancedViewportHeight,
-                Math.Max(GetSectionContentHeight(advancedInputs), GetSectionContentHeight(advancedFlow))));
-            float productHeight = Math.Max(AdvancedRowHeight + 8f, Math.Min(AdvancedRowHeight * 2f + 8f, GetSectionContentHeight(advancedProducts)));
-            float productTop = AdvancedSectionHeader + topHeight + AdvancedGap;
-            float height = Math.Max(450f, productTop + AdvancedSectionHeader + productHeight + 12f);
+            // 窗口尺寸恒定；尺寸未变时 ApplyWindowSizeKeepingTopLeft 直接返回。
             ApplyWindowSizeKeepingTopLeft(advancedRoot.sizeDelta.x + AdvancedPadding * 2f - rootBaseSize.x,
-                64f + height + AdvancedPadding - rootBaseSize.y);
-            advancedRoot.sizeDelta = new Vector2(advancedRoot.sizeDelta.x, height);
+                AdvancedTopOffset + AdvancedRootHeight + AdvancedPadding - rootBaseSize.y);
             int buildingId = src.factory.entityPool[fractionator.entityId].protoId;
-            UpdateAdvancedSection(advancedInputs, state, recipe, buildingId, topHeight, 0f);
-            UpdateAdvancedSection(advancedFlow, state, recipe, buildingId, topHeight, 0f);
-            UpdateAdvancedSection(advancedProducts, state, recipe, buildingId, productHeight, productTop);
-            int foodId = 0;
-            int foodCount = 0;
-            int foodInc = 0;
-            foreach (var pair in state.Foods) {
-                if (pair.Value <= 0) { continue; }
-                foodId = pair.Key;
-                foodCount = pair.Value;
-                state.FoodInc.TryGetValue(foodId, out foodInc);
-                break;
-            }
-            RenderAdvancedSlot(advancedFoodSlot, foodId, foodCount, foodInc, ProductSlotKind.Fluid);
-            advancedFoodSlot.probText.text = $"{foodCount}/{AdvancedFractionatorRuntime.FoodCapacity}";
-            var foodRates = AdvancedFractionatorRuntime.GetFoodRates(state, recipe, buildingId);
-            advancedFoodText.text = state.DigestingEnergy > 0d
-                ? string.Format("FE.Advanced.FoodRates".Translate(), foodRates.ConsumptionPerMinute, foodRates.Share)
-                : string.Empty;
-            UpdateDigestionDiscard(state);
-            bool digesting = state.DigestingEnergy > 0d;
-            RenderAdvancedSlot(advancedDigestionSlot, state.DigestingItemId, digesting ? 1 : 0,
-                state.DigestingInc, ProductSlotKind.Fluid);
-            advancedDigestionSlot.countText.text = string.Empty;
-            digestionProgressFill.sizeDelta = new Vector2(56f * AdvancedFractionatorRuntime.GetDigestionProgress(state), 6f);
+            UpdateAdvancedSection(advancedInputs, state, recipe, buildingId);
+            UpdateAdvancedSection(advancedFlow, state, recipe, buildingId);
+            UpdateAdvancedSection(advancedProducts, state, recipe, buildingId);
+            bool working = state.ProcessingRate > 0d;
+            Color arrowColor = working ? modWindow.marqueeOnColor : modWindow.marqueeOffColor;
+            SetArrowGroup(advancedFlowArrows, true, arrowColor);
+            SetArrowGroup(advancedProductArrows, true, arrowColor);
+            UpdateAdvancedFood(state, recipe, buildingId);
             RecipeProto proto = LDB.recipes.Select(AdvancedRecipeCatalog.GetProtoId(state.SelectedRecipeId));
             advancedRecipeSlot.go.SetActive(true);
             advancedRecipeSlot.icon.sprite = proto?.iconSprite ?? UIRoot.instance?.uiGame?.labWindow?.defaultTechIcon;
@@ -401,6 +488,34 @@ public static partial class FractionatorWindow {
                 string.Join(" : ", recipe.InputArray.Select(input => input.Count.ToString())),
                 string.Join(" : ", recipe.ProductArray.Select(output => AdvancedFractionatorRuntime.GetOutputPerSuccess(recipe, output).ToString("0.##"))));
         }
+    }
+
+    /// <summary>食物单格：图标取正在消化的矩阵（无则取备用），右下角只计与图标同种的备用，遮罩表示当前一件已消耗比例。</summary>
+    /// <remarks>旧档可能残留与消化物异种、待后端排出的备用；它不计入格内数字，但仍阻止长按销毁，与后端空备用校验一致。</remarks>
+    private static void UpdateAdvancedFood(AdvancedFractionatorState state, WorldviewRecipe recipe, int buildingId) {
+        bool digesting = state.DigestingEnergy > 0d;
+        int shownId = digesting ? state.DigestingItemId : 0;
+        if (!digesting) {
+            foreach (var pair in state.Foods) {
+                if (pair.Value > 0) { shownId = pair.Key; break; }
+            }
+        }
+        int reserveCount = shownId > 0 && state.Foods.TryGetValue(shownId, out int count) ? Math.Max(0, count) : 0;
+        int reserveInc = reserveCount > 0 && state.FoodInc.TryGetValue(shownId, out int inc) ? inc : 0;
+        int totalReserve = CountReserveFood(state);
+        // button.data 由此设为 shownId，点击取物与格内数字是同一种矩阵。
+        RenderAdvancedSlot(advancedFoodSlot, shownId, reserveCount, reserveInc, ProductSlotKind.Fluid);
+        advancedFoodSlot.countText.text = reserveCount > 0 ? reserveCount.ToString() : string.Empty;
+        advancedFoodSlot.probText.text = string.Empty;
+        advancedFoodSlot.button.tips.itemId = shownId;
+        advancedFoodSlot.button.tips.itemCount = reserveCount > 0 ? reserveCount : digesting ? 1 : 0;
+        SetDigestionMask(digesting ? 1f - AdvancedFractionatorRuntime.GetDigestionProgress(state) : 0f);
+        var foodRates = AdvancedFractionatorRuntime.GetFoodRates(state, recipe, buildingId);
+        advancedFoodText.text = digesting
+            ? string.Format("FE.Advanced.FoodRates".Translate(), foodRates.ConsumptionPerMinute, foodRates.Share)
+            : string.Empty;
+        advancedDiscardHint.gameObject.SetActive(digesting && totalReserve <= 0 && !NebulaMultiplayerModAPI.IsClient);
+        UpdateDigestionDiscard(state);
     }
 
     /// <summary>原版没有高级塔类型名称，展示配方以所属塔名替代“未知”制造来源。</summary>
@@ -428,14 +543,11 @@ public static partial class FractionatorWindow {
 
     /// <summary>在区域内部排列槽位和四行信息，读真实库存及运行器规则。</summary>
     private static void UpdateAdvancedSection(AdvancedSection section, AdvancedFractionatorState state,
-        WorldviewRecipe recipe, int buildingId, float viewportHeight, float top) {
+        WorldviewRecipe recipe, int buildingId) {
         string title = section.Kind switch { ProductSlotKind.Fluid => "流动输入", ProductSlotKind.Main => "配方产物", _ => "流动输出" };
         section.Title.text = title.Translate();
-        section.Root.anchoredPosition = new Vector2(section.Root.anchoredPosition.x, -top);
-        section.Root.sizeDelta = new Vector2(section.Width, AdvancedSectionHeader + viewportHeight);
-        RectTransform scrollRect = section.Scroll.GetComponent<RectTransform>();
-        scrollRect.sizeDelta = new Vector2(scrollRect.sizeDelta.x, viewportHeight);
-        section.Content.sizeDelta = new Vector2(0f, Math.Max(viewportHeight, GetSectionContentHeight(section)));
+        // 区域与视口尺寸在创建时固定，这里只调整可滚动内容高度。
+        section.Content.sizeDelta = new Vector2(0f, Math.Max(section.Viewport, GetSectionContentHeight(section)));
         // 滚动区两边各8px，右侧还预留13px滚动条；槽位和文字均落在裁剪区内部。
         float cellWidth = (section.Width - 16f - 13f) / section.Columns;
         Dictionary<int, int> counts = section.Kind switch {
@@ -452,7 +564,7 @@ public static partial class FractionatorWindow {
                 if (section.Kind == ProductSlotKind.Fluid) { slot.button.onClick += OnAdvancedInputClick; }
                 else { slot.button.onClick += itemId => OnSlotClick(slot, itemId); }
                 section.Slots.Add(slot);
-                Text detail = CreateAdvancedLabel(section.Content, left + 3f, rowTop + 62f, cellWidth - 6f, 80f);
+                Text detail = CreateAdvancedLabel(section.Content, left + 3f, rowTop + 60f, cellWidth - 6f, AdvancedRowHeight - 66f);
                 detail.fontSize = 12;
                 detail.resizeTextForBestFit = true;
                 detail.resizeTextMinSize = 10;
@@ -502,12 +614,13 @@ public static partial class FractionatorWindow {
         }
         if (kind == ProductSlotKind.Side && recipe != null && recipe.TryGetInput(itemId, out WorldviewRecipeInput flow)) {
             if (flow.ConsumeProbability >= 0.9999f) {
-                return $"{count}/{BufferCapacity}\n" + string.Format("FE.Advanced.FlowRule".Translate(), 1f - success,
+                return $"{count}/{OutputCapacity}\n" + string.Format("FE.Advanced.FlowRule".Translate(), 1f - success,
                     rounds * flow.Count * (1f - success));
             }
-            return $"{count}/{BufferCapacity}\n" + "FE.Advanced.ExcessCatalyst".Translate();
+            return $"{count}/{OutputCapacity}\n" + "FE.Advanced.ExcessCatalyst".Translate();
         }
-        int fallbackCapacity = kind == ProductSlotKind.Fluid ? AdvancedFractionatorRuntime.GetInputCapacity(recipe, itemId) : BufferCapacity;
+        // 产物与流动输出共用 5×当前集装层数的准入阈值。
+        int fallbackCapacity = kind == ProductSlotKind.Fluid ? AdvancedFractionatorRuntime.GetInputCapacity(recipe, itemId) : OutputCapacity;
         return $"{count}/{fallbackCapacity}\n" + (kind == ProductSlotKind.Main ? "FE.Advanced.RemainingProduct" : "FE.Advanced.PassThrough").Translate();
     }
 

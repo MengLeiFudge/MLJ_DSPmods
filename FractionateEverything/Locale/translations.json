@@ -104,6 +104,20 @@
     "1031": "Überschuss oder rezeptfremd\nUnveränderter Durchfluss",
     "1041": "余剰またはレシピ外の物品\nそのまま排出"
   },
+  "点击选择配方（右键清空）": {
+    "enUS": "Click to select recipe (right-click to clear)",
+    "zhCN": "点击选择配方（右键清空）",
+    "frFR": "Cliquer pour choisir une recette (clic droit pour effacer)",
+    "1031": "Rezept wählen (Rechtsklick zum Leeren)",
+    "1041": "クリックしてレシピ選択（右クリックで解除）"
+  },
+  "FE.Advanced.FoodSlot": {
+    "enUS": "Food",
+    "zhCN": "供养",
+    "frFR": "Nourriture",
+    "1031": "Nahrung",
+    "1041": "供給"
+  },
   "FE.Advanced.FoodRates": {
     "enUS": "Est. food {0:0.##}/min\nFood in working mix {1:P1}",
     "zhCN": "预计耗 {0:0.##}/分\n工作占比 {1:P1}",
@@ -144,8 +158,11 @@
     "zhCN": "残页记得的事"
   },
   "FE.Encyclopedia.Analysis": {
-    "enUS": "Common mineral replication and tower cultivation follow matrix technology. Rare recipes require samples. Power a basic analysis tower, feed samples through a side port, loop the opposite output back to the input and collect returned samples at the front. Successful research advances progress and returns the same sample without creating another one; only destruction consumes it. Unprocessed samples flow back with proliferator points. A full product buffer pauses processing and intake until products are removed.\n\nAn eligible rare recipe's unique analysis sample can be fed in directly. Without a known record, the first success reveals one available clue and begins its research. Known clues take priority; after all related research is restored, samples flow through intact.\n\nAfter researching energy matrices, circuit boards can prepare replacement samples: each board has a 1% success chance and a 3% destruction chance; the other 96% flows back with proliferator points. A success produces one sample for an available replacement recipe at the current stage and reveals its clue. Preparation stops when all available recipes are restored.",
-    "zhCN": "普通矿物复制与塔体培育随矩阵科技开放，稀有配方需要样本。给基础解析塔供电，从侧面送入样本，将另一侧流出接回输入循环，正面接样本回收带。成功会推进解析并返还同件样本，不增加样本数量；只有损毁才消耗样本。未处理样本侧面流回并保留增产点。正面缓存满时暂停处理和收料，排出或取出产物后继续。\n\n当前阶段未恢复稀有配方的唯一解析样本可直接投入。没有线索时，首次成功会登记一项可用线索，并参与本次研究。已有线索优先，相关研究全部恢复后，样本完整流回。\n\n红矩阵科技研究完成后，可投入电路板制取置换样本：每次经过成功率1%、损毁率3%，其余96%保留增产点侧流。成功时产出一件当前阶段可用置换配方的样本，并记录线索；全部可用配方恢复后停止制样。"
+    "enUS": "Common mineral replication and tower cultivation follow matrix technology. Rare recipes need a known clue before their samples can be analyzed. Exploration records identify the sample; an unmarked item passes through intact and cannot reveal a recipe by itself. The analysis page keeps undiscovered, analyzing and restored records in fixed positions. Undiscovered records hide both the sample and the result.\n\nSuccessful analysis advances shared progress and returns the same sample at the front without creating another one. Only destruction consumes it. Unprocessed samples leave at the side with their proliferator points. When a product buffer reaches its threshold, reactions pause and inputs pass through the side until products are removed. A whole processing batch may take the buffer above its threshold.\n\nAfter researching energy matrices, circuit boards can prepare replacement samples: each pass has a 1% success chance, a 3% destruction chance and a 96% return chance. Success produces one sample for an available replacement recipe and records its clue. Preparation stops when all eligible recipes have been restored.",
+    "zhCN": "普通矿物复制与塔体培育随矩阵科技开放，稀有配方须先取得线索，再解析记录中指出的样本。没有线索的物品完整流过，不会自行揭示配方。解析页将待发现、解析中和已恢复的记录放在固定位置；待发现项不显示样本或结果。\n\n成功解析推进共享进度，并从正面返还同件样本，不增加样本数量；只有损毁才消耗样本。未处理样本从侧面流出并保留增产点。产物缓存达到阈值时暂停反应，输入改走侧流，排出或取出产物后恢复。一整批处理可让缓存暂时超过阈值。\n\n红矩阵科技研究完成后，电路板可用于制取置换样本：每次经过成功率1%、损毁率3%、侧流率96%。成功时产出一件当前可用置换配方的样本，并记录线索；相关配方全部恢复后停止制样。",
+    "frFR": "La réplication des minerais communs et la culture des tours suivent les technologies matricielles. Les recettes rares exigent un indice avant l'analyse de leur échantillon. Les archives d'exploration désignent cet échantillon ; un objet sans indice traverse intact et ne révèle aucune recette. La page d'analyse conserve des positions fixes pour les archives à découvrir, en cours d'analyse et restaurées. Les archives inconnues masquent l'échantillon et le résultat.\n\nUne analyse réussie fait avancer la progression partagée et restitue le même échantillon à l'avant, sans en créer un autre. Seule la destruction le consomme. Les échantillons non traités sortent sur le côté avec leurs points de prolifération. Au seuil du tampon de produits, les réactions cessent et les entrées traversent vers la sortie latérale jusqu'à l'évacuation des produits. Un lot complet peut dépasser ce seuil.\n\nAprès la recherche des matrices énergétiques, les circuits imprimés peuvent préparer des échantillons de substitution : chaque passage a 1 % de réussite, 3 % de destruction et 96 % de retour. Une réussite produit un échantillon pour une recette disponible et enregistre son indice. La préparation cesse lorsque toutes les recettes admissibles sont restaurées.",
+    "1031": "Die Vervielfältigung gewöhnlicher Mineralien und die Turmzüchtung folgen der Matrixtechnologie. Seltene Rezepte benötigen zuerst einen Hinweis auf ihre Probe. Erkundungsberichte nennen diese Probe; Gegenstände ohne Hinweis laufen unversehrt durch und enthüllen selbst kein Rezept. Die Analyseseite behält feste Plätze für unentdeckte, untersuchte und wiederhergestellte Aufzeichnungen. Unentdeckte Einträge verbergen Probe und Ergebnis.\n\nEine erfolgreiche Analyse erhöht den gemeinsamen Fortschritt und gibt dieselbe Probe vorne zurück, ohne eine weitere herzustellen. Nur Zerstörung verbraucht sie. Unverarbeitete Proben verlassen die Seite mit ihren Proliferatorpunkten. Erreicht der Produktpuffer seinen Schwellenwert, pausieren die Reaktionen und Eingaben laufen seitlich durch, bis Produkte entnommen wurden. Ein vollständiger Verarbeitungsschub darf den Schwellenwert überschreiten.\n\nNach der Erforschung von Energiematrizen können Leiterplatten Ersatzproben erzeugen: pro Durchlauf 1 % Erfolg, 3 % Zerstörung und 96 % Rücklauf. Erfolg liefert eine Probe für ein verfügbares Austauschrezept und vermerkt dessen Hinweis. Sind alle geeigneten Rezepte wiederhergestellt, endet die Vorbereitung.",
+    "1041": "通常鉱物の複製と塔の培養はマトリックス技術に応じて開放される。レアレシピは先に手掛かりを得て、記録に示されたサンプルを解析する。手掛かりのない物品は無傷で通過し、それだけでレシピを発見することはできない。解析ページでは未発見・解析中・復元済みの記録が同じ位置に残る。未発見の記録はサンプルも結果も表示しない。\n\n解析成功は共有進捗を進め、同じサンプルを正面から返す。新たなサンプルは増えず、破損時だけ消費される。未処理のサンプルは増産剤ポイントを保ったまま側面に流れる。産物バッファがしきい値に達すると反応を止め、産物を排出・回収するまで入力は側面へ通過する。一回の処理でしきい値を超えることはある。\n\nエネルギーマトリックスの研究後は回路基板で置換用サンプルを作れる。各通過の成功率は1%、破損率は3%、側面への返却率は96%。成功すると現在利用可能なレシピのサンプルを一つ作り、手掛かりを記録する。対象レシピをすべて復元すると作成を止める。"
   },
   "FE.Encyclopedia.Explore": {
     "enUS": "The detector separates ordinary, story and advanced signals. Follow a rising reading; at 100% you are within recovery range. Approach on foot or at low hover altitude.\n\nRocky planets have 6–8 low-level silent relics. Their supplies support industry without Dark Fog combat. Advanced relics may contain pages. Each planet holds at most five ordinary broadcasts, with at least one minute between new broadcasts. Fragment analysis obeys both limits; story signals are separate.\n\nRewards go to subspace. Review brief tips in Guidance / Message Log, and past locations in Exploration / Location Archive.",
@@ -488,6 +505,27 @@
     "frFR": "Aucun vaisseau ne passait à proximité quand l'interface répondit. Pourtant, l'objet demandé apparut aussitôt, comme si la distance n'avait jamais existé.\n\nLes schémas récupérés pourraient relier une station logistique au même entrepôt. Icarus réserva un emplacement près de la chaîne pour essayer ce transport antique.",
     "1031": "Als die Schnittstelle antwortete, war kein Transportschiff vorbeigekommen. Trotzdem erschien der angeforderte Gegenstand sofort, als gäbe es keine Entfernung.\n\nDie geborgenen Pläne könnten eine Logistikstation mit demselben Lager verbinden. Icarus hielt neben der Produktionsanlage einen Platz frei, um diese antike Transportart auszuprobieren.",
     "1041": "インターフェースが応答したとき、近くを輸送船が通ったわけではなかった。それでも要求した品は目の前に現れた。距離など初めからなかったかのように。\n\n復元した構造図で、物流ステーションも同じ倉庫につながるかもしれない。イカロスは生産ラインの脇に場所を空け、この古い輸送方法を試すことにした。"
+  },
+  "培育开发案标题": {
+    "enUS": "Tower Cultivation: Field Notes",
+    "zhCN": "培育开发案",
+    "frFR": "Culture des tours : notes de terrain",
+    "1031": "Turmzüchtung: Forschungsnotizen",
+    "1041": "塔の培養開発記録"
+  },
+  "培育开发案前字": {
+    "enUS": "Recovered from a researcher's development notes.\n\nObservation I: the strange towers we found are alive. Matrices sustain them without a power connection. While one kind is being digested, they accept only that same kind into reserve. With both food and reserve available, cracks slowly heal.\n\nObservation II: a matrix alone does not grow a tower. It feeds the organism; the embryo is the material being transformed. Feeding both through the same opening finally produced a young tower.\n\nObservation III: failed material leaves from the side, while successful products emerge at the front. A blocked product outlet stops reactions and sends material through unchanged. The next trial must preserve a path for returning material.\n\nProposal: copy the living structure into an ordinary, electrically powered device. Some efficiency may be lost, but its mineral reaction could be reproduced.\n\nThe rest is damaged. The belt arrangement must be worked out again.",
+    "zhCN": "从一位研究员的旧开发案中复原。\n\n观察一：发现的奇异塔体是活的。矩阵供养着它，不必接入电网。正在消化哪种矩阵，备用也只接受同种；当前食物和备用都充足时，外壳的裂纹会慢慢合拢。\n\n观察二：只投矩阵，培育没有开始。矩阵是食物，原胚才是被转化的材料。将两者送入同一个入口后，终于获得了幼体。\n\n观察三：未成功反应的材料从侧面离开，成功的产物从正面出现。正面堵塞时反应停止，材料改为原样流过。下一次试验，必须为返回的材料留路。\n\n开发提案：仿照生命体的内部结构，制作可用电力驱动的普通装置。也许会牺牲一部分效率，但至少能复现它对矿物的反应。\n\n后面的记录已经损坏，传送带如何布置，还得重新试出来。",
+    "frFR": "Reconstitué à partir des anciennes notes d'un chercheur.\n\nObservation I : les étranges tours découvertes sont vivantes. Les matrices les nourrissent sans raccordement électrique. Pendant la digestion d’un type de matrice, seul ce même type est accepté en réserve. Avec nourriture et réserve, les fissures se referment lentement.\n\nObservation II : une matrice seule ne fait pas pousser une tour. Elle nourrit l'organisme ; l'embryon est la matière transformée. Alimenter la même ouverture avec les deux a enfin produit une jeune tour.\n\nObservation III : la matière non transformée sort sur le côté ; les produits réussis apparaissent à l'avant. Une sortie de produits bloquée arrête les réactions et laisse passer la matière intacte. Le prochain essai doit laisser une voie de retour.\n\nProjet : reproduire la structure vivante dans un appareil ordinaire alimenté en électricité. Son rendement sera peut-être moindre, mais sa réaction aux minerais pourrait être reproduite.\n\nLa suite est endommagée. Il faudra retrouver la disposition des convoyeurs.",
+    "1031": "Aus alten Entwicklungsnotizen eines Forschers rekonstruiert.\n\nBeobachtung I: Die entdeckten fremden Türme leben. Matrizen ernähren sie ohne Stromanschluss. Solange eine Sorte verdaut wird, nehmen sie nur dieselbe Sorte als Vorrat an. Mit aktueller Nahrung und Vorrat schließen sich Risse langsam.\n\nBeobachtung II: Eine Matrix allein lässt keinen Turm wachsen. Sie ernährt den Organismus; der Embryo ist das umgewandelte Material. Erst beide durch dieselbe Öffnung zuzuführen erzeugte einen jungen Turm.\n\nBeobachtung III: Unverarbeitetes Material verlässt die Seite, erfolgreiche Produkte erscheinen vorne. Eine blockierte Produktausgabe stoppt Reaktionen und lässt Material unverändert passieren. Beim nächsten Versuch braucht das zurückkehrende Material einen freien Weg.\n\nVorschlag: Die lebende Struktur in einem gewöhnlichen, elektrisch betriebenen Gerät nachbilden. Ein Teil des Wirkungsgrades könnte verloren gehen, doch die Mineralreaktion ließe sich reproduzieren.\n\nDer Rest ist beschädigt. Die Bandführung muss neu erarbeitet werden.",
+    "1041": "ある研究員の古い開発記録から復元。\n\n観察一：発見した奇妙な塔は生きている。マトリックスを糧とし、電力網にはつながない。消化中のマトリックスと同じ種類だけを予備に受け入れる。食べている一枚と予備の両方があると、外殻のひびはゆっくり閉じる。\n\n観察二：マトリックスだけでは培養が始まらない。それは食物で、変化する材料は胚だった。両方を同じ入口に送り込むと、ようやく幼体を得られた。\n\n観察三：反応しなかった材料は側面から離れ、成功した産物は正面に現れる。産物出口が詰まると反応が止まり、材料はそのまま通過する。次の実験では、戻る材料の通り道を残す必要がある。\n\n開発提案：生命体の内部構造をまねて、電力で動く通常の装置を作る。効率は落ちるかもしれないが、鉱物への反応は再現できるだろう。\n\n続きは破損している。ベルトの配置は改めて探る必要がある。"
+  },
+  "FE.CultivationRecord.ReadHint": {
+    "enUS": "A cultivation development record is now available. Press [G] to read Tower Cultivation: Field Notes.",
+    "zhCN": "培育开发案已恢复，按 [G] 阅读“培育开发案”。",
+    "frFR": "Un dossier de culture est disponible. Appuyez sur [G] pour lire « Culture des tours : notes de terrain ».",
+    "1031": "Die Entwicklungsnotizen zur Züchtung sind verfügbar. Lies „Turmzüchtung: Forschungsnotizen“ mit [G].",
+    "1041": "培養開発記録を復元した。[G]で「塔の培養開発記録」を読める。"
   },
   "转化塔": {
     "enUS": "Advanced Conversion Tower",
@@ -1841,18 +1879,18 @@
     "1041": "解析サンプル"
   },
   "FE.AnalysisSamplesPage.Summary": {
-    "enUS": "The records left only samples; the answers are still hidden in matter.",
-    "zhCN": "记录只留下了样本，答案仍藏在物质之中。",
-    "frFR": "Les archives n'ont laissé que des échantillons ; les réponses restent enfouies dans la matière.",
-    "1031": "Die Aufzeichnungen hinterließen nur Proben; die Antworten liegen noch in der Materie verborgen.",
-    "1041": "記録にはサンプルだけが残され、答えはまだ物質の中に眠っている。"
+    "enUS": "Unknown records wait for clues. Known clues identify the sample; restored records reveal the result. Their positions stay the same.",
+    "zhCN": "灰色记录等待发现；取得线索后显示解析样本，恢复后显示结果。记录的位置始终不变。",
+    "frFR": "Les archives inconnues attendent un indice. Les indices désignent les échantillons ; les archives restaurées révèlent les résultats. Leurs positions restent fixes.",
+    "1031": "Unbekannte Aufzeichnungen warten auf Hinweise. Hinweise nennen die Probe; wiederhergestellte Aufzeichnungen zeigen das Ergebnis. Ihre Plätze bleiben gleich.",
+    "1041": "灰色の記録は発見を待っている。手掛かりを得るとサンプルが、復元すると結果が分かる。記録の位置は変わらない。"
   },
   "FE.AnalysisSamplesPage.Empty": {
-    "enUS": "None of the records at hand identify a sample yet.\n\nRecover more relics. Their incomplete records will tell Icarus what to send into the analysis tower next.",
-    "zhCN": "手头的记录里还没有被标记的样本。\n\n去回收更多遗迹吧，那些残缺的记录会告诉伊卡洛斯，下一步该把什么送进解析塔。",
-    "frFR": "Les archives disponibles ne désignent encore aucun échantillon.\n\nRécupérez d'autres reliques : leurs archives incomplètes indiqueront à Icarus quoi envoyer ensuite dans la tour d'analyse.",
-    "1031": "Die vorhandenen Aufzeichnungen nennen noch keine Proben.\n\nBerge weitere Relikte. Ihre lückenhaften Aufzeichnungen werden Icarus zeigen, was als Nächstes in den Analyseturm gehört.",
-    "1041": "手元の記録には、まだサンプルの印がない。\n\nさらに遺跡を回収しよう。不完全な記録が、次に何を解析塔へ送ればよいかイカロスに教えてくれるだろう。"
+    "enUS": "There are no sample records available at this stage yet.\n\nRecover the first relic and advance matrix technology. Exploration records will identify what to send into the analysis tower.",
+    "zhCN": "当前阶段还没有可用的样本记录。\n\n回收首个遗物，并继续推进矩阵科技。探索取得的记录会指出该把什么送进解析塔。",
+    "frFR": "Aucune archive d'échantillon n'est encore disponible à ce stade.\n\nRécupérez la première relique et développez les technologies matricielles. Les archives d'exploration désigneront les objets à analyser.",
+    "1031": "In dieser Phase sind noch keine Probenaufzeichnungen verfügbar.\n\nBerge das erste Relikt und entwickle die Matrixtechnologie weiter. Erkundungsberichte zeigen, was in den Analyseturm gehört.",
+    "1041": "現在の段階では、まだ利用できるサンプル記録がない。\n\n最初の遺物を回収し、マトリックス技術を進めよう。探索で得た記録が、解析塔に送る物品を教えてくれる。"
   },
   "未知样本": {
     "enUS": "Unknown sample",
@@ -1889,12 +1927,47 @@
     "1031": "Probe noch nicht erhalten",
     "1041": "サンプル未入手"
   },
+  "已恢复": {
+    "enUS": "Restored",
+    "zhCN": "已恢复",
+    "frFR": "Restauré",
+    "1031": "Wiederhergestellt",
+    "1041": "復元済み"
+  },
+  "解析进度 {0:0.#}%": {
+    "enUS": "Analysis {0:0.#}%",
+    "zhCN": "解析进度 {0:0.#}%",
+    "frFR": "Analyse {0:0.#} %",
+    "1031": "Analyse {0:0.#}%",
+    "1041": "解析進捗 {0:0.#}%"
+  },
+  "FE.AnalysisSamplesPage.UndiscoveredDetail": {
+    "enUS": "This record has not been found yet.\n\nExplore signals and relics for a recognizable fragment. A clue must first identify which sample to analyze.",
+    "zhCN": "这份记录尚未发现。\n\n继续探索信号与遗迹，寻找能辨认的片段。先取得线索，才能知道该解析哪种样本。",
+    "frFR": "Cette archive n'a pas encore été découverte.\n\nExplorez les signaux et les reliques à la recherche d'un fragment lisible. Un indice doit d'abord désigner l'échantillon à analyser.",
+    "1031": "Diese Aufzeichnung wurde noch nicht entdeckt.\n\nErkunde Signale und Relikte für ein lesbares Fragment. Erst ein Hinweis nennt die zu analysierende Probe.",
+    "1041": "この記録はまだ発見していない。\n\n信号や遺跡を探索し、読み取れる断片を探そう。先に手掛かりを得ることで、解析するサンプルが分かる。"
+  },
+  "FE.AnalysisSamplesPage.AnalyzingDetail": {
+    "enUS": "The clue points to {0}.\n\n{1}\nShared analysis progress: {2:0.##}%\n\nSend this sample to a basic analysis tower. Success returns it at the front; unprocessed samples leave at the side. Only destruction consumes it. Known records using the same sample share their progress.",
+    "zhCN": "线索指向{0}。\n\n{1}\n共享解析进度：{2:0.##}%\n\n将这个样本送入基础解析塔。成功后从正面返还，未处理的样本从侧面流出；只有损毁才会消耗。同一样本的已知记录共用解析进度。",
+    "frFR": "L'indice désigne {0}.\n\n{1}\nProgression partagée : {2:0.##} %\n\nEnvoyez cet échantillon dans une tour d'analyse de base. Une réussite le restitue à l'avant ; les échantillons non traités sortent sur le côté. Seule la destruction le consomme. Les archives connues utilisant le même échantillon partagent leur progression.",
+    "1031": "Der Hinweis nennt {0}.\n\n{1}\nGemeinsamer Analysefortschritt: {2:0.##}%\n\nSchicke diese Probe in einen einfachen Analyseturm. Erfolg gibt sie vorne zurück, unverarbeitete Proben kommen seitlich heraus. Nur Zerstörung verbraucht sie. Bekannte Aufzeichnungen zur selben Probe teilen ihren Fortschritt.",
+    "1041": "手掛かりは{0}を示している。\n\n{1}\n共有解析進捗：{2:0.##}%\n\nこのサンプルを基礎解析塔に送ろう。成功すると正面から返り、未処理のものは側面に流れる。破損時だけ消費される。同じサンプルを使う既知の記録は解析進捗を共有する。"
+  },
+  "FE.AnalysisSamplesPage.CompletedDetail": {
+    "enUS": "Restored: {0}\n\nAnalysis sample: {1}\nThis record is complete. Check other known clues to see whether the same sample still needs analysis.",
+    "zhCN": "已恢复：{0}\n\n解析样本：{1}\n这份记录已完整恢复。同一样本是否还需解析，请查看其他已有线索的记录。",
+    "frFR": "Restauré : {0}\n\nÉchantillon d'analyse : {1}\nCette archive est complète. Consultez les autres indices connus pour savoir si le même échantillon nécessite encore une analyse.",
+    "1031": "Wiederhergestellt: {0}\n\nAnalyseprobe: {1}\nDiese Aufzeichnung ist vollständig. Andere bekannte Hinweise zeigen, ob dieselbe Probe weiter untersucht werden muss.",
+    "1041": "復元済み：{0}\n\n解析サンプル：{1}\nこの記録は完全に復元された。同じサンプルをまだ解析する必要があるかは、ほかの既知の手掛かりを確認しよう。"
+  },
   "FE.AnalysisSamplesPage.Detail": {
-    "enUS": "The records repeatedly mention {0}. Sending it into a basic analysis tower may make these blurred patterns clearer.\n\n{1}\nAnalysis progress: {2:0.##}%\nUnread records: {3}\n\nLoop the samples leaving the other side back to the input to continue analyzing them.",
-    "zhCN": "记录中反复提到了{0}。把它送进基础解析塔，也许能让这些模糊的纹路变得清晰。\n\n{1}\n解析进度：{2:0.##}%\n尚未读懂的记录：{3} 份\n\n将另一侧流出的样本接回入口，可以继续循环解析。",
-    "frFR": "Les archives mentionnent souvent {0}. L'envoyer dans une tour d'analyse de base pourrait éclaircir ces motifs flous.\n\n{1}\nProgression de l'analyse : {2:0.##} %\nArchives non déchiffrées : {3}\n\nRenvoyez les échantillons sortant de l'autre côté vers l'entrée pour poursuivre l'analyse en boucle.",
-    "1031": "Die Aufzeichnungen erwähnen wiederholt {0}. Im einfachen Analyseturm könnten die verschwommenen Muster klarer werden.\n\n{1}\nAnalysefortschritt: {2:0.##}%\nUngelesene Aufzeichnungen: {3}\n\nFühre die auf der anderen Seite austretenden Proben zum Eingang zurück, um die Analyse fortzusetzen.",
-    "1041": "記録には何度も{0}が登場する。基礎解析塔に送れば、ぼやけた模様がはっきりするかもしれない。\n\n{1}\n解析進捗：{2:0.##}%\n未解読の記録：{3}件\n\n反対側から出てくるサンプルを入口へ戻すと、循環させながら解析を続けられる。"
+    "enUS": "The records repeatedly mention {0}. This is the sample to analyze.\n\n{1}\nShared analysis progress: {2:0.##}%\nUnread records: {3}\n\nSuccess returns the sample at the front; unprocessed samples leave at the side. Only destruction consumes it.",
+    "zhCN": "记录中反复提到了{0}，它就是这条线索的解析样本。\n\n{1}\n共享解析进度：{2:0.##}%\n尚未读懂的记录：{3} 份\n\n成功的样本从正面返还，未处理的样本从侧面流出；只有损毁才会消耗。",
+    "frFR": "Les archives mentionnent souvent {0} : c'est l'échantillon à analyser.\n\n{1}\nProgression partagée : {2:0.##} %\nArchives non déchiffrées : {3}\n\nUne réussite restitue l'échantillon à l'avant ; les échantillons non traités sortent sur le côté. Seule la destruction le consomme.",
+    "1031": "Die Aufzeichnungen erwähnen wiederholt {0}. Das ist die zu analysierende Probe.\n\n{1}\nGemeinsamer Analysefortschritt: {2:0.##}%\nUngelesene Aufzeichnungen: {3}\n\nErfolgreiche Proben kommen vorne zurück, unverarbeitete seitlich. Nur Zerstörung verbraucht sie.",
+    "1041": "記録には何度も{0}が登場する。この手掛かりを解析するサンプルだ。\n\n{1}\n共有解析進捗：{2:0.##}%\n未解読の記録：{3}件\n\n成功したサンプルは正面から返り、未処理のものは側面に流れる。破損時だけ消費される。"
   },
   "当前目标": {
     "enUS": "Current Goals",

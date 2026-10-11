@@ -28,6 +28,10 @@ public sealed class PageCard {
     public string ActionLabel;
     /// <summary>点击时调用领域命令或页面路由。</summary>
     public Action Action;
+    /// <summary>可选状态色，同时用于图标、状态文字和进度条；为空时沿用默认外观。</summary>
+    public Color? Tint;
+    /// <summary>为 false 时不绘制列表图标，用于尚未发现、不能透露物品身份的占位项。</summary>
+    public bool ShowIcon = true;
 }
 
 /// <summary>共享窄目录、分页与宽正文的页面骨架；每个业务页只提供展示数据。</summary>
@@ -148,6 +152,10 @@ public abstract class CardBrowserPage {
             slot.Title.text = card.Title;
             slot.Status.text = card.Status;
             slot.Icon.sprite = LDB.items.Select(card.ItemId)?.iconSprite ?? LDB.items.Select(IFE残片)?.iconSprite;
+            slot.Icon.enabled = card.ShowIcon;
+            slot.Icon.color = card.Tint ?? Color.white;
+            slot.Status.color = card.Tint ?? White;
+            slot.Progress.color = card.Tint ?? PageLayout.ProgressFillColor;
             slot.Progress.transform.parent.gameObject.SetActive(card.Progress >= 0);
             PageLayout.SetProgress(slot.Progress, card.Progress);
             PageLayout.SetCardState(slot.Root, card.Key == selectedKey ? CardVisualState.Selected : CardVisualState.Normal);

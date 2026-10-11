@@ -23,8 +23,8 @@ namespace FE.Compatibility.Nebula;
 /// </summary>
 public static class NebulaMultiplayerModAPI {
     public const string GUID = NebulaModAPI.API_GUID;
-    /// <summary>联机规则修订号，研究返还、概率消耗及塔体快照要求主机和客户端使用同版。</summary>
-    public const int ProtocolVersion = 8;
+    /// <summary>联机规则修订号；整批越阈值与同种供养要求两端一致，避免旧客户端裁剪合法库存。</summary>
+    public const int ProtocolVersion = 9;
     public static bool Enable;
     public static Assembly assembly;
 

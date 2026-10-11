@@ -55,11 +55,11 @@ public static partial class AdvancedFractionatorRuntime {
         return (consumption / energy, 1d / (1d + energy));
     }
 
-    /// <summary>只在空槽点燃一件；旧档若有多种备用食物，依矩阵层次逐种排空，不混合能量。</summary>
-    private static bool EnsureDigestingFood(AdvancedFractionatorState state, int[] consumeRegister) {
+    /// <summary>只在空槽点燃一件；有指定同种备用时优先接续，旧档其他营养按层次逐种排空。</summary>
+    private static bool EnsureDigestingFood(AdvancedFractionatorState state, int[] consumeRegister, int preferredItemId = 0) {
         if (state.DigestingEnergy > 0d) { return true; }
         for (int tier = FoodShare.Length - 1; tier >= 0; tier--) {
-            int itemId = I电磁矩阵 + tier;
+            int itemId = GetCount(state.Foods, preferredItemId) > 0 ? preferredItemId : I电磁矩阵 + tier;
             if (GetCount(state.Foods, itemId) <= 0) { continue; }
             int inc = TakeCount(state.Foods, state.FoodInc, itemId, 1);
             state.DigestingItemId = itemId;
@@ -82,7 +82,9 @@ public static partial class AdvancedFractionatorRuntime {
             amount -= consumed;
             state.DigestingEnergy -= consumed;
             if (state.DigestingEnergy <= 0d) {
+                int itemId = state.DigestingItemId;
                 ClearDigestion(state);
+                EnsureDigestingFood(state, consumeRegister, itemId);
             } else {
                 state.SnapshotDirty |= beforePercent != (int)Math.Floor(state.DigestingEnergy / capacity * 100d);
             }
@@ -113,14 +115,15 @@ public static partial class AdvancedFractionatorRuntime {
         }
     }
 
-    /// <summary>长按完成后只销毁按下时的同一件食物；换件、切档或重建实例均使操作失效。</summary>
+    /// <summary>空备用时只销毁按下时的同一件；补入备用、换件、切档或重建实例使长按失效。</summary>
     public static bool DiscardDigestion(PlanetFactory factory, int fractionatorId,
         AdvancedFractionatorState expectedState, long expectedVersion) {
         if (NebulaMultiplayerModAPI.IsClient) { return false; }
         AdvancedFractionatorState state = GetState(factory, fractionatorId);
         if (state == null || !ReferenceEquals(state, expectedState)) { return false; }
         lock (state) {
-            if (state.DigestingEnergy <= 0d || state.DigestionVersion != expectedVersion) { return false; }
+            if (state.DigestingEnergy <= 0d || state.DigestionVersion != expectedVersion
+                || SumCounts(state.Foods) > 0) { return false; }
             ClearDigestion(state);
             return true;
         }

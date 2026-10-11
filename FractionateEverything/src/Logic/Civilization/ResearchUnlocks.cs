@@ -24,7 +24,7 @@ public static partial class ResearchManager {
     private const float PreparationDestroyRatio = 0.03f;
     /// <summary>研究锁内登记、主线程在锁外入库的原型奖励。</summary>
     private static readonly Queue<int> PendingPrototypeRewards = [];
-    /// <summary>按唯一实物样本建立的稀有配方目录，用于无线索样本的首次研究。</summary>
+    /// <summary>按唯一实物样本建立稀有配方目录，供稳定实体产物架构使用。</summary>
     private static readonly Dictionary<int, WorldviewRecipe[]> SampleRecipes = [];
     /// <summary>电路板可制样的置换配方目录；阶段和完成状态在使用时检查。</summary>
     private static WorldviewRecipe[] preparationRecipes = [];
@@ -59,6 +59,7 @@ public static partial class ResearchManager {
         if (!ExplorationManager.FirstRelicClaimed) { return; }
         bool produced = ExplorationManager.HasProducedFirstMatrix();
         int stage = CurrentMatrixStage;
+        bool recordHintQueued = false;
         lock (Sync) {
             foreach (WorldviewRecipe recipe in RecipeManager.WorldviewRecipes) {
                 if (recipe.UnlockTier != RecipeUnlockTier.Common || UnlockedContents.Contains(recipe.StableId)
@@ -66,7 +67,12 @@ public static partial class ResearchManager {
                     || recipe.Kind == WorldviewRecipeKind.TowerCultivation && !produced) { continue; }
                 // 普通恢复不发高级原型；第一批交互塔仍由矩阵主线提供。
                 UnlockWithoutReward(recipe.StableId);
-                QueueNotification(string.Format("FE.Research.CommonRecovered".Translate(), recipe.DisplayName));
+                string notification = string.Format("FE.Research.CommonRecovered".Translate(), recipe.DisplayName);
+                if (recipe.Kind == WorldviewRecipeKind.TowerCultivation && !recordHintQueued) {
+                    notification += "\n" + "FE.CultivationRecord.ReadHint".Translate();
+                    recordHintQueued = true;
+                }
+                QueueNotification(notification);
                 snapshotDirty = true;
             }
         }
@@ -119,7 +125,7 @@ public static partial class ResearchManager {
         if (towerId > 0) { PendingPrototypeRewards.Enqueue(towerId); }
     }
 
-    /// <summary>无分配统计当前阶段未恢复的配方，研究发现、制样及窗口共用。</summary>
+    /// <summary>统计当前阶段未恢复的置换配方，供独立电路板制样与窗口查询。</summary>
     /// <param name="recipes">固定配方目录，调用方不得修改。</param>
     /// <param name="snapshot">本次判断使用的不可变研究快照。</param>
     /// <param name="stage">已经取得资格的矩阵阶段。</param>
@@ -135,32 +141,12 @@ public static partial class ResearchManager {
         return count;
     }
 
-    /// <summary>判断样本是否有已知研究，或有当前阶段可由首次成功建立的稀有线索。</summary>
+    /// <summary>仅已有未完成线索的样本允许抽取研究成功与损毁，无线索输入原样流回。</summary>
     /// <param name="itemId">实物样本身份。</param>
     /// <param name="snapshot">本次查询使用的研究快照。</param>
     /// <returns>是否允许抽取研究成功和损毁结果。</returns>
     private static bool CanResearchSample(int itemId, AnalysisRuntimeSnapshot snapshot) =>
-        snapshot.CandidatesByItemId.ContainsKey(itemId)
-        || SampleRecipes.TryGetValue(itemId, out WorldviewRecipe[] recipes)
-            && CountPendingRecipes(recipes, snapshot, CurrentMatrixStage) > 0;
-
-    /// <summary>在研究锁内为无线索样本登记一项当前阶段的稀有内容，不自动发现特质。</summary>
-    /// <param name="itemId">本次已经抽到研究成功的样本。</param>
-    /// <param name="seed">该塔随机种子，候选等概率选择。</param>
-    /// <returns>是否登记了一项尚未知晓的线索。</returns>
-    private static bool DiscoverSampleUnsafe(int itemId, ref uint seed) {
-        if (!SampleRecipes.TryGetValue(itemId, out WorldviewRecipe[] recipes)) { return false; }
-        int stage = CurrentMatrixStage;
-        AnalysisRuntimeSnapshot snapshot = Volatile.Read(ref analysisRuntimeSnapshot);
-        int count = CountPendingRecipes(recipes, snapshot, stage);
-        if (count == 0) { return false; }
-        int index = Math.Min(count - 1, (int)(GetRandDouble(ref seed) * count));
-        foreach (WorldviewRecipe recipe in recipes) {
-            if (recipe.ResearchStage > stage || snapshot.UnlockedContents.Contains(recipe.StableId)) { continue; }
-            if (index-- == 0) { return DiscoverContent(recipe.StableId, itemId); }
-        }
-        return false;
-    }
+        snapshot.CandidatesByItemId.ContainsKey(itemId);
 
     /// <summary>查询红矩阵资格起可用的置换制样候选，不公开未知配方身份。</summary>
     /// <param name="sampleId">0统计全部，非0只统计指定实物样本。</param>

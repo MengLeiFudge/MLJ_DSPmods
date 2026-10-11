@@ -20,7 +20,7 @@ public static partial class ProcessManager {
     #region 运行配置
 
     /// <summary>
-    /// 每个缓存区能放的堆数。
+    /// 基础输入准入按当前集装层数折算的堆数基准，速度在一半基准的真实货物数时达到满速。
     /// </summary>
     public const int BufferStackCount = 20;
     /// <summary>
@@ -28,8 +28,12 @@ public static partial class ProcessManager {
     /// </summary>
     private static int globalMaxStack = 1;
     private static double[] incTableFixedRatio = [];
-    /// <summary>FE 塔每类缓存的件数上限：20 堆乘当前全局堆叠。</summary>
+    /// <summary>基础塔输入准入阈值：20乘当前集装层数，单位为件。</summary>
     public static int BufferCapacity { get; private set; } = BufferStackCount;
+    /// <summary>流动输出与每种产物的准入阈值基准；原版20件在4层集装下对应5堆。</summary>
+    private const int OutputStackCount = 5;
+    /// <summary>两类输出的件数阈值；批前低于此值即可完整处理，本批结果允许越界。</summary>
+    public static int OutputCapacity => OutputStackCount * globalMaxStack;
     /// <summary>
     /// 定义热路径按传送带速度估算的最大输入速度。
     /// </summary>
@@ -59,7 +63,7 @@ public static partial class ProcessManager {
     /// <summary>
     /// 刷新两座基础塔使用的运行参数，并按当前全局堆叠重算缓存上限。
     /// </summary>
-    /// <remarks>缓存以“堆”为单位：输入、流动输出、产物输出都是 20 堆，一堆的件数等于当前全局堆叠。</remarks>
+    /// <remarks>输入为20乘当前层数件，两项输出为5乘当前层数件；完整货物和本帧批次可超过准入阈值。</remarks>
     public static void RefreshFractionatorRuntimeConfig() {
         globalMaxStack = Math.Max(1, BasicMineralTower.MaxStack);
         BufferCapacity = BufferStackCount * globalMaxStack;
@@ -359,8 +363,8 @@ public static partial class ProcessManager {
                 : 4f;
         int maxStack = globalMaxStack;
         int fluidInputCargoMax = BufferCapacity;
-        int productOutputMax = BufferCapacity;
-        int fluidOutputMax = BufferCapacity;
+        int productOutputMax = OutputCapacity;
+        int fluidOutputMax = OutputCapacity;
         bool canProcessRecipe = recipe != null && RecipeAvailabilityStore.IsAvailable(recipe);
         bool moveDirectly = !canProcessRecipe;
         bool producedMainThisTick = false;
@@ -370,8 +374,7 @@ public static partial class ProcessManager {
         int consumedInputThisTick = 0;
         List<ProductOutputInfo> productRegisterDeltas = null;
         if (fractionator.fluidInputCount > 0
-            && fractionator.fluidOutputCount < fluidOutputMax
-            && (recipeType != ERecipe.BasicAnalysis || !hasFullProduct)) {
+            && fractionator.fluidOutputCount < fluidOutputMax) {
             //分馏塔正常运转时，计算进度，10000点进度可以处理一次
             fractionator.progress += (int)(power * (10000d / 60d) * GetBasicProcessingRate(fractionator) + 0.75);
             if (fractionator.progress > 300000) {
@@ -379,15 +382,14 @@ public static partial class ProcessManager {
             }
             int batchCount = Math.Min(fractionator.progress / 10000, fractionator.fluidInputCount);
             if (batchCount > 0) {
-                int reservedBatchCount = batchCount;
-                fractionator.progress -= reservedBatchCount * 10000;
+                fractionator.progress -= batchCount * 10000;
                 int fluidInputIncAvg = fractionator.fluidInputInc <= 0 || fractionator.fluidInputCount <= 0
                     ? 0
                     : fractionator.fluidInputInc / fractionator.fluidInputCount;
                 if (!fractionator.incUsed)
                     fractionator.incUsed = fluidInputIncAvg > 0;
 
-                // 矿物塔保留满载直通规则；解析产物满载在进入本批之前暂停处理。
+                // 产物达到阈值后停止反应，完整本批输入保留增产点侧流。
                 bool isForcedPassthrough = moveDirectly || hasFullProduct;
                 FractionationBatchResult batchResult;
                 if (isForcedPassthrough) {
@@ -405,19 +407,6 @@ public static partial class ProcessManager {
                     float pointsBonus = (float)MaxTableMilli(fluidInputIncAvg);
                     // 两座基础塔只使用配方自身概率与增产剂加成，不再叠加额外成功率。
                     float successBoost = 0f;
-                    if (recipe is WorldviewRecipe worldviewRecipe) {
-                        int availableOutput = productOutputMax - (product0?.count ?? fractionator.productOutputCount);
-                        if (recipeType == ERecipe.BasicAnalysis) {
-                            foreach (ProductOutputInfo product in products) {
-                                availableOutput = Math.Min(availableOutput, productOutputMax - product.count);
-                            }
-                        }
-                        batchCount = worldviewRecipe.LimitBasicBatchCountByOutputRoom(
-                            batchCount, availableOutput, pointsBonus, successBoost);
-                        if (batchCount < reservedBatchCount) {
-                            fractionator.progress += (reservedBatchCount - batchCount) * 10000;
-                        }
-                    }
                     batchResult = recipe.GetOutputsBatchFast(ref fractionator.seed, pointsBonus, successBoost,
                         batchCount, fluidInputIncAvg, ref fractionator.fluidInputInc, outputBuffer);
                 }
@@ -574,7 +563,6 @@ public static partial class ProcessManager {
                     fluidInputCountPerCargo, forceSingleStack: moveDirectly);
                 return;
             }
-            if (recipeType == ERecipe.BasicAnalysis && hasFullProduct) { return; }
             for (int i = 0; i < MaxOutputTimes
                  && CanAcceptBasicInputStack(cargoTraffic, beltId, fluidInputCargoMax, tower.fluidInputCount); i++) {
                 int itemId = cargoTraffic.TryPickItemAtRear(beltId, tower.fluidId, null, out byte stack, out byte inc);
@@ -595,7 +583,7 @@ public static partial class ProcessManager {
             return false;
         }
         int stack = GetRearCargoStack(cargoTraffic, beltId);
-        return stack > 0 && currentCount + stack <= capacity;
+        return stack > 0;
     }
 
     internal static int GetRearCargoStack(CargoTraffic cargoTraffic, int beltId) {

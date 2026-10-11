@@ -185,7 +185,7 @@ public static class GrowthTechnologyManager {
     }
 
     /// <summary>
-    /// 判断科技是否已经完成探索和解析，且可以显示或加入研究队列。
+    /// 判断科技是否已经完成探索和解析，且可以公开真实内容或加入研究队列。
     /// </summary>
     public static bool IsTechnologyDiscovered(int techId) {
         if (techId is TFE终极探索 or TFE终极仓储) {
@@ -206,6 +206,26 @@ public static class GrowthTechnologyManager {
         bool trait = contentId is ResearchManager.AdvancedMineralTraitId
             or ResearchManager.AdvancedInteractionTraitId or ResearchManager.AdvancedConversionTraitId;
         return recovered && (!trait || ResearchManager.IsContentUnlocked(contentId));
+    }
+
+    /// <summary>预告当前资格下的直接后继；只表示仍有未恢复内容，不授予研究资格。</summary>
+    /// <param name="techId">活动FE科技的稳定ID。</param>
+    /// <returns>满足原版物流资格或当前矩阵阶段及已完成显式前置、但尚未恢复的节点为true。</returns>
+    public static bool IsTechnologyPreview(int techId) {
+        GameHistoryData history = GameMain.history;
+        if (history == null || !IsTechnologyNodeActive(techId) || !TryGetTechnologyContentId(techId, out string contentId)
+            || techId is TFE终极探索 or TFE终极仓储 || history.TechUnlocked(techId) || IsTechnologyDiscovered(techId)) {
+            return false;
+        }
+        if (techId is TFE行星内物流交互 or TFE星际物流交互) {
+            return history.TechUnlocked(techId == TFE行星内物流交互 ? T行星物流系统 : T星际物流系统);
+        }
+        if (contentId == StackTechnologyContentId && !UsesExperiencedStackProgression
+            && !StackingManager.HasPilingTechnology) { return false; }
+        TechProto tech = LDB.techs.Select(techId);
+        int stage = tech.Items?.Length > 0 ? Array.IndexOf(MatrixItems, tech.Items[tech.Items.Length - 1]) + 1 : 0;
+        return stage > 0 && stage <= ResearchManager.CurrentMatrixStage
+            && (tech.PreTechs == null || tech.PreTechs.All(history.TechUnlocked));
     }
 
     /// <summary>

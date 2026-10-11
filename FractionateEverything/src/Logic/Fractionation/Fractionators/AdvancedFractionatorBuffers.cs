@@ -6,13 +6,13 @@ using static FE.Logic.Fractionation.Fractionators.ProcessManager;
 
 namespace FE.Logic.Fractionation.Fractionators;
 
-/// <summary>高级塔按物品独立限量、整堆准入及手动存取；所有调用共用实例锁。</summary>
+/// <summary>高级塔按物品阈值接收完整货物并维护手动存取；所有调用共用实例锁。</summary>
 public static partial class AdvancedFractionatorRuntime {
     /// <summary>备用食物最多保存的未点燃矩阵件数，不随集装科技增长。</summary>
     public const int FoodCapacity = 5;
     /// <summary>每种低概率消耗催化剂的储备件数，不占用主料缓存。</summary>
     public const int CatalystCapacity = 5;
-    /// <summary>原版参与速度计算的最大货物堆数；40堆输入容量另留收发余量。</summary>
+    /// <summary>原版参与速度计算的最大真实货物堆数；输入准入另按40乘集装层数件。</summary>
     private const double ProcessingCargoLimit = 30d;
 
     /// <summary>读取一种反应物的独立容量；配方无关物只经过流动输出。</summary>
@@ -55,7 +55,7 @@ public static partial class AdvancedFractionatorRuntime {
         }
     }
 
-    /// <summary>向当前配方输入槽补料，只接收该槽剩余容量并保留对应增产点。</summary>
+    /// <summary>向低于阈值的配方输入补入一批手持物，批量最多等于该槽阈值，完整本批可越界。</summary>
     /// <param name="factory">目标工厂。</param>
     /// <param name="fractionatorId">目标分馏组件ID。</param>
     /// <param name="itemId">手持反应物ID。</param>
@@ -70,8 +70,8 @@ public static partial class AdvancedFractionatorRuntime {
         if (state == null) { return 0; }
         lock (state) {
             WorldviewRecipe recipe = RecipeManager.GetRecipe(state.SelectedRecipeId);
-            int room = Math.Max(0, GetInputCapacity(recipe, itemId) - GetCount(state.Inputs, itemId));
-            int added = Math.Min(count, room);
+            int capacity = GetInputCapacity(recipe, itemId);
+            int added = GetCount(state.Inputs, itemId) < capacity ? Math.Min(count, capacity) : 0;
             if (added <= 0) { return 0; }
             long validInc = Math.Max(0L, Math.Min(inc, (long)count * 10));
             addedInc = (int)(validInc * added / count);
@@ -85,16 +85,16 @@ public static partial class AdvancedFractionatorRuntime {
         }
     }
 
-    /// <summary>只在各目标槽能共同接收整堆时拿起货物；多余物直接进入同物品流出槽。</summary>
+    /// <summary>低于阈值时接收完整货物；食物保留硬容量，其余部分完整进入输入或流出。</summary>
     /// <param name="state">调用方已持有实例锁的缓存。</param>
     /// <param name="recipe">当前配方；无配方时仅接收食物与直通物。</param>
     /// <param name="cargoTraffic">当前工厂的带与货物容器。</param>
     /// <param name="beltId">输入侧面连接的传送带。</param>
     /// <returns>是否接收了一整堆货物。</returns>
     private static bool TryReceiveCargo(AdvancedFractionatorState state, WorldviewRecipe recipe,
-        CargoTraffic cargoTraffic, int beltId) {
+        CargoTraffic cargoTraffic, int beltId, bool passthrough) {
         CargoPath path = cargoTraffic.GetCargoPath(cargoTraffic.beltPool[beltId].segPathId);
-        // 将窥看与拿起放在同一带路径锁内，避免货物移动后按上一堆的数量预留空间。
+        // 窥看与拿起共用路径锁，按当前数量决定整批去向，不预留剩余件数。
         lock (path.buffer) {
             int cargoId = path.GetCargoIdAtRear();
             if (cargoId < 0) { return false; }
@@ -103,9 +103,11 @@ public static partial class AdvancedFractionatorRuntime {
             int count = incoming.stack;
             if (itemId <= 0 || count <= 0) { return false; }
             int food = CanTakeFood(state, itemId) ? Math.Min(count, Math.Max(0, FoodCapacity - SumCounts(state.Foods))) : 0;
-            int input = Math.Min(count - food, Math.Max(0, GetInputCapacity(recipe, itemId) - GetCount(state.Inputs, itemId)));
+            bool foreignFood = IsFoodItem(itemId) && !CanTakeFood(state, itemId);
+            int input = !passthrough && !foreignFood && GetCount(state.Inputs, itemId) < GetInputCapacity(recipe, itemId)
+                ? count - food : 0;
             int flow = count - food - input;
-            if (flow > Math.Max(0, BufferCapacity - GetCount(state.FlowOutputs, itemId))) { return false; }
+            if (flow > 0 && GetCount(state.FlowOutputs, itemId) >= OutputCapacity) { return false; }
             if (cargoTraffic.TryPickItemAtRear(beltId, itemId, null, out byte stack, out byte inc) <= 0) { return false; }
             int remainingCount = stack;
             int remainingInc = inc;
@@ -121,36 +123,40 @@ public static partial class AdvancedFractionatorRuntime {
         }
     }
 
-    /// <summary>将旧配方输入与超过独立容量的库存逐步流出；空间不足时保留真实库存。</summary>
+    /// <summary>逐批侧流旧配方输入、产物堵塞时的反应输入及异种旧食物；目的槽已到阈值时保留原物。</summary>
     /// <param name="state">调用方已持有实例锁的缓存。</param>
-    /// <param name="recipe">当前配方，决定需要保留的各项输入容量。</param>
-    private static void DrainExcessInputs(AdvancedFractionatorState state, WorldviewRecipe recipe) {
+    /// <param name="recipe">当前配方，决定需要保留的反应物。</param>
+    /// <param name="passthrough">产物达到阈值时将全部反应物侧流。</param>
+    private static void DrainUnusedInputs(AdvancedFractionatorState state, WorldviewRecipe recipe, bool passthrough) {
         var pending = state.UnprocessedInputIds;
         pending.Clear();
         foreach (var pair in state.Inputs) {
-            if (pair.Value > GetInputCapacity(recipe, pair.Key)) { pending.Add(pair.Key); }
+            if (pair.Value > 0 && (passthrough || GetInputCapacity(recipe, pair.Key) == 0)) { pending.Add(pair.Key); }
         }
+        int stackLimit = Math.Max(1, StackingManager.CurrentMaxStack);
         foreach (int itemId in pending) {
-            int excess = GetCount(state.Inputs, itemId) - GetInputCapacity(recipe, itemId);
-            int moved = Math.Min(excess, Math.Max(0, BufferCapacity - GetCount(state.FlowOutputs, itemId)));
-            if (moved <= 0) { continue; }
+            if (GetCount(state.FlowOutputs, itemId) >= OutputCapacity) { continue; }
+            int moved = Math.Min(GetCount(state.Inputs, itemId), stackLimit);
             int inc = TakeInput(state, itemId, moved);
             AddCount(state.FlowOutputs, itemId, moved);
             AddCount(state.FlowOutputInc, itemId, inc);
             state.SnapshotDirty = true;
         }
-        // 旧档若保留多种矩阵，仅为最高档留一份储备，其余按流出空间逐步排空。
-        int reserveId = 0;
-        foreach (var pair in state.Foods) {
-            if (pair.Value > 0) { reserveId = Math.Max(reserveId, pair.Key); }
+        // 旧档保留正在燃烧的一件及同种备用；空消化槽时保留最高档，其余逐批排空。
+        int reserveId = state.DigestingEnergy > 0d ? state.DigestingItemId : 0;
+        if (reserveId == 0) {
+            foreach (var pair in state.Foods) {
+                if (pair.Value > 0) { reserveId = Math.Max(reserveId, pair.Key); }
+            }
         }
         pending.Clear();
         foreach (var pair in state.Foods) {
             if (pair.Key != reserveId || pair.Value > FoodCapacity) { pending.Add(pair.Key); }
         }
         foreach (int itemId in pending) {
+            if (GetCount(state.FlowOutputs, itemId) >= OutputCapacity) { continue; }
             int excess = GetCount(state.Foods, itemId) - (itemId == reserveId ? FoodCapacity : 0);
-            int moved = Math.Min(excess, Math.Max(0, BufferCapacity - GetCount(state.FlowOutputs, itemId)));
+            int moved = Math.Min(excess, stackLimit);
             if (moved <= 0) { continue; }
             int inc = TakeCount(state.Foods, state.FoodInc, itemId, moved);
             AddCount(state.FlowOutputs, itemId, moved);
