@@ -40,6 +40,12 @@ Multiple DSP mods in one solution:
 - A publish run with qqbot upload failure is not complete. Report the real qqbot/HTTP error and keep the package paths visible for manual recovery instead of claiming the change was dispatched.
 - `AfterBuildEvent.exe 1` must use two independent content guards for QQ group uploads. First, `AfterBuildEvent` records a local content-hash cache under `ModZips\publish-content-sha256\` and must not notify qqbot for configured zip packages whose content hash is unchanged. Second, qqbot independently recalculates package content from the zip file and compares it with its own cache before deleting, uploading, or sending any group message. `sha256` validates the zip file bytes; `content_sha256` is still sent as metadata, but neither side may rely on timestamps.
 
+**Thunderstore 授权边界：** 上述模式 `1` 的发布仅指本地 R2 替换和 QQ 群文件推送，不包含 Thunderstore。雷霆商店使用独立模式 `7`，只有用户明确批准指定包及版本后才允许执行 `publish`；修复、构建、打包、群推送或准备清单均不能代替商店发布批准。
+
+- 先按 [README 的发布流程](README.md#thunderstore-发布) 执行 `7 prepare <项目>`，核对清单、版本、ZIP SHA256 和分类。
+- 用户批准后才能执行 `7 publish <项目> <版本> --approve <ZIP SHA256>`；不自动发布全部模组，不自动增版，不对失败或超时盲目重传。
+- 认证复用 Windows User/Machine 环境变量 `THUNDERSTORE_API_TOKEN`，仅向 CLI 子进程映射 `TCLI_AUTH_TOKEN`；不得输出、落盘或放入命令参数。
+
 **Simulator rule:** `VanillaCurveSim` is a standalone simulator project. When only it changes, do not start `AfterBuildEvent.exe`; instead, it may be built and run directly.
 
 **Publish launch rule:** Required packaging/publish verification uses the automated command form from WSL in the main Windows-mounted checkout: change to `AfterBuildEvent\bin\Debug`, and run `./AfterBuildEvent.exe 1`. Do not wrap the automated publish command in `powershell.exe`, do not wait for stdin, and do not use the old interactive no-argument launch for publish completion.

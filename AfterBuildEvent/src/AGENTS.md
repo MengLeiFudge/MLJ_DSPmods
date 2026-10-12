@@ -16,6 +16,7 @@ supporting workflow so `AfterBuildEvent.cs` remains the entry/router instead of 
 | `CalcJson/` | mode 3 JSON workflow | Calculator raw JSON generation, cache signature, `gameData.ts` version sync |
 | `CalcIcons/` | mode 4 icon workflow + mode 3 icon tail | Required icon discovery, offline/game icon export, asset sync |
 | `DspCalcQuickUpdate/` | calculator quick update | Mode 5: source-version audit, `gameData.ts` update, raw JSON filename copy |
+| `Thunderstore/` | 独立商店发布 | 模式 7：核对 ZIP、准备清单，明确批准后调用 tcli 并核对远端 |
 
 `AfterBuildEvent` is implemented as a `static partial class` across these files. Keep mode-specific methods
 and their private DTOs/state in the owning folder instead of adding them back to `AfterBuildEvent.cs`.
@@ -33,6 +34,7 @@ rather than creating duplicate copies.
 | `4` | `ExportCalcIcons()` | Rebuild calculator icons from current raw data |
 | `5` | `CalcQuickUpdateRunner.Run()` | Check all configured calculator mods and quick-update versions/raw JSON filenames when source audit passes |
 | `6` | `GenerateExternalModReferencesProps()` | Read profile `mods.yml` versions → resolve external mod DLLs from R2 cache → write `ExternalModReferences.generated.props` |
+| `7` | `ThunderstorePublisher.Run()` | `prepare` 生成待批准清单；`publish` 核对包、版本和已批准 SHA256 后发布雷霆商店 |
 
 Mode `5` intentionally waits for Enter before returning so the user can read the audit result and copied
 file list. It processes all configured calculator mods by default; an optional second argv may narrow the
@@ -93,6 +95,16 @@ In automation mode, option `1` keeps the packaging/R2 sync behavior but changes 
 - do not launch Dyson Sphere Program
 
 Codex final replies for publish runs must include the `AfterBuildEvent.exe 1` command result, generated zip paths, R2 copy status, and whether packages were locally skipped, sent to qqbot, uploaded, or fell back to opening `ModZips`.
+
+## Option 7 — Thunderstore 独立发布
+
+模式 `1` 只处理本地 R2 和 QQ，不得调用模式 `7`。用户修改模组、构建或推送群文件的授权不覆盖商店上传；仅在用户明确批准指定包及版本后，才可使用 `7 publish <项目> <版本> --approve <ZIP SHA256>`。先执行 `7 prepare <项目>` 并向用户展示结果；不提供默认全量发布或无参数上传。
+
+`ThunderstorePackage` 锁定已有 ZIP，核对 csproj、manifest、DLL、插件版本，以及 ZIP 中每个文件与当前构建/素材的内容。ZIP 来源固定为 `AfterBuildEvent/bin/<Configuration>/ModZips`，与模式 `1` 的规定工作目录一致。缺失 README、过期或多余文件均阻止商店发布。
+
+`ThunderstoreApi` 查询精确远端版本和 DSP 社区分类，沿用已有页面标签；只有明确 404 才表示版本不存在，网络错误直接失败。新包标签使用代码中的默认分类并核对官方 slug。`ThunderstorePublisher` 生成不含密钥的清单/TOML；上传前重新核对哈希、分类与版本唯一性。认证仅从 Windows User/Machine 的 `THUNDERSTORE_API_TOKEN` 注入子进程 `TCLI_AUTH_TOKEN`，不落盘。
+
+本地 tcli 固定安装 0.2.4。上传调用 `publish --config-path ... --file ...`，五分钟超时，不自动重试；失败、超时及正常返回都查询远端并在 `.codex/publish/thunderstore/` 保留脱敏回执。只在精确版本激活且社区、分类一致时报告远端确认，社区审核状态另报。恢复时先查回执和远端，禁止盲目重传或自动递增版本。
 
 ## Option 2 — UpdateLibDll Detail
 

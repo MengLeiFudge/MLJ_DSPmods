@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using AfterBuildEvent.DspCalcQuickUpdate;
+using AfterBuildEvent.Thunderstore;
 
 namespace AfterBuildEvent;
 
@@ -51,6 +52,7 @@ static partial class AfterBuildEvent {
         Console.WriteLine("4表示仅重建计算器所需图标资源（排障用，游戏内提取）");
         Console.WriteLine("5表示快速更新计算器模组版本和 raw JSON 文件名");
         Console.WriteLine("6表示根据 mods.yml 与 R2 cache 生成外部模组编译引用配置");
+        Console.WriteLine("7表示独立准备或发布到雷霆商店；上传必须先获得明确批准并指定包、版本和 SHA256");
         string str = automationMode ? args[0].Trim() : Console.ReadLine();
         if (str == "1" || str == "") {
             UpdateModsThenStart(automationMode, args);
@@ -64,6 +66,8 @@ static partial class AfterBuildEvent {
             CalcQuickUpdateRunner.Run(args);
         } else if (str == "6") {
             GenerateExternalModReferencesProps();
+        } else if (str == "7") {
+            ThunderstorePublisher.Run(args, BuildConfiguration);
         } else {
             Console.WriteLine("输入有误！");
         }

@@ -66,3 +66,51 @@ You can view all the mods I've released at [thunderstore](https://thunderstore.i
 
 It is recommended to install them using the [r2modman](https://thunderstore.io/c/dyson-sphere-program/p/ebkr/r2modman/)
 mod manager.
+
+## Thunderstore 发布
+
+本地交付使用 `AfterBuildEvent.exe 1`：关闭游戏、更新本地 r2modman 模组、打包、修正 Doorstop，再按变更范围向 QQ 群 319567534 推送文件。雷霆商店是独立流程，必须明确批准具体包及版本；日常本地交付和 QQ 推送不会触发商店上传。
+
+先用 Windows MSBuild 完成 Debug 构建，并在 `AfterBuildEvent/bin/Debug` 执行模式 `1` 生成当前 ZIP。支持的商店目标为 `FractionateEverything`、`BlueprintPlanet`、`SaveDataExporter`、`UXAEnhance`、`GetDspData`，每次指定一个项目。当前 GetDspData 缺少 README.md；BlueprintPlanet、SaveDataExporter、UXAEnhance 缺少各自的 Assets/icon.png。补齐这些必需素材前，对应包会被准备阶段阻止发布。
+
+准备阶段不读取密钥、不上传、不改本地模组：
+
+```powershell
+# 在 AfterBuildEvent/bin/Debug 中执行；将包名替换为本次目标
+./AfterBuildEvent.exe 7 prepare FractionateEverything
+```
+
+工具核对 ZIP 与当前 DLL、manifest、README、图标及其他打包素材，检查项目、DLL、BepInEx 插件和 manifest 版本一致；存在 CHANGELOG 时，其首个版本条目也必须一致。随后查询远端是否已存在同一版本，已发布的版本不能覆盖。准备成功后在 `.codex/publish/thunderstore/` 生成清单及 TOML，输出包名、版本、标签、ZIP 路径与 SHA256。
+
+标签优先沿用当前雷霆页面。没有现有分类时使用以下默认值，并向 DSP 社区分类接口核对合法性：
+
+| 包名 | 默认分类 |
+|---|---|
+| FractionateEverything | Cheats、Game Breaking、Quality of Life |
+| BlueprintPlanet | Blueprints、Quality of Life |
+| UXAEnhance | Logistics、Quality of Life |
+| GetDspData、SaveDataExporter | Info |
+
+首次发布前，在仓库根目录安装固定版本的 CLI：
+
+```powershell
+dotnet tool install tcli --version 0.2.4 --tool-path .codex/tools/tcli
+```
+
+认证沿用 Windows User 范围的 `THUNDERSTORE_API_TOKEN`，为空时查 Machine 范围。工具只向上传子进程映射 `TCLI_AUTH_TOKEN`，不将密钥写入文件、日志或命令参数。
+
+用户明确批准清单中的包、版本及文件后，执行准备结果打印的命令，例如：
+
+```powershell
+# 包名、版本和 SHA256 均使用本次已获批准的准备结果
+./AfterBuildEvent.exe 7 publish FractionateEverything 3.0.0 --approve '<准备结果中的SHA256>'
+```
+
+`--approve` 是调用者对本次明确批准的声明，不能由日常交付自动补上。文件、版本或分类变化后必须重新准备并取得批准。上传前再次检查远端版本，持有 ZIP 只读锁直至流程结束；五分钟超时后停止 CLI 进程树，不自动重传。
+
+完成后查询精确版本的 `is_active`、DSP 社区和分类，并单独报告 `review_status`。CLI 输出与远端结果保存在清单目录的脱敏 `receipt-*.json`。失败或超时先查看回执并查询远端，不直接重传或自动增版：
+
+```text
+https://thunderstore.io/api/experimental/package/MengLei/<包名>/<版本>/
+https://thunderstore.io/api/experimental/package/MengLei/<包名>/
+```
