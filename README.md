@@ -67,6 +67,18 @@ You can view all the mods I've released at [thunderstore](https://thunderstore.i
 It is recommended to install them using the [r2modman](https://thunderstore.io/c/dyson-sphere-program/p/ebkr/r2modman/)
 mod manager.
 
+## QQ 群文件夹
+
+模式 `1` 默认执行本地更新与群文件交付，内容未变化时去重跳过。通过本机 `DefaultPath.props` 的 `QqFolderId` 选择已有 QQ 群文件夹；省略、空白或 `/` 表示群文件最外层。这个设置只影响 QQ 上传，与本地 profile、ZIP 内容和 Thunderstore 分类无关。
+
+```xml
+<QqFolderId>实际的群文件夹ID</QqFolderId>
+```
+
+ID 从目标群的 NapCat `get_group_root_files` 响应 `folders[].folder_id` 取得，不能使用文件夹显示名称。qqbot 先确认该群中存在对应文件夹；错误或无权限会失败，不回退最外层。接口的每个文件条目携带 `folder_id`，上传、同名文件替换及回执均限定在该目录。成功缓存按接收群集合、目录和包隔离，原群根目录缓存保持兼容；换目录会重新交给服务端核对，不搬迁或删除原目录文件。
+
+本项目与 MLJ_InFalsus_Mods 各自在自己的 DefaultPath.props 配置目标目录。只有服务端确认每个群、目录、包名和内容哈希后，客户端才保存成功缓存。DSP 自动模式仍按最新提交筛选 QQ 候选；仅更换目录、当前提交未涉及模组时，使用 `AfterBuildEvent.exe 1 <项目名>` 明确选择需要投递到新目录的包。
+
 ## Thunderstore 发布
 
 本地交付使用 `AfterBuildEvent.exe 1`：关闭游戏、更新本地 r2modman 模组、打包、修正 Doorstop，再按变更范围向 QQ 群 319567534 推送文件。雷霆商店是独立流程，必须明确批准具体包及版本；日常本地交付和 QQ 推送不会触发商店上传。

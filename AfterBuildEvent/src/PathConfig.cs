@@ -14,6 +14,23 @@ public static class PathConfig {
         $@"{UserDir}\AppData\Roaming\r2modmanPlus-local\DysonSphereProgram\cache";
     public static string R2ProfileDir => _r2ProfileDir;
     public static string R2CacheDir => _r2CacheDir;
+    /// <summary>当前项目的 QQ 群文件夹 ID；省略、空白或 / 表示最外层，配置错误不得降级到根目录。</summary>
+    public static string QqFolderId {
+        get {
+            string path = Path.Combine(SolutionFullDir, "DefaultPath.props");
+            if (!File.Exists(path)) {
+                return "";
+            }
+            XmlDocument document = new();
+            document.Load(path);
+            string folder = document.SelectSingleNode("/Project/PropertyGroup/QqFolderId")?.InnerText.Trim() ?? "";
+            if (folder.Length > 256 || folder.Any(char.IsControl)) {
+                throw new InvalidDataException("QqFolderId 必须为 QQ 返回的文件夹 ID，不能含控制字符。");
+            }
+            return folder == "/" ? "" : folder;
+        }
+    }
+
     public static string ModsConfigPath => $@"{R2ProfileDir}\mods.yml";
     public static string R2PluginsDir => $@"{R2ProfileDir}\BepInEx\plugins";
     public static string ExternalModReferencesGeneratedPropsPath =>

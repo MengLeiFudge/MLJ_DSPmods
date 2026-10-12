@@ -12,5 +12,7 @@
         <GenesisBookSourceDir>D:\project\dsp\ProjectGenesis</GenesisBookSourceDir>
         <OrbitalRingSourceDir>D:\project\dsp\OrbitalRing-MOD</OrbitalRingSourceDir>
         <FractionateEverythingSourceDir>D:\project\dsp\MLJ_DSPmods\FractionateEverything</FractionateEverythingSourceDir>
+        <!-- 可选：QQ 群文件夹 ID；留空或 / 为最外层，使用 get_group_root_files 返回的 folder_id。 -->
+        <QqFolderId></QqFolderId>
     </PropertyGroup>
 </Project>

@@ -98,11 +98,6 @@ static partial class AfterBuildEvent {
     /// </summary>
     private sealed class QqbotPublishSummary {
         /// <summary>
-        /// uploaded/deleted/skipped 数组均存在且解析成功时为 true。
-        /// </summary>
-        public bool HasCounts { get; set; }
-
-        /// <summary>
         /// qqbot 报告为已上传的压缩包条目数。
         /// </summary>
         public int UploadedCount { get; set; }
@@ -550,8 +545,9 @@ static partial class AfterBuildEvent {
             };
         }
 
-        List<GeneratedPackageInfo> publishablePackages = GetLocallyChangedPublishPackages(configuredPackages);
-        JArray files = BuildQqbotPublishFiles(publishablePackages);
+        string folderId = QqFolderId;
+        List<GeneratedPackageInfo> publishablePackages = GetLocallyChangedPublishPackages(configuredPackages, folderId);
+        JArray files = BuildQqbotPublishFiles(publishablePackages, folderId);
         if (files.Count == 0) {
             Console.WriteLine("自动上传跳过：本次没有内容变化的配置 zip，无需通知 qqbot");
             return new() {
@@ -584,13 +580,9 @@ static partial class AfterBuildEvent {
             string responseBody = ReadResponseBody(response);
             bool ok = (int)response.StatusCode >= 200 && (int)response.StatusCode < 300;
             if (ok) {
-                QqbotPublishSummary summary = ParseQqbotPublishSummary(responseBody);
-                if (summary.HasCounts) {
-                    Console.WriteLine($"自动上传完成：上传 {summary.UploadedCount} 个 zip，跳过 {summary.SkippedCount} 个未变化 zip，删除旧文件 {summary.DeletedCount} 个");
-                } else {
-                    Console.WriteLine($"自动上传完成：qqbot 已接受 {files.Count} 个 zip 的发布请求");
-                }
-                SaveLocalPublishStates(publishablePackages);
+                QqbotPublishSummary summary = ParseQqbotPublishSummary(responseBody, files);
+                Console.WriteLine($"自动上传完成：上传 {summary.UploadedCount} 个 zip，跳过 {summary.SkippedCount} 个未变化 zip，删除旧文件 {summary.DeletedCount} 个");
+                SaveLocalPublishStates(publishablePackages, folderId);
             } else {
                 Console.WriteLine($"自动上传失败：qqbot 返回 HTTP {(int)response.StatusCode}");
             }
@@ -641,10 +633,10 @@ static partial class AfterBuildEvent {
     }
 
     private static List<GeneratedPackageInfo> GetLocallyChangedPublishPackages(
-        IReadOnlyList<GeneratedPackageInfo> generatedPackages) {
+        IReadOnlyList<GeneratedPackageInfo> generatedPackages, string folderId) {
         List<GeneratedPackageInfo> publishablePackages = [];
         foreach (GeneratedPackageInfo package in generatedPackages) {
-            LocalPublishState state = LoadLocalPublishState(package.Name);
+            LocalPublishState state = LoadLocalPublishState(package, folderId);
             if (string.Equals(package.Name, state.Name, StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(package.ContentSha256, state.ContentSha256, StringComparison.OrdinalIgnoreCase)) {
                 Console.WriteLine($"本地上传跳过：{package.Name} 内容未变化 ({package.ContentSha256})");
@@ -656,14 +648,14 @@ static partial class AfterBuildEvent {
         return publishablePackages;
     }
 
-    private static void SaveLocalPublishStates(IReadOnlyList<GeneratedPackageInfo> packages) {
+    private static void SaveLocalPublishStates(IReadOnlyList<GeneratedPackageInfo> packages, string folderId) {
         foreach (GeneratedPackageInfo package in packages) {
-            SaveLocalPublishState(package);
+            SaveLocalPublishState(package, folderId);
         }
     }
 
-    private static LocalPublishState LoadLocalPublishState(string packageName) {
-        string path = GetLocalPublishStatePath(packageName);
+    private static LocalPublishState LoadLocalPublishState(GeneratedPackageInfo package, string folderId) {
+        string path = GetLocalPublishStatePath(package, folderId);
         if (!File.Exists(path)) {
             return new();
         }
@@ -680,11 +672,12 @@ static partial class AfterBuildEvent {
         }
     }
 
-    private static void SaveLocalPublishState(GeneratedPackageInfo package) {
-        string path = GetLocalPublishStatePath(package.Name);
+    private static void SaveLocalPublishState(GeneratedPackageInfo package, string folderId) {
+        string path = GetLocalPublishStatePath(package, folderId);
         Directory.CreateDirectory(Path.GetDirectoryName(path) ?? @".\ModZips");
         JObject payload = new() {
             ["name"] = package.Name,
+            ["folder_id"] = folderId,
             ["content_sha256"] = package.ContentSha256,
             ["sha256"] = package.Sha256,
             ["updated_at_utc"] = DateTime.UtcNow.ToString("O"),
@@ -692,9 +685,21 @@ static partial class AfterBuildEvent {
         File.WriteAllText(path, payload.ToString(), Utf8NoBom);
     }
 
-    private static string GetLocalPublishStatePath(string packageName) {
-        string safeName = string.Join("_", packageName.Split(Path.GetInvalidFileNameChars()));
-        return Path.Combine(@".\ModZips", "publish-content-sha256", $"{safeName}.json");
+    /// <summary>按接收群集合、目录和包隔离成功缓存；原固定群的根目录沿用旧路径。</summary>
+    private static string GetLocalPublishStatePath(GeneratedPackageInfo package, string folderId) {
+        string safeName = string.Join("_", package.Name.Split(Path.GetInvalidFileNameChars()));
+        string directory = Path.Combine(@".\ModZips", "publish-content-sha256");
+        int[] groups = PublishTargets.Single(target =>
+                string.Equals(target.ProjectName, package.ProjectName, StringComparison.OrdinalIgnoreCase)).GroupIds
+            .Distinct().OrderBy(group => group).ToArray();
+        if (folderId.Length > 0 || groups.Length != 1 || groups[0] != AutoUploadGroupId) {
+            using SHA256 hash = SHA256.Create();
+            string identity = string.Join(",", groups) + "\0" + folderId;
+            string targetKey = BitConverter.ToString(hash.ComputeHash(Utf8NoBom.GetBytes(identity)))
+                .Replace("-", "").ToLowerInvariant();
+            directory = Path.Combine(directory, "targets", targetKey);
+        }
+        return Path.Combine(directory, $"{safeName}.json");
     }
 
     private static string ReadResponseBody(HttpWebResponse response) {
@@ -706,32 +711,33 @@ static partial class AfterBuildEvent {
         return reader.ReadToEnd();
     }
 
-    private static QqbotPublishSummary ParseQqbotPublishSummary(string responseBody) {
-        if (string.IsNullOrWhiteSpace(responseBody)) {
-            return new();
+    /// <summary>核对每个文件的群、目录和内容回执；未确认目标时不能写入成功缓存。</summary>
+    private static QqbotPublishSummary ParseQqbotPublishSummary(string responseBody, JArray files) {
+        JObject response = JObject.Parse(responseBody);
+        if (response["uploaded"] is not JArray uploaded ||
+            response["deleted"] is not JArray deleted ||
+            response["skipped"] is not JArray skipped) {
+            throw new InvalidDataException("qqbot 回执缺少上传、删除或跳过数组。");
         }
-
-        try {
-            JObject response = JObject.Parse(responseBody);
-            if (response["uploaded"] is not JArray uploaded ||
-                response["deleted"] is not JArray deleted ||
-                response["skipped"] is not JArray skipped) {
-                return new();
+        JToken[] confirmations = uploaded.Concat(skipped).ToArray();
+        foreach (JToken file in files) {
+            foreach (int group in file["targets"].Values<int>()) {
+                if (!confirmations.Any(entry => (int?)entry["group_id"] == group
+                    && ((string)entry["folder_id"] ?? "") == (string)file["folder_id"]
+                    && (string)entry["name"] == (string)file["name"]
+                    && (string)entry["content_sha256"] == (string)file["content_sha256"])) {
+                    throw new InvalidDataException($"qqbot 未确认群 {group} 目标目录中的 {file["name"]}，未写成功缓存。");
+                }
             }
-
-            return new() {
-                HasCounts = true,
-                UploadedCount = uploaded.Count,
-                DeletedCount = deleted.Count,
-                SkippedCount = skipped.Count,
-            };
         }
-        catch {
-            return new();
-        }
+        return new() {
+            UploadedCount = uploaded.Count,
+            DeletedCount = deleted.Count,
+            SkippedCount = skipped.Count,
+        };
     }
 
-    private static JArray BuildQqbotPublishFiles(IReadOnlyList<GeneratedPackageInfo> generatedPackages) {
+    private static JArray BuildQqbotPublishFiles(IReadOnlyList<GeneratedPackageInfo> generatedPackages, string folderId) {
         JArray files = [];
         foreach (GeneratedPackageInfo package in generatedPackages) {
             PublishTarget target = PublishTargets.FirstOrDefault(item =>
@@ -745,6 +751,7 @@ static partial class AfterBuildEvent {
                 ["sha256"] = package.Sha256,
                 ["content_sha256"] = package.ContentSha256,
                 ["targets"] = new JArray(target.GroupIds),
+                ["folder_id"] = folderId,
             });
         }
         return files;

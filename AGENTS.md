@@ -39,6 +39,8 @@ Multiple DSP mods in one solution:
 - If the user manually starts `AfterBuildEvent.exe` and selects option `1`, the tool must still notify qqbot and dispatch the configured zip files before any optional game launch prompt.
 - A publish run with qqbot upload failure is not complete. Report the real qqbot/HTTP error and keep the package paths visible for manual recovery instead of claiming the change was dispatched.
 - `AfterBuildEvent.exe 1` must use two independent content guards for QQ group uploads. First, `AfterBuildEvent` records a local content-hash cache under `ModZips\publish-content-sha256\` and must not notify qqbot for configured zip packages whose content hash is unchanged. Second, qqbot independently recalculates package content from the zip file and compares it with its own cache before deleting, uploading, or sending any group message. `sha256` validates the zip file bytes; `content_sha256` is still sent as metadata, but neither side may rely on timestamps.
+- QQ 群文件目录由本机 `DefaultPath.props` 的 `QqFolderId` 指定：省略、空白或 `/` 为最外层，其他值为已有 QQ 文件夹 ID。客户端及服务端去重、同名文件清理和回执都必须区分群及目录；根目录旧缓存保持兼容。目录无效时失败，不降级或删除其他目录中的文件。
+- 只有 qqbot 回执确认全部目标群、目录、包名和内容哈希后，模式 `1` 才能保存成功缓存；HTTP 成功或统计计数本身不能代替目标确认。
 
 **Thunderstore 授权边界：** 上述模式 `1` 的发布仅指本地 R2 替换和 QQ 群文件推送，不包含 Thunderstore。雷霆商店使用独立模式 `7`，只有用户明确批准指定包及版本后才允许执行 `publish`；修复、构建、打包、群推送或准备清单均不能代替商店发布批准。
 
