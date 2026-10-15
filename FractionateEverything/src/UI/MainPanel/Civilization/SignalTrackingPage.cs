@@ -24,7 +24,7 @@ public sealed class SignalTrackingPage : CardBrowserPage {
                 ExplorationManager.GetSilentProgress(other.id, out int c, out int n);
                 starFound += c; starTotal += n;
             }
-            return string.Format("FE.SignalTrackingPage.Summary".Translate(), found, total, starFound, starTotal, ExplorationManager.GetHighestStrength());
+            return string.Format("FE.SignalTrackingPage.CollectionSummary".Translate(), found, total, starFound, starTotal);
         }
     }
     protected override IReadOnlyList<PageCard> ReadCards() => ExplorationManager.GetActiveMarks()

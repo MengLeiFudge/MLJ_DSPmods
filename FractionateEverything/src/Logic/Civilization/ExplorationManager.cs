@@ -352,45 +352,70 @@ public static class ExplorationManager {
         }
     }
 
-    /// <summary>计算地表距离强度，离开目标星球附近时不显示读数。</summary>
-    /// <param name="mark">目标点。</param>
+    /// <summary>读取当前信号的精细量程；量化百分比不参与回收判定。</summary>
+    /// <param name="mark">当前跟踪目标。</param>
     /// <param name="playerPosition">玩家宇宙位置。</param>
-    /// <param name="planetStrength">兼容页面入口，等于当前局部强度。</param>
-    /// <param name="relicStrength">0～1最高可见局部强度。</param>
-    /// <returns>目标是否处于探测范围。</returns>
+    /// <param name="planetStrength">兼容输出，等于精细读数，不是星球量程。</param>
+    /// <param name="relicStrength">就近取档后的0～1强度。</param>
+    /// <returns>是否处于目标星球低空及180m量程内。</returns>
     public static bool TryGetDetectorStrengths(ExplorationMark mark, VectorLF3 playerPosition,
         out float planetStrength, out float relicStrength) {
         planetStrength = relicStrength = 0f;
         PlanetData planet = GameMain.galaxy?.PlanetById(mark?.PlanetId ?? 0);
-        if (planet == null || mark.Quality > DetectableQuality && !IsKeySignal(mark)) { return false; }
-        VectorLF3 relative = playerPosition - planet.uPosition;
-        if (Math.Abs(relative.magnitude - planet.realRadius) > 70) { return false; }
+        if (planet == null || GameMain.mainPlayer?.planetId != planet.id
+            || mark.Quality > DetectableQuality && !IsKeySignal(mark)) { return false; }
+        if (Math.Abs((playerPosition - planet.uPosition).magnitude - planet.realRadius) > 70) { return false; }
         double distance = GetSignalDistance(mark, planet, playerPosition);
         if (distance > DetectionRange) { return false; }
         float arrival = GetArrivalDistance(mark);
         float raw = Mathf.Clamp01((DetectionRange - (float)distance) / (DetectionRange - arrival));
-        float step = GrowthTechnologyManager.ExplorationSignalPrecisionPercent / 100f;
-        relicStrength = distance <= arrival ? 1f : Math.Min(0.99f, Mathf.Floor(raw / step) * step);
+        float step = IsKeySignal(mark) ? 0.01f : GrowthTechnologyManager.ExplorationSignalPrecisionPercent / 100f;
+        relicStrength = Mathf.Clamp01(Mathf.Floor(raw / step + 0.5f) * step);
         planetStrength = relicStrength;
         return true;
     }
 
-    /// <summary>取得当前星球指定类别可探测点的最高强度，不公开静默点位置。</summary>
-    /// <param name="category">0为全部，1为普通，2为主线与任务，3为高级非关键点。</param>
-    /// <returns>0～1强度。</returns>
-    public static float GetHighestStrength(int category = 0) {
+    /// <summary>保持模式内有效目标，失效后依次优先本星球、本星系、距离和稳定身份。</summary>
+    /// <param name="keySignals">是否为文明信标模式。</param>
+    /// <param name="currentId">当前目标身份，0表示尚未选择。</param>
+    /// <returns>目标副本；无候选为null，不公开远处静默点。</returns>
+    public static ExplorationMark GetDetectorTarget(bool keySignals, int currentId) {
         Player player = GameMain.mainPlayer;
-        if (player == null) { return 0; }
-        float strongest = 0;
-        foreach (ExplorationMark mark in NearbyMarks(player.planetId)) {
-            int markCategory = IsKeySignal(mark) ? 2 : mark.Quality >= 2 ? 3 : 1;
-            if (category != 0 && category != markCategory) { continue; }
-            if (TryGetDetectorStrengths(mark, player.uPosition, out _, out float strength)) {
-                strongest = Math.Max(strongest, strength);
+        if (player == null || GameMain.galaxy == null || !keySignals && !FirstRelicClaimed) { return null; }
+        lock (Sync) {
+            IEnumerable<ExplorationMark> candidates = ActiveMarks;
+            if (!keySignals && player.planetId > 0) {
+                candidates = candidates.Concat(NearbyMarks(player.planetId).Where(m => m.Kind == ExplorationMarkKind.SilentCache));
             }
+            ExplorationMark best = null;
+            int bestPriority = int.MaxValue;
+            double bestDistance = double.MaxValue;
+            foreach (ExplorationMark mark in candidates) {
+                if (IsKeySignal(mark) != keySignals || !keySignals && mark.Quality > DetectableQuality) { continue; }
+                PlanetData planet = GameMain.galaxy.PlanetById(mark.PlanetId);
+                if (planet == null) { continue; }
+                if (mark.Kind == ExplorationMarkKind.SilentCache
+                    && !TryGetDetectorStrengths(mark, player.uPosition, out _, out _)) { continue; }
+                if (mark.Id == currentId) { return CloneMark(mark); }
+                int priority = planet.id == player.planetId ? 0 : planet.star == GameMain.localStar ? 1 : 2;
+                double distance = priority == 0 ? GetSignalDistance(mark, planet, player.uPosition)
+                    : (planet.uPosition - player.uPosition).sqrMagnitude;
+                if (priority < bestPriority || priority == bestPriority
+                    && (distance < bestDistance || distance == bestDistance && (best == null || mark.Id < best.Id))) {
+                    best = mark;
+                    bestPriority = priority;
+                    bestDistance = distance;
+                }
+            }
+            return best == null ? null : CloneMark(best);
         }
-        return strongest;
     }
+
+    /// <summary>用真实星球和空间距离判定本地玩家到达，不从百分比推断。</summary>
+    /// <param name="mark">当前目标。</param>
+    /// <returns>本地玩家是否实际到达。</returns>
+    public static bool IsDetectorTargetReached(ExplorationMark mark) => mark != null
+        && GameMain.mainPlayer is Player player && IsWithinArrival(mark, player.uPosition, player.planetId);
 
     /// <summary>读取并清除主机快照脏标记。</summary>
     /// <returns>是否有待同步变化。</returns>

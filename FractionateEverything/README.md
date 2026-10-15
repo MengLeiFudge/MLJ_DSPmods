@@ -11,7 +11,7 @@ Fractionate Everything is a living-industry progression built around exploration
 
 ## 从哪里开始 Getting Started
 
-开局的G手册会出现“神秘信号？”。首遗物位于出生点所在半球，与出生点保持一段探索距离，并避开黑雾基地。HUD显示附近最强信号，沿读数增强的方向寻找，达到100%就进入回收范围；步行与悬浮均可回收。关键信号的回收结果会打开确认弹窗。首遗物提供：
+开局的G手册会出现“神秘信号？”。首遗物位于出生点所在半球，与出生点保持一段探索距离，并避开黑雾基地。探测器初始跟踪文明信标，四挡依次给出星系、星球、经纬度区间和近距离强度；区域挡同时显示玩家自身坐标。100%是取整后的读数，实际进入范围才会回收；步行与悬浮均可回收。关键信号的回收结果会打开确认弹窗。首遗物提供：
 
 - 基础矿物塔4座、基础解析塔2座及其制造配方。
 - 铁、铜、石、煤四条解析线索，以及一条原胚培育线索。
@@ -56,11 +56,12 @@ Each sample has one shared probabilistic analysis slot. Memory restores growth q
 
 首遗物后普通广播持续产生，初始周期10分钟，探索科技逐渐缩短。广播质量取决于生成时的矩阵阶段，此后不升档。蓝红阶段集中在母星，黄糖扩展到本星系，具备曲速能力后再进入邻近星系。
 
-HUD显示180米局部范围内的最高强度，复用原版提示文字的白字黑边样式，并随黑雾列表与教学面板动态避让；在科技树等全屏界面隐藏。普通遗迹18米、关键地点30米为水平回收范围，空间距离计入悬空点位的高度，使步行和默认悬浮均可触发，岩石星球和气巨使用同一规则。实际奖励保存在地点档案，查看时按当前语言生成文本。已收到的广播和主线可在信号追踪页查看，隐藏静默点不会提前列出。探索成长五级后可主动标注位置，但不会启动移动。
+探测器有“文明信标”和“异常探索”两种模式，首遗物后开放探索模式。Alt+R切换星系、星球、区域、精细四挡，Alt+T切换模式，可在游戏键位设置中修改。换挡保留当前目标，回收后自动续接。文明信标沿用古代仪器；探索模块来自仿制，第二页的探索成长科技逐步修复与校准它。区域格按星球真实半径换算，同样适用于GalacticScale的大星球，不会因为半径增大而要求绕球盲搜。
+精细挡在180米局部范围内显示最接近的信号档位，例如20%精度下91%显示100%；“已定位”仍以实际到达判定为准。HUD复用原版白字黑边样式，随黑雾列表与教学面板动态避让，在全屏界面隐藏。普通遗迹18米、关键地点30米为水平回收范围，空间距离计入悬空点位的高度，使步行和默认悬浮均可触发，岩石星球和气巨使用同一规则。实际奖励保存在地点档案，查看时按当前语言生成文本。已收到的广播和主线可在信号追踪页查看，隐藏静默点不会提前列出。探索成长五级后可主动标注位置，但不会启动移动。
 
 首个矩阵生产后，亚空间原胚或高级交互塔不足300时，资源点有机会补给对应物品。原胚也可通过黑雾战斗补充。黑雾击杀的残片基础掉率为10%，每级探索再增加2个百分点；每片残片送入解析塔后有2%概率生成新广播。战斗不是主线门槛。
 
-Silent relics have fixed locations and open in layers. Dynamic broadcasts continue indefinitely and keep the quality rolled when generated. The HUD shows the strongest nearby signal; recovered rewards are recorded without rerolling. Combat is optional.
+Silent relics have fixed locations and open in layers. Dynamic broadcasts continue indefinitely and keep the quality rolled when generated. Alt+R cycles the detector through system, planet, region and fine ranges; Alt+T switches civilization beacons and exploration. The region range shows coordinate bounds and your position, with search areas scaled to the planet's actual radius. Fine readings round to the nearest step: 100% does not itself confirm arrival. Recovered rewards are recorded without rerolling. Combat is optional.
 
 ## 亚空间与成长 Subspace and Progression
 
@@ -90,6 +91,8 @@ Advanced recipes include rare-resource catalysis, tower cultivation and breeding
 | --- | --- |
 | 开关主面板 | Shift + F |
 | 切换面板外壳 | Ctrl + Shift + F，面板打开时 |
+| 切换探测量程 | Alt + R |
+| 切换探测模式 | Alt + T，首遗物后开放 |
 | 重读教程 | G |
 
 面板分为指引、研究、探索、工业、手记、设置，共十七页。默认当前目标，指南随发现开放；左侧是窄单列目录，右侧是宽阅读区，点击切换内容，长文可以滚动。G手册只在关键节点提供短篇故事，具体操作请看面板指南。中文物品名为“源点”“残片”。高级塔配方在塔窗口选择，窗口区分缺少矩阵、缺料、堵塞和集装。

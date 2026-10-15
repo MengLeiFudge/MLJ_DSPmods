@@ -1,4 +1,4 @@
-﻿using System.Linq;
+﻿using CommonAPI.Systems;
 using FE.Logic.Civilization;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,7 +6,7 @@ using UnityEngine.UI;
 namespace FE.UI.MainPanel.Civilization;
 
 /// <summary>
-/// 显示附近最高探测强度、关键信号与本星球静默回收进度。
+/// 呈现本地四挡探测仪表与玩家坐标，沿用原版HUD隐藏和避让规则。
 /// </summary>
 internal static class ExplorationSignalHud {
     private const float HudWidth = 520f;
@@ -21,6 +21,25 @@ internal static class ExplorationSignalHud {
     private static readonly Rect[] PanelBounds = new Rect[5];
     private static int panelCount;
     private static int lastRefreshFrame = -1;
+
+    /// <summary>绑定沿用CommonAPI的游戏内可改键入口，不创建第二套配置。</summary>
+    private static PressKeyBind rangeKey;
+    private static PressKeyBind modeKey;
+
+    /// <summary>在功能初始化阶段注册量程和模式键；不依赖HUD是否已经创建。</summary>
+    public static void Init() {
+        if (rangeKey != null) { return; }
+        int conflicts = KeyBindConflict.MOVEMENT | KeyBindConflict.FLYING | KeyBindConflict.SAILING
+            | KeyBindConflict.BUILD_MODE_1 | KeyBindConflict.KEYBOARD_KEYBIND;
+        rangeKey = CustomKeyBindSystem.RegisterKeyBindWithReturn<PressKeyBind>(new() {
+            key = new((int)KeyCode.R, CombineKey.ALT_COMB, ECombineKeyAction.OnceClick, false),
+            conflictGroup = conflicts, name = "FEChangeDetectorRange", canOverride = true,
+        });
+        modeKey = CustomKeyBindSystem.RegisterKeyBindWithReturn<PressKeyBind>(new() {
+            key = new((int)KeyCode.T, CombineKey.ALT_COMB, ECombineKeyAction.OnceClick, false),
+            conflictGroup = conflicts, name = "FEChangeDetectorMode", canOverride = true,
+        });
+    }
 
     /// <summary>
     /// 创建 HUD；重复调用不会创建多个实例。
@@ -191,7 +210,7 @@ internal static class ExplorationSignalHud {
     }
 
     /// <summary>
-    /// 刷新本地聚合读数，复用逻辑域缓存快照。
+    /// 处理可重绑快捷键并刷新同一目标的量程读数。
     /// </summary>
     public static void Update() {
         EnsureCreated();
@@ -211,28 +230,20 @@ internal static class ExplorationSignalHud {
         root.SetActive(visible);
         if (!visible) { return; }
         UpdatePosition(uiGame);
-        if (Time.frameCount == lastRefreshFrame || Time.frameCount % 15 != 0) {
+        if (Time.frameCount == lastRefreshFrame) { return; }
+        bool changed = false;
+        if (!VFInput.inputing) {
+            if (rangeKey?.keyValue == true) { ExplorationDetector.CycleRange(); changed = true; }
+            if (modeKey?.keyValue == true) { ExplorationDetector.CycleMode(); changed = true; }
+        }
+        if (!changed && Time.frameCount % 15 != 0) {
             return;
         }
         lastRefreshFrame = Time.frameCount;
 
-        ExplorationMark[] keySignals = ExplorationManager.GetActiveMarks().Where(ExplorationManager.IsKeySignal).ToArray();
-        RowTexts[0].text = string.Format("FE.Signals.Categories".Translate(),
-            ExplorationManager.GetHighestStrength(1), ExplorationManager.GetHighestStrength(2),
-            ExplorationManager.GetHighestStrength(3));
-        RowTexts[0].gameObject.SetActive(true);
-        if (keySignals.Length > 0) {
-            ExplorationMark first = keySignals[0];
-            string text = $"{ExplorationManager.GetSignalName(first)} · {GameMain.galaxy?.PlanetById(first.PlanetId)?.displayName}";
-            RowTexts[1].text = keySignals.Length > 1 ? string.Format("{0}  （共 {1} 个关键信号）".Translate(), text, keySignals.Length) : text;
-        }
-        RowTexts[1].gameObject.SetActive(keySignals.Length > 0);
-        PlanetData planet = GameMain.localPlanet;
-        bool showSilent = planet != null && ExplorationManager.FirstRelicClaimed;
-        if (showSilent) {
-            ExplorationManager.GetSilentProgress(planet.id, out int collected, out int total);
-            RowTexts[2].text = string.Format("本星球静默遗迹：{0}/{1}".Translate(), collected, total);
-        }
-        RowTexts[2].gameObject.SetActive(showSilent);
+        DetectorReading reading = ExplorationDetector.Read();
+        RowTexts[0].text = reading.Heading;
+        RowTexts[1].text = reading.Measurement;
+        RowTexts[2].text = reading.Position;
     }
 }
