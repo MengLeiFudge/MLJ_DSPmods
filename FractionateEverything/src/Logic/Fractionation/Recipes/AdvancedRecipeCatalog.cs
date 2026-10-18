@@ -40,8 +40,11 @@ public static class AdvancedRecipeCatalog {
                 _ => throw new InvalidOperationException($"Unsupported advanced recipe type: {recipe.RecipeType}"),
             };
             // 名称和说明在 Awake 统一加载；此阶段晚于语言键索引建立，不能再注册翻译。
-            string nameKey = $"FE.AdvancedRecipe.{id}";
-            string descriptionKey = nameKey + ".Description";
+            string nameKey = recipe.Kind == WorldviewRecipeKind.Replacement ? recipe.DisplayName : $"FE.AdvancedRecipe.{id}";
+            string descriptionKey = recipe.Kind == WorldviewRecipeKind.Replacement
+                ? "FE.AdvancedRecipe.ConversionDescription" : nameKey + ".Description";
+            row += (column - 1) / 14;
+            int gridColumn = (column - 1) % 14 + 1;
             // 原版数量字段仅支持整数；繁育按两轮的物料比例展示，真实概率与催化剂规则写在说明中。
             int scale = recipe.ProductArray.Any(output => output.Count != Math.Floor(output.Count)) ? 2 : 1;
 
@@ -50,7 +53,7 @@ public static class AdvancedRecipeCatalog {
                 recipe.InputArray.Select(input => input.Count * scale).ToArray(),
                 recipe.ProductArray.Select(output => output.ItemId).ToArray(),
                 recipe.ProductArray.Select(output => (int)Math.Round(output.Count * scale)).ToArray(),
-                descriptionKey, 0, tab分馏 * 1000 + row * 100 + column, nameKey, "");
+                descriptionKey, 0, tab分馏 * 1000 + row * 100 + gridColumn, nameKey, "");
             proto.Handcraft = false;
             proto.Explicit = true;
             proto.NonProductive = true;
@@ -106,6 +109,7 @@ public static class AdvancedRecipeCatalog {
         >= 30201 and <= 30203 => RFE高级培育展示起始 + persistentId - 30201,
         >= 30211 and <= 30213 => RFE高级繁育展示起始 + persistentId - 30211,
         >= 30301 and <= 30304 => RFE高级转化展示起始 + persistentId - 30301,
+        >= 30305 and <= 30317 => RFE高级转化扩展展示起始 + persistentId - 30305,
         _ => 0,
     };
 

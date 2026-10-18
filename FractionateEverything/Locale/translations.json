@@ -1,4 +1,18 @@
 {
+  "FE.Conversion.PairName": {
+    "enUS": "{0} → {1} conversion",
+    "zhCN": "{0}→{1}重构",
+    "frFR": "Conversion {0} → {1}",
+    "1031": "Umwandlung {0} → {1}",
+    "1041": "{0}→{1}変換"
+  },
+  "FE.AdvancedRecipe.ConversionDescription": {
+    "enUS": "Supply all reactants and matrix food together. Failed primary material returns through the side port; auxiliaries and catalysts are consumed only on success. Check the tower window for quantities and probabilities.",
+    "zhCN": "需要同时供给全部反应物与矩阵食物。主料失败从侧面流回，辅料和催化剂仅在成功时按概率消耗。数量与概率见塔内配方。",
+    "frFR": "Alimentez tous les réactifs et la nourriture matricielle. La matière principale non convertie repart par le côté ; auxiliaires et catalyseurs ne sont consommés qu’en cas de réussite. Quantités et probabilités dans la fenêtre de la tour.",
+    "1031": "Alle Reaktionsstoffe und Matrixnahrung zuführen. Nicht umgewandeltes Hauptmaterial fließt seitlich zurück; Hilfsstoffe und Katalysatoren werden nur bei Erfolg verbraucht. Mengen und Wahrscheinlichkeiten stehen im Turmfenster.",
+    "1041": "全反応物とマトリックス食料を供給します。失敗した主原料は側面へ戻り、補助材と触媒は成功時のみ確率で消費されます。量と確率はタワー内のレシピに表示されます。"
+  },
   "FE.Storage.Expansion": {
     "enUS": "Matrix expansion",
     "zhCN": "矩阵扩容",

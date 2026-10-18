@@ -8,6 +8,10 @@ internal static class Program {
     private static int Main(string[] args) {
         try {
             string solutionDir = ResolveSolutionDir();
+            if (args.Length == 1 && args[0] == "--conversion-balance") {
+                Console.WriteLine(ConversionBalance.Write(solutionDir));
+                return 0;
+            }
             SimulatorSelfCheck.RunAll();
             GameDataSet dataSet = DataLoader.Load(solutionDir);
             var simulator = new VanillaCurveSimulator(dataSet);

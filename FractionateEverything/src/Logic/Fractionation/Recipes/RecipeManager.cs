@@ -75,7 +75,7 @@ public static class RecipeManager {
         FilterUnavailableRecipes();
         // 物品分类已完成，置换线索按主产物阶段开放；展示原型预注册不依赖此阶段。
         foreach (WorldviewRecipe recipe in WorldviewRecipes.Where(recipe => recipe.Kind == WorldviewRecipeKind.Replacement)) {
-            recipe.ResearchStage = Math.Max(1, GetMatrixStageIndex(itemToMatrix[recipe.PrimaryProductId]) + 1);
+            recipe.ResearchStage = Math.Max(recipe.ResearchStage, GetMatrixStageIndex(itemToMatrix[recipe.PrimaryProductId]) + 1);
         }
         ResearchManager.BuildResearchCatalog();
         AddAnalysisDirections();
@@ -328,22 +328,18 @@ public static class RecipeManager {
     }
 
     private static void AddReplacementRecipes() {
-        AddRecipe(new WorldviewRecipe("conversion:fuel-hydrogen-deuterium", 30301,
-            "液氢燃料棒重氢置换".Translate(), ERecipe.AdvancedConversion, WorldviewRecipeKind.Replacement, 0.08f,
-            [new(I液氢燃料棒, 1), new(I重氢, 10)],
-            [new(I氘核燃料棒, 1f), new(I氢, 5f, true)]));
-        AddRecipe(new WorldviewRecipe("conversion:fuel-deuterium-antimatter", 30302,
-            "氘核燃料棒反物质置换".Translate(), ERecipe.AdvancedConversion, WorldviewRecipeKind.Replacement, 0.08f,
-            [new(I氘核燃料棒, 1), new(I反物质, 2), new(I湮灭约束球, 1)],
-            [new(I反物质燃料棒, 1f), new(I重氢, 10f, true)]));
-        AddRecipe(new WorldviewRecipe("conversion:mining-drill", 30303,
-            "采矿机重构为大型采矿机".Translate(), ERecipe.AdvancedConversion, WorldviewRecipeKind.Replacement, 0.08f,
-            [new(I采矿机, 1), new(I处理器, 1)],
-            [new(I大型采矿机, 1f), new(I齿轮, 2f, true)]));
-        AddRecipe(new WorldviewRecipe("conversion:smelter", 30304,
-            "电弧熔炉重构为位面熔炉".Translate(), ERecipe.AdvancedConversion, WorldviewRecipeKind.Replacement, 0.08f,
-            [new(I电弧熔炉, 1), new(I卡西米尔晶体, 1)],
-            [new(I位面熔炉, 1f), new(I磁线圈, 2f, true)]));
+        foreach (ConversionSpec spec in ConversionSpec.CreateAll()) {
+            if (spec.Inputs.Any(input => !LDB.items.Exist(input.Item))
+                || spec.Outputs.Any(output => !LDB.items.Exist(output.Item))) { continue; }
+            string name = string.Format("FE.Conversion.PairName".Translate(),
+                LDB.items.Select(spec.Inputs[0].Item).name, LDB.items.Select(spec.Outputs[0].Item).name);
+            AddRecipe(new WorldviewRecipe(spec.Key, spec.Id, name, ERecipe.AdvancedConversion,
+                WorldviewRecipeKind.Replacement, ConversionSpec.Success,
+                spec.Inputs.Select(input => new WorldviewRecipeInput(input.Item, input.Count, input.Consume)).ToArray(),
+                spec.Outputs.Select(output => new WorldviewRecipeOutput(output.Item, output.Count, output.Recovery)).ToArray()) {
+                ResearchStage = spec.Stage,
+            });
+        }
     }
 
     private static void AddRecipeIndex(Dictionary<int, List<WorldviewRecipe>> index, int itemId,

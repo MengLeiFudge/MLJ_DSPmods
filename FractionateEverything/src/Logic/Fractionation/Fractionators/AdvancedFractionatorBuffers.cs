@@ -18,10 +18,10 @@ public static partial class AdvancedFractionatorRuntime {
     /// <summary>读取一种反应物的独立容量；配方无关物只经过流动输出。</summary>
     /// <param name="recipe">当前选择的配方。</param>
     /// <param name="itemId">待接收或显示的物品。</param>
-    /// <returns>主料使用40堆件数，催化剂使用固定储备；无关物为0。</returns>
+    /// <returns>主料和辅料使用40堆件数；催化剂保留至少一轮且不低于5件；无关物为0。</returns>
     public static int GetInputCapacity(WorldviewRecipe recipe, int itemId) {
         if (recipe == null || !recipe.TryGetInput(itemId, out WorldviewRecipeInput input)) { return 0; }
-        return input.ConsumeProbability < 0.9999f ? CatalystCapacity : InputCapacity;
+        return input.ConsumeProbability < 0.1f ? Math.Max(CatalystCapacity, input.Count) : InputCapacity;
     }
 
     /// <summary>读取一种主料满倍率下的经过件数/秒；运行和界面共用真实平均堆叠。</summary>

@@ -1013,6 +1013,8 @@ public static partial class Utils {
     internal const int RFE高级繁育展示起始 = 1075;
     /// <summary>高级转化展示配方1078～1081，对应稳定运行身份30301～30304。</summary>
     internal const int RFE高级转化展示起始 = 1078;
+    /// <summary>高级转化扩展展示配方1100～1112，对应稳定身份30305～30317。</summary>
+    internal const int RFE高级转化扩展展示起始 = 1100;
 
     internal const int T戴森球计划 = 1;
     internal const int T电磁学 = 1001;

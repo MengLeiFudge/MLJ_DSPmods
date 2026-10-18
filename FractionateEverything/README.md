@@ -29,13 +29,13 @@ The starting relic appears in the birth hemisphere, away from dark-fog bases. Re
 | 基础解析塔 / Basic Analysis | 解析线索指定样本，失败回流；持续投入科学矩阵可扩充亚空间 |
 | 高级矿物塔 / Advanced Mineral | 使用普通矿物与珍奇催化剂增殖资源 |
 | 高级交互塔 / Advanced Interaction | 培育高级塔，以塔体模板繁育原胚 |
-| 高级转化塔 / Advanced Conversion | 置换指定燃料或机器，并回收部分部件 |
+| 高级转化塔 / Advanced Conversion | 升级机器、置换燃料、配平中间材料，重构黑雾材料 |
 
 基础塔独立制造、接入电网，正面接口还能上传到亚空间。高级塔在窗口选择已解析配方，使用矩阵作为营养。正常产物和失败物等待当前集装规格输出；主消耗物不足一轮后释放尾料，剩余催化剂不会让尾料永久滞留。
 
-矩阵越高级，每件营养越多，处理速度也越高。生命塔工作和待机都会消耗营养；断粮后逐渐损失耐久，充分供养可以恢复。无人机不能维修生命塔，主动拆除返还缓存，损毁则丢失缓存。每类缓存按20堆计算，实际件数随全局堆叠变化。
+所有可估值的矩阵（包括黑雾及模组矩阵）都能供养生命塔，价值越高，每件营养越多、处理越快。工作和待机都会消耗营养；断粮损失耐久，充分供养可恢复。无人机不能维修生命塔，主动拆除返还缓存，损毁丢失缓存。基础输入按20堆、高级主料及辅料按40堆、流出及产物按5堆设置接收阈值；达到阈值才停收，本次完整货物或批次允许越过。
 
-Basic towers use electricity. Advanced towers consume matrices as nutrition and must be kept fed. Dismantling returns cached items; destruction does not. Buffers hold twenty current cargo stacks.
+Basic towers use electricity. Advanced towers consume any supported matrix as nutrition, including Dark Fog matrices. Dismantling returns cached items; destruction does not. Buffers use admission thresholds: a complete incoming stack or reaction batch may exceed a threshold before further processing stops.
 
 ## 研究与源点 Research and Memory
 
@@ -64,9 +64,9 @@ Silent relics have fixed locations and open in layers. Dynamic broadcasts contin
 
 ## 亚空间与成长 Subspace and Progression
 
-亚空间是跨星球共享库存，每种物品独立计容量。低价原料按价值获得更大额度，铁矿等普通原料初始可存10000件；建筑和未知估值物品保留10组基础额度。仓储页显示全局容量倍率，鼠标悬停物品可查看其库存和容量。普通上传满仓拒收，探索奖励可超额且仍能提取。
+亚空间是跨星球共享库存，每种物品独立计容量，物品价值只有一套。仓储页悬停物品可查看库存和容量。手动上传、整理与地面回收允许超存实体；基础塔与交互站无限上传的超额物料折为永久扩容积累，不能兑回物品。有限上传同时受容量和上传目标约束，满即停；探索奖励允许超容。
 
-向已供电的基础解析塔侧面持续投入科学矩阵，即可永久扩容。全部塔共享供料，每秒最多使用一件，优先高档矩阵，每档最多预存60件；剩余输入保留增产点回流。蓝至白效率依次为1、2、4、8、16、32倍，容量越大增长越慢；多塔与集装只改善供料稳定性，停供不丢失已有容量。
+向已供电的基础解析塔持续投入主线矩阵即可永久扩容。各档同时工作、独立累积，效果各不相同，积累越多边际增长越慢；多塔共享同档供料，停供不缩水。仓储页固定矩阵图标分别显示“生效中”，问号说明并行关系，不公开增长倍率或速率。
 
 手动存取和基础塔正面上传无额外耗能。行星/星际物流交互站自动存取，保留槽位模式、阈值、增产点、蓝图与复制粘贴；按物品价值和实际搬运量消耗站内电量。
 
@@ -74,15 +74,17 @@ Silent relics have fixed locations and open in layers. Dynamic broadcasts contin
 
 探索常规十级完成后开放终极探索任务；亚空间容量达到初始的35倍后开放终极仓储任务。恢复中继或空间锚点，分批明确交付2400源点，再连接最终核心；任务直接授予终极科技，无矩阵研究费用。终极探索持续补足五个普通广播，终极仓储解除玩法容量限制。
 
-Each item has its own subspace capacity, with larger allowances for inexpensive materials. Feed science matrices into the side of a powered Basic Analysis Tower for permanent expansion. All towers share a limit of one matrix per second, prioritizing higher tiers; larger storage expands more slowly. Hover over an item on the storage page to see its capacity. Exploration level ten and a storage multiplier of 35 unlock their respective ultimate quests. Each requires a 2,400-Memory delivery. Ultimate exploration replenishes five ordinary broadcasts; ultimate storage removes the gameplay capacity limit.
+Each item has its own capacity. Manual deposits may exceed it; excess automatic deliveries from basic towers and unlimited-upload stations irreversibly contribute to expansion. Limited uploads stop at the lower of capacity and their target. All supplied science-matrix tiers expand storage independently and simultaneously. Icons show which tiers are active; hovering over an item still shows its inventory and capacity.
 
 ## 高级配方 Advanced Recipes
 
-高级配方基础成功率20%，失败主消耗物回流，催化剂只在成功轮概率消耗。目录包含珍奇增殖、三种塔的培育与繁育、两种燃料置换和采矿机/熔炉重构。
+高级配方基础成功率8%，失败主料完整回流，辅料和催化剂仅在成功轮概率消耗。转化配方使用2～3种物料：主料承担转换，辅料持续配套，低损耗催化剂可长期维持。燃料副产物可以回喂，设备升级消耗配套材料，中间材料往返用于配平。无合法物料来源的配方及其解析方向不会出现。
 
 单极磁石基础配方使用多种矿物及少量单极催化，不消耗源点。白糖阶段还有独立的源点简化变体；两条路线可以并存。
 
-Advanced recipes include rare-resource catalysis, tower cultivation and breeding, fuel replacement and machine reconstruction. The mineral-based monopolar-magnet recipe and its later Memory-consuming variant coexist.
+黑雾链恢复能量碎片↔黑雾矩阵↔物质重组器↔硅基神经元↔负熵奇点↔核心素的相邻转换。高能石墨、钛块和少量处理器可制取能量碎片，使没有黑雾战斗的存档也有稳定入口。往返仍消耗催化剂和营养，不能无成本复制材料。
+
+Advanced conversions use primary materials, auxiliaries and low-loss catalysts. Fuel byproducts can feed earlier stages; equipment upgrades consume supporting materials. The adjacent Dark Fog material chain has an industrial entry recipe, so combat is not required. Ordinary science matrices do not form a conversion chain.
 
 ## 操作 Controls
 
