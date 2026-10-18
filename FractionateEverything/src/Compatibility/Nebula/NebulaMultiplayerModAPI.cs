@@ -235,6 +235,7 @@ public class CenterItemChangePacketProcessor : BasePacketProcessor<CenterItemCha
         int itemId = r.ReadInt32();
         int count = r.ReadInt32();
         int inc = r.ReadInt32();
+        if (IsHost && count < 0) { return; } // 远端提取必须先走主机授权事务。
         CenterItemChangeApply.Apply(itemId, count, inc);
         if (NebulaModAPI.IsMultiplayerActive && IsHost) {
             NebulaModAPI.MultiplayerSession.Network.SendPacketExclude(packet, conn);
@@ -253,6 +254,7 @@ public class CenterItemChangeLongPacketProcessor : BasePacketProcessor<CenterIte
         int itemId = r.ReadInt32();
         long count = r.ReadInt64();
         long inc = r.ReadInt64();
+        if (IsHost && count < 0) { return; } // 远端提取必须先走主机授权事务。
         CenterItemChangeApply.Apply(itemId, count, inc);
         if (NebulaModAPI.IsMultiplayerActive && IsHost) {
             NebulaModAPI.MultiplayerSession.Network.SendPacketExclude(packet, conn);

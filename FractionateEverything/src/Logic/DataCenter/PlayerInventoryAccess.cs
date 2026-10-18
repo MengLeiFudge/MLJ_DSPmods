@@ -1,4 +1,5 @@
 ﻿using FE.Logic.DataCenter.Patches;
+using FE.Compatibility.Nebula;
 using FE.UI.MainPanel.Setting;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.DataCenterInventory;
@@ -104,7 +105,7 @@ public static class PlayerInventoryAccess {
     /// </summary>
     public static long GetItemTotalCount(int itemId) {
         long dataCenterCount = PackageAccessRules.TechItemInteractionUnlocked
-            ? GetModDataItemCount(itemId, out _)
+            ? NebulaMultiplayerModAPI.IsClient ? MaterialLeases.Count(itemId, out _) : GetAvailableItemCount(itemId, out _)
             : 0;
         long total = AddNonNegativeSaturated(dataCenterCount, GetPackageItemCount(itemId, out _));
         return AddNonNegativeSaturated(total, GetDeliveryPackageItemCount(itemId, out _));
@@ -117,7 +118,7 @@ public static class PlayerInventoryAccess {
         long dataCenterCount = 0;
         long inc1 = 0;
         if (PackageAccessRules.TechItemInteractionUnlocked) {
-            dataCenterCount = GetModDataItemCount(itemId, out inc1);
+            dataCenterCount = NebulaMultiplayerModAPI.IsClient ? MaterialLeases.Count(itemId, out inc1) : GetAvailableItemCount(itemId, out inc1);
         }
         long packageCount = GetPackageItemCount(itemId, out int inc2);
         long deliveryCount = GetDeliveryPackageItemCount(itemId, out int inc3);
@@ -212,6 +213,7 @@ public static class PlayerInventoryAccess {
         if (PackageAccessRules.ArchitectMode && takeProto.BuildMode != 0) {
             return true;
         }
+        MaterialLeases.Ensure(itemId, count);
         if (GetItemTotalCount(itemId) < count) {
             if (showTakeFailMessage) {
                 UIMessageBox.Show("提示".Translate(),

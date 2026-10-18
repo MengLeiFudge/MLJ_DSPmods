@@ -458,6 +458,8 @@ public static partial class Utils {
     internal const int IFE转化塔 = IFE高级转化塔;
     internal const int IFE行星内物流交互站 = 8131;
     internal const int IFE星际物流交互站 = 8132;
+    /// <summary>独立供电的共享装配产能节点。</summary>
+    internal const int IFE亚空间装配节点 = 8133;
     internal const int IFE残片 = 8161;
     /// <summary>旧六阶段解析数据 ID，当前版本不再注册为资源。</summary>
     internal const int IFE电磁解析数据 = 8162;
@@ -635,6 +637,7 @@ public static partial class Utils {
     internal const int MFE基础矿物塔 = 653;
     internal const int MFE高级转化塔 = 654;
     internal const int MFE高级矿物塔 = 655;
+    internal const int MFE亚空间装配节点 = 656;
     internal const int MFE培养塔 = MFE高级交互塔;
     internal const int MFE解析塔 = MFE基础解析塔;
     internal const int MFE复制塔 = MFE基础矿物塔;
@@ -1017,6 +1020,7 @@ public static partial class Utils {
     internal const int RFE高级转化展示起始 = 1078;
     /// <summary>高级转化扩展展示配方1100～1112，对应稳定身份30305～30317。</summary>
     internal const int RFE高级转化扩展展示起始 = 1100;
+    internal const int RFE亚空间装配节点 = 1113;
 
     internal const int T戴森球计划 = 1;
     internal const int T电磁学 = 1001;

@@ -75,6 +75,11 @@ The first relic uses a graphical signal bar scaled to the planet's radius. Later
 
 手动存取和基础塔正面上传无额外耗能。行星/星际物流交互站自动存取，保留槽位模式、阈值、增产点、蓝图与复制粘贴；按物品价值和实际搬运量消耗站内电量。
 
+仓储页右上“装配”可下单，需求树显示需要、库存有、将制造与缺料，每行可限定只取库存或切换已解锁工艺。展开会预留实际材料，关闭释放草稿；确认订单后，建造并供电亚空间装配节点即可生产。节点在处理器科技解锁，每座满电提供一倍工艺速度，工作1.2MW、待机60kW。成品直接入库，缺料、断电或满仓时保留订单等待；取消仅退还当前未完成工艺的输入。
+联机取物先由主机划拨额度，客户端建造与机甲制造预检查会自动请求缺口；首次申请有一次网络往返，确认后可直接使用亚空间材料，不必先转入背包。手动提取仍遵循取到手中或背包的设置，未用额度自动返还共享库存。
+
+Use Assembly at the warehouse's top right to preview a demand tree and reserve real materials. Each row can use stock only or choose an unlocked process. Powered assembly nodes provide capacity; missing materials, power or storage space pause the order. Products enter shared storage directly. Multiplayer withdrawals use host-granted material allowances; construction and replicator checks request them automatically. The first request needs a network round trip, without requiring backpack space. Unused allowances return to shared storage.
+
 堆叠统一从原版集装研究衔接到FE的8/12/16/20层。自动集装机或集装分拣器的前置科技提供四层起点；数量升级和双向运输仍需自行研究，不会因解锁白爪自动完成其他科技。FE八层需要3315集装分拣器改良、3803运输站集装物流及信息矩阵科技。3311～3315、3801～3803调整到黄糖阶段费用；FE成长材料读取当前科技树，星环新增矩阵会按其对应阶段纳入。白糖两次堆叠升级合并在一个节点，最终保持20层。
 
 探索常规十级完成后开放终极探索任务；亚空间容量达到初始的35倍后开放终极仓储任务。恢复中继或空间锚点，带着机甲背包里的源点进入回收范围，自动分批交付2400源点（不扣亚空间），再连接最终核心；任务直接授予终极科技，无矩阵研究费用。终极探索持续补足两个普通广播，终极仓储解除玩法容量限制。

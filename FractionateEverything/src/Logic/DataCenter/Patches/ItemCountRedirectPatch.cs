@@ -5,6 +5,7 @@ using System.Reflection.Emit;
 using BuildBarTool;
 using CommonAPI.Patches;
 using FE.Compatibility.Mods;
+using FE.Compatibility.Nebula;
 using HarmonyLib;
 using static FE.Utils.Utils;
 
@@ -14,6 +15,7 @@ namespace FE.Logic.DataCenter.Patches;
 /// 玩家物品数量查询重定向到统一库存访问的补丁。
 /// </summary>
 public static class ItemCountRedirectPatch {
+    [ThreadStatic] private static bool requestingMaterials;
     //StorageComponent获取物品数目方法一览：
     //public int GetItemCount(int itemId)：player.package多处调用此方法
     //public int GetItemCount(int itemId, out int inc)：player.package不调用此方法
@@ -23,6 +25,16 @@ public static class ItemCountRedirectPatch {
     /// </summary>
     [HarmonyPatch]
     private static class GetItemCountPatch {
+        // 仅实际补给/点击操作请求取物，浏览建造目录与物品提示不搬运库存。
+        [HarmonyPrefix]
+        private static void Begin(MethodBase __originalMethod, out bool __state) {
+            __state = requestingMaterials;
+            requestingMaterials |= __originalMethod.Name is "EntityAutoReplenishIfNeeded" or "StationAutoReplenishIfNeeded"
+                or "ReplenishItems" or "OnHandFillAmmoButtonClick" or "OnChildButtonClick";
+        }
+        [HarmonyFinalizer]
+        private static void End(bool __state) => requestingMaterials = __state;
+
         [HarmonyTargetMethods]
         private static IEnumerable<MethodBase> TargetMethods() {
             yield return AccessTools.Method(typeof(BuildTool_Reform), nameof(BuildTool_Reform.DoFlattenExecute));
@@ -91,6 +103,7 @@ public static class ItemCountRedirectPatch {
         if (PackageAccessRules.ArchitectMode && item.BuildMode != 0) {
             return 999;
         }
+        if (requestingMaterials) { MaterialLeases.Ensure(itemId, Math.Max(1, item.StackSize)); }
         return (int)Math.Min(int.MaxValue, PlayerInventoryAccess.GetItemTotalCount(itemId));
     }
 

@@ -2,6 +2,7 @@
 using System.Reflection;
 using BepInEx.Bootstrap;
 using FE.Logic.DataCenter;
+using FE.Compatibility.Nebula;
 using FE.UI.MainPanel.Setting;
 using HarmonyLib;
 using static FE.Logic.DataCenter.DataCenterInventory;
@@ -55,7 +56,11 @@ public static class PackageLogistic {
             __result = false;
             return false;
         }
-        long itemTotalCount = GetModDataItemCount(itemId);
+        if (NebulaMultiplayerModAPI.IsClient) {
+            MaterialLeases.Ensure(itemId, 1);
+            __result = PlayerInventoryAccess.GetItemTotalCount(itemId) > 0; return false;
+        }
+        long itemTotalCount = GetAvailableItemCount(itemId, out _);
         __result = itemTotalCount > 0;
         return false;
     }
@@ -84,6 +89,11 @@ public static class PackageLogistic {
         if (itemId < 0 || count < 1) {
             __result = [0, 0];
             return false;
+        }
+        if (NebulaMultiplayerModAPI.IsClient) {
+            MaterialLeases.Ensure(itemId, count);
+            GameMain.mainPlayer.package.TakeItemInternal(itemId, count, out int received, out int points);
+            __result = [received, points]; return false;
         }
         int expectCount = TakeItemFromModData(itemId, count, out int expectInc, manual: true);
         __result = [expectCount, expectInc];

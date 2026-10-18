@@ -27,6 +27,9 @@ public static class MemoryDeliverySync {
     private static PropertyInfo mechaDataProperty;
     private static bool unavailableShown;
 
+    /// <summary>交付等待期间暂缓把取料额度转换成物品，避免旧背包快照遗漏新领取物料。</summary>
+    internal static bool ClientBusy => pending != null;
+
     /// <summary>同星图不同创建时间仍是不同世界，切档不能重放旧交付。</summary>
     private static string WorldId => GameMain.data?.gameDesc is GameDesc game
         ? game.seedKey64.ToString(CultureInfo.InvariantCulture) + ":" + game.creationTime.Ticks.ToString(CultureInfo.InvariantCulture)
@@ -34,6 +37,7 @@ public static class MemoryDeliverySync {
 
     /// <summary>只拦截事务等待期间的远端背包整包覆盖，不改动Nebula的磁盘格式。</summary>
     public static void Initialize() {
+        MaterialLeases.Initialize();
         if (guardInstalled) { return; }
         Type type = AccessTools.TypeByName("NebulaNetwork.PacketProcessors.Players.PlayerMechaDataProcessor");
         MethodInfo method = type == null ? null : AccessTools.DeclaredMethod(type, "ProcessPacket");
@@ -60,11 +64,13 @@ public static class MemoryDeliverySync {
     /// <summary>会话结束后远端背包由Nebula持久状态恢复，不对未知结算结果盲目退款。</summary>
     public static void ResetSession() {
         AwaitingConfirmation.Clear();
+        MaterialLeases.EndSession();
         pending = null; lastConfirmed = null; lastSendTick = 0; unavailableShown = false;
     }
 
     /// <summary>等待回执时沿用相同请求重发，不能重新扣背包。</summary>
     public static bool PumpPending() {
+        MaterialLeases.Pump();
         if (!NebulaMultiplayerModAPI.IsClient) {
             foreach (INebulaConnection connection in AwaitingConfirmation.Keys.Where(c => !c.IsAlive).ToArray()) {
                 AwaitingConfirmation.Remove(connection);

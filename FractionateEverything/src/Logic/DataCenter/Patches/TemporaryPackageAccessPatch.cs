@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
+using FE.Compatibility.Nebula;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.DataCenter.Patches;
@@ -84,7 +85,8 @@ public static class TemporaryPackageAccessPatch {
         if (IsArchitectModeBuilding(itemId)) {
             return count;
         }
-        count = (int)Math.Min(count, PlayerInventoryAccess.GetItemTotalCount(itemId) - testPackageUsedCounts[itemId]);
+        MaterialLeases.Ensure(itemId, (int)Math.Min(1000000L, (long)count + testPackageUsedCounts[itemId]));
+        count = (int)Math.Max(0, Math.Min(count, PlayerInventoryAccess.GetItemTotalCount(itemId) - testPackageUsedCounts[itemId]));
         testPackageUsedCounts[itemId] += count;
         return count;
     }
@@ -196,7 +198,8 @@ public static class TemporaryPackageAccessPatch {
         if (IsArchitectModeBuilding(itemId)) {
             return;
         }
-        count = (int)Math.Min(count, PlayerInventoryAccess.GetItemTotalCount(itemId) - testPackageUsedCounts[itemId]);
+        MaterialLeases.Ensure(itemId, (int)Math.Min(1000000L, (long)count + testPackageUsedCounts[itemId]));
+        count = (int)Math.Max(0, Math.Min(count, PlayerInventoryAccess.GetItemTotalCount(itemId) - testPackageUsedCounts[itemId]));
         testPackageUsedCounts[itemId] += count;
         if (count == 0) {
             itemId = 0;
@@ -253,7 +256,8 @@ public static class TemporaryPackageAccessPatch {
             incTable[0] = count;
             return;
         }
-        count = (int)Math.Min(count, PlayerInventoryAccess.GetItemTotalCount(itemId) - testPackageUsedCounts[itemId]);
+        MaterialLeases.Ensure(itemId, (int)Math.Min(1000000L, (long)count + testPackageUsedCounts[itemId]));
+        count = (int)Math.Max(0, Math.Min(count, PlayerInventoryAccess.GetItemTotalCount(itemId) - testPackageUsedCounts[itemId]));
         if (count <= 0) {
             return;
         }

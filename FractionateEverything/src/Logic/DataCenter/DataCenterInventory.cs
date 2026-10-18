@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using FE.Compatibility.Nebula;
 using FE.Logic.Civilization;
+using FE.Logic.DataCenter.Assembly;
 using FE.Logic.Fractionation.Fractionators;
 using FE.UI.MainPanel.Setting;
 using NebulaAPI;
@@ -44,7 +45,9 @@ public static class DataCenterInventory {
                 ("ManualInteractionStats", bw => {
                     bw.Write(Interlocked.Read(ref ManualExtractCount));
                     bw.Write(Interlocked.Read(ref ManualUploadCount));
-                })
+                }),
+                ("Assembly", AssemblyManager.Export),
+                ("MaterialLeases", MaterialLeases.Export)
             );
         }
     }
@@ -52,6 +55,8 @@ public static class DataCenterInventory {
     public static void Import(BinaryReader r) {
         lock (centerItemCount) {
             SubspaceExpansion.IntoOtherSave();
+            AssemblyManager.IntoOtherSave();
+            MaterialLeases.BeforeImport();
             r.ReadBlocks(
                 ("CenterItems", br => {
                     int size = br.ReadInt32();
@@ -71,7 +76,9 @@ public static class DataCenterInventory {
                 ("ManualInteractionStats", br => {
                     ManualExtractCount = Math.Max(0L, br.ReadInt64());
                     ManualUploadCount = Math.Max(0L, br.ReadInt64());
-                })
+                }),
+                ("Assembly", AssemblyManager.Import),
+                ("MaterialLeases", MaterialLeases.Import)
             );
             // FE 自有 DataCenter 余额不经 Legacy 物理引用迁移；旧槽位由后续自有状态叶处理。
             NormalizeCurrencyPackagesLocked();
@@ -114,6 +121,8 @@ public static class DataCenterInventory {
             ManualExtractCount = 0;
             ManualUploadCount = 0;
             SubspaceExpansion.IntoOtherSave();
+            AssemblyManager.IntoOtherSave();
+            MaterialLeases.ClearWorld();
             snapshotDirty = false;
         }
     }
@@ -163,6 +172,7 @@ public static class DataCenterInventory {
         int count = leftClick
             ? item.StackSize * Miscellaneous.LeftClickTakeCount
             : item.StackSize * Miscellaneous.RightClickTakeCount;
+        if (NebulaMultiplayerModAPI.IsClient && itemId != I沙土) { MaterialLeases.RequestManual(itemId, count); return; }
         int inc;
         lock (centerItemCount) {
             count = TakeItemFromModData(itemId, count, out inc, true);
@@ -171,6 +181,12 @@ public static class DataCenterInventory {
             return;
         }
         RecordManualExtract();
+        PlaceExtractedItem(itemId, count, inc);
+    }
+
+    /// <summary>已实际取得的物品按玩家提取偏好放入手中或背包；不再改动共享库存。</summary>
+    internal static void PlaceExtractedItem(int itemId, int count, int inc) {
+        if (count <= 0) { return; }
         if (itemId == I沙土) {
             if (GameMain.mainPlayer.inhandItemId != I沙土) {
                 GameMain.mainPlayer.ThrowHandItems();
@@ -324,9 +340,11 @@ public static class DataCenterInventory {
     /// <summary>
     /// 返回并清除亚空间待同步标记。
     /// </summary>
+    internal static void MarkSnapshotDirty() { lock (centerItemCount) { snapshotDirty = true; } }
+
     public static bool TakeSnapshotDirty() {
         lock (centerItemCount) {
-            bool dirty = snapshotDirty | SubspaceExpansion.TakeSnapshotDirty();
+            bool dirty = snapshotDirty | SubspaceExpansion.TakeSnapshotDirty() | AssemblyManager.TakeDirty();
             snapshotDirty = false;
             return dirty;
         }
@@ -398,7 +416,25 @@ public static class DataCenterInventory {
         }
     }
 
+    /// <summary>可供取物的自由库存；装配预留仍留在仓储中，但不再计入可用材料。</summary>
+    public static long GetAvailableItemCount(int itemId, out long inc) {
+        inc = 0;
+        if (itemId == I沙土) { return GetModDataItemCount(itemId, out inc); }
+        if (itemId <= 0 || itemId >= centerItemCount.Length) { return 0; }
+        lock (centerItemCount) {
+            long free = AssemblyManager.FreeCount(itemId);
+            if (free == 0) { return 0; }
+            long total = centerItemCount[itemId], points = centerItemInc[itemId];
+            inc = points / total >= 4 ? split_inc(ref total, ref points, free)
+                : Math.Min(points, SaturatingMulNonNegative(free, 4));
+            return free;
+        }
+    }
+
     public static int TakeItemFromModData(int itemId, int count, out int inc, bool manual = false) {
+        if (manual && NebulaMultiplayerModAPI.IsClient && itemId != I沙土) {
+            MaterialLeases.Ensure(itemId, count); return MaterialLeases.Take(itemId, count, out inc);
+        }
         long cappedCount = Math.Min(count, MaxIntTakeCountByInc);
         long takeCount = TakeItemFromModDataInternal(itemId, cappedCount, out long takeInc);
         inc = (int)takeInc;
@@ -410,6 +446,10 @@ public static class DataCenterInventory {
     }
 
     public static long TakeItemFromModData(int itemId, long count, out long inc, bool manual = false) {
+        if (manual && NebulaMultiplayerModAPI.IsClient && itemId != I沙土) {
+            int wanted = (int)Math.Min(1000000, Math.Max(0, count)); MaterialLeases.Ensure(itemId, wanted);
+            int taken = MaterialLeases.Take(itemId, wanted, out int points); inc = points; return taken;
+        }
         long cappedCount = Math.Min(count, MaxLongTakeCountByInc);
         long takeCount = TakeItemFromModDataInternal(itemId, cappedCount, out inc);
         if (itemId != I沙土 && NebulaModAPI.IsMultiplayerActive && manual && takeCount > 0) {
@@ -440,7 +480,7 @@ public static class DataCenterInventory {
             return 0;
         }
         lock (centerItemCount) {
-            count = Math.Min(count, centerItemCount[itemId]);
+            count = Math.Min(count, AssemblyManager.FreeCount(itemId));
             if (count <= 0) {
                 return 0;
             }
