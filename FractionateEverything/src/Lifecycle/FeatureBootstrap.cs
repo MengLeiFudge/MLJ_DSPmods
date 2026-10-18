@@ -51,6 +51,7 @@ public static class FeatureBootstrap {
         ProcessManager.Init();
         // 计算物品价值
         ItemManager.CalculateItemValues();
+        MatrixNutrition.Initialize();
         // 将物品分类到各个矩阵层级中
         ItemManager.ClassifyItemsToMatrix();
         // 此时尚无玩家；必须先设置原型生命值与能耗，再由存档创建 SkillSystem 的生命值缓存。

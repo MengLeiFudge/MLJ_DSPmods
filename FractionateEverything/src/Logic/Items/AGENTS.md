@@ -8,6 +8,7 @@
 Items/
 ├── ItemManager.cs    # Frag、Memory、通用原胚、统一价值、矩阵和needs
 ├── MineralValues.cs  # 主题矿脉权重估值，不生成银河
+├── MatrixNutrition.cs # 统一价值驱动的矩阵食物目录、营养与速度
 └── Presentation/     # 图标集、物品/信号选择器与标签选择器 patch
 ```
 

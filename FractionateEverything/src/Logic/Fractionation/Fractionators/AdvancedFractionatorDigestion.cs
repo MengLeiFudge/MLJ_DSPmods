@@ -2,7 +2,7 @@
 using FE.Compatibility.Nebula;
 using FE.Logic.Civilization;
 using FE.Logic.Fractionation.Recipes;
-using static FE.Utils.Utils;
+using FE.Logic.Items;
 
 namespace FE.Logic.Fractionation.Fractionators;
 
@@ -10,15 +10,10 @@ namespace FE.Logic.Fractionation.Fractionators;
 public static partial class AdvancedFractionatorRuntime {
     /// <summary>以原版满带30件/秒的一倍单堆主料速率为基准，待机消耗其二十分之一。</summary>
     private const double IdleFoodEnergyPerSecond = 30d / 20d;
-    private static readonly double[] FoodShare = [0.16d, 0.11d, 0.07d, 0.04d, 0.02d, 0.01d];
-    private static readonly float[] FoodSpeed = [1f, 1.4f, 1.8f, 2.2f, 2.6f, 3f];
 
-    /// <summary>按矩阵档位和单件增产点计算点燃能量，不受Productive标志影响。</summary>
-    public static double GetFoodEnergy(int itemId, int inc) {
-        int tier = itemId - I电磁矩阵;
-        if (tier < 0 || tier >= FoodShare.Length) { return 0d; }
-        return (1d / FoodShare[tier] - 1d) * (1d + Cargo.incTableMilli[Math.Max(0, Math.Min(10, inc))]);
-    }
+    /// <summary>按统一矩阵估值和单件增产点计算点燃能量，不受Productive标志影响。</summary>
+    public static double GetFoodEnergy(int itemId, int inc) => MatrixNutrition.GetEnergy(itemId)
+        * (1d + Cargo.incTableMilli[Math.Max(0, Math.Min(10, inc))]);
 
     /// <summary>供进度条显示当前件的剩余比例；调用方须持有实例锁。</summary>
     public static float GetDigestionProgress(AdvancedFractionatorState state) {
@@ -29,10 +24,8 @@ public static partial class AdvancedFractionatorRuntime {
     /// <summary>读取当前正在消化的矩阵速度倍率，供运行器与窗口共用。</summary>
     /// <param name="state">调用方已持有实例锁的消化状态。</param>
     /// <returns>当前矩阵对应的速度；没有消化物时为1。</returns>
-    public static float GetFoodSpeed(AdvancedFractionatorState state) {
-        int tier = state.DigestingItemId - I电磁矩阵;
-        return state.DigestingEnergy > 0d && tier >= 0 && tier < FoodSpeed.Length ? FoodSpeed[tier] : 1f;
-    }
+    public static float GetFoodSpeed(AdvancedFractionatorState state) => state.DigestingEnergy > 0d
+        ? MatrixNutrition.GetSpeed(state.DigestingItemId) : 1f;
 
     /// <summary>读取当前矩阵的预计消耗与工作配比，不将失败回流计入供养消耗。</summary>
     /// <param name="state">调用方已持有实例锁的消化与运行状态。</param>
@@ -55,22 +48,35 @@ public static partial class AdvancedFractionatorRuntime {
         return (consumption / energy, 1d / (1d + energy));
     }
 
-    /// <summary>只在空槽点燃一件；有指定同种备用时优先接续，旧档其他营养按层次逐种排空。</summary>
+    /// <summary>只在空槽点燃一件，同种备用优先；旧档残留多种时按营养价值选择。</summary>
     private static bool EnsureDigestingFood(AdvancedFractionatorState state, int[] consumeRegister, int preferredItemId = 0) {
         if (state.DigestingEnergy > 0d) { return true; }
-        for (int tier = FoodShare.Length - 1; tier >= 0; tier--) {
-            int itemId = GetCount(state.Foods, preferredItemId) > 0 ? preferredItemId : I电磁矩阵 + tier;
-            if (GetCount(state.Foods, itemId) <= 0) { continue; }
-            int inc = TakeCount(state.Foods, state.FoodInc, itemId, 1);
-            state.DigestingItemId = itemId;
-            state.DigestingInc = Math.Max(0, Math.Min(10, inc));
-            state.DigestingEnergy = GetFoodEnergy(itemId, state.DigestingInc);
-            state.DigestionVersion++;
-            state.SnapshotDirty = true;
-            lock (consumeRegister) { consumeRegister[itemId]++; }
-            return true;
+        int itemId = GetCount(state.Foods, preferredItemId) > 0 && IsFoodItem(preferredItemId)
+            ? preferredItemId : SelectReserveFood(state);
+        if (itemId == 0) { return false; }
+        int inc = TakeCount(state.Foods, state.FoodInc, itemId, 1);
+        state.DigestingItemId = itemId;
+        state.DigestingInc = Math.Max(0, Math.Min(10, inc));
+        state.DigestingEnergy = GetFoodEnergy(itemId, state.DigestingInc);
+        state.DigestionVersion++;
+        state.SnapshotDirty = true;
+        lock (consumeRegister) { consumeRegister[itemId]++; }
+        return true;
+    }
+
+    /// <summary>从真实备用库存选最高营养的有效矩阵，同价值按ID稳定排序。</summary>
+    private static int SelectReserveFood(AdvancedFractionatorState state) {
+        int selected = 0;
+        double energy = 0d;
+        foreach (var pair in state.Foods) {
+            if (pair.Value <= 0) { continue; }
+            double candidate = MatrixNutrition.GetEnergy(pair.Key);
+            if (candidate > energy || candidate > 0d && candidate == energy && pair.Key < selected) {
+                selected = pair.Key;
+                energy = candidate;
+            }
         }
-        return false;
+        return selected;
     }
 
     /// <summary>按实际消费逐件扣能量；耗尽后才换件，最后一件的余量不丢失，也不保存断粮欠账。</summary>

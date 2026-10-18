@@ -23,8 +23,8 @@ namespace FE.Compatibility.Nebula;
 /// </summary>
 public static class NebulaMultiplayerModAPI {
     public const string GUID = NebulaModAPI.API_GUID;
-    /// <summary>联机规则修订号；整批越阈值与同种供养要求两端一致，避免旧客户端裁剪合法库存。</summary>
-    public const int ProtocolVersion = 9;
+    /// <summary>联机规则修订号；统一估值、全矩阵营养与消化比例格式要求双方一致。</summary>
+    public const int ProtocolVersion = 10;
     public static bool Enable;
     public static Assembly assembly;
 

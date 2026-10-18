@@ -298,9 +298,10 @@ public static partial class AdvancedFractionatorRuntime {
                 float speed = GetFoodSpeed(state);
                 processingRate = (float)(GetBaseProcessingRate(state, recipe) * speed * durabilityEfficiency);
                 double progress = state.ProgressRemainder + (500d / 3d) * processingRate;
-                int wholeProgress = (int)progress;
+                double wholeProgress = Math.Floor(progress);
                 state.ProgressRemainder = progress - wholeProgress;
-                fractionator.progress = Math.Min(fractionator.progress + wholeProgress,
+                // 先以double限制累计进度再转整数，兼容高价值模组矩阵的速度。
+                fractionator.progress = (int)Math.Min(Math.Max(0, fractionator.progress) + wholeProgress,
                     ProgressPerRound * Math.Max(10, StackingManager.CurrentMaxStack * 2));
                 int rounds = Math.Min(fractionator.progress / ProgressPerRound, executableRounds);
                 if (rounds > 0) {
@@ -392,10 +393,7 @@ public static partial class AdvancedFractionatorRuntime {
         return true;
     }
 
-    private static bool IsFoodItem(int itemId) {
-        int tier = itemId - I电磁矩阵;
-        return tier >= 0 && tier < FoodShare.Length;
-    }
+    private static bool IsFoodItem(int itemId) => FE.Logic.Items.MatrixNutrition.IsFood(itemId);
 
     /// <summary>读取献祭增益后的成功概率，供结算与界面共用。</summary>
     /// <param name="recipe">当前生产配方。</param>
@@ -421,6 +419,14 @@ public static partial class AdvancedFractionatorRuntime {
         float successProbability = GetSuccessProbability(recipe, sacrificeBoost);
         int successCount = WorldviewRecipe.RollExpected(ref seed, rounds * successProbability);
         successCount = Math.Min(successCount, rounds);
+        // 先限制可支付的成功轮，再统一扣料和产出；未支付部分保留为失败回流。
+        foreach (WorldviewRecipeInput input in recipe.InputArray) {
+            if (input.ConsumeProbability >= 0.9999f) { continue; }
+            double perSuccess = input.Count * (double)GetInputConsumeProbability(input, buildingId);
+            if (perSuccess <= 0d) { continue; }
+            int stock = GetCount(state.Inputs, input.ItemId);
+            successCount = (int)Math.Min(successCount, Math.Floor(stock / perSuccess));
+        }
         int failedCount = rounds - successCount;
         int consumedMain = 0;
 
@@ -442,7 +448,7 @@ public static partial class AdvancedFractionatorRuntime {
             } else {
                 float probability = GetInputConsumeProbability(input, buildingId);
                 int consumed = WorldviewRecipe.RollExpected(ref seed,
-                    successCount * input.Count * Math.Max(0f, probability));
+                    successCount * (double)input.Count * Math.Max(0f, probability));
                 consumed = Math.Min(consumed, GetCount(state.Inputs, input.ItemId));
                 if (consumed > 0) {
                     TakeInput(state, input.ItemId, consumed);

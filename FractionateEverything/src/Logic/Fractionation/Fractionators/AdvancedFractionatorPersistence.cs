@@ -6,6 +6,8 @@ using System.Linq;
 using System.Threading;
 using FE.Logic.Enhancements.Stacking;
 using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Items;
+using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Fractionators;
 
@@ -24,7 +26,7 @@ public static partial class AdvancedFractionatorRuntime {
     /// <param name="writer">存档或加入时的完整快照。</param>
     public static void Export(BinaryWriter writer) {
         var pairs = States.OrderBy(pair => pair.Key.planetId).ThenBy(pair => pair.Key.fractionatorId).ToArray();
-        writer.Write(-3); // 版本3以独立消化物和double能量替代营养池。
+        writer.Write(-4); // 版本4保存当前消化件的剩余比例，估值变化不补满或丢失进度。
         writer.Write(pairs.Length);
         foreach (var pair in pairs) {
             lock (pair.Value) { WriteState(writer, pair.Key, pair.Value); }
@@ -47,7 +49,7 @@ public static partial class AdvancedFractionatorRuntime {
             writer.Write(key.planetId);
             writer.Write(key.fractionatorId);
         }
-        writer.Write(-3);
+        writer.Write(-4);
         writer.Write(changed.Length);
         foreach (var pair in changed) {
             lock (pair.Value) {
@@ -99,7 +101,7 @@ public static partial class AdvancedFractionatorRuntime {
     /// <param name="seen">完整快照的存活集合；增量及存档读取传 null。</param>
     private static void ReadStates(BinaryReader reader, HashSet<(int planetId, int fractionatorId)> seen) {
         int header = reader.ReadInt32();
-        bool hasDigestion = header == -3;
+        bool hasDigestion = header is -3 or -4;
         bool hasCargo = hasDigestion || header == -2;
         int count = hasCargo ? ReadStateCount(reader) : header;
         if (count < 0 || count > MaximumStateCount) {
@@ -120,9 +122,10 @@ public static partial class AdvancedFractionatorRuntime {
                     double energy = reader.ReadDouble();
                     int inc = Math.Max(0, Math.Min(10, reader.ReadInt32()));
                     double capacity = GetFoodEnergy(itemId, inc);
-                    if (capacity > 0d && !double.IsNaN(energy) && !double.IsInfinity(energy) && energy > 0d) {
+                    double oldCapacity = header == -4 ? 1d : GetLegacyFoodEnergy(itemId, inc);
+                    if (capacity > 0d && oldCapacity > 0d && !double.IsNaN(energy) && !double.IsInfinity(energy) && energy > 0d) {
                         state.DigestingItemId = itemId;
-                        state.DigestingEnergy = Math.Min(energy, capacity);
+                        state.DigestingEnergy = Math.Min(1d, energy / oldCapacity) * capacity;
                         state.DigestingInc = inc;
                         state.DigestionVersion++;
                     } else {
@@ -162,7 +165,8 @@ public static partial class AdvancedFractionatorRuntime {
                         }
                     }
                     double rate = reader.ReadDouble();
-                    state.ProcessingRate = double.IsNaN(rate) || double.IsInfinity(rate) ? 0d : Math.Max(0d, Math.Min(30d * StackingManager.AbsoluteMaxStack * FoodSpeed[FoodSpeed.Length - 1], rate));
+                    state.ProcessingRate = double.IsNaN(rate) || double.IsInfinity(rate) ? 0d
+                        : Math.Max(0d, Math.Min(30d * StackingManager.AbsoluteMaxStack * MatrixNutrition.MaximumSpeed, rate));
                     double remainder = reader.ReadDouble();
                     state.ProgressRemainder = double.IsNaN(remainder) || double.IsInfinity(remainder)
                         ? 0d : Math.Max(0d, Math.Min(1d, remainder));
@@ -190,7 +194,8 @@ public static partial class AdvancedFractionatorRuntime {
         writer.Write(key.fractionatorId);
         writer.Write(state.SelectedRecipeId);
         writer.Write(state.DigestingItemId);
-        writer.Write(state.DigestingEnergy);
+        double capacity = GetFoodEnergy(state.DigestingItemId, state.DigestingInc);
+        writer.Write(capacity > 0d ? Math.Max(0d, Math.Min(1d, state.DigestingEnergy / capacity)) : 0d);
         writer.Write(state.DigestingInc);
         writer.Write(state.OutputCursor);
         WriteDictionary(writer, state.Inputs);
@@ -207,5 +212,15 @@ public static partial class AdvancedFractionatorRuntime {
         }
         writer.Write(state.ProcessingRate);
         writer.Write(state.ProgressRemainder);
+    }
+
+    /// <summary>仅用于版本3消化状态迁移；旧能量按原矩阵容量换成剩余比例。</summary>
+    private static double GetLegacyFoodEnergy(int itemId, int inc) {
+        double share = itemId switch {
+            I电磁矩阵 => 0.16d, I能量矩阵 => 0.11d, I结构矩阵 => 0.07d,
+            I信息矩阵 => 0.04d, I引力矩阵 => 0.02d, I宇宙矩阵 => 0.01d, _ => 0d,
+        };
+        return share <= 0d ? 0d : (1d / share - 1d)
+            * (1d + Cargo.incTableMilli[Math.Max(0, Math.Min(10, inc))]);
     }
 }

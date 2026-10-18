@@ -102,8 +102,12 @@ public static partial class AdvancedFractionatorRuntime {
             int itemId = incoming.item;
             int count = incoming.stack;
             if (itemId <= 0 || count <= 0) { return false; }
-            int food = CanTakeFood(state, itemId) ? Math.Min(count, Math.Max(0, FoodCapacity - SumCounts(state.Foods))) : 0;
-            bool foreignFood = IsFoodItem(itemId) && !CanTakeFood(state, itemId);
+            bool reactionInput = !passthrough && recipe?.ContainsInput(itemId) == true;
+            // 矩阵兼作反应物时，只在断粮且没有备用时留一件点燃，后续货物优先进入配方。
+            int foodRoom = reactionInput ? state.DigestingEnergy <= 0d && SumCounts(state.Foods) == 0 ? 1 : 0
+                : Math.Max(0, FoodCapacity - SumCounts(state.Foods));
+            int food = CanTakeFood(state, itemId) ? Math.Min(count, foodRoom) : 0;
+            bool foreignFood = !reactionInput && IsFoodItem(itemId) && !CanTakeFood(state, itemId);
             int input = !passthrough && !foreignFood && GetCount(state.Inputs, itemId) < GetInputCapacity(recipe, itemId)
                 ? count - food : 0;
             int flow = count - food - input;
@@ -142,13 +146,8 @@ public static partial class AdvancedFractionatorRuntime {
             AddCount(state.FlowOutputInc, itemId, inc);
             state.SnapshotDirty = true;
         }
-        // 旧档保留正在燃烧的一件及同种备用；空消化槽时保留最高档，其余逐批排空。
-        int reserveId = state.DigestingEnergy > 0d ? state.DigestingItemId : 0;
-        if (reserveId == 0) {
-            foreach (var pair in state.Foods) {
-                if (pair.Value > 0) { reserveId = Math.Max(reserveId, pair.Key); }
-            }
-        }
+        // 旧档保留消化物及同种备用；空消化槽时按营养价值选取，其余逐批排空。
+        int reserveId = state.DigestingEnergy > 0d ? state.DigestingItemId : SelectReserveFood(state);
         pending.Clear();
         foreach (var pair in state.Foods) {
             if (pair.Key != reserveId || pair.Value > FoodCapacity) { pending.Add(pair.Key); }
