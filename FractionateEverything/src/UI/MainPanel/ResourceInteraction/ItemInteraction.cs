@@ -65,6 +65,8 @@ public static class ItemInteraction {
     private static UIButton _nextPageButton;
     private static Text _pageIndicator;
     private static Text _capacityText;
+    private static readonly MyImageButton[] expansionIcons = new MyImageButton[6];
+    private static readonly Text[] expansionLabels = new Text[6];
     private static bool ShowNotStoredItem => ShowNotStoredItemEntry.Value;
 
     public static void LoadConfig(ConfigFile configFile) {
@@ -107,13 +109,13 @@ public static class ItemInteraction {
                     ContentCard(
                         pos: (2, 0),
                         objectName: "item-interaction-grid-card",
-                        rows: [Px(24f), Px(32f), 1],
+                        rows: [Px(24f), Px(52f), 1],
                         rowGap: 6f,
                         children: [
                             CardTitleNode("仓储物品", pos: (0, 0), objectName: "item-interaction-grid-title"),
                             Grid(
                                 pos: (1, 0),
-                                cols: [1, Px(28f)],
+                                cols: [1, Px(330f), Px(28f), Px(28f)],
                                 columnGap: 8f,
                                 children: [
                                     TextNode("以下物品在分馏亚空间的存储量为：",
@@ -121,8 +123,12 @@ public static class ItemInteraction {
                                             _capacityText = text;
                                             text.supportRichText = true;
                                         }, pos: (0, 0), objectName: "item-interaction-grid-summary"),
+                                    Grid(pos: (0, 1), cols: [1, 1, 1, 1, 1, 1],
+                                        children: BuildExpansionNodes()),
+                                    TipsButtonNode("FE.Storage.Expansion", "FE.Storage.ExpansionHelp",
+                                        pos: (0, 2), objectName: "item-interaction-expansion-tip"),
                                     TipsButtonNode("提取物品", "提取物品说明",
-                                        pos: (0, 1), objectName: "item-interaction-grid-tip"),
+                                        pos: (0, 3), objectName: "item-interaction-grid-tip"),
                                 ]),
                             Grid(
                                 pos: (2, 0),
@@ -146,6 +152,21 @@ public static class ItemInteraction {
                                 pos: (0, 2), objectName: "item-interaction-footer-next"),
                         ]),
                 ]));
+    }
+
+    /// <summary>每档固定一个图标与状态，供料变化不改变布局。</summary>
+    private static IReadOnlyList<LayoutNode> BuildExpansionNodes() {
+        var nodes = new List<LayoutNode>();
+        for (int i = 0; i < expansionIcons.Length; i++) {
+            int index = i;
+            nodes.Add(Grid(pos: (0, i), rows: [Px(30f), Px(20f)], children: [
+                ImageButtonNode(size: 28f, onBuilt: button => expansionIcons[index] = button,
+                    pos: (0, 0), objectName: $"expansion-matrix-{i}"),
+                TextNode("", fontSize: 10, anchor: TextAnchor.MiddleCenter,
+                    onBuilt: text => expansionLabels[index] = text, pos: (1, 0), objectName: $"expansion-state-{i}"),
+            ]));
+        }
+        return nodes;
     }
 
     private static IReadOnlyList<LayoutNode> BuildFilterNodes() {
@@ -245,16 +266,17 @@ public static class ItemInteraction {
             btnItems[row, col].gameObject.SetActive(false);
         }
 
-        var expansion = SubspaceExpansion.GetStatus();
-        string supply = expansion.MatrixId == 0 ? "FE.Storage.Paused".Translate()
-            : string.Format("FE.Storage.Expanding".Translate(), LDB.items.Select(expansion.MatrixId)?.name ?? "?", expansion.Rate);
-        _capacityText.text = (hoveredItemId > 0 && IsItemFull(hoveredItemId) && !GrowthTechnologyManager.UltimateCapacity
-            ? "FE.Storage.FullHint".Translate()
-            : hoveredItemId > 0
+        int activeMatrices = SubspaceExpansion.GetActiveMatrixMask();
+        for (int stage = 0; stage < expansionIcons.Length; stage++) {
+            bool active = (activeMatrices & (1 << stage)) != 0;
+            expansionIcons[stage].Proto = LDB.items.Select(MainProgressMatrixIds[stage]);
+            expansionIcons[stage].Selected = active;
+            expansionLabels[stage].text = active ? "FE.Storage.Active".Translate() : "";
+        }
+        _capacityText.text = (hoveredItemId > 0
             ? string.Format("FE.Storage.ItemCapacity".Translate(), LDB.items.Select(hoveredItemId)?.name ?? "?", GetModDataItemCount(hoveredItemId),
                 GrowthTechnologyManager.UltimateCapacity ? "∞" : GetItemCapacity(hoveredItemId).ToString("N0"))
-            : GrowthTechnologyManager.UltimateCapacity ? "亚空间容量：无限".Translate()
-            : string.Format("FE.Storage.Capacity".Translate(), expansion.Scale, supply)).WithColor(Gray);
+            : "以下物品在分馏亚空间的存储量为：".Translate()).WithColor(Gray);
         UpdatePagination(totalPages);
     }
 

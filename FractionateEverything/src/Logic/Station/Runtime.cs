@@ -94,7 +94,7 @@ public static partial class StationManager {
     [HarmonyPatch(typeof(PlanetTransport), nameof(PlanetTransport.GameTick))]
     public static void PlanetTransportGameTickPostPatch(PlanetTransport __instance, long time) {
         // 30帧更新一次，取3作为特殊值
-        if (time % updateTick != 3L) {
+        if (time % updateTick != 3L || FE.Compatibility.Nebula.NebulaMultiplayerModAPI.IsClient) {
             return;
         }
 
@@ -162,7 +162,7 @@ public static partial class StationManager {
                                 if (store.count > store.max * uploadThreshold) {
                                     int transferCount = GetUploadTransferCount(store, uploadThreshold, capacityMode);
                                     if (transferCount > 0) {
-                                        stationComponent.SetTargetCount(i, store.count - transferCount, maxSlotEnergy);
+                                        stationComponent.SetTargetCount(i, store.count - transferCount, maxSlotEnergy, capacityMode);
                                     }
                                 }
                                 break;
@@ -189,7 +189,7 @@ public static partial class StationManager {
                                     // 数量高于上传阈值，优先执行统一的上传裁剪逻辑。
                                     int transferCount = GetUploadTransferCount(store, uploadThreshold, capacityMode);
                                     if (transferCount > 0) {
-                                        stationComponent.SetTargetCount(i, store.count - transferCount, maxSlotEnergy);
+                                        stationComponent.SetTargetCount(i, store.count - transferCount, maxSlotEnergy, capacityMode);
                                     }
                                 } else if (store.totalSupplyCount < store.max * downloadThreshold) {
                                     // 数量低于下载阈值，下载数量至阈值
@@ -219,7 +219,7 @@ public static partial class StationManager {
     /// <param name="targetCount">槽位期望保留的物品数量。</param>
     /// <param name="maxSlotEnergy">本轮分配给该槽位的电量上限，单位 J。</param>
     private static void SetTargetCount(this StationComponent stationComponent, int index, int targetCount,
-        long maxSlotEnergy) {
+        long maxSlotEnergy, ECapacityMode capacityMode = ECapacityMode.Limited) {
         ref StationStore store = ref stationComponent.storage[index];
         if (store.count == targetCount || itemValue[store.itemId] == float.MaxValue) {
             return;
@@ -254,13 +254,12 @@ public static partial class StationManager {
             // 将交互站的物品上传到亚空间；容量竞争导致部分接收时把未接收部分放回槽位。
             int offeredCount = count;
             int offeredInc = store.count <= 0 ? 0 : split_inc(ref store.count, ref store.inc, offeredCount);
-            int acceptedCount = (int)Math.Min(offeredCount,
-                DataCenterUploadRouter.Upload(store.itemId, offeredCount, offeredInc));
+            StorageReceipt receipt = DataCenterUploadRouter.UploadFromStation(store.itemId, offeredCount, offeredInc,
+                capacityMode != ECapacityMode.Limited, itemModSaveCount[store.itemId]);
+            int acceptedCount = (int)receipt.Accepted;
             if (acceptedCount < offeredCount) {
-                int rejectedCount = offeredCount - acceptedCount;
-                int acceptedInc = offeredCount <= 0 ? 0 : offeredInc * acceptedCount / offeredCount;
-                store.count += rejectedCount;
-                store.inc += offeredInc - acceptedInc;
+                store.count += (int)receipt.Rejected;
+                store.inc += (int)receipt.RejectedInc;
             }
             count = acceptedCount;
         }
@@ -283,22 +282,9 @@ public static partial class StationManager {
             return 0;
         }
 
-        int capacityItemId = DataCenterUploadRouter.GetUploadCapacityItemId(store.itemId);
-        long remainingCapacity = GetRemainingCapacity(capacityItemId);
-        if (remainingCapacity <= 0) {
-            return 0;
-        }
-        transferCount = (int)Math.Min(transferCount, Math.Min(int.MaxValue, remainingCapacity));
-        if (capacityMode != ECapacityMode.Limited) {
-            return transferCount;
-        }
-
-        int modTargetCount = itemModSaveCount[store.itemId];
-        long modCurrCount = GetModDataItemCount(capacityItemId);
-        if (modCurrCount >= modTargetCount) {
-            return 0;
-        }
-
-        return Math.Min(transferCount, modTargetCount - (int)modCurrCount);
+        if (capacityMode != ECapacityMode.Limited) { return transferCount; }
+        long target = Math.Min(GetItemCapacity(store.itemId), itemModSaveCount[store.itemId]);
+        long remaining = Math.Max(0L, target - GetModDataItemCount(store.itemId));
+        return (int)Math.Min(transferCount, remaining);
     }
 }

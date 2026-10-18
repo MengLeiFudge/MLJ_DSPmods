@@ -512,7 +512,7 @@ public static partial class ProcessManager {
             } else if (fractionator.belt1 <= 0
                        && fractionator.belt2 <= 0
                        && AreAllProductsEmpty(products)) {
-                // 基础塔正面反向输入且两侧未连接时上传到亚空间；容量不足一份带上堆叠时停止取货。
+                // 基础塔正面反向输入且两侧未连接时整堆上传；超额物料由亚空间按价值折算扩容。
                 interactionMode = true;
                 int interactionItemId = DataCenterUploadRouter.UploadRearStack(cargoTraffic, fractionator.belt0);
                 interactionTransferred = interactionItemId > 0;

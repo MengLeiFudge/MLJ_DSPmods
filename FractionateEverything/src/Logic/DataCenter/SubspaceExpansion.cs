@@ -17,12 +17,31 @@ public static class SubspaceExpansion {
     private static readonly object Sync = new();
     /// <summary>蓝至白六档尚未结算的供料秒数，每件矩阵对应一秒。</summary>
     private static readonly int[] Supplies = new int[6];
-    private static double capacityScale = 1d;
+    /// <summary>各档独立积累的倍率增量；不含初始倍率1。</summary>
+    private static readonly double[] Gains = new double[6];
+    /// <summary>自动入库超额物料的不可逆价值累计；每分钟折算一次永久扩容。</summary>
+    private static double overflowValue;
+    private static double overflowGain;
     private static long lastSecond = long.MinValue;
     private static bool snapshotDirty;
 
     /// <summary>当前永久容量倍率，初始为1，停供不会下降。</summary>
-    public static double CapacityScale { get { lock (Sync) { return capacityScale; } } }
+    public static double CapacityScale { get { lock (Sync) { return GetScaleUnsafe(); } } }
+
+    private static double GetScaleUnsafe() {
+        double scale = 1d + overflowGain;
+        foreach (double gain in Gains) { scale += gain; }
+        return Math.Min(MaximumScale, scale);
+    }
+
+    /// <summary>仅登记已从自动来源扣除的超额物料价值；不生成任何可提取实体。</summary>
+    internal static void AddOverflowValue(double value) {
+        if (value <= 0d || double.IsNaN(value) || double.IsInfinity(value)) { return; }
+        lock (Sync) {
+            overflowValue = Math.Min(double.MaxValue - value, overflowValue) + value;
+            snapshotDirty = true;
+        }
+    }
 
     /// <summary>是否已达到终极仓储任务要求的累计容量。</summary>
     public static bool UltimateQuestReady => CapacityScale >= UltimateRequiredScale;
@@ -66,44 +85,46 @@ public static class SubspaceExpansion {
     /// <param name="stage">已经通过资格检查的矩阵档位，范围0～5。</param>
     /// <returns>本档剩余供料空间。</returns>
     private static int GetSupplyRoomUnsafe(int stage) =>
-        capacityScale >= MaximumScale ? 0 : SupplyLimit - Supplies[stage];
+        GetScaleUnsafe() >= MaximumScale ? 0 : SupplyLimit - Supplies[stage];
 
-    /// <summary>主机按游戏秒消费最高档供料，精确积分容量曲线，不追补离线或跳过的时间。</summary>
+    /// <summary>每秒并行消费各档供料，各自积分；每分钟更新溢出贡献，不补算离线时间。</summary>
     /// <param name="gameTick">60刻每秒的原版游戏时钟。</param>
     public static void GameTick(long gameTick) {
         if (NebulaMultiplayerModAPI.IsClient || GrowthTechnologyManager.UltimateCapacity) { return; }
         long second = gameTick / 60L;
         lock (Sync) {
             if (second <= lastSecond) { return; }
+            bool minuteChanged = lastSecond == long.MinValue || second / 60L != lastSecond / 60L;
             lastSecond = second;
-            if (capacityScale >= MaximumScale) { return; }
-            int stage = GetSupplyStage();
-            if (stage < 0) { return; }
-            Supplies[stage]--;
-            // dS/dt=0.1*2^stage/(1+S/10)，t以分钟计；每秒更新其积分，不受本秒输入件数影响。
-            double shifted = capacityScale + 10d;
-            capacityScale = Math.Min(MaximumScale, Math.Sqrt(shifted * shifted + (1 << stage) / 30d) - 10d);
-            snapshotDirty = true;
+            if (minuteChanged) {
+                // 一亿铁铜等价的超额物料增加约0.414倍率，规模越大边际收益越低。
+                double gain = Math.Min(MaximumScale - 1d, Math.Sqrt(1d + overflowValue / 100000000d) - 1d);
+                snapshotDirty |= gain != overflowGain;
+                overflowGain = gain;
+            }
+            if (GetScaleUnsafe() >= MaximumScale) { return; }
+            for (int stage = 0; stage < Supplies.Length; stage++) {
+                if (Supplies[stage] <= 0) { continue; }
+                Supplies[stage]--;
+                // 每档沿用原积分曲线，S_i从0起算，总倍率为1+各档增量之和。
+                double shifted = Gains[stage] + 11d;
+                Gains[stage] = Math.Min(MaximumScale - 1d,
+                    Math.Sqrt(shifted * shifted + (1 << stage) / 30d) - 11d);
+                snapshotDirty = true;
+            }
         }
     }
 
-    /// <summary>读取供仓储页显示的同一份倍率、下一秒供料矩阵与每分钟增长倍率。</summary>
-    /// <returns>矩阵为0表示缺料或已停止扩容；速率以容量倍率每分钟计。</returns>
-    public static (double Scale, int MatrixId, double Rate) GetStatus() {
+    /// <summary>供界面读取所有正在生效的矩阵位，不公开增长数值。</summary>
+    public static int GetActiveMatrixMask() {
         lock (Sync) {
-            int stage = capacityScale >= MaximumScale || GrowthTechnologyManager.UltimateCapacity ? -1 : GetSupplyStage();
-            return stage < 0 ? (capacityScale, 0, 0d)
-                : (capacityScale, ItemManager.MainProgressMatrixIds[stage], 0.1d * (1 << stage) / (1d + capacityScale / 10d));
+            if (GrowthTechnologyManager.UltimateCapacity || GetScaleUnsafe() >= MaximumScale) { return 0; }
+            int mask = 0;
+            for (int stage = 0; stage < Supplies.Length; stage++) {
+                if (Supplies[stage] > 0) { mask |= 1 << stage; }
+            }
+            return mask;
         }
-    }
-
-    /// <summary>在持有Sync锁时选择最高档现存供料，低档缓存保留待用。</summary>
-    /// <returns>六档索引，无供料时为-1。</returns>
-    private static int GetSupplyStage() {
-        for (int stage = Supplies.Length - 1; stage >= 0; stage--) {
-            if (Supplies[stage] > 0) { return stage; }
-        }
-        return -1;
     }
 
     /// <summary>由库存快照调度统一取走并清除扩容状态的待同步标记。</summary>
@@ -116,8 +137,10 @@ public static class SubspaceExpansion {
     /// <param name="writer">子块输出流。</param>
     public static void Export(BinaryWriter writer) {
         lock (Sync) {
-            writer.Write(1);
-            writer.Write(capacityScale);
+            writer.Write(2);
+            foreach (double gain in Gains) { writer.Write(gain); }
+            writer.Write(overflowValue);
+            writer.Write(overflowGain);
             writer.Write(lastSecond);
             foreach (int supply in Supplies) { writer.Write(supply); }
         }
@@ -126,12 +149,23 @@ public static class SubspaceExpansion {
     /// <summary>校验并导入主机或存档的扩容状态，不在导入时消费供料。</summary>
     /// <param name="reader">子块输入流。</param>
     public static void Import(BinaryReader reader) {
-        if (reader.ReadInt32() != 1) { throw new InvalidDataException("亚空间扩容版本无效。"); }
-        double scale = reader.ReadDouble();
+        int version = reader.ReadInt32();
+        if (version is not (1 or 2)) { throw new InvalidDataException("亚空间扩容版本无效。"); }
+        double[] gains = new double[Gains.Length];
+        double value = 0d;
+        double converted = 0d;
+        if (version == 1) {
+            double oldScale = ReadFinite(reader, 1d, MaximumScale);
+            int stages = Math.Max(1, Math.Min(gains.Length, ResearchManager.CurrentMatrixStage));
+            for (int i = 0; i < stages; i++) { gains[i] = (oldScale - 1d) / stages; }
+        } else {
+            for (int i = 0; i < gains.Length; i++) { gains[i] = ReadFinite(reader, 0d, MaximumScale); }
+            value = ReadFinite(reader, 0d, double.MaxValue);
+            converted = ReadFinite(reader, 0d, MaximumScale);
+        }
         long second = reader.ReadInt64();
-        if (double.IsNaN(scale) || double.IsInfinity(scale) || scale < 1d || scale > MaximumScale
-            || second < 0 && second != long.MinValue || second > long.MaxValue / 60L) {
-            throw new InvalidDataException("亚空间扩容状态无效。");
+        if (second < 0 && second != long.MinValue || second > long.MaxValue / 60L) {
+            throw new InvalidDataException("亚空间扩容时钟无效。");
         }
         int[] supplies = new int[Supplies.Length];
         for (int i = 0; i < supplies.Length; i++) {
@@ -139,7 +173,9 @@ public static class SubspaceExpansion {
             if (supplies[i] < 0 || supplies[i] > SupplyLimit) { throw new InvalidDataException("亚空间扩容供料无效。"); }
         }
         lock (Sync) {
-            capacityScale = scale;
+            Array.Copy(gains, Gains, gains.Length);
+            overflowValue = value;
+            overflowGain = converted;
             lastSecond = second;
             Array.Copy(supplies, Supplies, supplies.Length);
             snapshotDirty = false;
@@ -149,10 +185,21 @@ public static class SubspaceExpansion {
     /// <summary>切档恢复初始容量并清空供料、结算时钟和待同步标记。</summary>
     public static void IntoOtherSave() {
         lock (Sync) {
-            capacityScale = 1d;
+            Array.Clear(Gains, 0, Gains.Length);
+            overflowValue = 0d;
+            overflowGain = 0d;
             lastSecond = long.MinValue;
             Array.Clear(Supplies, 0, Supplies.Length);
             snapshotDirty = false;
         }
+    }
+
+    /// <summary>持久化边界拒绝非有限或越界数值。</summary>
+    private static double ReadFinite(BinaryReader reader, double minimum, double maximum) {
+        double value = reader.ReadDouble();
+        if (double.IsNaN(value) || double.IsInfinity(value) || value < minimum || value > maximum) {
+            throw new InvalidDataException("亚空间扩容数值无效。");
+        }
+        return value;
     }
 }

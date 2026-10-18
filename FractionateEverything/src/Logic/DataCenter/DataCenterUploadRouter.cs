@@ -1,6 +1,5 @@
 ﻿using System;
 using FE.Compatibility.Nebula;
-using FE.Logic.Civilization;
 using FE.Logic.Fractionation.Fractionators;
 using static FE.Logic.Items.ItemManager;
 using static FE.Utils.Utils;
@@ -17,20 +16,22 @@ public static class DataCenterUploadRouter {
     /// <param name="beltId">正面输入带身份。</param>
     /// <returns>成功上传的物品 ID；未取货时为 0。</returns>
     public static int UploadRearStack(CargoTraffic cargoTraffic, int beltId) {
+        if (NebulaMultiplayerModAPI.IsClient) { return 0; }
         int itemId = cargoTraffic.GetItemIdAtRear(beltId);
         int count = ProcessManager.GetRearCargoStack(cargoTraffic, beltId);
         if (itemId <= 0 || count <= 0 || !IsUploadableItem(itemId)) { return 0; }
 
         long newCount;
+        StorageReceipt receipt;
         lock (DataCenterInventory.centerItemCount) {
             count = ProcessManager.GetRearCargoStack(cargoTraffic, beltId);
             if (!CanUploadStack(itemId, count)) { return 0; }
             itemId = cargoTraffic.TryPickItemAtRear(beltId, itemId, null, out byte stack, out byte inc);
             if (itemId <= 0) { return 0; }
-            // 可上传物品已排除历史面额包裹；整堆容量已在同一锁内确认。
-            DataCenterInventory.AddStoredItem(itemId, stack, inc, out newCount);
+            // 同一锁内保证整堆可接收，超出实体容量的部分仅记扩容价值。
+            receipt = DataCenterInventory.AddStoredItem(itemId, stack, inc, StorageSource.BasicTower, out newCount);
         }
-        DataCenterInventory.OnItemCountIncreased(itemId, newCount);
+        if (receipt.Stored > 0) { DataCenterInventory.OnItemCountIncreased(itemId, newCount); }
         return itemId;
     }
 
@@ -43,7 +44,7 @@ public static class DataCenterUploadRouter {
 
     /// <summary>
     /// 上传长整型数量的物品；返回实际接收的源物品件数。
-    /// Frag/Memory 面额包裹按整包折算，容量不足一整包时不会消耗源物品。
+    /// 玩家上传保留实体，历史面额包裹按整包规范化，不受玩法容量限制。
     /// </summary>
     public static long Upload(int itemId, long count, long inc = 0, bool manual = false) {
         if (count <= 0 || (itemId == I沙土 && NebulaMultiplayerModAPI.IsMultiplayerActive)) {
@@ -56,13 +57,13 @@ public static class DataCenterUploadRouter {
             long newCount;
             lock (DataCenterInventory.centerItemCount) {
                 long acceptedPackages = Math.Min(count,
-                    DataCenterInventory.GetRemainingCapacity(baseItemId) / faceValue);
+                    (long.MaxValue - DataCenterInventory.GetModDataItemCount(baseItemId)) / faceValue);
                 if (acceptedPackages <= 0) {
                     return 0;
                 }
                 // 锁内只写库存；研究通知和联机包在释放库存锁后处理。
                 acceptedValue = DataCenterInventory.AddStoredItem(
-                    baseItemId, acceptedPackages * faceValue, 0, out newCount);
+                    baseItemId, acceptedPackages * faceValue, 0, StorageSource.Manual, out newCount).Stored;
             }
             DataCenterInventory.NotifyItemAdded(baseItemId, acceptedValue, 0, newCount, manual);
             return acceptedValue / faceValue;
@@ -75,6 +76,15 @@ public static class DataCenterUploadRouter {
 
         // 高级塔入库后的取得记录与 1000 座门槛由 DataCenterInventory 统一处理。
         return DataCenterInventory.AddItemToModData(storeItemId, storeCount, storeInc, manual);
+    }
+
+    /// <summary>交互站自动上传；有限目标在库存锁内复核，无限超额只折算一次。</summary>
+    internal static StorageReceipt UploadFromStation(int itemId, int count, int inc, bool unlimited, long limit) {
+        if (NebulaMultiplayerModAPI.IsClient || !IsUploadableItem(itemId)) { return new(count, inc, 0, 0); }
+        StorageReceipt receipt = DataCenterInventory.AddStoredItem(itemId, count, inc,
+            unlimited ? StorageSource.UnlimitedStation : StorageSource.LimitedStation, out long newCount, limit);
+        if (receipt.Stored > 0) { DataCenterInventory.OnItemCountIncreased(itemId, newCount); }
+        return receipt;
     }
 
     /// <summary>
@@ -90,8 +100,9 @@ public static class DataCenterUploadRouter {
             || !IsUploadableItem(itemId)) {
             return false;
         }
-        int capacityItemId = GetUploadCapacityItemId(itemId);
-        return DataCenterInventory.GetRemainingCapacity(capacityItemId) >= count;
+        double value = itemValue[itemId];
+        return value > 0d && value < maxValue && !double.IsNaN(value) && !double.IsInfinity(value)
+            || DataCenterInventory.GetRemainingCapacity(itemId) >= count;
     }
 
     /// <summary>

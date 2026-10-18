@@ -1,4 +1,25 @@
 {
+  "FE.Storage.Expansion": {
+    "enUS": "Matrix expansion",
+    "zhCN": "矩阵扩容",
+    "frFR": "Expansion par matrices",
+    "1031": "Matrixerweiterung",
+    "1041": "マトリックス拡張"
+  },
+  "FE.Storage.ExpansionHelp": {
+    "enUS": "Every matrix expands storage. Their effects differ, and each accumulates independently when supplied together.",
+    "zhCN": "每种矩阵都会扩容，效果各不相同，同时投入时各自独立累积。",
+    "frFR": "Chaque matrice agrandit le stockage. Les effets diffèrent et se cumulent indépendamment quand elles sont alimentées ensemble.",
+    "1031": "Jede Matrix erweitert den Speicher. Ihre Wirkungen unterscheiden sich und sammeln sich bei gemeinsamer Zufuhr unabhängig an.",
+    "1041": "各マトリックスはそれぞれ異なる効果で倉庫を拡張し、同時に投入すると個別に蓄積されます。"
+  },
+  "FE.Storage.Active": {
+    "enUS": "Active",
+    "zhCN": "生效中",
+    "frFR": "Actif",
+    "1031": "Aktiv",
+    "1041": "稼働中"
+  },
   "KEYFEChangeDetectorRange": {
     "enUS": "Cycle detector range",
     "zhCN": "切换探测量程",

@@ -211,7 +211,7 @@ public static class DataCenterInventory {
     public static long AddItemToModData(int itemId, long count, long inc = 0, bool manual = false) {
         long accepted = AddItemToModDataInternal(itemId, count, inc);
         if (itemId != I沙土 && NebulaModAPI.IsMultiplayerActive && manual && accepted > 0) {
-            long acceptedInc = count <= 0 ? 0 : SaturatingMulNonNegative(Math.Max(0L, inc), accepted) / count;
+            long acceptedInc = new StorageReceipt(count, inc, accepted, 0).StoredInc;
             NebulaModAPI.MultiplayerSession.Network.SendPacket(
                 new CenterItemChangeLongPacket(itemId, accepted, acceptedInc));
         }
@@ -251,43 +251,42 @@ public static class DataCenterInventory {
             inc = 0;
         }
 
-        long accepted = AddStoredItem(itemId, count, inc, out long newCount);
-        if (accepted > 0) { OnItemCountIncreased(itemId, newCount); }
-        return accepted;
+        StorageReceipt receipt = AddStoredItem(itemId, count, inc, StorageSource.Manual, out long newCount);
+        if (receipt.Stored > 0) { OnItemCountIncreased(itemId, newCount); }
+        return receipt.Stored;
     }
 
-    /// <summary>写入已规范化的库存物品，返回入库后数量；由调用方在全部库存锁释放后通知研究域。</summary>
-    /// <param name="itemId">已校验的普通物品 ID，不包含历史面额包裹。</param>
-    /// <param name="count">请求入库的正数件数。</param>
-    /// <param name="inc">本批增产点。</param>
-    /// <param name="newCount">入库后的库存件数；沙土不参与研究门槛。</param>
-    /// <returns>实际接收件数。</returns>
-    internal static long AddStoredItem(int itemId, long count, long inc, out long newCount) {
+    /// <summary>锁内按来源分配实体、溢出和拒收；调用方释放全部库存锁后再通知研究域。</summary>
+    internal static StorageReceipt AddStoredItem(int itemId, long count, long inc, StorageSource source,
+        out long newCount, long limit = long.MaxValue) {
         newCount = 0;
+        count = Math.Max(0L, count);
+        inc = Math.Max(0L, Math.Min(inc, MaxIncForCount(count)));
+        if (count == 0 || itemId <= 0 || itemId >= centerItemCount.Length || LDB.items.Select(itemId) == null) {
+            return new(count, inc, 0, 0);
+        }
         if (itemId == I沙土) {
-            GameMain.mainPlayer.sandCount = SaturatingAddNonNegative(GameMain.mainPlayer.sandCount, count);
-            return count;
+            long stored = Math.Min(count, long.MaxValue - GameMain.mainPlayer.sandCount);
+            GameMain.mainPlayer.sandCount += stored;
+            return new(count, inc, stored, 0);
         }
-        long accepted;
         lock (centerItemCount) {
-            long remaining = GetRemainingCapacityUnsafe(itemId);
-            accepted = Math.Min(count, remaining);
-            if (accepted <= 0) {
-                return 0;
-            }
-            long acceptedInc = count <= 0
-                ? 0
-                : SaturatingMulNonNegative(Math.Max(0L, inc), accepted) / count;
-            centerItemCount[itemId] = SaturatingAddNonNegative(centerItemCount[itemId], accepted);
-            centerItemInc[itemId] = SaturatingAddNonNegative(centerItemInc[itemId], acceptedInc);
-            long maxInc = MaxIncForCount(centerItemCount[itemId]);
-            if (centerItemInc[itemId] > maxInc) {
-                centerItemInc[itemId] = maxInc;
-            }
-            snapshotDirty = true;
+            long capacity = source == StorageSource.Manual ? long.MaxValue : GetItemCapacity(itemId);
+            if (source == StorageSource.LimitedStation) { capacity = Math.Min(capacity, Math.Max(0L, limit)); }
+            long stored = Math.Min(count, Math.Max(0L, capacity - centerItemCount[itemId]));
+            double value = itemValue[itemId];
+            bool convert = source is StorageSource.BasicTower or StorageSource.UnlimitedStation
+                && value > 0d && value < maxValue && !double.IsNaN(value) && !double.IsInfinity(value);
+            long converted = convert ? count - stored : 0L;
+            var receipt = new StorageReceipt(count, inc, stored, converted);
+            centerItemCount[itemId] += stored;
+            centerItemInc[itemId] = Math.Min(MaxIncForCount(centerItemCount[itemId]),
+                SaturatingAddNonNegative(centerItemInc[itemId], receipt.StoredInc));
+            if (converted > 0) { SubspaceExpansion.AddOverflowValue(converted * value); }
+            snapshotDirty |= stored > 0;
             newCount = centerItemCount[itemId];
+            return receipt;
         }
-        return accepted;
     }
 
     /// <summary>
