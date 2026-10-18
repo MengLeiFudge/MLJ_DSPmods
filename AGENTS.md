@@ -33,7 +33,7 @@ Multiple DSP mods in one solution:
 
 **Packaging and publish rule:** `FractionateEverything`, `GetDspData`, `SaveDataExporter`, and `UXAEnhance` are packaging-dependent projects. After the verified worktree change is committed, accepted, merged back into the target branch, and the Debug solution build succeeds in the main Windows-mounted checkout, always run `AfterBuildEvent.exe 1` from `AfterBuildEvent\bin\Debug`. This is required for both manual/local work and qqbot/Codex automation work.
 - User wording such as "改一下", "修一下", "优化一下", "调整一下", or any other request that leads to modifying `FractionateEverything` / `GetDspData` / `SaveDataExporter` / `UXAEnhance` / shared packaging-dependent code is already sufficient authorization for the required build + package + publish chain. Do not infer "publish was not requested" from the absence of the word "发布"; only skip `AfterBuildEvent.exe 1` for read-only discussion, explicit user pause/stop, `VanillaCurveSim`-only work, or a real blocking failure that must be reported.
-- The latest commit body is the publish message source. Include the user-visible reason, the fix/change, the implementation path, the verification evidence, and the impact in the commit body before running `AfterBuildEvent.exe 1`.
+- The latest commit body is the publish message source. Follow the global `git-workflow` standard for concise change descriptions; publishing does not require a separate release report or verification log in the commit body.
 - Running `AfterBuildEvent.exe 1` is not enough by itself. The required completion state is: built mod files copied to R2, zip packages created under `ModZips`, unchanged package contents skipped locally, changed configured zips sent to qqbot through the generic local `publish-local` admin API, and qqbot either independently skips unchanged content or delivers changed files to the target QQ group.
 - `AfterBuildEvent` owns the publish target list. To publish another mod or group, edit the tool-side publish target configuration; do not add MLJ_DSPmods-specific rules to qqbot.
 - If the user manually starts `AfterBuildEvent.exe` and selects option `1`, the tool must still notify qqbot and dispatch the configured zip files before any optional game launch prompt.
@@ -332,9 +332,8 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
   - `测试：` 仅测试用例、测试脚本、测试数据、夹具或回归守卫变更
   - `杂项：` 格式化、忽略文件整理等小维护；低频使用，不作为垃圾桶
 - Optional scope goes in parentheses when it improves one-line log scanning, for example `修复(UI): ...` or `构建(deps): ...`; scope describes the module or domain, not the change type.
-- Use `!` for breaking changes, for example `调整!: ...` or `功能(API)!: ...`; the commit body must explain impact and migration.
-- Commit body/details should record `原因：`, `实现：`, `验证：`, and `影响：` when the title alone is not enough.
-- Atomic commits are one complete functional or behavioral change; code, tests, config, and docs for the same change should usually stay in one commit.
+- Use `!` for breaking changes, for example `调整!: ...` or `功能(API)!: ...`; briefly state the impact and required migration in the commit body.
+- Commit splitting and message detail follow the global `git-workflow` standard; this section adds the project's Chinese prefixes and conventions.
 - Do **not** push unless explicitly approved by the user
 
 ### Commit Policy for Agents

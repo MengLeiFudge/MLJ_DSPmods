@@ -48,7 +48,7 @@ behavior.
 
 Interactive usage reads the mode from stdin. An empty stdin is treated as option `1`. When a user manually chooses option `1`, the tool must still call the local qqbot admin API and dispatch the configured zip files before asking whether to launch Dyson Sphere Program.
 
-Required publish usage passes mode `1` as argv. The latest commit body is the publish message source; Codex must commit the verified code with a body that explains why this build exists, what changed, how it was changed, and which verification commands passed. This automated publish flow applies to manual/local agent work and qqbot/Codex automation work; do not use the old no-argument interactive mode as publish completion.
+Required publish usage passes mode `1` as argv. The latest commit body is the publish message source; commit the verified code using the global `git-workflow` standard for concise change descriptions, without adding a separate release report or verification log to the commit body. This automated publish flow applies to manual/local agent work and qqbot/Codex automation work; do not use the old no-argument interactive mode as publish completion.
 
 ```bash
 ./AfterBuildEvent.exe 1
