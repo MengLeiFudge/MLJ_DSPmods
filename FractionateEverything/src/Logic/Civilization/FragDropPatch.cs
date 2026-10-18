@@ -28,6 +28,7 @@ public static class FragDropPatch {
             return;
         }
 
+        ExplorationChallengeFacts.RecordKill(ref enemyData);
         double fragProbability = BaseFragDropProbability
                                  + GrowthTechnologyManager.ExplorationLevel * FragDropProbabilityPerLevel;
         TryDropItem(__instance.gameData, trashSystem, ref enemyData, IFE残片, fragProbability);

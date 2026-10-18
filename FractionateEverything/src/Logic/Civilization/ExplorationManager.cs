@@ -180,7 +180,7 @@ public static partial class ExplorationManager {
             },
             _ => "FE.ExplorationManager.BroadcastHint".Translate(),
         };
-        return string.Format("FE.ExplorationManager.Destination".Translate(), lead, planet?.displayName);
+        return string.Format("FE.ExplorationManager.Destination".Translate(), lead, planet?.displayName) + GetChallengeDescription(mark.Id);
     }
 
     /// <summary>获取已广播点的缓存快照；不会暴露未发现静默点。</summary>
@@ -282,7 +282,7 @@ public static partial class ExplorationManager {
         if (NebulaMultiplayerModAPI.IsClient) {
             if (secondBoundary) { NebulaMultiplayerModAPI.RequestExplorationDiscovery(); }
             foreach (ExplorationMark mark in NearbyMarks(GameMain.mainPlayer.planetId)) {
-                if (!IsPaymentMark(mark) && IsWithinArrival(mark, GameMain.mainPlayer.uPosition,
+                if (!Challenges.ContainsKey(mark.Id) && !IsPaymentMark(mark) && IsWithinArrival(mark, GameMain.mainPlayer.uPosition,
                         GameMain.mainPlayer.planetId)) {
                     NebulaMultiplayerModAPI.RequestExplorationClaim(mark.Id);
                 }
@@ -290,6 +290,7 @@ public static partial class ExplorationManager {
             return;
         }
         lock (Sync) {
+            TickChallenges(gameTick);
             if (secondBoundary) {
                 DiscoverNearby(GameMain.mainPlayer.uPosition, GameMain.mainPlayer.planetId);
                 EnsureFirstRelicMark();
@@ -310,7 +311,7 @@ public static partial class ExplorationManager {
                 }
             }
             foreach (ExplorationMark mark in NearbyMarks(GameMain.mainPlayer.planetId)) {
-                if (!IsPaymentMark(mark) && IsWithinArrival(mark, GameMain.mainPlayer.uPosition,
+                if (!Challenges.ContainsKey(mark.Id) && !IsPaymentMark(mark) && IsWithinArrival(mark, GameMain.mainPlayer.uPosition,
                         GameMain.mainPlayer.planetId)) {
                     Claim(mark);
                 }
@@ -327,7 +328,7 @@ public static partial class ExplorationManager {
         if (NebulaMultiplayerModAPI.IsClient || !Finite(position.x) || !Finite(position.y) || !Finite(position.z)) { return false; }
         lock (Sync) {
             ExplorationMark mark = FindMark(markId);
-            if (mark == null || IsPaymentMark(mark) || !IsWithinArrival(mark, position, planetId)) { return false; }
+            if (mark == null || Challenges.ContainsKey(mark.Id) || IsPaymentMark(mark) || !IsWithinArrival(mark, position, planetId)) { return false; }
             Claim(mark);
             return true;
         }
@@ -341,7 +342,7 @@ public static partial class ExplorationManager {
     /// <param name="writer">输出流。</param>
     public static void Export(BinaryWriter writer) {
         lock (Sync) {
-            writer.Write(5);
+            writer.Write(6);
             writer.Write(nextMarkId); writer.Write(storyCompleted); writer.Write(nextTimedGenerationTick); writer.Write(randomSeed);
             writer.Write(capacityHintShown);
             for (int i = 0; i < 2; i++) { writer.Write(UltimateSteps[i]); writer.Write(UltimateInputs[i]); }
@@ -353,6 +354,7 @@ public static partial class ExplorationManager {
             foreach (var pair in LastBroadcastTicks) { writer.Write(pair.Key); writer.Write(pair.Value); }
             ExportDiscoveries(writer);
             ExportDeliveries(writer);
+            ExportChallenges(writer);
         }
     }
 
@@ -362,7 +364,7 @@ public static partial class ExplorationManager {
         lock (Sync) {
             IntoOtherSave();
             int version = reader.ReadInt32();
-            if (version is < 1 or > 5) { throw new InvalidDataException("不支持的探索存档格式。"); }
+            if (version is < 1 or > 6) { throw new InvalidDataException("不支持的探索存档格式。"); }
             nextMarkId = reader.ReadInt32(); storyCompleted = reader.ReadInt32(); nextTimedGenerationTick = reader.ReadInt64(); randomSeed = reader.ReadUInt32();
             capacityHintShown = reader.ReadBoolean();
             for (int i = 0; i < 2; i++) { UltimateSteps[i] = Math.Max(0, Math.Min(6, reader.ReadInt32())); UltimateInputs[i] = Math.Max(0, Math.Min(UltimateMemoryCost, reader.ReadInt32())); }
@@ -389,6 +391,7 @@ public static partial class ExplorationManager {
             }
             ImportDiscoveries(reader, version);
             ImportDeliveries(reader, version);
+            ImportChallenges(reader, version);
             if (nextMarkId <= 0 || storyCompleted < 0 || storyCompleted > 18) { throw new InvalidDataException("探索进度无效。"); }
             MarkDirty();
         }
@@ -398,6 +401,7 @@ public static partial class ExplorationManager {
     public static void IntoOtherSave() {
         lock (Sync) {
             ActiveMarks.Clear(); SilentMarks.Clear(); CollectedSilentMarks.Clear(); Records.Clear();
+            ClearChallenges();
             LastBroadcastTicks.Clear(); DiscoveredMarks.Clear(); VisitedPlanets.Clear(); DeliveryResults.Clear();
             Array.Clear(UltimateSteps, 0, 2); Array.Clear(UltimateInputs, 0, 2);
             nextMarkId = 1; storyCompleted = 0; nextTimedGenerationTick = 0; randomSeed = 0x8F3A51C7u;
@@ -486,6 +490,7 @@ public static partial class ExplorationManager {
             4 => roll < 30 ? 1 : roll < 75 ? 2 : 3,
             _ => roll < 15 ? 1 : roll < 60 ? 2 : 3,
         };
+        TryCreateChallenge(mark);
         return true;
     }
 
@@ -686,6 +691,9 @@ public static partial class ExplorationManager {
     /// <summary>抽取并发放普通遗迹奖励，将实际结果写回点位以供存档和本地化显示。</summary>
     /// <param name="mark">待结算的普通遗迹。</param>
     private static void AwardCache(ExplorationMark mark) {
+        if (mark.ItemId == IFE记忆源点 && mark.Count > 0) {
+            DataCenterInventory.AddExplorationReward(mark.ItemId, mark.Count); return;
+        }
         if (mark.Quality >= 2 && NextInt(100) < 25 && ResearchManager.TryRecoverPage(ref randomSeed, out string page)) {
             mark.ContentId = page;
             mark.ItemId = IFE残片;

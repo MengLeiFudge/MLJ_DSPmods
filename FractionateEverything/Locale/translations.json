@@ -1,4 +1,53 @@
 ﻿{
+  "FE.Challenge.Status": {
+    "zhCN": "记录恢复 {0}/{1}",
+    "enUS": "Recovery {0}/{1}",
+    "frFR": "Restauration {0}/{1}",
+    "1031": "Wiederherstellung {0}/{1}",
+    "1041": "記録復元 {0}/{1}"
+  },
+  "FE.Challenge.Progress": {
+    "zhCN": "进度 {0}/{1}；完成后回收源点 {2} 件。",
+    "enUS": "Progress {0}/{1}; completion recovers {2} memory cores.",
+    "frFR": "Progression {0}/{1} ; récompense : {2} noyaux mémoriels.",
+    "1031": "Fortschritt {0}/{1}; Abschluss: {2} Erinnerungskerne.",
+    "1041": "進行 {0}/{1}。完了報酬：記憶源点 {2} 個。"
+  },
+  "FE.Challenge.Route": {
+    "zhCN": "航迹校准记录：从起点沿亮起的固定航迹依次经过各节点。走廊半宽18米，离开走廊持续3秒后记录归零，回到起点重新校准。完成最后节点即可回收。",
+    "enUS": "Trajectory calibration: follow the highlighted fixed path from its start through every node. The corridor extends 18 m to each side. Staying outside for 3 seconds resets the record; restart at the beginning. The last node releases the reward.",
+    "frFR": "Étalonnage : suivez le trajet fixe illuminé depuis le départ, nœud par nœud. Le couloir s’étend sur 18 m de chaque côté. Trois secondes hors du couloir réinitialisent le parcours. Le dernier nœud libère la récompense.",
+    "1031": "Bahnkalibrierung: Dem festen leuchtenden Pfad vom Start durch jeden Knoten folgen. Der Korridor reicht je 18 m zur Seite. Drei Sekunden außerhalb setzen den Fortschritt zurück zum Start. Am letzten Knoten erfolgt die Bergung.",
+    "1041": "航跡校正：始点から光る固定経路を各節点の順に進みます。通路の半幅は18m。3秒間逸脱すると記録がゼロになり、始点からやり直します。最後の節点で回収します。"
+  },
+  "FE.Challenge.Combat": {
+    "zhCN": "防卫记录：激活后，清除信号中心120米内的地面黑雾单位。已有击杀不计入。现场无法继续作战时，可改用航迹校准；切换会清空原进度。",
+    "enUS": "Defense record: after activation, destroy ground Dark Fog units within 120 m of the signal. Earlier kills do not count. At the site, trajectory calibration is available instead; switching resets progress.",
+    "frFR": "Défense : après activation, détruisez les unités terrestres du Brouillard noir à moins de 120 m du signal. Les éliminations antérieures ne comptent pas. Sur place, vous pouvez choisir le trajet à la place ; la progression sera effacée.",
+    "1031": "Verteidigungsprotokoll: Nach Aktivierung Bodeneinheiten des Dunklen Nebels im Umkreis von 120 m besiegen. Frühere Abschüsse zählen nicht. Vor Ort ist alternativ eine Bahnkalibrierung möglich; der Wechsel löscht den Fortschritt.",
+    "1041": "防衛記録：起動後、信号から120m以内の地上ダークフォグを撃破します。過去の撃破は数えません。現地で航跡校正に変更できますが、進行はリセットされます。"
+  },
+  "FE.Challenge.Production": {
+    "zhCN": "生产复现实验：激活后，在信号中心120米内新建至少{1}台设备，实际运行“{0}”。需同时保有这些已产出的设备及指定配方。当前合格设备：{2}。只累计新设备实际完成的主产物，搬运库存不计入。现场可改用航迹校准并重置进度。",
+    "enUS": "Production reconstruction: after activation, build at least {1} machines within 120 m of the signal and run “{0}”. Keep those productive machines configured for that recipe. Qualified machines: {2}. Only their completed primary outputs count; transferred inventory does not. Switching to a route at the site resets progress.",
+    "frFR": "Reproduction : après activation, construisez au moins {1} machines à moins de 120 m et exécutez « {0} ». Conservez les machines productives avec cette recette. Machines valides : {2}. Seules leurs sorties principales réelles comptent, pas les transferts. Le passage au trajet sur place efface la progression.",
+    "1031": "Produktionsversuch: Nach Aktivierung mindestens {1} Maschinen im Umkreis von 120 m errichten und „{0}“ ausführen. Produktive Maschinen mit diesem Rezept beibehalten. Geeignete Maschinen: {2}. Nur tatsächliche Hauptprodukte zählen, keine Lagertransfers. Ein Wechsel zur Route vor Ort setzt den Fortschritt zurück.",
+    "1041": "生産再現：起動後、信号から120m以内に{1}台以上を新設し、「{0}」を実際に稼働させます。生産済み設備と指定レシピを維持してください。有効設備：{2}。新設備が完成させた主産物のみを数え、在庫移送は対象外です。現地で航跡へ変更すると進行をリセットします。"
+  },
+  "FE.Challenge.Dormant": {
+    "zhCN": "记录尚未激活，抵达信号即可开始。",
+    "enUS": "The record is dormant; arriving at the signal activates it.",
+    "frFR": "L’enregistrement est inactif ; atteignez le signal pour l’activer.",
+    "1031": "Das Protokoll ist inaktiv; Ankunft am Signal aktiviert es.",
+    "1041": "記録は未起動です。信号に到着すると開始します。"
+  },
+  "FE.Challenge.SwitchRoute": {
+    "zhCN": "改走航迹（重置进度）",
+    "enUS": "Use route (reset progress)",
+    "frFR": "Choisir le trajet (réinitialiser)",
+    "1031": "Route wählen (Fortschritt löschen)",
+    "1041": "航跡に変更（進行リセット）"
+  },
   "FE.Metadata.Item": {
     "zhCN": "实体元数据",
     "enUS": "Materialized metadata",

@@ -53,6 +53,10 @@ Each sample has one shared probabilistic analysis slot. Memory restores growth q
 
 静默遗迹位置和质量固定，回收后不刷新。母星默认2处，出生星系其他岩石星每颗6处，其他星系每颗3处，气巨1处。旧档已经发现或回收的点保留，可能多于这个数量。
 
+新的高质量广播可带航迹、战斗或生产挑战，全档最多同时两项。航迹按固定路径依次经过节点，持续偏离会从起点重来；生产需在现场新建并实际运行指定配方，旧库存不计入。战斗或生产可在现场改走航迹，原进度清零。完成直接回收阶段对应的源点，旧地点不追加挑战。
+
+New high-quality broadcasts may require a fixed route, ground combat or production from newly built machines. Up to two challenges can remain active. Combat and production can be replaced by a route at the site, resetting progress; existing locations retain their original requirements.
+
 普通广播在近距离发现前完全隐藏。一旦进入180米感知范围，位置就永久记录，可稍后从信号追踪页重新标注。后续主线点击“查看信号”即可设置目标星球导航和地表标记，不会自动移动。首主线仅有强度条，不公开坐标，不需要换挡或切模式。
 
 新地点以实际到访、已建工厂为依据展开。母星系其他行星是主探索区，外星系地点跟随已有活动；研究更高矩阵不会单独要求远行。普通广播初始20分钟一个，探索科技逐渐缩短，最短10分钟；每星球最多2个，同时遵守10分钟生成冷却。残片解析也受此限制。广播质量仍取决于生成时的矩阵阶段。

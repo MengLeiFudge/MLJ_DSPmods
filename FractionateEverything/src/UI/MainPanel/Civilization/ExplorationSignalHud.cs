@@ -216,6 +216,7 @@ internal static class ExplorationSignalHud {
     public static void Update() {
         EnsureCreated();
         if (!root) {
+            ExplorationRouteView.Update(false);
             return;
         }
         UIGame uiGame = UIRoot.instance?.uiGame;
@@ -228,6 +229,7 @@ internal static class ExplorationSignalHud {
             && player.controller.actionBuild.blueprintMode == EBlueprintMode.None
             && !uiGame.techTree.active && !uiGame.dashboard.active && !uiGame.dysonEditor.active
             && !uiGame.starmap.active;
+        ExplorationRouteView.Update(visible);
         DetectorReading reading = visible ? ExplorationDetector.Read() : default;
         root.SetActive(visible && reading.Visible);
         if (!visible || !reading.Visible) { return; }

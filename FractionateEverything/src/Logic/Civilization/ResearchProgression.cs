@@ -61,6 +61,9 @@ public static partial class ResearchManager {
     /// <returns>完成恢复所需的成功源点数量。</returns>
     private static int GetStageMemoryBudget(int stage) => StageMemoryBudgets[Math.Max(0, Math.Min(5, stage - 1))];
 
+    /// <summary>挑战奖励为生成阶段预算的十分之一且至少三件；珍贵挑战翻倍，不按解析概率折价。</summary>
+    internal static int GetChallengeMemoryReward(int stage, int quality) => Math.Max(3, GetStageMemoryBudget(stage) / 10) * (quality >= 3 ? 2 : 1);
+
     /// <summary>返回当前阶段的恢复比例，界面只公开进度，不公开内部投入需求。</summary>
     /// <param name="stage">矩阵阶段，1～6。</param>
     /// <returns>恢复比例，范围0～1。</returns>

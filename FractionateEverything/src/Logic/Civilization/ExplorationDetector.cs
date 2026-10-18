@@ -22,11 +22,13 @@ public static class ExplorationDetector {
         [typeof(int), typeof(Vector3), typeof(int)]);
     private static GalaxyData galaxy;
     private static int targetId;
+    private static Vector3 lastRouteTarget;
 
     /// <summary>真实切档清空本地目标；普通联机快照不重置选择。</summary>
     public static void Reset() {
         galaxy = null;
         targetId = 0;
+        lastRouteTarget = default;
     }
 
     /// <summary>导航只接受当前公开的地点；首遗物始终保留模糊感应。</summary>
@@ -39,13 +41,41 @@ public static class ExplorationDetector {
         EnsureSession();
         targetId = known.Id;
         player.navigation.indicatorAstroId = known.PlanetId;
-        TrackMethod?.Invoke(UIRoot.instance?.uiGame?.globemap, [known.PlanetId, known.LocalPosition, 519]);
+        SignalChallengeView challenge = ExplorationManager.GetChallenge(known.Id);
+        Vector3 point = challenge?.Kind == SignalChallengeKind.Route
+            ? challenge.Route[challenge.Started ? challenge.Progress + 1 : 0] : known.LocalPosition;
+        lastRouteTarget = point;
+        TrackMethod?.Invoke(UIRoot.instance?.uiGame?.globemap, [known.PlanetId, point, 519]);
     }
 
     /// <summary>自动呈现本地最近信号；已选择的目标在感知范围内优先。</summary>
     public static DetectorReading Read() {
         EnsureSession();
         Player player = GameMain.mainPlayer;
+        foreach (ExplorationMark mark in ExplorationManager.GetActiveMarks().Where(m => m.PlanetId == player?.planetId)) {
+            SignalChallengeView challenge = ExplorationManager.GetChallenge(mark.Id);
+            if (challenge == null) { continue; }
+            if (!challenge.Started) {
+                if (challenge.Kind == SignalChallengeKind.Route && targetId == mark.Id && lastRouteTarget != challenge.Route[0]) {
+                    lastRouteTarget = challenge.Route[0];
+                    TrackMethod?.Invoke(UIRoot.instance?.uiGame?.globemap, [mark.PlanetId, lastRouteTarget, 519]);
+                }
+                continue;
+            }
+            if (challenge.Kind == SignalChallengeKind.Route) {
+                Vector3 next = challenge.Route[challenge.Progress + 1];
+                if (targetId == mark.Id && lastRouteTarget != next) {
+                    lastRouteTarget = next;
+                    TrackMethod?.Invoke(UIRoot.instance?.uiGame?.globemap, [mark.PlanetId, next, 519]);
+                }
+            } else if (((Vector3)player.position - mark.LocalPosition).magnitude > 180f) { continue; }
+            float progress = challenge.Progress / (float)challenge.Required;
+            if (challenge.Kind == SignalChallengeKind.Production) {
+                progress = Mathf.Min(progress, challenge.Machines / (float)challenge.RequiredMachines);
+            }
+            return new(true, progress,
+                string.Format("FE.Challenge.Status".Translate(), challenge.Progress, challenge.Required));
+        }
         ExplorationMark target = ExplorationManager.GetNearbySignal(targetId);
         if (target == null || player == null
             || !ExplorationManager.TryGetSignalStrength(target, player.uPosition, player.planetId, out float strength)) {

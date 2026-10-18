@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using FE.Compatibility.Nebula;
 using FE.Logic.Civilization;
 using FE.UI.MainPanel.Theme;
 using static FE.Utils.Utils;
@@ -24,8 +25,13 @@ public sealed class SignalTrackingPage : CardBrowserPage {
     }
     protected override IReadOnlyList<PageCard> ReadCards() => ExplorationManager.GetActiveMarks()
         .Select(mark => new PageCard { Key = mark.Id.ToString(), Title = ExplorationManager.GetSignalName(mark), ItemId = IFE残片,
-            Status = ExplorationManager.IsKeySignal(mark) ? "关键信号".Translate() : "普通广播".Translate(),
+            Status = ExplorationManager.GetChallenge(mark.Id) is SignalChallengeView challenge
+                ? string.Format("FE.Challenge.Status".Translate(), challenge.Progress, challenge.Required)
+                : ExplorationManager.IsKeySignal(mark) ? "关键信号".Translate() : "普通广播".Translate(),
             Detail = ExplorationManager.GetSignalDescription(mark),
             ActionLabel = "标注位置".Translate(), Action = mark.Kind == ExplorationMarkKind.FirstRelic
-                ? null : () => ExplorationDetector.Track(mark) }).ToArray();
+                ? null : () => ExplorationDetector.Track(mark),
+            SecondaryLabel = "FE.Challenge.SwitchRoute".Translate(),
+            SecondaryAction = ExplorationManager.CanSwitchChallenge(mark.Id)
+                ? () => ChallengeNetwork.RequestRoute(mark.Id) : null }).ToArray();
 }
