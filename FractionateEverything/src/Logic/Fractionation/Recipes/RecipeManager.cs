@@ -217,7 +217,7 @@ public static class RecipeManager {
         foreach (int itemId in candidates.OrderBy(id => id)) {
             ItemProto item = LDB.items.Select(itemId);
             if (item == null || RareMineralIds.Contains(itemId) || itemId is >= I黑雾矩阵 and <= I能量碎片
-                || itemId >= itemValue.Length || itemValue[itemId] >= maxValue) {
+                || IsProgressionResource(itemId) || itemId >= itemValue.Length || itemValue[itemId] >= maxValue) {
                 continue;
             }
             AddRecipe(new WorldviewRecipe($"mineral-basic:{itemId}", 200000 + itemId,

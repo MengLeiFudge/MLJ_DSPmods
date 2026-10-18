@@ -80,9 +80,7 @@ public static class StorageSortPatch {
                     continue;
                 }
                 int itemId = package.grids[index].itemId;
-                if (itemId <= 0
-                    || itemId >= 12000
-                    || ItemManager.itemValue[itemId] >= ItemManager.maxValue) {
+                if (!ItemManager.CanAutoStoreItem(itemId)) {
                     continue;
                 }
                 int originalCount = package.grids[index].count;

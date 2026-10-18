@@ -16,9 +16,7 @@ public static class TrashRecyclePatch {
         if (!PackageAccessRules.TechItemInteractionUnlocked) {
             return true;
         }
-        if (itemId <= 0
-            || itemId >= 12000
-            || ItemManager.itemValue[itemId] >= ItemManager.maxValue) {
+        if (!ItemManager.CanAutoStoreItem(itemId)) {
             return true;
         }
         int originalCount = count;
@@ -46,9 +44,7 @@ public static class TrashRecyclePatch {
             return true;
         }
         int itemId = __instance.inhandItemId;
-        if (itemId <= 0
-            || itemId >= 12000
-            || ItemManager.itemValue[itemId] >= ItemManager.maxValue) {
+        if (!ItemManager.CanAutoStoreItem(itemId)) {
             return true;
         }
         int originalCount = __instance.inhandItemCount;

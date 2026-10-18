@@ -113,38 +113,15 @@ public static class ItemManager {
     /// 计算所有物品的价值
     /// </summary>
     public static void CalculateItemValues() {
-        //所有矿物都设置价值为1
-        foreach (VeinProto vein in LDB.veins.dataArray) {
-            itemValue[vein.MiningItem] = 1.0f;
-        }
-        //设置普通原矿价值
+        Array.Clear(itemValue, 0, itemValue.Length);
+        MineralValues.Apply(itemValue);
+        // 非矿脉采集物保持统一基础估值。
         itemValue[I木材] = 1.0f;
         itemValue[I植物燃料] = 1.0f;
         itemValue[I沙土] = 1.0f;
-        if (GenesisBook.Enable) {
-            itemValue[IGB硫矿] = 1.2f;
-            itemValue[IGB放射性矿物] = 1.2f;
-        }
-        //设置母星系其他星球普通原矿价值
-        itemValue[I硅石] = 2.0f;
-        itemValue[I钛石] = 2.0f;
-        //设置其他星系珍奇矿物价值
-        if (OrbitalRing.Enable) {
-            itemValue[IOR黄铁矿] = 5f;
-            itemValue[IOR铀矿] = 5f;
-            itemValue[IOR石墨矿] = 5f;
-        }
-        itemValue[I可燃冰] = 5.0f;
-        itemValue[I金伯利矿石] = 8.0f;
-        itemValue[I分形硅石] = 8.0f;
-        itemValue[I有机晶体] = 8.0f;
-        itemValue[I光栅石] = 20.0f;
-        itemValue[I刺笋结晶] = 20.0f;
-        itemValue[I单极磁石] = 200.0f;
         //设置气巨、冰巨、可直接抽取的物品价值
         itemValue[I氢] = 2.0f;
         itemValue[I重氢] = 5.0f;
-        itemValue[I原油] = 1.0f;
         itemValue[I水] = 1.0f;
         itemValue[I硫酸] = 5.0f;
         if (GenesisBook.Enable) {
@@ -190,6 +167,7 @@ public static class ItemManager {
             && !r.Results.Contains(IMS多功能集成组件)
             && !r.Items.Contains(IFE通用原胚)
             && !r.Results.Contains(IFE通用原胚)
+            && !r.Items.Any(IsProgressionResource) && !r.Results.Any(IsProgressionResource)
             && r.GridIndexValid());
         var recipes = iEnumerable.ToArray();
 
@@ -278,7 +256,7 @@ public static class ItemManager {
 
                 // 更新输出物品价值（取最小值）
                 foreach (int itemId in outputIDs) {
-                    if (unitValue < itemValue[itemId]) {
+                    if (!MineralValues.HasNaturalValue(itemId) && unitValue < itemValue[itemId]) {
                         itemValue[itemId] = unitValue;
                         if (OrbitalRing.Enable) {
                             if (itemId == IOR蓄电器) {
@@ -298,7 +276,8 @@ public static class ItemManager {
         } while (changed && iteration < 10);
 
         //根据分馏配方计算未知价值物品的价值
-        iEnumerable = LDB.recipes.dataArray.Where(r => r.Type == ERecipeType.Fractionate && r.GridIndexValid());
+        iEnumerable = LDB.recipes.dataArray.Where(r => r.Type == ERecipeType.Fractionate && r.GridIndexValid()
+            && !r.Items.Any(IsProgressionResource) && !r.Results.Any(IsProgressionResource));
         recipes = iEnumerable.ToArray();
         foreach (var recipe in recipes) {
             // 复制配方数据
@@ -337,7 +316,7 @@ public static class ItemManager {
 
             // 更新输出物品价值（取最小值）
             foreach (int itemId in outputIDs) {
-                if (unitValue < itemValue[itemId]) {
+                if (!MineralValues.HasNaturalValue(itemId) && unitValue < itemValue[itemId]) {
                     itemValue[itemId] = unitValue;
                     changed = true;
                 }
@@ -582,12 +561,28 @@ public static class ItemManager {
         SetCivilizationResourceMatrixStages();
     }
 
-    /// <summary>
-    /// Frag 与 Memory 不参与普通物品价值推导。
-    /// </summary>
+    /// <summary>研究资源的业务身份独立于价值，不参与普通复制、丢弃回收或自动整理。</summary>
+    public static bool IsProgressionResource(int itemId) => itemId is IFE残片 or IFE记忆源点
+        || IsCurrencyPackageItem(itemId);
+
+    /// <summary>保持显式物品资格，避免有限估值使研究资源被自动整理或丢弃回收。</summary>
+    public static bool CanAutoStoreItem(int itemId) => IsUploadableItem(itemId) && !IsProgressionResource(itemId);
+
+    /// <summary>按源点重构的最高净产出定价；残片以原胚掉落价值比计价。</summary>
     private static void SetCivilizationResourceValues() {
-        itemValue[IFE残片] = maxValue;
-        itemValue[IFE记忆源点] = maxValue;
+        double highestNetValue = 0d;
+        foreach (WorldviewRecipe recipe in RecipeManager.WorldviewRecipes) {
+            if (!recipe.StableId.StartsWith("mineral-memory:", StringComparison.Ordinal)) { continue; }
+            if (recipe.Products.Any(output => output.ItemId <= 0 || output.ItemId >= itemValue.Length
+                || itemValue[output.ItemId] <= 0 || itemValue[output.ItemId] >= maxValue)) { continue; }
+            double produced = recipe.Products.Sum(output => output.Count * (double)itemValue[output.ItemId]);
+            double catalysts = recipe.Inputs.Where(input => input.ItemId != IFE记忆源点)
+                .Sum(input => input.Count * (double)input.ConsumeProbability * itemValue[input.ItemId]);
+            highestNetValue = Math.Max(highestNetValue, produced - catalysts);
+        }
+        if (highestNetValue <= 0d) { throw new InvalidOperationException("源点缺少可用于估值的重构产物。"); }
+        itemValue[IFE记忆源点] = (float)(Math.Ceiling(highestNetValue / 100d) * 100d);
+        itemValue[IFE残片] = itemValue[IFE通用原胚] * (0.01f / 0.1f);
     }
 
     /// <summary>
