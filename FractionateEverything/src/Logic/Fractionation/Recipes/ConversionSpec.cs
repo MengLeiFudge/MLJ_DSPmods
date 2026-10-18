@@ -34,9 +34,8 @@ internal sealed class ConversionSpec(int id, string key, int stage,
             new(30306, "conversion:silicon-dissolve", 3,
                 [(I晶格硅, 2, 1f), (I铁块, 1, 0.3f), (I能量碎片, 1, 0.02f)],
                 [(I高纯硅块, 2, false)]),
-            new(30307, "conversion:darkfog-seed", 3,
-                [(I高能石墨, 2, 1f), (I钛块, 1, 0.4f), (I处理器, 1, 0.02f)],
-                [(I能量碎片, 4, false)]),
+            // 30307保留为空缺；无战斗入口由元数据额度兑换提供，后续身份不重排。
+
         };
         int[] chain = [I能量碎片, I黑雾矩阵, I物质重组器, I硅基神经元, I负熵奇点, I核心素];
         int[] lowerCounts = [1, 3, 1, 1, 4];

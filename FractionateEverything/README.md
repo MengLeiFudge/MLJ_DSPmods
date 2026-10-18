@@ -83,9 +83,9 @@ Each item has its own capacity. Manual deposits may exceed it; excess automatic 
 
 单极磁石基础配方使用多种矿物及少量单极催化，不消耗源点。白糖阶段还有独立的源点简化变体；两条路线可以并存。
 
-黑雾链恢复能量碎片↔黑雾矩阵↔物质重组器↔硅基神经元↔负熵奇点↔核心素的相邻转换。高能石墨、钛块和少量处理器可制取能量碎片，使没有黑雾战斗的存档也有稳定入口。往返仍消耗催化剂和营养，不能无成本复制材料。
+黑雾链恢复能量碎片↔黑雾矩阵↔物质重组器↔硅基神经元↔负熵奇点↔核心素的相邻转换。没有黑雾战斗的存档可用本存档的FE元数据额度兑换能量碎片，额度与实体提取共用。往返仍消耗催化剂和营养，不能无成本复制材料。
 
-Advanced conversions use primary materials, auxiliaries and low-loss catalysts. Fuel byproducts can feed earlier stages; equipment upgrades consume supporting materials. The adjacent Dark Fog material chain has an industrial entry recipe, so combat is not required. Ordinary science matrices do not form a conversion chain.
+Advanced conversions use primary materials, auxiliaries and low-loss catalysts. Fuel byproducts can feed earlier stages; equipment upgrades consume supporting materials. The adjacent Dark Fog material chain starts from energy shards exchanged against this world's FE metadata allowance, which is shared with physical extraction; combat is not required. Ordinary science matrices do not form a conversion chain.
 
 ## 操作 Controls
 

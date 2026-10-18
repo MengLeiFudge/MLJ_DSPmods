@@ -54,7 +54,7 @@ internal static class ConversionBalance {
             report.AppendLine($"| {forward.Id}／{reverse.Id} | {Name(forward.Inputs[0].Item)} {Number(net)} | {string.Join(" + ", auxiliary)} | {Number(nutrition)} |");
         }
         report.AppendLine();
-        report.AppendLine("燃料回喂：30301与30302各成功一次，净消耗液氢燃料棒1、反物质1、钛合金0.02、湮灭约束球0.02；0级回收时重氢净0、氢净+2.5，6级时重氢净+3、氢净+4；产出反物质燃料棒1，消耗工作营养2。回流不能免除燃料棒、反物质与营养投入。设备升级不返还辅料；硅材料与黑雾相邻往返不增加主体总量，并持续消耗催化剂与营养。黑雾入口30307把工业原料转换为能量碎片，不要求已有黑雾材料。");
+        report.AppendLine("燃料回喂：30301与30302各成功一次，净消耗液氢燃料棒1、反物质1、钛合金0.02、湮灭约束球0.02；0级回收时重氢净0、氢净+2.5，6级时重氢净+3、氢净+4；产出反物质燃料棒1，消耗工作营养2。回流不能免除燃料棒、反物质与营养投入。设备升级不返还辅料；硅材料与黑雾相邻往返不增加主体总量，并持续消耗催化剂与营养。无战斗入口由FE元数据额度兑换能量碎片提供；额度兑换不属于转化配方的物料核算。");
         string path = Path.Combine(root, "VanillaCurveSim", "Reports", "ConversionBalance.md");
         Directory.CreateDirectory(Path.GetDirectoryName(path));
         File.WriteAllText(path, report.ToString(), new UTF8Encoding(true));

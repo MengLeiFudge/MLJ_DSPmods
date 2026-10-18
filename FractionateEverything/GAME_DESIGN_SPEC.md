@@ -133,7 +133,6 @@ Nebula传输上述状态，不复制一套结算规则。UI只读快照并调用
 | conversion:smelter | 30304 | 电弧熔炉1、卡西米尔晶体2（40%）、单极磁石1（2%） | 位面熔炉1 |
 | conversion:silicon-crystallize | 30305 | 高纯硅块2、高能石墨1（30%）、能量碎片1（2%） | 晶格硅2 |
 | conversion:silicon-dissolve | 30306 | 晶格硅2、铁块1（30%）、能量碎片1（2%） | 高纯硅块2 |
-| conversion:darkfog-seed | 30307 | 高能石墨2、钛块1（40%）、处理器1（2%） | 能量碎片4 |
 | conversion:darkfog-up:5206 | 30308 | 能量碎片1、高纯硅块1（2%） | 黑雾矩阵1 |
 | conversion:darkfog-down:5201 | 30309 | 黑雾矩阵1、高能石墨1（2%） | 能量碎片1 |
 | conversion:darkfog-up:5201 | 30310 | 黑雾矩阵3、高纯硅块1（2%） | 物质重组器2 |
