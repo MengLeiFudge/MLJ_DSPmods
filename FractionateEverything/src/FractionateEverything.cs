@@ -60,6 +60,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     public void LoadConfig() {
         configFile = Config;
         PermanentProfileStore.Bind(Config);
+        MetadataExtraction.Bind(Config);
 
         CheckPlugins.DisableMessageBox = Config.Bind("other", "DisableMessageBox", false,
             "Don't show messagebox when FractionateEverything loaded.");

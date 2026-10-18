@@ -43,6 +43,8 @@ public static class ItemManager {
         // RecipeUnlocked Patch 用于调整配方解锁状态（Item直接用UnlockKey=-1，就不需要patch item的）
 
         RegisterFrag();
+        RegisterInternalItem(IFE实体元数据, "FE.Metadata.Item", "FE.Metadata.ItemDescription", 111, 100,
+            new Color(0.9f, 0.7f, 1f), new Color(0.16f, 0.05f, 0.24f), "metadata");
         RegisterInternalItem(IFE记忆源点, "记忆源点", "I记忆源点", 109, 100,
             new Color(0.55f, 0.82f, 1f), new Color(0.08f, 0.18f, 0.34f), "memory-core");
         RegisterTowerProto(IFE通用原胚, "通用原胚", "I通用原胚", 110,
@@ -153,6 +155,7 @@ public static class ItemManager {
         itemValue[IFE高级转化塔] = modFractionatorValue;
         itemValue[IFE通用原胚] = commonProtoValue;
         SetCivilizationResourceValues();
+        itemValue[IFE实体元数据] = 2f;
         //不存在的物品价值都设为特定值，这样也会将上面某些物品重置为maxValue（某些Mod未开启的情况下会有）
         for (int i = 0; i < itemValue.Length; i++) {
             if (itemValue[i] == 0 || !LDB.items.Exist(i)) {
@@ -562,7 +565,7 @@ public static class ItemManager {
     }
 
     /// <summary>研究资源的业务身份独立于价值，不参与普通复制、丢弃回收或自动整理。</summary>
-    public static bool IsProgressionResource(int itemId) => itemId is IFE残片 or IFE记忆源点
+    public static bool IsProgressionResource(int itemId) => itemId is IFE残片 or IFE记忆源点 or IFE实体元数据
         || IsCurrencyPackageItem(itemId);
 
     /// <summary>保持显式物品资格，避免有限估值使研究资源被自动整理或丢弃回收。</summary>

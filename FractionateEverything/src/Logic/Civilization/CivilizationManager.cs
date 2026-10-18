@@ -57,10 +57,12 @@ public static class CivilizationModule {
         if (secondBoundary) {
             ResearchManager.UpdateSacrificeBoosts(gameTick);
             SubspaceExpansion.GameTick(gameTick);
+            MetadataExtraction.Refresh();
         }
         bool dirty = ResearchManager.FlushMainThreadNotifications();
         dirty |= ExplorationManager.TakeSnapshotDirty();
         dirty |= DataCenterInventory.TakeSnapshotDirty();
+        dirty |= MetadataExtraction.TakeDirty();
         civilizationSnapshotPending |= dirty;
         FlushNotifications();
 
@@ -120,7 +122,8 @@ public static class CivilizationModule {
     public static void Import(BinaryReader r) {
         r.ReadBlocks(
             ("Research", ResearchManager.Import),
-            ("Exploration", ExplorationManager.Import)
+            ("Exploration", ExplorationManager.Import),
+            ("Metadata", MetadataExtraction.Import)
         );
     }
 
@@ -130,7 +133,8 @@ public static class CivilizationModule {
     public static void Export(BinaryWriter w) {
         w.WriteBlocks(
             ("Research", ResearchManager.Export),
-            ("Exploration", ExplorationManager.Export)
+            ("Exploration", ExplorationManager.Export),
+            ("Metadata", MetadataExtraction.Export)
         );
     }
 
@@ -155,6 +159,7 @@ public static class CivilizationModule {
         ResearchManager.IntoOtherSave();
         ExplorationManager.IntoOtherSave();
         CivilizationRecoveryManager.IntoOtherSave();
+        MetadataExtraction.IntoOtherSave();
         MessageLog.Clear();
         lastProcessedGameTick = long.MinValue;
         lastProcessedSecond = long.MinValue;

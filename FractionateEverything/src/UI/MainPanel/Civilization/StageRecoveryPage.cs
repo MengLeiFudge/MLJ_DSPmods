@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using FE.Compatibility.Nebula;
 using FE.Logic.Civilization;
 using FE.UI.MainPanel.Theme;
 using static FE.Utils.Utils;
@@ -28,6 +29,19 @@ public sealed class StageRecoveryPage : CardBrowserPage {
             result.Add(new PageCard { Key = "offering", Title = "记忆献祭".Translate(), ItemId = IFE记忆源点,
                 Status = string.Format("当前相对加成 +{0:P0}".Translate(), ResearchManager.MemorySuccessBoost),
                 Detail = string.Format("FE.StageRecoveryPage.Offering".Translate(), ResearchManager.CurrentMemoryOffering) });
+        }
+        foreach (int matrixId in MetadataExtraction.MatrixIds) {
+            if (LDB.items.Select(matrixId) is not ItemProto matrix) { continue; }
+            long available = MetadataExtraction.Available(matrixId);
+            result.Add(new PageCard {
+                Key = $"metadata:{matrixId}", Title = string.Format("FE.Metadata.Title".Translate(), matrix.name),
+                ItemId = matrixId, Status = string.Format("FE.Metadata.Available".Translate(), available),
+                Detail = "FE.Metadata.Description".Translate(), DetailItems = [IFE实体元数据, I能量碎片],
+                ActionLabel = "FE.Metadata.Extract".Translate(),
+                Action = available > 0 ? () => MetadataExchangeSync.Request(matrixId, false) : null,
+                SecondaryLabel = "FE.Metadata.Exchange".Translate(),
+                SecondaryAction = available > 0 ? () => MetadataExchangeSync.Request(matrixId, true) : null,
+            });
         }
         return result;
     }

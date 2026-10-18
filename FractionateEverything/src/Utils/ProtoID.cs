@@ -481,6 +481,8 @@ public static partial class Utils {
     internal const int IFE黑雾样本A = 8175;
     internal const int IFE黑雾样本B = 8176;
     internal const int IFE黑雾样本C = 8177;
+    /// <summary>当前世界生产峰值经FE额度账本提取的实体，不能逆向生成元数据。</summary>
+    internal const int IFE实体元数据 = 8178;
     internal const int ISM熔炉采矿机A型 = 9446;
     internal const int ISM熔炉采矿机B型 = 9447;
     internal const int ISM化工采矿机C型 = 9448;

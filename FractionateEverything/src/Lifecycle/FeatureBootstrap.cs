@@ -60,6 +60,7 @@ public static class FeatureBootstrap {
         // SetFractionatorCacheSize 用到了 Init 生成的数据
         FractionatorManager.SetFractionatorCacheSize();
         // AddFracRecipes 用到了 Init 生成的数据
+        MetadataExtraction.RegisterSources();
         RecipeManager.AddFracRecipes();
         CivilizationModule.Initialize();
         VanillaRecipeManager.AddVanillaRecipes();

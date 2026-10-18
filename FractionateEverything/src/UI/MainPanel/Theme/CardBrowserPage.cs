@@ -28,6 +28,9 @@ public sealed class PageCard {
     public string ActionLabel;
     /// <summary>点击时调用领域命令或页面路由。</summary>
     public Action Action;
+    /// <summary>可选的第二个领域操作；不提供时主操作仍占整行。</summary>
+    public string SecondaryLabel;
+    public Action SecondaryAction;
     /// <summary>可选状态色，同时用于图标、状态文字和进度条；为空时沿用默认外观。</summary>
     public Color? Tint;
     /// <summary>为 false 时不绘制列表图标，用于尚未发现、不能透露物品身份的占位项。</summary>
@@ -50,6 +53,8 @@ public abstract class CardBrowserPage {
     private Text pagerText;
     private Text actionText;
     private Button actionButton;
+    private Button secondaryButton;
+    private Text secondaryText;
     private IReadOnlyList<PageCard> cards = Array.Empty<PageCard>();
     private string selectedKey;
     /// <summary>已排版的条目身份，仅在选择改变时重置阅读位置。</summary>
@@ -122,6 +127,13 @@ public abstract class CardBrowserPage {
             nextRefresh = 0;
         });
         actionText = actionButton.GetComponentInChildren<Text>();
+        secondaryButton = AddButton(detail, "", 404, 622, 370, () => {
+            foreach (PageCard card in cards) {
+                if (card.Key == selectedKey) { card.SecondaryAction?.Invoke(); break; }
+            }
+            nextRefresh = 0;
+        });
+        secondaryText = secondaryButton.GetComponentInChildren<Text>();
         nextRefresh = 0;
         UpdateUI();
     }
@@ -166,7 +178,8 @@ public abstract class CardBrowserPage {
         detailTitle.gameObject.SetActive(selected != null);
         detailText.text = selected == null ? EmptyText : selected.Detail;
         bool hasIcons = selected?.DetailItems.Length > 0;
-        bool hasAction = selected?.Action != null;
+        bool hasSecondary = selected?.SecondaryAction != null;
+        bool hasAction = selected?.Action != null || hasSecondary;
         RectTransform scrollRoot = detailRoot.parent.parent as RectTransform;
         float top = hasIcons ? 78f : 22f;
         scrollRoot.anchoredPosition = new Vector2(22f, -top);
@@ -191,6 +204,11 @@ public abstract class CardBrowserPage {
         }
         actionButton.gameObject.SetActive(selected?.Action != null);
         actionText.text = selected?.ActionLabel ?? "";
+        float actionWidth = hasSecondary ? 370f : DetailWidth - 44;
+        ((RectTransform)actionButton.transform).sizeDelta = new Vector2(actionWidth, 36);
+        actionText.rectTransform.sizeDelta = new Vector2(actionWidth, 36);
+        secondaryButton.gameObject.SetActive(hasSecondary);
+        secondaryText.text = selected?.SecondaryLabel ?? "";
     }
 
     /// <summary>创建不参与点击拦截的物品图标。</summary>

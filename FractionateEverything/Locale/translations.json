@@ -1,4 +1,53 @@
 ﻿{
+  "FE.Metadata.Item": {
+    "zhCN": "实体元数据",
+    "enUS": "Materialized metadata",
+    "frFR": "Métadonnées matérialisées",
+    "1031": "Materialisierte Metadaten",
+    "1041": "実体化メタデータ"
+  },
+  "FE.Metadata.ItemDescription": {
+    "zhCN": "本世界生产峰值留下的实物记录。用于丰碑建设，不能逆向恢复元数据额度。",
+    "enUS": "A physical record of this world’s production peaks. Used for monument construction; it cannot restore metadata allowance.",
+    "frFR": "Un enregistrement physique des pics de production de ce monde. Sert au monument, sans restitution de quota.",
+    "1031": "Physische Aufzeichnung der Produktionsspitzen dieser Welt. Für den Monumentbau; stellt kein Metadatenkontingent wieder her.",
+    "1041": "この世界の生産最高記録を実体化したもの。記念碑の建設に使用し、メタデータ枠には戻せません。"
+  },
+  "FE.Metadata.Title": {
+    "zhCN": "{0} · 元数据",
+    "enUS": "{0} · Metadata",
+    "frFR": "{0} · Métadonnées",
+    "1031": "{0} · Metadaten",
+    "1041": "{0} · メタデータ"
+  },
+  "FE.Metadata.Available": {
+    "zhCN": "可用额度：{0:N0}",
+    "enUS": "Available: {0:N0}",
+    "frFR": "Disponible : {0:N0}",
+    "1031": "Verfügbar: {0:N0}",
+    "1041": "利用可能：{0:N0}"
+  },
+  "FE.Metadata.Description": {
+    "zhCN": "生产最高记录可以凝结为实体元数据，也可以交换能量碎片。每件消耗一单位额度，两种用途共享余额。\n\n额度只随本世界生产指标的新高增加，恒定产能不会反复授予；不扣除原版科技买断余额。每次最多处理100件，不足时领取余量，产物进入亚空间。",
+    "enUS": "Production peaks can become materialized metadata or energy shards. Each item costs one unit from the same allowance.\n\nOnly new production peaks in this world add allowance; steady production does not repeatedly grant it. Vanilla research-buyout balances are untouched. Each action transfers up to 100 items, or the remaining allowance, into subspace.",
+    "frFR": "Les pics de production deviennent des métadonnées physiques ou des fragments énergétiques. Chaque objet consomme une unité du même quota.\n\nSeuls les nouveaux records de ce monde augmentent le quota. Le solde des recherches instantanées reste intact. Chaque action place jusqu’à 100 objets, ou le quota restant, dans le sous-espace.",
+    "1031": "Produktionsspitzen lassen sich in Metadaten oder Energiefragmente umwandeln. Jedes Objekt kostet eine Einheit desselben Kontingents.\n\nNur neue Spitzen dieser Welt erhöhen es; konstante Produktion gewährt nichts erneut. Das Guthaben für Forschungskäufe bleibt unverändert. Pro Aktion gelangen bis zu 100 Objekte oder der Rest ins Subraumlager.",
+    "1041": "生産最高記録から実体化メタデータまたはエネルギー破片を得られます。どちらも1個につき共通枠を1消費します。\n\nこの世界の新記録だけが枠を増やし、一定の生産では繰り返し増えません。通常の研究購入用残高は変更しません。1回最大100個、足りない場合は残りを亜空間へ送ります。"
+  },
+  "FE.Metadata.Extract": {
+    "zhCN": "提取实体元数据",
+    "enUS": "Extract metadata",
+    "frFR": "Extraire les métadonnées",
+    "1031": "Metadaten extrahieren",
+    "1041": "メタデータを実体化"
+  },
+  "FE.Metadata.Exchange": {
+    "zhCN": "兑换能量碎片",
+    "enUS": "Exchange for energy shards",
+    "frFR": "Échanger contre des fragments",
+    "1031": "Energiefragmente eintauschen",
+    "1041": "エネルギー破片と交換"
+  },
   "FE.Conversion.PairName": {
     "enUS": "{0} → {1} conversion",
     "zhCN": "{0}→{1}重构",
