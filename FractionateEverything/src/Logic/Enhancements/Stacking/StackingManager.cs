@@ -1,25 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using FE.Logic.Civilization;
 using FE.Logic.Fractionation.Fractionators;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Enhancements.Stacking;
 
 /// <summary>
-/// 统一堆叠系统。普通档在定位到的集装科技完成前维持1；已玩过档在首级FE成长科技前维持1。
+/// 统一堆叠系统。集装设备研究提供四层起点，八至二十层由FE成长科技提供。
 /// </summary>
 public static class StackingManager {
     public const int LockedMaxStack = 1;
     public const int BaseUnlockedMaxStack = 4;
     public const int AbsoluteMaxStack = 20;
     public static readonly int[] StackMilestones = [4, 8, 12, 16, 20];
-    private static readonly int[] HiddenSorterTechs = [
+    private static readonly int[] SorterTechs = [
         T集装分拣器改良, T集装分拣器改良 + 1, T集装分拣器改良 + 2,
         T集装分拣器改良 + 3, T集装分拣器改良 + 4
     ];
-    private static readonly int[] HiddenStationPilerTechs = [
+    private static readonly int[] StationPilerTechs = [
         T运输站集装物流, T运输站集装物流 + 1, T运输站集装物流 + 2
     ];
     private static int configuredMaxStack = BaseUnlockedMaxStack;
@@ -34,10 +33,7 @@ public static class StackingManager {
     /// <summary>定位时的科技原型数组，用于识别原型重载。</summary>
     private static TechProto[] pilingTechs;
 
-    public static bool IsUnlocked => GameMain.history != null
-        && (GrowthTechnologyManager.UsesExperiencedStackProgression
-            ? GameMain.history.TechUnlocked(TFE分馏堆叠成长 + 1)
-            : HasPilingTechnology);
+    public static bool IsUnlocked => GameMain.history != null && HasPilingTechnology;
 
     /// <summary>任一集装设备的主配方或显式前置科技已完成；其他产出配方的制造资格不参与判断。</summary>
     public static bool HasPilingTechnology {
@@ -52,7 +48,7 @@ public static class StackingManager {
         }
     }
 
-    /// <summary>当前科技树中两个集装设备的去重前置科技，供触发判断与首遗物补给共同使用；不进入存档。</summary>
+    /// <summary>当前科技树中两个集装设备的去重前置科技，用于判定四层起点；不进入存档。</summary>
     public static IReadOnlyList<int> PilingTechnologyIds {
         get {
             // 原型预加载及各模组的最终修改先于游戏历史创建；菜单查询不得提前固定触发科技。
@@ -146,8 +142,8 @@ public static class StackingManager {
     public static int ClampStack(int stack) => Math.Max(LockedMaxStack, Math.Min(AbsoluteMaxStack, stack));
 
     public static void ApplyVanillaTechProtoOverrides() {
-        SetHiddenTechs(HiddenSorterTechs);
-        SetHiddenTechs(HiddenStationPilerTechs);
+        RestoreVisibleTechs(SorterTechs);
+        RestoreVisibleTechs(StationPilerTechs);
         // 第六级只开启双向运输，独立显示并由玩家研究，不属于堆叠数量成长。
         TechProto bidirectionalTech = LDB.techs.Select(T集装分拣器改良 + 5);
         if (IsStackOnlyTech(bidirectionalTech)) { bidirectionalTech.IsHiddenTech = false; }
@@ -156,9 +152,7 @@ public static class StackingManager {
     public static void SyncRuntimeState() {
         bool unlocked = IsUnlocked;
         int stack = CurrentMaxStack;
-        if (GameMain.history != null && unlocked) {
-            MarkTechRangeCompletedWithoutUnlockFunctions(HiddenSorterTechs);
-            MarkTechRangeCompletedWithoutUnlockFunctions(HiddenStationPilerTechs);
+        if (GameMain.history != null && unlocked && stack > BaseUnlockedMaxStack) {
             SyncHistoryStackFields(stack);
         }
 
@@ -204,10 +198,10 @@ public static class StackingManager {
         return AbsoluteMaxStack;
     }
 
-    private static void SetHiddenTechs(int[] techIds) {
+    private static void RestoreVisibleTechs(int[] techIds) {
         foreach (int techId in techIds) {
             TechProto tech = LDB.techs.Select(techId);
-            if (IsStackOnlyTech(tech)) { tech.IsHiddenTech = true; }
+            if (IsStackOnlyTech(tech)) { tech.IsHiddenTech = false; }
         }
     }
 
@@ -218,30 +212,9 @@ public static class StackingManager {
         && Array.TrueForAll(tech.UnlockFunctions, function => function is 29 or 39 or 40 or 41)
         && tech.UnlockRecipes.Length == 0 && tech.AddItems.Length == 0;
 
-    private static void MarkTechRangeCompletedWithoutUnlockFunctions(int[] techIds) {
-        GameHistoryData history = GameMain.history;
-        foreach (int techId in techIds) {
-            if (history == null || !history.techStates.ContainsKey(techId)
-                || !IsStackOnlyTech(LDB.techs.Select(techId))) {
-                continue;
-            }
-
-            TechState state = history.techStates[techId];
-            if (state.unlocked && state.curLevel >= state.maxLevel) {
-                continue;
-            }
-
-            state.unlocked = true;
-            state.curLevel = state.maxLevel;
-            state.hashUploaded = state.hashNeeded;
-            state.unlockTick = GameMain.gameTick;
-            history.techStates[techId] = state;
-        }
-    }
-
     private static void SyncHistoryStackFields(int stack) {
         GameHistoryData history = GameMain.history;
-        bool bidirectional = history.TechUnlocked(T集装分拣器改良 + 5);
+        bool bidirectional = history.inserterBidirectional || history.TechUnlocked(T集装分拣器改良 + 5);
         bool inserterChanged = history.inserterStackInput != stack
                                || history.inserterStackOutput != stack
                                || history.inserterBidirectional != bidirectional;

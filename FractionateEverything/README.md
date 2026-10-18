@@ -16,11 +16,10 @@ Fractionate Everything is a living-industry progression built around exploration
 - 基础矿物塔4座、基础解析塔2座及其制造配方。
 - 铁、铜、石、煤四条解析线索，以及一条原胚培育线索。
 - 分馏亚空间和主面板访问。
-- 完整机械骨骼步行升级链及当前科技附带效果，包括星环的生命上限奖励；已完成等级不会重复授予。
 
 普通矿物配方需要先解析，不直接解锁。首次实际生产电磁矩阵后，新的主线才会带来高级交互塔2座、原胚60个和源点30份。先给高级塔供养矩阵，再着手培育。
 
-The starting relic appears in the birth hemisphere, away from dark-fog bases. Recover it for four Basic Mineral Towers, two Basic Analysis Towers, sample clues and the full Mechanical Frame walking-upgrade chain, including any additional effects provided by compatible mods. Analyse the ordinary minerals before replicating them. Producing the first Electromagnetic Matrix opens the story supply of living towers, embryos and Memory.
+The starting relic appears in the birth hemisphere, away from dark-fog bases. Recover it for four Basic Mineral Towers, two Basic Analysis Towers and access to subspace. Movement and logistics upgrades remain part of your own research. Producing the first Electromagnetic Matrix opens the story supply of living towers, embryos and Memory.
 
 ## 五种塔 Five Fractionators
 
@@ -71,7 +70,7 @@ Silent relics have fixed locations and open in layers. Dynamic broadcasts contin
 
 手动存取和基础塔正面上传无额外耗能。行星/星际物流交互站自动存取，保留槽位模式、阈值、增产点、蓝图与复制粘贴；按物品价值和实际搬运量消耗站内电量。
 
-保留两条堆叠路线：普通路线在自动集装机或集装分拣器任一主配方前置科技研究完成后获得4堆叠（原版为黄糖阶段），紫8、绿12、白16及20；兑换配方提前允许制造设备不会直接开放堆叠。集装分拣器的双向运输仍需玩家单独研究。已完整体验过的档案从蓝糖4开始，红8、黄12、紫16、绿20。全局堆叠同时影响缓存、输出和原版配方时间。白糖重复升级合并在科技树第六列，终极科技位于第七列，解锁区显示每一级增加的能力。
+堆叠统一从原版集装研究衔接到FE的8/12/16/20层。自动集装机或集装分拣器的前置科技提供四层起点；数量升级和双向运输仍需自行研究，不会因解锁白爪自动完成其他科技。FE八层需要3315集装分拣器改良、3803运输站集装物流及信息矩阵科技。3311～3315、3801～3803调整到黄糖阶段费用；FE成长材料读取当前科技树，星环新增矩阵会按其对应阶段纳入。白糖两次堆叠升级合并在一个节点，最终保持20层。
 
 探索常规十级完成后开放终极探索任务；亚空间容量达到初始的35倍后开放终极仓储任务。恢复中继或空间锚点，分批明确交付2400源点，再连接最终核心；任务直接授予终极科技，无矩阵研究费用。终极探索持续补足五个普通广播，终极仓储解除玩法容量限制。
 
@@ -103,9 +102,9 @@ Keys can be changed in the game settings. The panel has seventeen pages across s
 
 Nebula由主机结算研究、探索、交付、库存和高级塔，中途加入同步当前状态。客户端认领或交付时，主机按连接数据验证玩家位置、所在星球、回收距离和剩余需求；回收事实传给客户端，由各端使用自己的语言显示。客户端请使用传送带提取高级塔产物。
 
-当前FE存档格式为13，面向新存档。联机所有玩家必须使用相同FE版本。只有正常游玩、取得三类高级塔并达到20堆叠的合格存档，才能写入“已玩过分馏3.0”标记；沙盒、用过一键解锁，以及没有资格记录的早期存档均不能新写入该标记。既有本地标记不会被重置。
+当前FE存档格式为13，面向新存档。联机所有玩家必须使用相同FE版本。所有存档使用统一堆叠路线，旧“是否玩过”标记不再决定开局补给或科技。通关档案按独立世界计数；沙盒、用过一键解锁及没有资格记录的早期存档不能新增正式通关记录。
 
-The current save format is version 13. Nebula is host-authoritative; all players must use the same FE version. Sandbox saves, saves using unlock-all and earlier saves without an eligibility record cannot grant the cross-save completion flag.
+The current save format is version 13. Nebula is host-authoritative; all players must use the same FE version. Every save follows the same stacking progression. Completion records count distinct worlds; sandbox saves, unlock-all saves and earlier saves without an eligibility record cannot add a completion.
 
 ## 安装 Installation
 

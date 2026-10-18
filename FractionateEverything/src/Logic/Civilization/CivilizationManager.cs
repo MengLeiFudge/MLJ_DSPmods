@@ -70,7 +70,6 @@ public static class CivilizationModule {
             }
             GrowthTechnologyManager.SyncRuntimeEffects();
             TutorialManager.UpdateMilestoneTips();
-            PermanentProfileStore.TryRecordCompletion();
             NebulaMultiplayerModAPI.BroadcastAdvancedFractionatorState();
             if (civilizationSnapshotPending) {
                 NebulaMultiplayerModAPI.BroadcastCivilizationState();

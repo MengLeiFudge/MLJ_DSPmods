@@ -3296,11 +3296,11 @@
     "1041": "古代の記録"
   },
   "FE.ExplorationManager.Story1": {
-    "enUS": "The container's seal was worn, but the devices inside were well preserved. Icarus recovered four basic mineral towers and two basic analysis towers. Their common recipes will become readable through matrix technology.\n\nAs Icarus stepped away, the chassis responded with unexpected ease. The recovered records had recalibrated its walking systems.\n\nThe supplies have entered the newly connected subspace. Press [Shift + F] to view them and the encyclopedia.",
-    "zhCN": "容器的封口已经磨损，里面的装置却保存得很完整。伊卡洛斯取出了四座基础矿物塔和两座基础解析塔；矩阵科技将帮助读懂它们的普通配方。\n\n再次迈步时，伊卡洛斯忽然感到机体的响应轻快了许多。刚才读取的记录似乎重新校准了行走系统。\n\n回收物资已送入刚刚接通的亚空间。按 [Shift + F] 打开面板，可以查看物资与百科。",
-    "frFR": "Le sceau était usé, mais les appareils étaient bien conservés. Icarus a récupéré quatre tours minérales de base et deux tours d'analyse de base. La recherche des matrices révélera leurs recettes communes.\n\nLes archives ont aussi recalibré sa marche.\n\nLes ressources sont dans le sous-espace. Appuyez sur [Shift + F] pour les consulter et ouvrir l'encyclopédie.",
-    "1031": "Die Versiegelung war abgenutzt, doch die Geräte waren gut erhalten. Icarus barg vier einfache Mineraltürme und zwei einfache Analysetürme. Matrixforschung wird ihre gewöhnlichen Rezepte erschließen.\n\nDie Aufzeichnungen haben auch sein Laufsystem neu kalibriert.\n\nDie Vorräte liegen im Subraum. Öffne mit [Shift + F] das Fenster für Vorräte und Enzyklopädie.",
-    "1041": "容器の封は傷んでいたが、装置はよく保存されていた。イカロスは基礎鉱物塔4基と基礎解析塔2基を回収した。通常レシピはマトリックス技術の研究で復元できる。\n\n記録は歩行システムも調整し、機体の反応が軽くなった。\n\n物資は亜空間へ送られた。[Shift + F]で物資と百科を確認しよう。"
+    "enUS": "The container's seal was worn, but the devices inside were well preserved. Icarus recovered four basic mineral towers and two basic analysis towers. Their common recipes will become readable through matrix technology.\n\nThe supplies have entered the newly connected subspace. Press [Shift + F] to view them and the encyclopedia.",
+    "zhCN": "容器的封口已经磨损，里面的装置却保存得很完整。伊卡洛斯取出了四座基础矿物塔和两座基础解析塔；矩阵科技将帮助读懂它们的普通配方。\n\n回收物资已送入刚刚接通的亚空间。按 [Shift + F] 打开面板，可以查看物资与百科。",
+    "frFR": "Le sceau était usé, mais les appareils étaient bien conservés. Icarus a récupéré quatre tours minérales de base et deux tours d'analyse de base. La recherche des matrices révélera leurs recettes communes.\n\nLes ressources sont dans le sous-espace. Appuyez sur [Shift + F] pour les consulter et ouvrir l'encyclopédie.",
+    "1031": "Die Versiegelung war abgenutzt, doch die Geräte waren gut erhalten. Icarus barg vier einfache Mineraltürme und zwei einfache Analysetürme. Matrixforschung wird ihre gewöhnlichen Rezepte erschließen.\n\nDie Vorräte liegen im Subraum. Öffne mit [Shift + F] das Fenster für Vorräte und Enzyklopädie.",
+    "1041": "容器の封は傷んでいたが、装置はよく保存されていた。イカロスは基礎鉱物塔4基と基礎解析塔2基を回収した。通常レシピはマトリックス技術の研究で復元できる。\n\n物資は亜空間へ送られた。[Shift + F]で物資と百科を確認しよう。"
   },
   "FE.ExplorationManager.Story2": {
     "enUS": "The fine lines on the plate resemble a matrix structure. Icarus finally recognized how to read the devices.\n\nResearch electromagnetic matrices to restore common mineral replication. Then power a basic mineral tower, feed minerals into a side port and collect products at the front.",

@@ -271,7 +271,7 @@ public static partial class ResearchManager {
     /// </summary>
     public static void InitializeGeneration3StarterState() {
         lock (Sync) {
-            GrowthTechnologyManager.SetStackProgressionMode(PermanentProfileStore.HasPlayedFractionation);
+            GrowthTechnologyManager.ConfigureStackProgression();
             belongsToGeneration3 = true;
             completionDisqualified = GameMain.sandboxToolsEnabled || GameMain.data?.gameDesc?.isSandboxMode == true;
             snapshotDirty = true;
@@ -290,7 +290,7 @@ public static partial class ResearchManager {
     /// </summary>
     public static void MarkLegacyGeneration() {
         lock (Sync) {
-            GrowthTechnologyManager.SetStackProgressionMode(false);
+            GrowthTechnologyManager.ConfigureStackProgression();
             belongsToGeneration3 = false;
             completionDisqualified = true;
             snapshotDirty = true;
@@ -813,8 +813,6 @@ public static partial class ResearchManager {
             r.ReadBlocks(
                 ("Generation", br => belongsToGeneration3 = br.ReadBoolean()),
                 ("CompletionDisqualified", br => completionDisqualified = br.ReadBoolean() || localDisqualified),
-                ("StackProgressionMode", br =>
-                    GrowthTechnologyManager.SetStackProgressionMode(br.ReadBoolean())),
                 ("EligibleDirections", br => ReadIntSet(br, EligibleDirections)),
                 ("ExploredContents", br => {
                     ReadStringIntDictionary(br, ExploredContentDirections);
@@ -881,8 +879,6 @@ public static partial class ResearchManager {
             w.WriteBlocks(
                 ("Generation", bw => bw.Write(belongsToGeneration3)),
                 ("CompletionDisqualified", bw => bw.Write(completionDisqualified)),
-                ("StackProgressionMode", bw =>
-                    bw.Write(GrowthTechnologyManager.UsesExperiencedStackProgression)),
                 ("EligibleDirections", bw => WriteIntSet(bw, EligibleDirections)),
                 ("ExploredContents", bw =>
                     WriteStringIntDictionary(bw, ExploredContentDirections)),
@@ -903,7 +899,7 @@ public static partial class ResearchManager {
     /// </summary>
     public static void IntoOtherSave() {
         lock (Sync) {
-            GrowthTechnologyManager.SetStackProgressionMode(false);
+            GrowthTechnologyManager.ConfigureStackProgression();
             EligibleDirections.Clear();
             ExploredContents.Clear();
             ExploredContentDirections.Clear();

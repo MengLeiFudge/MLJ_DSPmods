@@ -1,6 +1,4 @@
-﻿using System;
-using FE.Logic.DataCenter;
-using FE.Logic.Enhancements.Stacking;
+﻿using FE.Logic.DataCenter;
 using FE.Logic.Items;
 using UnityEngine;
 using static FE.Utils.Utils;
@@ -80,13 +78,8 @@ public static class CivilizationRecoveryManager {
         GameMain.history.UnlockRecipe(RFE基础矿物塔);
         GameMain.history.UnlockRecipe(RFE基础解析塔);
         ResearchManager.GrantStarterResearchState();
-        GrantWalkingTechnologies();
         DataCenterInventory.AddExplorationReward(IFE基础矿物塔, 4);
         DataCenterInventory.AddExplorationReward(IFE基础解析塔, 2);
-
-        if (GrowthTechnologyManager.UsesExperiencedStackProgression) {
-            GrantVeteranLogisticsSupply();
-        }
 
         GrowthTechnologyManager.SyncRuntimeEffects();
         CivilizationModule.QueueNotification("首个遗物已恢复：基础塔与亚空间访问已就绪".Translate());
@@ -104,30 +97,4 @@ public static class CivilizationRecoveryManager {
     /// 保留联机生命周期入口；探索认领已经不再使用旧请求节流。
     /// </summary>
     public static void ResetNetworkRequestThrottle() { }
-
-    /// <summary>完整授予机械骨骼升级及当前模组附带效果，已完成等级不重复结算。</summary>
-    private static void GrantWalkingTechnologies() {
-        GameHistoryData history = GameMain.history;
-        for (int techId = T机械骨骼; techId < T机械骨骼 + 8; techId++) {
-            TechProto tech = LDB.techs.Select(techId);
-            if (tech?.UnlockFunctions == null || Array.IndexOf(tech.UnlockFunctions, 3) < 0) { continue; }
-            for (int level = tech.Level; level <= tech.MaxLevel && !history.TechUnlocked(techId, true); level++) {
-                history.UnlockTechUnlimited(techId, true);
-            }
-        }
-    }
-
-    /// <summary>授予已玩过路线的物流补给，逐项开放两个集装设备的主配方前置科技。</summary>
-    private static void GrantVeteranLogisticsSupply() {
-        int[] logisticsTechs = [
-            T基础物流系统, T改良物流系统, T高效物流系统, .. StackingManager.PilingTechnologyIds
-        ];
-        foreach (int techId in logisticsTechs) {
-            if (techId > 0 && !GameMain.history.TechUnlocked(techId, true)) {
-                GameMain.history.UnlockTechUnlimited(techId, true);
-            }
-        }
-        DataCenterInventory.AddExplorationReward(I极速传送带, 1000);
-        DataCenterInventory.AddExplorationReward(I集装分拣器, 200);
-    }
 }

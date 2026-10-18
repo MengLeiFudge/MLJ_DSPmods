@@ -121,12 +121,15 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
                 }
                 harmony.PatchAll(type);
             }
-            //在LDBTool已执行完毕所有PostAddData、EditData后，执行最终修改操作
+            // 在LDBTool及兼容模组完成原型修改后，读取最终科技成本与配方基线。
             harmony.Patch(
                 AccessTools.Method(typeof(VFPreload), nameof(VFPreload.InvokeOnLoadWorkEnded)),
                 null,
                 new(typeof(FeatureBootstrap), nameof(FeatureBootstrap.FinalAction)) {
-                    after = [LDBToolPlugin.MODGUID]
+                    after = [LDBToolPlugin.MODGUID, "org.ProfessorCat305.OrbitalRing",
+                        "Gnimaerd.DSP.plugin.MoreMegaStructure",
+                        "ProjectOrbitalRing.Compatibility.Gnimaerd.DSP.plugin.MoreMegaStructure"],
+                    priority = Priority.Last
                 }
             );
             MainWindow.Init();

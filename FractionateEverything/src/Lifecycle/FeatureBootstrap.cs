@@ -25,7 +25,6 @@ public static class FeatureBootstrap {
         GrowthTechnologyManager.AddTechs();
         // 添加指引手册
         TutorialManager.AddTutorials();
-        StackingManager.ApplyVanillaTechProtoOverrides();
         RecipeManager.RegisterAdvancedRecipeProtos();
     }
 
@@ -43,6 +42,8 @@ public static class FeatureBootstrap {
             return;
         }
 
+        GrowthTechnologyManager.FinalizeResearchCosts();
+        StackingManager.ApplyVanillaTechProtoOverrides();
         GrowthTechnologyManager.ApplyTechLayout();
         AdvancedRecipeCatalog.DetachFromItemRecipes();
         PreloadAndInitAll();

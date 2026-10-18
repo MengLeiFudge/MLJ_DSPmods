@@ -52,28 +52,15 @@ public static class GrowthTechnologyManager {
     /// <summary>成长首行相对第二页宇宙探索的网格行，护盾链下方留出一行空白。</summary>
     private const int FirstGrowthRow = 36;
 
-    private static readonly int[] MatrixItems = [
-        I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵,
-    ];
-    private static readonly int[] MatrixTechs = [
-        T电磁矩阵, T能量矩阵, T结构矩阵, T信息矩阵, T引力矩阵, T宇宙矩阵,
-    ];
-
-    // 采用原版“无人机引擎”升级链的六阶段矩阵数量。
+    /// <summary>六阶段成长的单种材料预算；实际材料及比例读取最终科技树。</summary>
     private static readonly int[] FiniteGrowthCosts = [200, 400, 800, 1200, 1600, 50000];
-    /// <summary>每种矩阵每件对应的科研哈希，按蓝至白采用原版无人机引擎各阶段工作量。</summary>
-    private static readonly int[] MatrixHashPerItem = [90, 180, 180, 300, 900, 900];
-    private static readonly int[] ExperiencedStackCosts = [1200, 2400, 3600, 4800, 6000];
-    private static readonly int[] StandardStackCosts = [0, 6000, 8000, 10000, 40000];
-    private static readonly int[] ExperiencedStackMatrixStages = [0, 1, 2, 3, 4];
-    private static readonly int[] StandardStackMatrixStages = [0, 3, 4, 5, 5];
+    private static readonly int[] StackCosts = [1, 6000, 8000, 10000, 40000];
+    private static readonly int[] StackStages = [0, 3, 4, 5, 5];
     private static readonly TechProto[] StackTechs = new TechProto[6];
-    /// <summary>成长节点相对成长首行的行列，注册和路线切换时记录，最终加载后统一应用。</summary>
+    /// <summary>成长节点的阶段身份与预算，不受参考科技材料组合影响。</summary>
+    private static readonly Dictionary<int, (int Stage, int Budget, int Increment)> ResearchCosts = [];
+    /// <summary>成长节点相对成长首行的行列，最终加载后统一应用。</summary>
     private static readonly Dictionary<int, (int Row, int Column)> GrowthTechPositions = [];
-    private static bool stackProgressionModeApplied;
-
-    /// <summary>当前存档是否采用已玩过分馏的堆叠路线。</summary>
-    public static bool UsesExperiencedStackProgression { get; private set; }
 
     /// <summary>长链任务是否已授予无限仓储。</summary>
     public static bool UltimateCapacity => GameMain.history?.TechUnlocked(TFE终极仓储) == true;
@@ -110,47 +97,26 @@ public static class GrowthTechnologyManager {
     /// <summary>获取高级转化塔特质科技等级，范围 0..6。</summary>
     public static int AdvancedConversionTraitLevel => Volatile.Read(ref conversionTraitLevel);
 
-    /// <summary>
-    /// 应用当前存档的堆叠成长路线。普通路线由实际集装设备解锁提供4堆叠，FE从8开始。
-    /// </summary>
-    public static void SetStackProgressionMode(bool experienced) {
-        if (stackProgressionModeApplied && UsesExperiencedStackProgression == experienced) {
-            SyncUnstartedStackTechStates();
-            return;
-        }
-
-        UsesExperiencedStackProgression = experienced;
+    /// <summary>配置唯一堆叠路线：原版研究提供四层，FE从八层开始。</summary>
+    public static void ConfigureStackProgression() {
         for (int level = 1; level <= 5; level++) {
             TechProto tech = StackTechs[level] ?? LDB.techs.Select(TFE分馏堆叠成长 + level);
-            if (tech == null) {
-                continue;
-            }
-
-            bool active = experienced || level is >= 2 and <= 4;
-            int stage = experienced
-                ? ExperiencedStackMatrixStages[level - 1]
-                : StandardStackMatrixStages[level - 1];
-            int cost = experienced
-                ? ExperiencedStackCosts[level - 1]
-                : StandardStackCosts[level - 1];
-            int previousTech = experienced ? level > 1 ? TFE分馏堆叠成长 + level - 1 : 0 :
-                level > 2 ? TFE分馏堆叠成长 + level - 1 : 0;
-
-            int techLevel = experienced ? level : Math.Max(1, level - 1);
-            ConfigureGrowthTech(tech, techLevel, !experienced && level == 4 ? 4 : techLevel, previousTech,
-                [MatrixItems[stage]], cost);
+            if (tech == null) { continue; }
+            int stage = StackStages[level - 1];
+            int budget = StackCosts[level - 1];
+            int increment = level == 4 ? StackCosts[4] - budget : 0;
+            tech.Level = Math.Max(1, level - 1);
+            tech.MaxLevel = level == 4 ? 4 : tech.Level;
+            tech.PreTechs = level == 2 ? [3315, 3803, T信息矩阵]
+                : level > 2 ? [TFE分馏堆叠成长 + level - 1] : [];
+            ResearchCosts[tech.ID] = (stage, budget, increment);
+            MatrixResearchCosts.Apply(tech, stage, budget, increment);
             GrowthTechPositions[tech.ID] = (0, stage);
             tech.Position = GetGrowthTechPosition(0, stage);
-            if (!experienced && level == 4) {
-                tech.LevelCoef1 = (StandardStackCosts[4] - cost) * MatrixHashPerItem[stage];
-                tech.HashNeeded -= (long)tech.Level * tech.LevelCoef1;
-            }
             tech.IsHiddenTech = true;
-            tech.IsObsolete = !active;
+            tech.IsObsolete = level is < 2 or > 4;
         }
-
         RefreshStackTechLinks();
-        stackProgressionModeApplied = true;
         SyncUnstartedStackTechStates();
     }
 
@@ -197,11 +163,8 @@ public static class GrowthTechnologyManager {
         if (techId is TFE行星内物流交互 or TFE星际物流交互) {
             return ResearchManager.IsContentUnlocked(contentId);
         }
-        if (contentId == StackTechnologyContentId && !UsesExperiencedStackProgression
-            && !StackingManager.HasPilingTechnology) { return false; }
-        TechProto tech = LDB.techs.Select(techId);
-        int stage = tech?.Items?.Length > 0
-            ? Array.IndexOf(MatrixItems, tech.Items[tech.Items.Length - 1]) + 1 : 0;
+        if (contentId == StackTechnologyContentId && !StackingManager.HasPilingTechnology) { return false; }
+        int stage = GetResearchStage(techId);
         bool recovered = stage > 0 && ResearchManager.IsContentUnlocked(ResearchManager.StageContentId(stage));
         bool trait = contentId is ResearchManager.AdvancedMineralTraitId
             or ResearchManager.AdvancedInteractionTraitId or ResearchManager.AdvancedConversionTraitId;
@@ -220,10 +183,9 @@ public static class GrowthTechnologyManager {
         if (techId is TFE行星内物流交互 or TFE星际物流交互) {
             return history.TechUnlocked(techId == TFE行星内物流交互 ? T行星物流系统 : T星际物流系统);
         }
-        if (contentId == StackTechnologyContentId && !UsesExperiencedStackProgression
-            && !StackingManager.HasPilingTechnology) { return false; }
+        if (contentId == StackTechnologyContentId && !StackingManager.HasPilingTechnology) { return false; }
         TechProto tech = LDB.techs.Select(techId);
-        int stage = tech.Items?.Length > 0 ? Array.IndexOf(MatrixItems, tech.Items[tech.Items.Length - 1]) + 1 : 0;
+        int stage = GetResearchStage(techId);
         return stage > 0 && stage <= ResearchManager.CurrentMatrixStage
             && (tech.PreTechs == null || tech.PreTechs.All(history.TechUnlocked));
     }
@@ -242,8 +204,7 @@ public static class GrowthTechnologyManager {
             TFE终极探索 => "远古广播持续回应".Translate(),
             TFE终极仓储 => "亚空间容量：无限".Translate(),
             > TFE分馏堆叠成长 and <= TFE分馏堆叠成长 + 5 =>
-                string.Format("货物堆叠上限 +{0}".Translate(),
-                    UsesExperiencedStackProgression && techId == TFE分馏堆叠成长 + 1 ? 3 : 4),
+                string.Format("货物堆叠上限 +{0}".Translate(), 4),
             > TFE亚空间能效 and <= TFE亚空间能效 + FiniteGrowthLevelCount => "亚空间存取耗能 -10%".Translate(),
             > TFE探索信号增幅 and <= TFE探索信号增幅 + FiniteGrowthLevelCount =>
                 BuildExplorationUnlockText(level),
@@ -301,16 +262,12 @@ public static class GrowthTechnologyManager {
             return;
         }
 
-        bool experienced = UsesExperiencedStackProgression;
-        int stack = !experienced && StackingManager.HasPilingTechnology ? 4 : 1;
-        int firstGrowthLevel = experienced ? 1 : 2;
-        for (int level = firstGrowthLevel; level <= (experienced ? 5 : 3); level++) {
+        int stack = StackingManager.HasPilingTechnology ? 4 : 1;
+        for (int level = 2; level <= 3; level++) {
             if (history.TechUnlocked(TFE分馏堆叠成长 + level)) { stack = level * 4; }
         }
-        if (!experienced) {
-            int completed = GetCompletedLevel(TFE分馏堆叠成长 + 4);
-            if (completed >= 3) { stack = Math.Max(stack, (completed + 1) * 4); }
-        }
+        int completed = GetCompletedLevel(TFE分馏堆叠成长 + 4);
+        if (completed >= 3) { stack = Math.Max(stack, (completed + 1) * 4); }
         StackingManager.ConfiguredMaxStack = stack;
         StackingManager.SyncRuntimeState();
     }
@@ -357,13 +314,12 @@ public static class GrowthTechnologyManager {
         for (int level = 1; level <= 5; level++) {
             int techId = TFE分馏堆叠成长 + level;
             TechProto tech = RegisterGrowthTech(techId, series, previousTech,
-                [MatrixItems[ExperiencedStackMatrixStages[level - 1]]],
-                ExperiencedStackCosts[level - 1], new GrowthTechLevel(level, level));
+                StackStages[level - 1], StackCosts[level - 1], new GrowthTechLevel(level, level));
             tech.IconTag = "fe-stack-growth";
             StackTechs[level] = tech;
             previousTech = techId;
         }
-        SetStackProgressionMode(PermanentProfileStore.HasPlayedFractionation);
+        ConfigureStackProgression();
     }
 
     private static void AddFiniteSeries(int baseTechId, string nameKey, string descriptionKey,
@@ -373,7 +329,7 @@ public static class GrowthTechnologyManager {
         for (int level = 1; level <= FiniteGrowthLevelCount; level++) {
             TechProto tech = RegisterGrowthTech(
                 baseTechId + level, series, previousTech,
-                GetProgressiveMatrixItems(level - 1), FiniteGrowthCosts[level - 1],
+                level - 1, FiniteGrowthCosts[level - 1],
                 new GrowthTechLevel(level,
                     baseTechId == TFE探索信号增幅 && level == 6 ? 10 : level,
                     baseTechId == TFE探索信号增幅 && level == 6 ? 10000 : 0));
@@ -383,58 +339,61 @@ public static class GrowthTechnologyManager {
     }
 
     private static TechProto RegisterGrowthTech(int techId, GrowthTechSeries series,
-        int previousTech, int[] matrixItemIds, int matrixCost, GrowthTechLevel levelDefinition) {
-        int hashPerItem = MatrixHashPerItem[Array.IndexOf(MatrixItems, matrixItemIds[matrixItemIds.Length - 1])];
-        int linearHashIncrement = checked(levelDefinition.LinearCostIncrement * hashPerItem);
-        long baseHash = (long)matrixCost * hashPerItem
-                        - (long)levelDefinition.Level * linearHashIncrement;
-        // 原版每件矩阵有3600材料点；缩短科研工作量时同步提高每哈希消耗，保持材料总成本。
-        int[] itemPoints = Enumerable.Repeat(3600 / hashPerItem, matrixItemIds.Length).ToArray();
+        int previousTech, int stage, int matrixCost, GrowthTechLevel levelDefinition) {
+        TechProto reference = MatrixResearchCosts.GetReference(stage);
         string nodeNameKey = $"{series.NameKey} {levelDefinition.Level}";
         TechProto tech = ProtoRegistry.RegisterTech(
             techId, nodeNameKey, series.DescriptionKey, "FE成长科技结果", series.IconPath,
             previousTech > 0 ? [previousTech] : [],
-            matrixItemIds, itemPoints, baseHash,
+            (int[])reference.Items.Clone(), (int[])reference.ItemPoints.Clone(), reference.HashNeeded,
             [], GetGrowthTechPosition(series.Row, levelDefinition.Level - 1));
         GrowthTechPositions[tech.ID] = (series.Row, levelDefinition.Level - 1);
         tech.Level = levelDefinition.Level;
         tech.MaxLevel = levelDefinition.MaxLevel;
-        tech.LevelCoef1 = linearHashIncrement;
-        tech.LevelCoef2 = 0;
-        tech.PreTechsImplicit = [GetMatrixTechId(matrixItemIds[matrixItemIds.Length - 1])];
+        ResearchCosts[tech.ID] = (stage, matrixCost, levelDefinition.LinearCostIncrement);
+        MatrixResearchCosts.Apply(tech, stage, matrixCost, levelDefinition.LinearCostIncrement);
         tech.AddItems = [];
         tech.AddItemCounts = [];
-        tech.PropertyOverrideItems = [.. matrixItemIds];
-        tech.PropertyItemCounts = Enumerable.Repeat(matrixCost, matrixItemIds.Length).ToArray();
         tech.IsHiddenTech = true;
         tech.IsObsolete = false;
         return tech;
     }
 
-    private static void ConfigureGrowthTech(TechProto tech, int level, int maxLevel, int previousTech,
-        int[] matrixItemIds, int matrixCost) {
-        tech.Level = level;
-        tech.MaxLevel = maxLevel;
-        tech.LevelCoef1 = 0;
-        tech.LevelCoef2 = 0;
-        tech.PreTechs = previousTech > 0 ? [previousTech] : [];
-        tech.PreTechsImplicit = [GetMatrixTechId(matrixItemIds[matrixItemIds.Length - 1])];
-        int hashPerItem = MatrixHashPerItem[Array.IndexOf(MatrixItems, matrixItemIds[matrixItemIds.Length - 1])];
-        tech.Items = [.. matrixItemIds];
-        tech.ItemPoints = Enumerable.Repeat(3600 / hashPerItem, matrixItemIds.Length).ToArray();
-        tech.PropertyOverrideItems = [.. matrixItemIds];
-        tech.PropertyItemCounts = Enumerable.Repeat(matrixCost, matrixItemIds.Length).ToArray();
-        tech.HashNeeded = (long)matrixCost * hashPerItem;
+    /// <summary>在其他模组改表结束后刷新成本、矩阵前置和物流科技的依赖关系。</summary>
+    public static void FinalizeResearchCosts() {
+        foreach (var entry in ResearchCosts) {
+            TechProto tech = LDB.techs.Select(entry.Key);
+            MatrixResearchCosts.Apply(tech, entry.Value.Stage, entry.Value.Budget, entry.Value.Increment);
+            tech.Preload2();
+        }
+        foreach (var pair in new[] { (TFE行星内物流交互, T行星物流系统), (TFE星际物流交互, T星际物流系统) }) {
+            TechProto tech = LDB.techs.Select(pair.Item1);
+            TechProto reference = LDB.techs.Select(pair.Item2);
+            tech.Items = (int[])reference.Items.Clone();
+            tech.ItemPoints = (int[])reference.ItemPoints.Clone();
+            tech.HashNeeded = reference.HashNeeded;
+            tech.PropertyOverrideItems = (int[])reference.PropertyOverrideItems.Clone();
+            tech.PropertyItemCounts = (int[])reference.PropertyItemCounts.Clone();
+            tech.Preload2();
+        }
+        for (int id = 3311; id <= 3315; id++) {
+            TechProto tech = LDB.techs.Select(id);
+            MatrixResearchCosts.Retier(tech, 2);
+            tech.Preload2();
+        }
+        for (int id = 3801; id <= 3803; id++) {
+            TechProto tech = LDB.techs.Select(id);
+            MatrixResearchCosts.Retier(tech, 2);
+            tech.PreTechs = (tech.PreTechs ?? []).Where(value => value is < 3508 or > 3510)
+                .Append(3315).Distinct().ToArray();
+            tech.Preload2();
+        }
+        RefreshStackTechLinks();
     }
 
-    private static int[] GetProgressiveMatrixItems(int matrixStage) => matrixStage switch {
-        <= 0 => [I电磁矩阵],
-        1 => [I电磁矩阵, I能量矩阵],
-        2 => [I电磁矩阵, I能量矩阵, I结构矩阵],
-        3 => [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵],
-        4 => [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵],
-        _ => [I宇宙矩阵],
-    };
+    /// <summary>返回独立于科研材料的阶段身份，非成长科技返回零。</summary>
+    private static int GetResearchStage(int techId) => ResearchCosts.TryGetValue(techId, out var cost)
+        ? cost.Stage + 1 : 0;
 
     private static void RefreshStackTechLinks() {
         if (LDB.techs?.dataArray == null || LDB.techs.Select(TFE分馏堆叠成长 + 1) == null) {
@@ -442,6 +401,7 @@ public static class GrowthTechnologyManager {
         }
 
         int[] affectedTechIds = [
+            3315, 3801, 3802, 3803, T信息矩阵, 3508, 3509, 3510,
             TFE分馏堆叠成长 + 1,
             TFE分馏堆叠成长 + 2,
             TFE分馏堆叠成长 + 3,
@@ -509,9 +469,7 @@ public static class GrowthTechnologyManager {
     /// <summary>将同格式3.0存档的白糖研究状态归并到当前多级节点，保留已完成等级与当前研究量。</summary>
     public static void ConsolidateWhiteMatrixResearch() {
         if (!ResearchManager.BelongsToGeneration3) { return; }
-        if (!UsesExperiencedStackProgression) {
-            ConsolidateResearchNode(TFE分馏堆叠成长 + 4, [TFE分馏堆叠成长 + 5]);
-        }
+        ConsolidateResearchNode(TFE分馏堆叠成长 + 4, [TFE分馏堆叠成长 + 5]);
     }
 
     /// <summary>在节点等级上限变化时合并同一条白糖研究链，已归并的存档不再重复处理。</summary>
@@ -542,10 +500,6 @@ public static class GrowthTechnologyManager {
         history.techStates[techId] = state;
     }
 
-    private static int GetMatrixTechId(int matrixItemId) {
-        int index = Array.IndexOf(MatrixItems, matrixItemId);
-        return index >= 0 ? MatrixTechs[index] : 0;
-    }
 
     /// <summary>读取多级节点已经完成的等级，未研究节点的初始 curLevel 不算完成。</summary>
     /// <param name="techId">科技原型身份。</param>
