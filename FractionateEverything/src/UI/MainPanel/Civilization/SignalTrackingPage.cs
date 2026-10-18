@@ -1,18 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using FE.Logic.Civilization;
 using FE.UI.MainPanel.Theme;
-using HarmonyLib;
-using UnityEngine;
 using static FE.Utils.Utils;
 
 namespace FE.UI.MainPanel.Civilization;
 
-/// <summary>仅列出已经收到的广播，静默遗迹只显示本地收集统计。</summary>
+/// <summary>列出剧情信号与永久记录的发现，未接近的普通地点不公开。</summary>
 public sealed class SignalTrackingPage : CardBrowserPage {
-    private static readonly MethodInfo TrackMethod = AccessTools.Method(typeof(UIGlobemap), "SetLocationTracking",
-        [typeof(int), typeof(Vector3), typeof(int)]);
     protected override string Title => "信号追踪".Translate();
     protected override string Summary {
         get {
@@ -31,6 +26,6 @@ public sealed class SignalTrackingPage : CardBrowserPage {
         .Select(mark => new PageCard { Key = mark.Id.ToString(), Title = ExplorationManager.GetSignalName(mark), ItemId = IFE残片,
             Status = ExplorationManager.IsKeySignal(mark) ? "关键信号".Translate() : "普通广播".Translate(),
             Detail = ExplorationManager.GetSignalDescription(mark),
-            ActionLabel = "标注位置".Translate(), Action = GrowthTechnologyManager.ExplorationLocationTrackingUnlocked
-                ? () => TrackMethod?.Invoke(UIRoot.instance?.uiGame?.globemap, [mark.PlanetId, mark.LocalPosition, 519]) : null }).ToArray();
+            ActionLabel = "标注位置".Translate(), Action = mark.Kind == ExplorationMarkKind.FirstRelic
+                ? null : () => ExplorationDetector.Track(mark) }).ToArray();
 }

@@ -75,19 +75,6 @@ public static class GrowthTechnologyManager {
     public static int ExplorationLevel => Math.Max(GetUnlockedLevel(TFE探索信号增幅, 5),
         GetCompletedLevel(TFE探索信号增幅 + 6));
 
-    /// <summary>获取探测器显示强度的量化步长，单位为百分点。</summary>
-    public static float ExplorationSignalPrecisionPercent => GetSignalPrecision(ExplorationLevel);
-
-    /// <summary>返回指定探索等级的读数量化间隔，单位为百分点。</summary>
-    /// <param name="level">已完成探索等级。</param>
-    /// <returns>信号读数的最小间隔。</returns>
-    private static float GetSignalPrecision(int level) => level switch {
-        <= 0 => 20f, 1 => 10f, 2 => 5f, 3 => 2f, 4 => 1f, _ => 0.5f,
-    };
-
-    /// <summary>判断玩家是否已经解锁主动位置标注。</summary>
-    public static bool ExplorationLocationTrackingUnlocked => ExplorationLevel >= 5;
-
     /// <summary>获取高级矿物塔特质科技等级，范围 0..6。</summary>
     public static int AdvancedMineralTraitLevel => Volatile.Read(ref mineralTraitLevel);
 
@@ -222,11 +209,6 @@ public static class GrowthTechnologyManager {
     private static string BuildExplorationUnlockText(int level) {
         string text = string.Format("FE.Growth.ExplorationIncrement".Translate(),
             FragDropPatch.FragDropProbabilityPerLevel);
-        if (level <= 5) {
-            text += "\n" + string.Format("信号读数间隔 -{0:0.#}%".Translate(),
-                GetSignalPrecision(level - 1) - GetSignalPrecision(level));
-        }
-        if (level == 5) { text += "\n" + "信号位置标注".Translate(); }
         return text;
     }
 

@@ -48,7 +48,6 @@ public static class MainWindow {
     }
 
     public static void Init() {
-        ExplorationSignalHud.Init();
         MessageBoxMainPanelWindow.OnUICreated += CreateUI;
         MessageBoxMainPanelWindow.OnUpdateUI += UpdateUI;
         _toggleKey = CustomKeyBindSystem.RegisterKeyBindWithReturn<PressKeyBind>(new() {

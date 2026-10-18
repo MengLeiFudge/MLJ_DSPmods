@@ -165,6 +165,14 @@ public static class NebulaMultiplayerModAPI {
         }
     }
 
+    /// <summary>请求主机按连接位置记录邻近发现，不由客户端声明坐标或发现清单。</summary>
+    public static void RequestExplorationDiscovery() {
+        if (!CanSendCivilizationAction()) { return; }
+        NebulaModAPI.MultiplayerSession.Network.SendPacket(new CivilizationActionPacket {
+            actionType = CivilizationActionPacket.DiscoverExploration,
+        });
+    }
+
     /// <summary>从主机持有的连接数据读取玩家位置与星球，不采信 FE 动作包里的位置声明。</summary>
     /// <param name="connection">发包连接。</param>
     /// <param name="position">宇宙位置。</param>
@@ -453,6 +461,9 @@ public class CivilizationActionPacket {
     /// <summary>显式提交终极任务所需Memory，位置与剩余需求由主机验证。</summary>
     public const int SubmitMemory = 2;
 
+    /// <summary>按主机持有的玩家位置记录邻近发现。</summary>
+    public const int DiscoverExploration = 3;
+
     public int actionType { get; set; }
 
     /// <summary>待认领的探索点位 ID；位置由主机连接数据提供。</summary>
@@ -479,6 +490,9 @@ public class CivilizationActionPacketProcessor : BasePacketProcessor<Civilizatio
         if (!NebulaMultiplayerModAPI.TryGetAuthoritativePlayerState(conn,
                 out VectorLF3 position, out int planetId)) { return; }
         switch (packet.actionType) {
+            case CivilizationActionPacket.DiscoverExploration:
+                ExplorationManager.DiscoverNearby(position, planetId);
+                break;
             case CivilizationActionPacket.SubmitMemory:
                 ExplorationManager.SubmitTaskMemory(packet.markId, position, planetId);
                 break;

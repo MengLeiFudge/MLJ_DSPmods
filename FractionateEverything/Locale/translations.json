@@ -1,4 +1,4 @@
-{
+﻿{
   "FE.Conversion.PairName": {
     "enUS": "{0} → {1} conversion",
     "zhCN": "{0}→{1}重构",
@@ -33,132 +33,6 @@
     "frFR": "Actif",
     "1031": "Aktiv",
     "1041": "稼働中"
-  },
-  "KEYFEChangeDetectorRange": {
-    "enUS": "Cycle detector range",
-    "zhCN": "切换探测量程",
-    "frFR": "Changer la portée du détecteur",
-    "1031": "Detektor-Messbereich wechseln",
-    "1041": "探知段階を切り替え"
-  },
-  "KEYFEChangeDetectorMode": {
-    "enUS": "Switch detector mode",
-    "zhCN": "切换探测模式",
-    "frFR": "Changer le mode du détecteur",
-    "1031": "Detektormodus wechseln",
-    "1041": "探知モードを切り替え"
-  },
-  "FE.Detector.Civilization": {
-    "enUS": "Civilization beacon",
-    "zhCN": "文明信标",
-    "frFR": "Balise de civilisation",
-    "1031": "Zivilisationssignal",
-    "1041": "文明信標"
-  },
-  "FE.Detector.Exploration": {
-    "enUS": "Anomaly exploration",
-    "zhCN": "异常探索",
-    "frFR": "Exploration d'anomalies",
-    "1031": "Anomalieerkundung",
-    "1041": "異常探索"
-  },
-  "FE.Detector.StarRange": {
-    "enUS": "System range",
-    "zhCN": "星系挡",
-    "frFR": "Système",
-    "1031": "System",
-    "1041": "星系"
-  },
-  "FE.Detector.PlanetRange": {
-    "enUS": "Planet range",
-    "zhCN": "星球挡",
-    "frFR": "Planète",
-    "1031": "Planet",
-    "1041": "惑星"
-  },
-  "FE.Detector.RegionRange": {
-    "enUS": "Region range",
-    "zhCN": "区域挡",
-    "frFR": "Région",
-    "1031": "Region",
-    "1041": "地域"
-  },
-  "FE.Detector.FineRange": {
-    "enUS": "Fine range",
-    "zhCN": "精细挡",
-    "frFR": "Précision",
-    "1031": "Feinortung",
-    "1041": "精密"
-  },
-  "FE.Detector.NoSignal": {
-    "enUS": "No response",
-    "zhCN": "无回应",
-    "frFR": "Aucune réponse",
-    "1031": "Keine Antwort",
-    "1041": "反応なし"
-  },
-  "FE.Detector.Unresolved": {
-    "enUS": "Response unresolved",
-    "zhCN": "回应未分辨",
-    "frFR": "Réponse indéterminée",
-    "1031": "Antwort unbestimmt",
-    "1041": "反応未分離"
-  },
-  "FE.Detector.StarResult": {
-    "enUS": "System: {0}",
-    "zhCN": "星系：{0}",
-    "frFR": "Système : {0}",
-    "1031": "System: {0}",
-    "1041": "星系：{0}"
-  },
-  "FE.Detector.PlanetResult": {
-    "enUS": "Planet: {0}",
-    "zhCN": "星球：{0}",
-    "frFR": "Planète : {0}",
-    "1031": "Planet: {0}",
-    "1041": "惑星：{0}"
-  },
-  "FE.Detector.Located": {
-    "enUS": "Located",
-    "zhCN": "已定位",
-    "frFR": "Localisé",
-    "1031": "Geortet",
-    "1041": "位置特定"
-  },
-  "FE.Detector.Receiving": {
-    "enUS": "Receiving",
-    "zhCN": "接收中",
-    "frFR": "Réception",
-    "1031": "Empfang",
-    "1041": "受信中"
-  },
-  "FE.Detector.Strength": {
-    "enUS": "Signal {0:0.#}% · {1}",
-    "zhCN": "信号 {0:0.#}% · {1}",
-    "frFR": "Signal {0:0.#}% · {1}",
-    "1031": "Signal {0:0.#}% · {1}",
-    "1041": "信号 {0:0.#}% · {1}"
-  },
-  "FE.Detector.Position": {
-    "enUS": "Position: lat {0:+0.000;-0.000;0.000}° · lon {1:+0.000;-0.000;0.000}°",
-    "zhCN": "当前位置：纬度 {0:+0.000;-0.000;0.000}° · 经度 {1:+0.000;-0.000;0.000}°",
-    "frFR": "Position : lat {0:+0.000;-0.000;0.000}° · lon {1:+0.000;-0.000;0.000}°",
-    "1031": "Position: Breite {0:+0.000;-0.000;0.000}° · Länge {1:+0.000;-0.000;0.000}°",
-    "1041": "現在地：緯度 {0:+0.000;-0.000;0.000}° · 経度 {1:+0.000;-0.000;0.000}°"
-  },
-  "FE.Detector.PolarRegion": {
-    "enUS": "Lat {0:+0.000;-0.000;0.000}°–{1:+0.000;-0.000;0.000}° · all longitudes",
-    "zhCN": "纬度 {0:+0.000;-0.000;0.000}°～{1:+0.000;-0.000;0.000}° · 全部经度",
-    "frFR": "Lat {0:+0.000;-0.000;0.000}°–{1:+0.000;-0.000;0.000}° · toutes longitudes",
-    "1031": "Breite {0:+0.000;-0.000;0.000}°–{1:+0.000;-0.000;0.000}° · alle Längen",
-    "1041": "緯度 {0:+0.000;-0.000;0.000}°～{1:+0.000;-0.000;0.000}° · 全経度"
-  },
-  "FE.Detector.Region": {
-    "enUS": "Lat {0:+0.000;-0.000;0.000}°–{1:+0.000;-0.000;0.000}° · lon {2:+0.000;-0.000;0.000}°–{3:+0.000;-0.000;0.000}°",
-    "zhCN": "纬度 {0:+0.000;-0.000;0.000}°～{1:+0.000;-0.000;0.000}° · 经度 {2:+0.000;-0.000;0.000}°～{3:+0.000;-0.000;0.000}°",
-    "frFR": "Lat {0:+0.000;-0.000;0.000}°–{1:+0.000;-0.000;0.000}° · lon {2:+0.000;-0.000;0.000}°–{3:+0.000;-0.000;0.000}°",
-    "1031": "Breite {0:+0.000;-0.000;0.000}°–{1:+0.000;-0.000;0.000}° · Länge {2:+0.000;-0.000;0.000}°–{3:+0.000;-0.000;0.000}°",
-    "1041": "緯度 {0:+0.000;-0.000;0.000}°～{1:+0.000;-0.000;0.000}° · 経度 {2:+0.000;-0.000;0.000}°～{3:+0.000;-0.000;0.000}°"
   },
   "FE.ReserveFood": {
     "enUS": "Reserve food",
@@ -326,11 +200,11 @@
     "1041": "通常鉱物の複製と塔の培養はマトリックス技術に応じて開放される。レアレシピは先に手掛かりを得て、記録に示されたサンプルを解析する。手掛かりのない物品は無傷で通過し、それだけでレシピを発見することはできない。解析ページでは未発見・解析中・復元済みの記録が同じ位置に残る。未発見の記録はサンプルも結果も表示しない。\n\n解析成功は共有進捗を進め、同じサンプルを正面から返す。新たなサンプルは増えず、破損時だけ消費される。未処理のサンプルは増産剤ポイントを保ったまま側面に流れる。産物バッファがしきい値に達すると反応を止め、産物を排出・回収するまで入力は側面へ通過する。一回の処理でしきい値を超えることはある。\n\nエネルギーマトリックスの研究後は回路基板で置換用サンプルを作れる。各通過の成功率は1%、破損率は3%、側面への返却率は96%。成功すると現在利用可能なレシピのサンプルを一つ作り、手掛かりを記録する。対象レシピをすべて復元すると作成を止める。"
   },
   "FE.Encyclopedia.Explore": {
-    "enUS": "An intact ancient instrument receives civilization beacons. Its copied exploration module becomes available after the first relic and improves through exploration technology. Both modes have system, planet, region and fine ranges. Changing range retains the target. Region readings show coordinate bounds and your position; their ground scale remains comparable on large planets. Fine readings round to the nearest step. A 100% reading alone does not confirm arrival.\n\nRocky planets have 6–8 low-level silent relics. Their supplies support industry without Dark Fog combat. Advanced relics may contain pages. Each planet holds at most five ordinary broadcasts, with at least one minute between new broadcasts. Fragment analysis obeys both limits; story signals are separate. Hidden silent relics are detected only nearby.\n\nRewards go to subspace. Review brief tips in Guidance / Message Log, and past locations in Exploration / Location Archive.",
-    "zhCN": "保存完好的古代仪器接收文明信标，首遗物后开放的探索模块则来自仿制，通过探索成长科技逐步修复与校准。两种模式都有星系、星球、区域、精细四挡，换挡保留目标。区域读数给出经纬度区间和当前位置，大星球上的搜索范围仍保持相近的地表尺度。精细读数取最近一档，100%本身不代表已经到达。\n\n岩石星球有6～8个低级静默点，补给能支持不开黑雾的工业起步。高级遗迹可能留下残页。每颗星球同时最多5个普通广播，新广播至少间隔1分钟，残片解析也受此限制，主线不占名额。隐藏静默点只在近距离被探测。\n\n奖励存入亚空间，短暂提示可在“指引 / 消息日志”回看，地点记录在“探索 / 地点档案”。",
-    "frFR": "Un instrument antique intact reçoit les balises de civilisation. Son module d'exploration copié s'ouvre après la première relique et s'améliore par la recherche. Chaque mode possède quatre portées : système, planète, région et précision. Changer de portée conserve la cible. La région donne les bornes de coordonnées et votre position, avec une échelle au sol comparable sur les grandes planètes. Les mesures fines sont arrondies au palier le plus proche ; 100 % ne confirme pas l'arrivée.\n\nLes planètes rocheuses ont 6 à 8 reliques silencieuses de bas niveau, utiles même sans combat. Les reliques avancées peuvent contenir des pages. Chaque planète accueille au plus cinq transmissions ordinaires, espacées d'au moins une minute. L'analyse de fragments respecte ces limites ; le récit est indépendant. Les reliques cachées ne sont détectées qu'à proximité.\n\nLes récompenses vont au sous-espace. Les notifications restent dans le journal des messages, les lieux dans les archives d'exploration.",
-    "1031": "Ein intaktes antikes Instrument empfängt Zivilisationssignale. Das nachgebaute Erkundungsmodul wird nach dem ersten Relikt verfügbar und durch Erkundungsforschung verbessert. Beide Modi haben vier Messbereiche: System, Planet, Region und Feinortung. Beim Wechsel bleibt das Ziel erhalten. Region zeigt Koordinatengrenzen und deine Position; die Suchfläche bleibt auf großen Planeten vergleichbar. Feinwerte werden auf die nächste Stufe gerundet. 100 % allein bestätigt keine Ankunft.\n\nGesteinsplaneten haben 6–8 stille Relikte niedriger Stufe, deren Vorräte auch ohne Kämpfe helfen. Höhere Relikte können Seiten enthalten. Pro Planet sind höchstens fünf gewöhnliche Sendungen aktiv, mit mindestens einer Minute Abstand. Fragmentanalysen beachten beide Grenzen; die Handlung ist unabhängig. Verborgene Relikte werden nur in der Nähe erfasst.\n\nBelohnungen gelangen in den Subraum. Hinweise stehen im Nachrichtenprotokoll, Fundorte im Erkundungsarchiv.",
-    "1041": "無傷で残った古代の計器が文明信標を受信する。最初の遺物の後に開放される探索モジュールはその模倣品で、探索技術により改善される。両モードには星系・惑星・地域・精密の四段階があり、切り替えても対象は変わらない。地域表示は緯度経度の範囲と現在地を示し、大きな惑星でも地表の探索範囲は同程度になる。精密測定は最も近い段階へ丸められ、100%だけでは到着を意味しない。\n\n岩石惑星には低段階の静かな遺跡が6～8か所あり、戦闘なしでも産業を支える。高段階の遺跡には残頁があることもある。通常放送は一惑星に最大5件、新規発生は最低1分間隔。断片解析もこの制限に従い、物語の信号は別枠となる。隠れた遺跡は近距離でのみ探知される。\n\n報酬は亜空間へ送られる。通知はメッセージログ、過去の地点は探索の地点アーカイブで確認できる。"
+    "enUS": "The first echo appears as a signal bar. Its reach scales with the planet, so large worlds remain searchable. Later story signals leave destinations that can be marked with View Signal. Navigation shows the way without moving Icarus.\n\nOrdinary signals remain hidden until approached. Once discovered, their locations stay in Signal Tracking until recovered, then in the location archive. Relics are sparse; the home system is the main exploration area, and new destinations follow your actual activity. Research improves fragment recovery and the frequency of new broadcasts.\n\nRecovery rewards go to subspace. Records preserve the actual result; revisiting an archive does not award it again.",
+    "zhCN": "最初的回声只表现为一条强度条，感应范围随星球大小调整。后续主线会留下可定位的目的地，在“查看信号”中建立导航与地表标记；标记不会代替伊卡洛斯移动。\n\n普通信号在接近前保持隐藏。一旦发现，位置就留在信号追踪中，回收后进入地点档案。遗迹数量稀少，母星系是主要探索区域，新的目的地随实际活动范围展开。探索研究改善残片回收和新广播的出现频率。\n\n探索物资存入亚空间。档案保存实际取得的结果，回看不会再次发奖。",
+    "frFR": "Le premier écho apparaît sous forme de barre de signal, adaptée au rayon de la planète. Les signaux narratifs suivants donnent une destination : Voir le signal place un repère sans déplacer Icarus.\n\nLes signaux ordinaires restent cachés jusqu’à votre approche. Leurs positions découvertes restent dans le suivi, puis dans les archives après récupération. Les reliques sont rares ; le système natal est la zone principale, les destinations suivent votre activité réelle. La recherche améliore la récupération de fragments et la fréquence des émissions. Les récompenses vont au sous-espace, une seule fois.",
+    "1031": "Das erste Echo erscheint als Signalbalken, dessen Reichweite sich dem Planetenradius anpasst. Spätere Handlungssignale lassen sich über Signal anzeigen markieren. Die Navigation bewegt Ikarus nicht.\n\nGewöhnliche Signale bleiben bis zur Annäherung verborgen. Entdeckte Orte bleiben in der Signalverfolgung und nach der Bergung im Archiv. Relikte sind selten; das Heimatsystem ist das Hauptgebiet, weitere Ziele folgen deiner tatsächlichen Aktivität. Forschung verbessert Fragmentfunde und die Häufigkeit neuer Sendungen. Belohnungen gelangen einmalig in den Subraum.",
+    "1041": "最初の反応は信号バーだけで示され、探知範囲は惑星の半径に合わせて変わる。その後の物語信号は「信号を見る」で目的地と地表をマークできる。自動移動は行わない。\n\n通常信号は接近するまで隠される。一度発見した場所は追跡一覧に残り、回収後は地点アーカイブへ移る。遺跡は少数で、母星系を中心に実際の活動範囲に応じて展開する。探索研究は断片回収と放送の頻度を改善する。報酬は亜空間へ一度だけ送られる。"
   },
   "FE.Encyclopedia.Storage": {
     "enUS": "Each item has its own capacity. To expand subspace, power a basic analysis tower and feed science matrices into a side port. Only 8% is processed on each pass; the other 92% flows back with proliferator points. Processed matrices first fill the shared buffer of 60 per tier. Expansion consumes at most one matrix per second across all towers, preferring the highest tier. Higher tiers expand faster; growth slows as capacity rises.\n\nProcessed matrices that cannot enter the buffer are consumed as offerings and may produce one Memory at the front. The average consumption per Memory for blue, red, yellow, purple, green and white matrices is 100, 60, 40, 25, 15 and 10 respectively. Relic rewards may exceed normal capacity and can still be withdrawn.",
@@ -461,11 +335,11 @@
     "1041": "物流交互ステーションが亜空間と物資を出し入れする際の消費エネルギーを、レベルごとに10%削減します。"
   },
   "FE探索信号增幅描述": {
-    "enUS": "The exploration module was copied from an intact ancient beacon detector. Repair and calibrate its receiver to narrow coordinate regions and refine readings. Better reception also reveals more broadcasts and fragments in Dark Fog wreckage.",
-    "zhCN": "探索模块是依据完好的古代信标仪仿制的产物。修复并校准它的接收器，逐步缩小坐标区间、提高读数精度；更好的接收能力也能发现更多广播和黑雾残骸中的残片。",
-    "frFR": "Le module d'exploration est une copie d'un détecteur de balises antiques intact. Réparer et calibrer son récepteur réduit les zones de coordonnées et affine les mesures. Une meilleure réception révèle aussi davantage de transmissions et de fragments dans les débris du Brouillard noir.",
-    "1031": "Das Erkundungsmodul ist ein Nachbau eines intakten antiken Signalempfängers. Reparatur und Kalibrierung verkleinern die Koordinatenbereiche und verfeinern die Messwerte. Besserer Empfang erschließt zudem mehr Sendungen und Fragmente in Trümmern des Dunklen Nebels.",
-    "1041": "探索モジュールは、無傷で残った古代の信標探知機を模倣したもの。受信機の修復と校正により座標範囲が狭まり、測定精度が向上する。受信能力の改善は、放送やダークフォグの残骸にある断片の発見にもつながる。"
+    "enUS": "Restore the ancient receiver to recover more fragments from Dark Fog wreckage and shorten the interval between new broadcasts. Discovered locations remain recorded without further calibration.",
+    "zhCN": "修复远古接收器，辨识黑雾残骸中的更多残片，缩短新广播的出现间隔。已经发现的位置会持续保留，不必再次校准。",
+    "frFR": "Réparez le récepteur antique pour récupérer plus de fragments dans les débris du Brouillard noir et réduire l’intervalle entre émissions. Les lieux découverts restent enregistrés sans nouveau calibrage.",
+    "1031": "Repariere den antiken Empfänger, um mehr Fragmente in Trümmern des Dunklen Nebels zu finden und Sendeintervalle zu verkürzen. Entdeckte Orte bleiben ohne weitere Kalibrierung gespeichert.",
+    "1041": "古代の受信機を修復し、ダークフォグの残骸からより多くの断片を見つけ、放送の間隔を短縮する。発見済みの場所は再校正せずに保持される。"
   },
   "FE高级矿物特质描述": {
     "enUS": "Reduces rare-catalyst consumption in every advanced mineral tower.",
@@ -517,25 +391,11 @@
     "1041": "亜空間への出し入れの消費エネルギー -10%"
   },
   "FE.Growth.ExplorationIncrement": {
-    "enUS": "Broadcast interval -15%\nFragment discovery chance +{0:P0}",
-    "zhCN": "广播间隔 -15%\n残片发现概率 +{0:P0}",
-    "frFR": "Intervalle des émissions -15 %\nProbabilité de trouver un fragment +{0:P0}",
-    "1031": "Sendeintervall -15 %\nChance auf einen Fragmentfund +{0:P0}",
-    "1041": "放送間隔 -15%\n断片発見確率 +{0:P0}"
-  },
-  "信号读数间隔 -{0:0.#}%": {
-    "enUS": "Signal reading interval -{0:0.#}%",
-    "zhCN": "信号读数间隔 -{0:0.#}%",
-    "frFR": "Intervalle de lecture du signal -{0:0.#} %",
-    "1031": "Abstand der Signalabstufungen -{0:0.#} %",
-    "1041": "信号表示の刻み -{0:0.#}%"
-  },
-  "信号位置标注": {
-    "enUS": "Signal location marking",
-    "zhCN": "信号位置标注",
-    "frFR": "Marquage de la position des signaux",
-    "1031": "Signalposition markieren",
-    "1041": "信号位置のマーク"
+    "enUS": "Broadcast interval -15% (minimum 10 min)\nFragment discovery chance +{0:P0}",
+    "zhCN": "广播间隔 -15%（最短10分钟）\n残片发现概率 +{0:P0}",
+    "frFR": "Intervalle des émissions -15 % (minimum 10 min)\nProbabilité de fragment +{0:P0}",
+    "1031": "Sendeintervall -15 % (mindestens 10 Min.)\nFragmentfundchance +{0:P0}",
+    "1041": "放送間隔 -15%（最短10分）\n断片発見確率 +{0:P0}"
   },
   "珍奇催化物损耗 -10%": {
     "enUS": "Rare catalyst loss -10%",
@@ -2351,11 +2211,11 @@
     "1041": "次のこだまは、降り立つ惑星にあるかもしれない。"
   },
   "FE.SignalTrackingPage.CollectionSummary": {
-    "enUS": "Silent relics: this planet {0}/{1} · this system {2}/{3}",
-    "zhCN": "静默遗迹：本星球 {0}/{1} · 本星系 {2}/{3}",
-    "frFR": "Reliques silencieuses : planète {0}/{1} · système {2}/{3}",
-    "1031": "Stille Relikte: Planet {0}/{1} · System {2}/{3}",
-    "1041": "静かな遺跡：この惑星 {0}/{1} · この星系 {2}/{3}"
+    "enUS": "Known silent relics — recovered / discovered: this planet {0}/{1} · this system {2}/{3}",
+    "zhCN": "已记录静默遗迹（已回收 / 已发现）：本星球 {0}/{1} · 本星系 {2}/{3}",
+    "frFR": "Reliques connues — récupérées / découvertes : planète {0}/{1} · système {2}/{3}",
+    "1031": "Bekannte stille Relikte — geborgen / entdeckt: Planet {0}/{1} · System {2}/{3}",
+    "1041": "記録済みの静かな遺跡（回収 / 発見）：この惑星 {0}/{1} · この星系 {2}/{3}"
   },
   "关键信号": {
     "enUS": "Key signal",
@@ -2729,11 +2589,11 @@
     "1041": "遺跡探索"
   },
   "FE.UsageGuidePage.Explore": {
-    "enUS": "Alt+R cycles system, planet, region and fine ranges; Alt+T switches civilization beacons and exploration. Both keys can be rebound. Exploration becomes available after the first relic. Changing range retains the target; completed signals are replaced automatically. Unresolved reception means the target cannot be measured at that scale.\n\nSystem and planet ranges identify the destination. Region range shows latitude/longitude bounds together with your position in signed degrees; region sizes account for the planet's radius. Fine range measures nearby targets at low altitude, rounding to the nearest precision step. A 100% reading is not an arrival test. Recovery uses the physical distance: approach on foot or at low hover altitude.\n\nRelics are recovered automatically within range. Memory delivery nodes require explicit delivery from subspace through Exploration / Ultimate Expeditions while near the relic. Ordinary recoveries show a brief notification; key signals open a result record. Supplies go to subspace. Records remain in Exploration / Location Archive and Guidance / Story Records.",
-    "zhCN": "Alt+R循环切换星系、星球、区域、精细四挡，Alt+T切换文明信标与异常探索，两键可在设置中修改。首遗物后开放探索模式。换挡保留目标，已完成的信号自动续接；当前尺度无法测量目标时，仪表显示“回应未分辨”。\n\n星系、星球挡给出目标所在天体。区域挡同时显示目标的经纬度区间与玩家当前位置，坐标用带正负号的度数表示，范围按星球半径换算。精细挡测量低空近距离目标，百分比取最接近的精度档；100%读数不代替实际到达判定。回收仍按真实距离结算，步行或低空悬浮均可接近。\n\n进入范围后自动回收。终极任务的源点交付节点需要在遗迹附近，通过“探索 / 终极任务”主动交付亚空间中的源点。普通遗迹浮现提示，关键信号弹出结果记录；物资送入亚空间。地点档案和主线记录可分别在“探索 / 地点档案”“指引 / 主线记录”回看。",
-    "frFR": "Alt+R parcourt système, planète, région et précision ; Alt+T alterne balises de civilisation et exploration. Les touches sont modifiables. L'exploration s'ouvre après la première relique. Changer de portée conserve la cible, remplacée après résolution. Une réception indéterminée signifie que la cible ne peut pas être mesurée à cette échelle.\n\nSystème et planète identifient la destination. La région affiche les bornes de latitude/longitude et votre position en degrés signés, selon le rayon de la planète. La mesure fine concerne les cibles proches à basse altitude et s'arrondit au palier le plus proche. 100 % ne confirme pas l'arrivée : la récupération dépend de la distance réelle, à pied ou en vol stationnaire bas.\n\nLa récupération est automatique à portée. Les étapes demandant des mémoires exigent une livraison explicite depuis le sous-espace, près de la relique, via Exploration / Expéditions ultimes. Les reliques ordinaires donnent une notification ; les signaux clés ouvrent un compte rendu. Les ressources vont au sous-espace. Les archives des lieux et du récit conservent les résultats.",
-    "1031": "Alt+R wechselt zwischen System, Planet, Region und Feinortung; Alt+T zwischen Zivilisationssignalen und Erkundung. Beide Tasten sind umbelegbar. Erkundung öffnet sich nach dem ersten Relikt. Der Messbereichwechsel behält das Ziel; abgeschlossene Signale werden ersetzt. Unbestimmter Empfang bedeutet, dass das Ziel in diesem Bereich nicht messbar ist.\n\nSystem und Planet nennen den Zielort. Region zeigt Breiten- und Längengrenzen sowie deine Position in Grad mit Vorzeichen; die Fläche berücksichtigt den Planetenradius. Feinortung misst nahe Ziele in niedriger Höhe und rundet auf die nächste Genauigkeitsstufe. 100 % ist keine Ankunftsprüfung. Die Bergung verwendet die tatsächliche Entfernung; Annäherung zu Fuß oder im niedrigen Schwebeflug ist möglich.\n\nRelikte werden in Reichweite automatisch geborgen. Erinnerungslieferungen müssen nahe dem Relikt unter Erkundung / Ultimative Expeditionen ausdrücklich aus dem Subraum abgegeben werden. Gewöhnliche Relikte zeigen einen kurzen Hinweis, Schlüsselsignale einen Bericht. Vorräte gelangen in den Subraum. Fundortarchiv und Geschichtsaufzeichnungen bewahren die Ergebnisse.",
-    "1041": "Alt+Rで星系・惑星・地域・精密を順に切り替え、Alt+Tで文明信標と異常探索を切り替える。キーは設定で変更可能。探索モードは最初の遺物の後に開放される。測定段階を変えても対象を保持し、完了後は次へ移る。その段階で測れない場合は反応未分離と表示される。\n\n星系と惑星は対象の天体を示す。地域は緯度経度の範囲と現在地を符号付きの度数で示し、惑星半径に応じて範囲を調整する。精密は低空の近距離対象を測り、最も近い精度段階に丸める。100%だけでは到着判定にならない。回収は実際の距離で決まり、歩行か低空ホバリングで接近できる。\n\n範囲内の遺跡は自動回収される。記憶コアの納入地点は、付近で「探索 / 最終任務」から亜空間の在庫を明示的に納入する必要がある。通常遺跡は短い通知、重要信号は結果記録を表示し、物資は亜空間へ送られる。地点アーカイブとメインストーリー記録で結果を確認できる。"
+    "enUS": "Follow the first signal bar by moving on the surface or at low hover altitude. Later story signals and discovered ordinary sites can be marked from View Signal. The destination indicator and ground marker do not issue movement orders.\n\nOrdinary signals appear only nearby. Their locations are remembered permanently, so you can return later. Recovery uses the actual distance, not a full signal bar. Supplies go to subspace and the results remain in the location archive.",
+    "zhCN": "最初的信号只有强度条，地面行走或低空悬浮时都能感知。后续主线和已发现的普通地点可用“查看信号”设置天体导航及地表标记，机甲仍由玩家操控。\n\n普通信号只在靠近时浮现，发现过的位置会永久保留，可以之后再来。回收以实际距离判断，信号条满格不代替到达。物资送入亚空间，结果留在地点档案。",
+    "frFR": "Suivez la première barre de signal à pied ou en vol stationnaire bas. Les signaux narratifs suivants et les sites ordinaires découverts peuvent être marqués via Voir le signal, sans ordre de déplacement. Les signaux ordinaires n’apparaissent qu’à proximité ; leur position est mémorisée pour revenir plus tard. La récupération dépend de la distance réelle, pas du remplissage de la barre. Les ressources vont au sous-espace et les résultats restent dans les archives.",
+    "1031": "Folge dem ersten Signalbalken zu Fuß oder im niedrigen Schwebeflug. Spätere Handlungssignale und entdeckte gewöhnliche Orte können über Signal anzeigen markiert werden, ohne Bewegungsbefehl. Gewöhnliche Signale erscheinen nur in der Nähe und bleiben danach gespeichert. Die Bergung hängt von der tatsächlichen Entfernung ab, nicht von einem vollen Balken. Vorräte gehen in den Subraum, Ergebnisse ins Ortsarchiv.",
+    "1041": "最初の信号バーは徒歩や低空ホバリングで追える。その後の物語信号と発見済みの通常地点は「信号を見る」で天体と地表にマークを付けられるが、自動移動はしない。通常信号は近くでのみ現れ、一度発見した場所は永久に記録される。回収は実際の距離で判定し、バーが満ちただけでは完了しない。報酬は亜空間へ送られ、結果は地点アーカイブに残る。"
   },
   "随身的库房": {
     "enUS": "A Storehouse at Hand",

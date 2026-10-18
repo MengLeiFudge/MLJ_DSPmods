@@ -47,7 +47,7 @@ public sealed class ExplorationRecord {
 }
 
 /// <summary>管理固定遗迹、阶段广播、剧情任务与主机认领结算。</summary>
-public static class ExplorationManager {
+public static partial class ExplorationManager {
     private const int MaximumRecords = 1000000;
     private const long TicksPerMinute = 3600;
     private const int UltimateMemoryCost = 2400;
@@ -92,9 +92,8 @@ public static class ExplorationManager {
     public static bool PlanetDetectorUnlocked => FirstRelicClaimed;
     /// <summary>已经完成的主线节点数。</summary>
     public static int StoryCompleted { get { lock (Sync) { return storyCompleted; } } }
-    /// <summary>静默层级随矩阵阶段开放，最高为三层。</summary>
-    public static int DetectableQuality => ResearchManager.CurrentMatrixStage >= 3 ? 3
-        : ResearchManager.CurrentMatrixStage >= 2 ? 2 : 1;
+    /// <summary>首遗物恢复后均可发现，质量决定奖励而非地点可见门槛。</summary>
+    public static int DetectableQuality => FirstRelicClaimed ? 3 : 0;
 
     /// <summary>是否为公开目标星球的剧情点。</summary>
     /// <param name="mark">目标点。</param>
@@ -189,7 +188,9 @@ public static class ExplorationManager {
     public static ExplorationMark[] GetActiveMarks() {
         lock (Sync) {
             if (broadcastDirty) {
-                broadcastSnapshot = ActiveMarks.Select(CloneMark).ToArray();
+                broadcastSnapshot = ActiveMarks.Where(m => IsKeySignal(m) || DiscoveredMarks.ContainsKey(m.Id))
+                    .Concat(DiscoveredMarks.Values.Where(m => m.Id < 0 && !CollectedSilentMarks.Contains(m.Id)))
+                    .Select(CloneMark).ToArray();
                 broadcastDirty = false;
             }
             return broadcastSnapshot;
@@ -223,9 +224,8 @@ public static class ExplorationManager {
     public static void GetSilentProgress(int planetId, out int collected, out int total) {
         lock (Sync) {
             var marks = GetSilentMarks(planetId);
-            int quality = DetectableQuality;
-            total = marks.Count(m => m.Quality <= quality);
-            collected = marks.Count(m => m.Quality <= quality && CollectedSilentMarks.Contains(m.Id));
+            total = marks.Count(m => DiscoveredMarks.ContainsKey(m.Id));
+            collected = marks.Count(m => CollectedSilentMarks.Contains(m.Id));
         }
     }
 
@@ -258,9 +258,6 @@ public static class ExplorationManager {
         lock (Sync) {
             while (generated < count && GenerateDynamicMark()) { generated++; }
         }
-        if (generated > 0) {
-            CivilizationModule.QueueNotification(string.Format("{0}发现了新的远古广播。".Translate(), source));
-        }
     }
 
     /// <summary>研究结果适度提前尚未到期的广播，不延长既有倒计时。</summary>
@@ -282,6 +279,7 @@ public static class ExplorationManager {
     public static void GameTick(long gameTick, bool secondBoundary) {
         if (GameMain.mainPlayer == null || GameMain.galaxy == null) { return; }
         if (NebulaMultiplayerModAPI.IsClient) {
+            if (secondBoundary) { NebulaMultiplayerModAPI.RequestExplorationDiscovery(); }
             foreach (ExplorationMark mark in NearbyMarks(GameMain.mainPlayer.planetId)) {
                 if (!IsPaymentMark(mark) && IsWithinArrival(mark, GameMain.mainPlayer.uPosition,
                         GameMain.mainPlayer.planetId)) {
@@ -292,6 +290,7 @@ public static class ExplorationManager {
         }
         lock (Sync) {
             if (secondBoundary) {
+                DiscoverNearby(GameMain.mainPlayer.uPosition, GameMain.mainPlayer.planetId);
                 EnsureFirstRelicMark();
                 EnsureStory();
                 EnsureMilestones();
@@ -352,71 +351,6 @@ public static class ExplorationManager {
         }
     }
 
-    /// <summary>读取当前信号的精细量程；量化百分比不参与回收判定。</summary>
-    /// <param name="mark">当前跟踪目标。</param>
-    /// <param name="playerPosition">玩家宇宙位置。</param>
-    /// <param name="planetStrength">兼容输出，等于精细读数，不是星球量程。</param>
-    /// <param name="relicStrength">就近取档后的0～1强度。</param>
-    /// <returns>是否处于目标星球低空及180m量程内。</returns>
-    public static bool TryGetDetectorStrengths(ExplorationMark mark, VectorLF3 playerPosition,
-        out float planetStrength, out float relicStrength) {
-        planetStrength = relicStrength = 0f;
-        PlanetData planet = GameMain.galaxy?.PlanetById(mark?.PlanetId ?? 0);
-        if (planet == null || GameMain.mainPlayer?.planetId != planet.id
-            || mark.Quality > DetectableQuality && !IsKeySignal(mark)) { return false; }
-        if (Math.Abs((playerPosition - planet.uPosition).magnitude - planet.realRadius) > 70) { return false; }
-        double distance = GetSignalDistance(mark, planet, playerPosition);
-        if (distance > DetectionRange) { return false; }
-        float arrival = GetArrivalDistance(mark);
-        float raw = Mathf.Clamp01((DetectionRange - (float)distance) / (DetectionRange - arrival));
-        float step = IsKeySignal(mark) ? 0.01f : GrowthTechnologyManager.ExplorationSignalPrecisionPercent / 100f;
-        relicStrength = Mathf.Clamp01(Mathf.Floor(raw / step + 0.5f) * step);
-        planetStrength = relicStrength;
-        return true;
-    }
-
-    /// <summary>保持模式内有效目标，失效后依次优先本星球、本星系、距离和稳定身份。</summary>
-    /// <param name="keySignals">是否为文明信标模式。</param>
-    /// <param name="currentId">当前目标身份，0表示尚未选择。</param>
-    /// <returns>目标副本；无候选为null，不公开远处静默点。</returns>
-    public static ExplorationMark GetDetectorTarget(bool keySignals, int currentId) {
-        Player player = GameMain.mainPlayer;
-        if (player == null || GameMain.galaxy == null || !keySignals && !FirstRelicClaimed) { return null; }
-        lock (Sync) {
-            IEnumerable<ExplorationMark> candidates = ActiveMarks;
-            if (!keySignals && player.planetId > 0) {
-                candidates = candidates.Concat(NearbyMarks(player.planetId).Where(m => m.Kind == ExplorationMarkKind.SilentCache));
-            }
-            ExplorationMark best = null;
-            int bestPriority = int.MaxValue;
-            double bestDistance = double.MaxValue;
-            foreach (ExplorationMark mark in candidates) {
-                if (IsKeySignal(mark) != keySignals || !keySignals && mark.Quality > DetectableQuality) { continue; }
-                PlanetData planet = GameMain.galaxy.PlanetById(mark.PlanetId);
-                if (planet == null) { continue; }
-                if (mark.Kind == ExplorationMarkKind.SilentCache
-                    && !TryGetDetectorStrengths(mark, player.uPosition, out _, out _)) { continue; }
-                if (mark.Id == currentId) { return CloneMark(mark); }
-                int priority = planet.id == player.planetId ? 0 : planet.star == GameMain.localStar ? 1 : 2;
-                double distance = priority == 0 ? GetSignalDistance(mark, planet, player.uPosition)
-                    : (planet.uPosition - player.uPosition).sqrMagnitude;
-                if (priority < bestPriority || priority == bestPriority
-                    && (distance < bestDistance || distance == bestDistance && (best == null || mark.Id < best.Id))) {
-                    best = mark;
-                    bestPriority = priority;
-                    bestDistance = distance;
-                }
-            }
-            return best == null ? null : CloneMark(best);
-        }
-    }
-
-    /// <summary>用真实星球和空间距离判定本地玩家到达，不从百分比推断。</summary>
-    /// <param name="mark">当前目标。</param>
-    /// <returns>本地玩家是否实际到达。</returns>
-    public static bool IsDetectorTargetReached(ExplorationMark mark) => mark != null
-        && GameMain.mainPlayer is Player player && IsWithinArrival(mark, player.uPosition, player.planetId);
-
     /// <summary>读取并清除主机快照脏标记。</summary>
     /// <returns>是否有待同步变化。</returns>
     public static bool TakeSnapshotDirty() { lock (Sync) { bool dirty = snapshotDirty; snapshotDirty = false; return dirty; } }
@@ -425,7 +359,7 @@ public static class ExplorationManager {
     /// <param name="writer">输出流。</param>
     public static void Export(BinaryWriter writer) {
         lock (Sync) {
-            writer.Write(3);
+            writer.Write(4);
             writer.Write(nextMarkId); writer.Write(storyCompleted); writer.Write(nextTimedGenerationTick); writer.Write(randomSeed);
             writer.Write(capacityHintShown);
             for (int i = 0; i < 2; i++) { writer.Write(UltimateSteps[i]); writer.Write(UltimateInputs[i]); }
@@ -435,6 +369,7 @@ public static class ExplorationManager {
             foreach (ExplorationRecord record in Records) { WriteMark(writer, record.Mark); writer.Write(record.Tick); }
             writer.Write(LastBroadcastTicks.Count);
             foreach (var pair in LastBroadcastTicks) { writer.Write(pair.Key); writer.Write(pair.Value); }
+            ExportDiscoveries(writer);
         }
     }
 
@@ -444,7 +379,7 @@ public static class ExplorationManager {
         lock (Sync) {
             IntoOtherSave();
             int version = reader.ReadInt32();
-            if (version is < 1 or > 3) { throw new InvalidDataException("不支持的探索存档格式。"); }
+            if (version is < 1 or > 4) { throw new InvalidDataException("不支持的探索存档格式。"); }
             nextMarkId = reader.ReadInt32(); storyCompleted = reader.ReadInt32(); nextTimedGenerationTick = reader.ReadInt64(); randomSeed = reader.ReadUInt32();
             capacityHintShown = reader.ReadBoolean();
             for (int i = 0; i < 2; i++) { UltimateSteps[i] = Math.Max(0, Math.Min(6, reader.ReadInt32())); UltimateInputs[i] = Math.Max(0, Math.Min(UltimateMemoryCost, reader.ReadInt32())); }
@@ -469,6 +404,7 @@ public static class ExplorationManager {
                     LastBroadcastTicks.Add(planetId, tick);
                 }
             }
+            ImportDiscoveries(reader, version);
             if (nextMarkId <= 0 || storyCompleted < 0 || storyCompleted > 18) { throw new InvalidDataException("探索进度无效。"); }
             MarkDirty();
         }
@@ -478,7 +414,7 @@ public static class ExplorationManager {
     public static void IntoOtherSave() {
         lock (Sync) {
             ActiveMarks.Clear(); SilentMarks.Clear(); CollectedSilentMarks.Clear(); Records.Clear();
-            LastBroadcastTicks.Clear();
+            LastBroadcastTicks.Clear(); DiscoveredMarks.Clear(); VisitedPlanets.Clear();
             Array.Clear(UltimateSteps, 0, 2); Array.Clear(UltimateInputs, 0, 2);
             nextMarkId = 1; storyCompleted = 0; nextTimedGenerationTick = 0; randomSeed = 0x8F3A51C7u;
             capacityHintShown = false; matrixMilestoneId = -1; broadcastSnapshot = []; broadcastDirty = true; snapshotDirty = false;
@@ -503,7 +439,7 @@ public static class ExplorationManager {
         int stage = (next - 1) / 3;
         if (ResearchManager.CurrentMatrixStage < stage || stage >= 1 && !HasProducedFirstMatrix()) { return; }
         if (next == 3 && ResearchManager.DiscoveredContentCount < 1) { return; }
-        PlanetData planet = SelectReachablePlanet(stage, stage == 3 ? GameMain.galaxy.birthPlanetId : 0, next >= 13);
+        PlanetData planet = SelectActivePlanet(stage == 3 ? GameMain.galaxy.birthPlanetId : 0, next >= 13);
         AddMark(planet, next == 4 ? ExplorationMarkKind.PlanetDetector : ExplorationMarkKind.Story, next);
     }
 
@@ -516,14 +452,14 @@ public static class ExplorationManager {
         }
         if (ResearchManager.HasTowerInventoryMilestone && !ResearchManager.SacrificeUnlocked
             && !ActiveMarks.Any(m => m.Kind == ExplorationMarkKind.Sacrifice)) {
-            AddMark(SelectReachablePlanet(3), ExplorationMarkKind.Sacrifice);
+            AddMark(SelectActivePlanet(), ExplorationMarkKind.Sacrifice);
         }
         foreach (var pair in new[] {
             (T行星物流系统, GrowthTechnologyManager.PlanetaryInteractionTechnologyContentId),
             (T星际物流系统, GrowthTechnologyManager.InterstellarInteractionTechnologyContentId) }) {
             if (GameMain.history.TechUnlocked(pair.Item1) && !ResearchManager.IsContentUnlocked(pair.Item2)
                 && !ActiveMarks.Any(m => m.ContentId == pair.Item2)) {
-                AddMark(SelectReachablePlanet(ResearchManager.CurrentMatrixStage), ExplorationMarkKind.Infrastructure, 0, pair.Item2);
+                AddMark(SelectActivePlanet(), ExplorationMarkKind.Infrastructure, 0, pair.Item2);
             }
         }
     }
@@ -534,28 +470,14 @@ public static class ExplorationManager {
         if ((!ready && UltimateSteps[branch] == 0) || UltimateSteps[branch] >= 6
             || ActiveMarks.Any(m => m.Kind == ExplorationMarkKind.Ultimate && m.ContentId == id)) { return; }
         ExplorationRecord previous = Records.LastOrDefault(r => r.Mark.Kind == ExplorationMarkKind.Ultimate && r.Mark.ContentId == id);
-        PlanetData planet = SelectReachablePlanet(6, previous?.Mark.PlanetId ?? 0, UltimateSteps[branch] % 2 == 1);
+        PlanetData planet = SelectActivePlanet(previous?.Mark.PlanetId ?? 0, UltimateSteps[branch] % 2 == 1);
         AddMark(planet, ExplorationMarkKind.Ultimate, UltimateSteps[branch], id);
-    }
-
-    private static PlanetData SelectReachablePlanet(int stage, int excludedPlanet = 0, bool preferNeighbor = false) {
-        GalaxyData galaxy = GameMain.galaxy;
-        if (stage < 3) { return galaxy.PlanetById(galaxy.birthPlanetId); }
-        StarData star = galaxy.StarById(galaxy.birthStarId);
-        if (stage >= 4 && GameMain.mainPlayer.mecha.thrusterLevel >= 3) {
-            // 限出生星系与邻近可达星系，避免随机把任务抛到星区另一端。
-            StarData other = galaxy.stars.Where(s => s.id != galaxy.birthStarId)
-                .OrderBy(s => (s.uPosition - star.uPosition).sqrMagnitude).FirstOrDefault();
-            if (other != null && (preferNeighbor || NextInt(2) == 1)) { star = other; }
-        }
-        PlanetData[] planets = star.planets.Where(p => p.type != EPlanetType.Gas && p.id != excludedPlanet).ToArray();
-        return planets.Length > 0 ? planets[NextInt(planets.Length)] : galaxy.PlanetById(galaxy.birthPlanetId);
     }
 
     /// <summary>终极奖励生效后按星球上限及冷却补充普通广播，剧情与静默点不占名额。</summary>
     private static void ReplenishUltimateSignals() {
         if (!GrowthTechnologyManager.UltimateExploration) { return; }
-        int missing = Math.Max(0, 5 - ActiveMarks.Count(m => !IsKeySignal(m)));
+        int missing = Math.Max(0, 2 - ActiveMarks.Count(m => !IsKeySignal(m)));
         for (int i = 0; i < missing; i++) { GenerateDynamicMark(); }
     }
 
@@ -565,9 +487,9 @@ public static class ExplorationManager {
     /// <summary>尝试生成一个普通广播，剧情点不占容量；失败不产生积欠。</summary>
     /// <returns>本次是否实际生成。</returns>
     private static bool GenerateDynamicMark() {
-        PlanetData planet = SelectReachablePlanet(ResearchManager.CurrentMatrixStage);
-        if (planet == null || ActiveMarks.Count(m => m.PlanetId == planet.id && !IsKeySignal(m)) >= 5
-            || LastBroadcastTicks.TryGetValue(planet.id, out long tick) && GameMain.gameTick - tick < 3600) {
+        PlanetData planet = SelectActivePlanet();
+        if (planet == null || ActiveMarks.Count(m => m.PlanetId == planet.id && !IsKeySignal(m)) >= 2
+            || LastBroadcastTicks.TryGetValue(planet.id, out long tick) && GameMain.gameTick - tick < 10 * TicksPerMinute) {
             return false;
         }
         LastBroadcastTicks[planet.id] = GameMain.gameTick;
@@ -668,11 +590,16 @@ public static class ExplorationManager {
                 LocalPosition = direction * MarkRadius(planet), Kind = ExplorationMarkKind.SilentCache,
                 Quality = i < counts[0] ? 1 : i < counts[0] + counts[1] ? 2 : 3 };
         }
-        // 保留原网格、稳定身份和已回收事实，只移除多余低级点，避免旧档已探索地点移位。
-        int lowCount = planet.type == EPlanetType.Gas ? 1
-            : planetId == GameMain.galaxy.birthPlanetId ? 8
-            : planet.star.id == GameMain.galaxy.birthStarId ? 7 : 6;
-        marks = marks.Where((mark, index) => mark.Quality > 1 || index < lowCount).ToArray();
+        // 缩减未发现地点，但保留原几何、已发现快照与已领奖身份。
+        int perQuality = planetId == GameMain.galaxy.birthPlanetId ? 0
+            : planet.star.id == GameMain.galaxy.birthStarId ? 2 : 1;
+        marks = marks.Where((mark, index) => planet.type == EPlanetType.Gas ? index == 0
+            : planetId == GameMain.galaxy.birthPlanetId ? index < 2
+            : index < perQuality || index >= counts[0] && index < counts[0] + perQuality
+                || index >= counts[0] + counts[1] && index < counts[0] + counts[1] + perQuality)
+            .Where(mark => !DiscoveredMarks.ContainsKey(mark.Id))
+            .Concat(DiscoveredMarks.Values.Where(mark => mark.Id < 0 && mark.PlanetId == planetId))
+            .ToArray();
         SilentMarks[planetId] = marks;
         return marks;
     }
@@ -750,6 +677,7 @@ public static class ExplorationManager {
                 GameMain.history.UnlockTechUnlimited(branch == 0 ? TFE终极探索 : TFE终极仓储, true);
             }
         } else { AwardCache(mark); }
+        if (!IsKeySignal(mark)) { DiscoveredMarks[mark.Id] = CloneMark(mark); }
         var record = new ExplorationRecord { Mark = CloneMark(mark), Tick = GameMain.gameTick };
         Records.Add(record);
         recordsSnapshot = null;
@@ -824,7 +752,8 @@ public static class ExplorationManager {
         return pool[NextInt(pool.Length)];
     }
 
-    private static long GetGenerationIntervalTicks() => (long)(10 * TicksPerMinute * Math.Pow(0.85, GrowthTechnologyManager.ExplorationLevel));
+    private static long GetGenerationIntervalTicks() => (long)(TicksPerMinute
+        * Math.Max(10d, 20d * Math.Pow(0.85, GrowthTechnologyManager.ExplorationLevel)));
     /// <summary>遗迹位于星球半径加默认悬浮高度一半处，岩石星球与气态巨星通用。</summary>
     private static float MarkRadius(PlanetData planet) => planet.realRadius + DefaultHoverAltitude / 2f;
     private static Vector3 RandomDirection(ref uint seed) {

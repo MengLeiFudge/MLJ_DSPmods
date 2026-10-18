@@ -1,17 +1,16 @@
-﻿using CommonAPI.Systems;
-using FE.Logic.Civilization;
+﻿using FE.Logic.Civilization;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace FE.UI.MainPanel.Civilization;
 
 /// <summary>
-/// 呈现本地四挡探测仪表与玩家坐标，沿用原版HUD隐藏和避让规则。
+/// 呈现连续图形信号条，沿用原版HUD隐藏和避让规则。
 /// </summary>
 internal static class ExplorationSignalHud {
-    private const float HudWidth = 520f;
+    private const float HudWidth = 180f;
     private const float RowHeight = 24f;
-    private static readonly Text[] RowTexts = new Text[3];
+    private static readonly Text[] RowTexts = new Text[1];
     private static GameObject root;
     /// <summary>HUD所在层的局部矩形。</summary>
     private static RectTransform rootRect;
@@ -20,26 +19,7 @@ internal static class ExplorationSignalHud {
     /// <summary>教学、黑雾、手动研究、研究队列与科技提示的可见边界。</summary>
     private static readonly Rect[] PanelBounds = new Rect[5];
     private static int panelCount;
-    private static int lastRefreshFrame = -1;
-
-    /// <summary>绑定沿用CommonAPI的游戏内可改键入口，不创建第二套配置。</summary>
-    private static PressKeyBind rangeKey;
-    private static PressKeyBind modeKey;
-
-    /// <summary>在功能初始化阶段注册量程和模式键；不依赖HUD是否已经创建。</summary>
-    public static void Init() {
-        if (rangeKey != null) { return; }
-        int conflicts = KeyBindConflict.MOVEMENT | KeyBindConflict.FLYING | KeyBindConflict.SAILING
-            | KeyBindConflict.BUILD_MODE_1 | KeyBindConflict.KEYBOARD_KEYBIND;
-        rangeKey = CustomKeyBindSystem.RegisterKeyBindWithReturn<PressKeyBind>(new() {
-            key = new((int)KeyCode.R, CombineKey.ALT_COMB, ECombineKeyAction.OnceClick, false),
-            conflictGroup = conflicts, name = "FEChangeDetectorRange", canOverride = true,
-        });
-        modeKey = CustomKeyBindSystem.RegisterKeyBindWithReturn<PressKeyBind>(new() {
-            key = new((int)KeyCode.T, CombineKey.ALT_COMB, ECombineKeyAction.OnceClick, false),
-            conflictGroup = conflicts, name = "FEChangeDetectorMode", canOverride = true,
-        });
-    }
+    private static RectTransform strengthFill;
 
     /// <summary>
     /// 创建 HUD；重复调用不会创建多个实例。
@@ -58,7 +38,7 @@ internal static class ExplorationSignalHud {
         rootRect.anchorMin = new Vector2(0f, 1f);
         rootRect.anchorMax = new Vector2(0f, 1f);
         rootRect.pivot = new Vector2(0f, 1f);
-        rootRect.sizeDelta = new Vector2(HudWidth, RowHeight * RowTexts.Length);
+        rootRect.sizeDelta = new Vector2(HudWidth, RowHeight + 14f);
 
         for (int index = 0; index < RowTexts.Length; index++) {
             // 提示模板可能使用独立描边材质，不能只复制font后换成font.material。
@@ -93,7 +73,28 @@ internal static class ExplorationSignalHud {
             rowRect.sizeDelta = new Vector2(HudWidth, RowHeight);
             RowTexts[index] = row;
         }
+        CreateSignalBar();
         root.SetActive(false);
+    }
+
+    /// <summary>纯图形背景与填充共用固定宽度，不提供数字或点击交互。</summary>
+    private static void CreateSignalBar() {
+        Image background = new GameObject("signal-bar", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+        background.transform.SetParent(rootRect, false);
+        background.color = new Color(0f, 0f, 0f, 0.75f);
+        background.raycastTarget = false;
+        RectTransform bar = background.rectTransform;
+        bar.anchorMin = bar.anchorMax = bar.pivot = new Vector2(0f, 1f);
+        bar.anchoredPosition = new Vector2(0f, -RowHeight);
+        bar.sizeDelta = new Vector2(HudWidth, 12f);
+        Image fill = new GameObject("signal-strength", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+        fill.transform.SetParent(bar, false);
+        fill.color = new Color(0.4f, 0.85f, 1f, 0.95f);
+        fill.raycastTarget = false;
+        strengthFill = fill.rectTransform;
+        strengthFill.anchorMin = strengthFill.anchorMax = strengthFill.pivot = new Vector2(0f, 1f);
+        strengthFill.anchoredPosition = new Vector2(2f, -2f);
+        strengthFill.sizeDelta = new Vector2(0f, 8f);
     }
 
     /// <summary>优先排在原版面板下方或右侧，再在屏幕安全区内寻找空位。</summary>
@@ -151,13 +152,13 @@ internal static class ExplorationSignalHud {
         rootRect.anchoredPosition = new Vector2(position.x - screen.xMin, position.y - screen.yMax);
     }
 
-    /// <summary>计算指定左上角可容纳的最大整体比例，保持三行完整并与所有面板留出间隔。</summary>
+    /// <summary>计算指定左上角可容纳的最大整体比例，保持信号条完整并与所有面板留出间隔。</summary>
     /// <param name="position">父节点局部坐标下的左上角。</param>
     /// <param name="safe">避开屏幕边缘和建造栏的区域。</param>
     /// <returns>0表示没有空位，1表示能够使用原尺寸。</returns>
     private static float GetAvailableScale(Vector2 position, Rect safe) {
         if (position.x < safe.xMin || position.y > safe.yMax) { return 0f; }
-        float height = RowHeight * RowTexts.Length;
+        float height = RowHeight + 14f;
         float scale = Mathf.Min(1f, Mathf.Min((safe.xMax - position.x) / HudWidth,
             (position.y - safe.yMin) / height));
         for (int i = 0; i < panelCount; i++) {
@@ -210,7 +211,7 @@ internal static class ExplorationSignalHud {
     }
 
     /// <summary>
-    /// 处理可重绑快捷键并刷新同一目标的量程读数。
+    /// 刷新附近信号，首遗物仅显示图形，不输出坐标和百分比。
     /// </summary>
     public static void Update() {
         EnsureCreated();
@@ -227,23 +228,11 @@ internal static class ExplorationSignalHud {
             && player.controller.actionBuild.blueprintMode == EBlueprintMode.None
             && !uiGame.techTree.active && !uiGame.dashboard.active && !uiGame.dysonEditor.active
             && !uiGame.starmap.active;
-        root.SetActive(visible);
-        if (!visible) { return; }
+        DetectorReading reading = visible ? ExplorationDetector.Read() : default;
+        root.SetActive(visible && reading.Visible);
+        if (!visible || !reading.Visible) { return; }
         UpdatePosition(uiGame);
-        if (Time.frameCount == lastRefreshFrame) { return; }
-        bool changed = false;
-        if (!VFInput.inputing) {
-            if (rangeKey?.keyValue == true) { ExplorationDetector.CycleRange(); changed = true; }
-            if (modeKey?.keyValue == true) { ExplorationDetector.CycleMode(); changed = true; }
-        }
-        if (!changed && Time.frameCount % 15 != 0) {
-            return;
-        }
-        lastRefreshFrame = Time.frameCount;
-
-        DetectorReading reading = ExplorationDetector.Read();
-        RowTexts[0].text = reading.Heading;
-        RowTexts[1].text = reading.Measurement;
-        RowTexts[2].text = reading.Position;
+        RowTexts[0].text = reading.Name;
+        strengthFill.sizeDelta = new Vector2((HudWidth - 4f) * reading.Strength, 8f);
     }
 }
