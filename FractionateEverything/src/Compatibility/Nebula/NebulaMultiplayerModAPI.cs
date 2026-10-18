@@ -59,9 +59,11 @@ public static class NebulaMultiplayerModAPI {
     public static void OnMultiplayerGameStarted() {
         IsMultiplayerActive = NebulaModAPI.IsMultiplayerActive;
         IsClient = IsMultiplayerActive && NebulaModAPI.MultiplayerSession.LocalPlayer.IsClient;
+        MemoryDeliverySync.Initialize();
     }
 
     public static void OnMultiplayerGameEnded() {
+        MemoryDeliverySync.ResetSession();
         IsMultiplayerActive = false;
         IsClient = false;
         CivilizationRecoveryManager.ResetNetworkRequestThrottle();
@@ -140,17 +142,6 @@ public static class NebulaMultiplayerModAPI {
         }
         NebulaModAPI.MultiplayerSession.Network.SendPacket(
             CivilizationActionPacket.CreateExplorationClaim(markId));
-        return true;
-    }
-
-    /// <summary>请求主机在任务节点附近提交亚空间Memory。</summary>
-    /// <param name="markId">交付节点身份。</param>
-    /// <returns>是否发送请求。</returns>
-    public static bool RequestTaskMemory(int markId) {
-        if (!CanSendCivilizationAction()) { return false; }
-        NebulaModAPI.MultiplayerSession.Network.SendPacket(new CivilizationActionPacket {
-            actionType = CivilizationActionPacket.SubmitMemory, markId = markId,
-        });
         return true;
     }
 
@@ -458,9 +449,6 @@ public class CivilizationActionPacket {
     /// <summary>客户端请求主机校验并结算探索点位。</summary>
     public const int ClaimExploration = 1;
 
-    /// <summary>显式提交终极任务所需Memory，位置与剩余需求由主机验证。</summary>
-    public const int SubmitMemory = 2;
-
     /// <summary>按主机持有的玩家位置记录邻近发现。</summary>
     public const int DiscoverExploration = 3;
 
@@ -492,9 +480,6 @@ public class CivilizationActionPacketProcessor : BasePacketProcessor<Civilizatio
         switch (packet.actionType) {
             case CivilizationActionPacket.DiscoverExploration:
                 ExplorationManager.DiscoverNearby(position, planetId);
-                break;
-            case CivilizationActionPacket.SubmitMemory:
-                ExplorationManager.SubmitTaskMemory(packet.markId, position, planetId);
                 break;
             case CivilizationActionPacket.ClaimExploration:
                 ExplorationManager.TryClaimFromClient(packet.markId, position, planetId);

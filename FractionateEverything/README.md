@@ -73,7 +73,7 @@ The first relic uses a graphical signal bar scaled to the planet's radius. Later
 
 堆叠统一从原版集装研究衔接到FE的8/12/16/20层。自动集装机或集装分拣器的前置科技提供四层起点；数量升级和双向运输仍需自行研究，不会因解锁白爪自动完成其他科技。FE八层需要3315集装分拣器改良、3803运输站集装物流及信息矩阵科技。3311～3315、3801～3803调整到黄糖阶段费用；FE成长材料读取当前科技树，星环新增矩阵会按其对应阶段纳入。白糖两次堆叠升级合并在一个节点，最终保持20层。
 
-探索常规十级完成后开放终极探索任务；亚空间容量达到初始的35倍后开放终极仓储任务。恢复中继或空间锚点，分批明确交付2400源点，再连接最终核心；任务直接授予终极科技，无矩阵研究费用。终极探索持续补足两个普通广播，终极仓储解除玩法容量限制。
+探索常规十级完成后开放终极探索任务；亚空间容量达到初始的35倍后开放终极仓储任务。恢复中继或空间锚点，带着机甲背包里的源点进入回收范围，自动分批交付2400源点（不扣亚空间），再连接最终核心；任务直接授予终极科技，无矩阵研究费用。终极探索持续补足两个普通广播，终极仓储解除玩法容量限制。
 
 Each item has its own capacity. Manual deposits may exceed it; excess automatic deliveries from basic towers and unlimited-upload stations irreversibly contribute to expansion. Limited uploads stop at the lower of capacity and their target. All supplied science-matrix tiers expand storage independently and simultaneously. Icons show which tiers are active; hovering over an item still shows its inventory and capacity.
 

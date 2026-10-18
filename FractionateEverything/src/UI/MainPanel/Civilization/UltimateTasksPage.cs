@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using FE.Compatibility.Nebula;
 using FE.Logic.Civilization;
 using FE.Logic.DataCenter;
 using FE.UI.MainPanel.Theme;
@@ -8,7 +7,7 @@ using static FE.Utils.Utils;
 
 namespace FE.UI.MainPanel.Civilization;
 
-/// <summary>展示已经收到线索的终极任务，并在交付节点提交源点。</summary>
+/// <summary>展示已经收到线索的终极任务，提供原版导航，交付由到地背包结算负责。</summary>
 public sealed class UltimateTasksPage : CardBrowserPage {
     protected override string Title => "终极任务".Translate();
     protected override string Summary => "FE.UltimateTasksPage.Summary".Translate();
@@ -30,17 +29,7 @@ public sealed class UltimateTasksPage : CardBrowserPage {
                         : "FE.UltimateTasksPage.CapacityComplete".Translate()
                     : (mark == null ? "FE.UltimateTasksPage.Waiting".Translate() : ExplorationManager.GetSignalDescription(mark))
                         + (step == 4 ? string.Format("FE.UltimateTasksPage.Delivery".Translate(), ExplorationManager.GetUltimateInput(branch)) : ""),
-                ActionLabel = "交付源点".Translate(), Action = mark != null && step == 4 ? () => {
-                    if (NebulaMultiplayerModAPI.IsClient) {
-                        UIRealtimeTip.Popup(NebulaMultiplayerModAPI.RequestTaskMemory(mark.Id)
-                            ? "交付请求已发送，等待主机确认。".Translate() : "暂时无法联系主机。".Translate(), false);
-                    } else if (GameMain.mainPlayer != null) {
-                        int count = ExplorationManager.SubmitTaskMemory(mark.Id, GameMain.mainPlayer.uPosition,
-                            GameMain.mainPlayer.planetId);
-                        UIRealtimeTip.Popup(count > 0 ? string.Format("交付了 {0} 份源点。".Translate(), count)
-                            : "FE.UltimateTasksPage.DeliveryFailed".Translate(), false);
-                    }
-                } : null });
+                ActionLabel = "查看信号".Translate(), Action = mark == null ? null : () => ExplorationDetector.Track(mark) });
         }
         return result;
     }

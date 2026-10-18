@@ -278,6 +278,7 @@ public static partial class ExplorationManager {
     /// <remarks>调用方保证每个 10 刻区间最多调用一次，低帧率跳刻时也不会漏掉。</remarks>
     public static void GameTick(long gameTick, bool secondBoundary) {
         if (GameMain.mainPlayer == null || GameMain.galaxy == null) { return; }
+        if (secondBoundary) { ProcessAutomaticDelivery(); }
         if (NebulaMultiplayerModAPI.IsClient) {
             if (secondBoundary) { NebulaMultiplayerModAPI.RequestExplorationDiscovery(); }
             foreach (ExplorationMark mark in NearbyMarks(GameMain.mainPlayer.planetId)) {
@@ -317,7 +318,7 @@ public static partial class ExplorationManager {
         }
     }
 
-    /// <summary>验证连接玩家位置后结算认领，任务交付必须显式请求。</summary>
+    /// <summary>验证连接玩家位置后结算认领，背包交付沿独立事务入口。</summary>
     /// <param name="markId">点位身份。</param>
     /// <param name="position">连接玩家的宇宙坐标。</param>
     /// <param name="planetId">连接玩家所在星球。</param>
@@ -332,25 +333,6 @@ public static partial class ExplorationManager {
         }
     }
 
-    /// <summary>在交付遗迹附近显式提交 Memory，可分批并严格限制到剩余数量。</summary>
-    /// <param name="markId">交付节点身份。</param>
-    /// <param name="position">主机验证过的玩家宇宙位置。</param>
-    /// <param name="planetId">玩家所在星球。</param>
-    /// <returns>本次提交数量。</returns>
-    public static int SubmitTaskMemory(int markId, VectorLF3 position, int planetId) {
-        if (NebulaMultiplayerModAPI.IsClient || !Finite(position.x) || !Finite(position.y) || !Finite(position.z)) { return 0; }
-        lock (Sync) {
-            ExplorationMark mark = ActiveMarks.FirstOrDefault(m => m.Id == markId);
-            if (mark == null || !IsPaymentMark(mark) || !IsWithinArrival(mark, position, planetId)) { return 0; }
-            int branch = mark.ContentId == "exploration" ? 0 : 1;
-            int count = DataCenterInventory.TakeItemFromModData(IFE记忆源点, UltimateMemoryCost - UltimateInputs[branch], out int _);
-            UltimateInputs[branch] += count;
-            if (UltimateInputs[branch] >= UltimateMemoryCost) { Claim(mark); }
-            MarkDirty();
-            return count;
-        }
-    }
-
     /// <summary>读取并清除主机快照脏标记。</summary>
     /// <returns>是否有待同步变化。</returns>
     public static bool TakeSnapshotDirty() { lock (Sync) { bool dirty = snapshotDirty; snapshotDirty = false; return dirty; } }
@@ -359,7 +341,7 @@ public static partial class ExplorationManager {
     /// <param name="writer">输出流。</param>
     public static void Export(BinaryWriter writer) {
         lock (Sync) {
-            writer.Write(4);
+            writer.Write(5);
             writer.Write(nextMarkId); writer.Write(storyCompleted); writer.Write(nextTimedGenerationTick); writer.Write(randomSeed);
             writer.Write(capacityHintShown);
             for (int i = 0; i < 2; i++) { writer.Write(UltimateSteps[i]); writer.Write(UltimateInputs[i]); }
@@ -370,6 +352,7 @@ public static partial class ExplorationManager {
             writer.Write(LastBroadcastTicks.Count);
             foreach (var pair in LastBroadcastTicks) { writer.Write(pair.Key); writer.Write(pair.Value); }
             ExportDiscoveries(writer);
+            ExportDeliveries(writer);
         }
     }
 
@@ -379,7 +362,7 @@ public static partial class ExplorationManager {
         lock (Sync) {
             IntoOtherSave();
             int version = reader.ReadInt32();
-            if (version is < 1 or > 4) { throw new InvalidDataException("不支持的探索存档格式。"); }
+            if (version is < 1 or > 5) { throw new InvalidDataException("不支持的探索存档格式。"); }
             nextMarkId = reader.ReadInt32(); storyCompleted = reader.ReadInt32(); nextTimedGenerationTick = reader.ReadInt64(); randomSeed = reader.ReadUInt32();
             capacityHintShown = reader.ReadBoolean();
             for (int i = 0; i < 2; i++) { UltimateSteps[i] = Math.Max(0, Math.Min(6, reader.ReadInt32())); UltimateInputs[i] = Math.Max(0, Math.Min(UltimateMemoryCost, reader.ReadInt32())); }
@@ -405,6 +388,7 @@ public static partial class ExplorationManager {
                 }
             }
             ImportDiscoveries(reader, version);
+            ImportDeliveries(reader, version);
             if (nextMarkId <= 0 || storyCompleted < 0 || storyCompleted > 18) { throw new InvalidDataException("探索进度无效。"); }
             MarkDirty();
         }
@@ -414,7 +398,7 @@ public static partial class ExplorationManager {
     public static void IntoOtherSave() {
         lock (Sync) {
             ActiveMarks.Clear(); SilentMarks.Clear(); CollectedSilentMarks.Clear(); Records.Clear();
-            LastBroadcastTicks.Clear(); DiscoveredMarks.Clear(); VisitedPlanets.Clear();
+            LastBroadcastTicks.Clear(); DiscoveredMarks.Clear(); VisitedPlanets.Clear(); DeliveryResults.Clear();
             Array.Clear(UltimateSteps, 0, 2); Array.Clear(UltimateInputs, 0, 2);
             nextMarkId = 1; storyCompleted = 0; nextTimedGenerationTick = 0; randomSeed = 0x8F3A51C7u;
             capacityHintShown = false; matrixMilestoneId = -1; broadcastSnapshot = []; broadcastDirty = true; snapshotDirty = false;

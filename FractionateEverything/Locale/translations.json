@@ -2497,47 +2497,26 @@
     "1031": "Eine neue Antwort ist unterwegs. Sieh bald bei der Signalverfolgung nach.",
     "1041": "新たな応答が届きつつある。しばらくしたら信号追跡を確認しよう。"
   },
+  "FE.Exploration.DeliveryRemaining": {
+    "enUS": "The record still needs {0} Memory. Bring more in Icarus’s backpack.",
+    "zhCN": "记录还缺 {0} 份源点，带在机甲背包中即可继续交付。",
+    "frFR": "Il manque encore {0} mémoires. Apportez-les dans le sac d’Icarus.",
+    "1031": "Der Aufzeichnung fehlen noch {0} Erinnerungen. Bringe sie in Ikarus’ Rucksack mit.",
+    "1041": "記録の復元には記憶コアがあと{0}個必要。機甲のバックパックに入れて持参できる。"
+  },
+  "FE.Exploration.DeliveryUnavailable": {
+    "enUS": "Backpack delivery synchronization is unavailable. No Memory was taken; check the Nebula compatibility log.",
+    "zhCN": "背包交付同步暂不可用，尚未扣除源点；请查看Nebula兼容日志。",
+    "frFR": "La synchronisation de livraison est indisponible. Aucune mémoire prélevée ; consultez le journal de compatibilité Nebula.",
+    "1031": "Die Rucksackabgabe kann derzeit nicht synchronisiert werden. Keine Erinnerungen entnommen; prüfe das Nebula-Kompatibilitätsprotokoll.",
+    "1041": "バックパック納入の同期を利用できません。記憶コアは未消費です。Nebula互換ログを確認してください。"
+  },
   "FE.UltimateTasksPage.Delivery": {
-    "enUS": "\n\nMemory delivered: {0}/2400\nAfter reaching the relic, you can deliver Memory from subspace in several batches.",
-    "zhCN": "\n\n源点交付：{0}/2400\n抵达遗迹后，可以分批交付亚空间中的源点。",
-    "frFR": "\n\nMémoires livrées : {0}/2400\nUne fois près de la relique, vous pouvez livrer les mémoires du sous-espace en plusieurs fois.",
-    "1031": "\n\nAbgegebene Erinnerungen: {0}/2400\nAm Relikt kannst du Erinnerungen aus dem Subraum in mehreren Teillieferungen abgeben.",
-    "1041": "\n\n記憶コア納入：{0}/2400\n遺跡に到着後、亜空間の記憶コアを分けて納入できる。"
-  },
-  "交付源点": {
-    "enUS": "Deliver Memory",
-    "zhCN": "交付源点",
-    "frFR": "Livrer des mémoires",
-    "1031": "Erinnerungen abgeben",
-    "1041": "記憶コアを納入"
-  },
-  "交付请求已发送，等待主机确认。": {
-    "enUS": "Delivery requested; waiting for the host.",
-    "zhCN": "交付请求已发送，等待主机确认。",
-    "frFR": "Demande de livraison envoyée ; en attente de l'hôte.",
-    "1031": "Abgabe angefordert; wartet auf den Host.",
-    "1041": "納入リクエストを送信しました。ホストの確認待ちです。"
-  },
-  "暂时无法联系主机。": {
-    "enUS": "Unable to contact the host right now.",
-    "zhCN": "暂时无法联系主机。",
-    "frFR": "Impossible de joindre l'hôte pour le moment.",
-    "1031": "Der Host ist derzeit nicht erreichbar.",
-    "1041": "現在ホストに接続できません。"
-  },
-  "交付了 {0} 份源点。": {
-    "enUS": "Delivered {0} Memory.",
-    "zhCN": "交付了 {0} 份源点。",
-    "frFR": "{0} mémoires livrées.",
-    "1031": "{0} Erinnerungen abgegeben.",
-    "1041": "記憶コアを{0}個納入しました。"
-  },
-  "FE.UltimateTasksPage.DeliveryFailed": {
-    "enUS": "Delivery failed: approach the relic and make sure Memory is stored in subspace.",
-    "zhCN": "没有完成交付：需要靠近遗迹，并在亚空间中存有源点。",
-    "frFR": "Livraison impossible : approchez de la relique et assurez-vous d'avoir des mémoires dans le sous-espace.",
-    "1031": "Abgabe fehlgeschlagen: Nähere dich dem Relikt und lagere Erinnerungen im Subraum.",
-    "1041": "納入できません：遺跡に近づき、亜空間に記憶コアを保管してください。"
+    "enUS": "\n\nMemory delivered: {0}/2400\nWithin the recovery area, Memory is transferred automatically from Icarus’s backpack. Partial deliveries are kept; subspace inventory is untouched.",
+    "zhCN": "\n\n源点交付：{0}/2400\n进入回收范围后，自动从机甲背包交付源点，可以分批。亚空间库存不参与扣除。",
+    "frFR": "\n\nMémoires livrées : {0}/2400\nDans la zone de récupération, les mémoires du sac d’Icarus sont livrées automatiquement, même en plusieurs fois. Le stock sous-spatial reste intact.",
+    "1031": "\n\nAbgegebene Erinnerungen: {0}/2400\nIm Bergungsbereich werden Erinnerungen automatisch aus Ikarus’ Rucksack abgegeben. Teillieferungen bleiben erhalten; der Subraumvorrat bleibt unberührt.",
+    "1041": "\n\n記憶コア納入：{0}/2400\n回収範囲に入ると機甲のバックパックから自動納入される。分割納入が可能で、亜空間の在庫は消費しない。"
   },
   "使用指南": {
     "enUS": "Field Guide",
@@ -2967,11 +2946,11 @@
     "1041": "復元した記録は、別の途絶えた中継点を指している。放送の間隔は前回と同じで、かすかな応答が続く。見つければ、切れたつながりをもう一つ戻せるかもしれない。"
   },
   "FE.ExplorationManager.UltimateDeliveryHint": {
-    "enUS": "Several nodes are connected again, but the central record remains largely blank. The interface requests more Memory to reconstruct what was lost. Bring it close to the relic and complete the delivery yourself.",
-    "zhCN": "几处节点已经重新连通，中央记录却留下了大片空白。接口请求更多源点，用来拼合失落的记忆。需要把它们带到遗迹附近，亲手完成交付。",
-    "frFR": "Plusieurs nœuds sont reconnectés, mais l'archive centrale reste presque vide. L'interface réclame des mémoires pour reconstituer ce qui a été perdu. Apportez-les près de la relique et effectuez vous-même la livraison.",
-    "1031": "Mehrere Knoten sind wieder verbunden, doch die zentrale Aufzeichnung bleibt lückenhaft. Die Schnittstelle fordert weitere Erinnerungen zur Rekonstruktion an. Bringe sie zum Relikt und führe die Abgabe selbst durch.",
-    "1041": "いくつかの中継点はつながったが、中央の記録には大きな空白がある。失われた記憶をつなぐため、インターフェースは追加の記憶コアを求めている。遺跡に近づき、自分の手で納入しよう。"
+    "enUS": "The nodes are connected, but the central record still has gaps. Its interface requests more Memory. When Icarus approaches with Memory in the backpack, the interface draws in only what the record still needs.",
+    "zhCN": "节点已经连通，中央记录仍有空白，接口正在等待更多源点。伊卡洛斯带着背包中的源点接近时，接口会自行收取尚缺的部分。",
+    "frFR": "Les nœuds sont reliés, mais l’archive centrale reste incomplète. À l’approche d’Icarus, l’interface prélève dans son sac uniquement les mémoires encore nécessaires.",
+    "1031": "Die Knoten sind verbunden, doch die zentrale Aufzeichnung hat noch Lücken. Bei Ikarus’ Annäherung entnimmt die Schnittstelle seinem Rucksack nur die noch benötigten Erinnerungen.",
+    "1041": "中継点はつながったが、中央記録には空白が残る。記憶コアをバックパックに入れて近づくと、インターフェースが不足分だけを自動で受け取る。"
   },
   "FE.ExplorationManager.UltimateCoreHint": {
     "enUS": "The final coordinates are complete at last. For the first time, the distant core sends a clear response, patiently repeating the same address. This time, Icarus knows where to go.",
