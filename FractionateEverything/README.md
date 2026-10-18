@@ -109,7 +109,7 @@ The current save format is version 13. Nebula is host-authoritative; all players
 
 ## 安装 Installation
 
-推荐使用 [r2modman](https://dsp.thunderstore.io/package/ebkr/r2modman/) 或兼容的Thunderstore管理器安装并启用FractionateEverything。清单已声明BepInEx、LDBTool、DSPModSave、CommonAPI、BuildBarTool、ModFixerOne、ErrorAnalyzer和NebulaMultiplayerModApi依赖。
+推荐使用 [r2modman](https://dsp.thunderstore.io/package/ebkr/r2modman/) 或兼容的Thunderstore管理器安装并启用FractionateEverything。清单已声明BepInEx、LDBTool、DSPModSave、CommonAPI、BuildBarTool、ModFixerOne、ErrorAnalyzer、AchievementsEnabler和NebulaMultiplayerModApi依赖。成就启用器为必需插件，其平台成就开关仍遵循玩家自己的配置。
 
 Install with r2modman or another Thunderstore-compatible manager. Required dependencies are declared in the package manifest.
 

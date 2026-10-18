@@ -33,6 +33,7 @@ namespace FE;
 [BepInDependency(BuildBarToolPlugin.GUID)]
 [BepInDependency(NebulaModAPI.API_GUID)]
 [BepInDependency(CheckPlugins.GUID)]
+[BepInDependency("AchievementsEnabler", BepInDependency.DependencyFlags.HardDependency)]
 [CommonAPISubmoduleDependency(nameof(CustomKeyBindSystem), nameof(ProtoRegistry), nameof(TabSystem),
     nameof(LocalizationModule), nameof(AssemblerRecipeSystem), nameof(PickerExtensionsSystem))]
 public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerModWithSettings {
