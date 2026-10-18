@@ -83,6 +83,15 @@ public static class AdvancedRecipeCatalog {
         }
     }
 
+    /// <summary>最终来源过滤后隐藏失效展示原型；身份仍保留用于排除普通生产和旧存档查找。</summary>
+    internal static void HideUnavailableRecipes() {
+        foreach (var pair in PersistentIds) {
+            if (RecipeManager.GetRecipe(pair.Value) != null) { continue; }
+            RecipeProto proto = LDB.recipes.Select(pair.Key);
+            if (proto != null) { proto.GridIndex = 0; }
+        }
+    }
+
     /// <summary>辨认高级塔展示原型，供估值和普通配方调整排除。</summary>
     public static bool IsAdvancedProto(int recipeId) => PersistentIds.ContainsKey(recipeId);
 

@@ -66,20 +66,13 @@ public static class RecipeManager {
             File.Delete(SPRITE_CSV_PATH);
         }
 #endif
-        UnlockedRecipeCache.Clear();
-        RecipeList.Clear();
-        StableRecipeIndex.Clear();
-        PersistentRecipeIndex.Clear();
-        InputRecipeIndex.Clear();
-        OutputRecipeIndex.Clear();
-        for (int i = 0; i < RecipeTypeArr.Length; i++) {
-            RecipeTypeArr[i] = new BaseRecipe[12000];
-        }
+        ClearCatalog();
 
         AddBasicMineralRecipes();
         AddRareCatalysisRecipes();
         AddInteractionRecipes();
         AddReplacementRecipes();
+        FilterUnavailableRecipes();
         // 物品分类已完成，置换线索按主产物阶段开放；展示原型预注册不依赖此阶段。
         foreach (WorldviewRecipe recipe in WorldviewRecipes.Where(recipe => recipe.Kind == WorldviewRecipeKind.Replacement)) {
             recipe.ResearchStage = Math.Max(1, GetMatrixStageIndex(itemToMatrix[recipe.PrimaryProductId]) + 1);
@@ -87,6 +80,32 @@ public static class RecipeManager {
         ResearchManager.BuildResearchCatalog();
         AddAnalysisDirections();
         LogInfo($"Added {RecipeList.Count} fractionation recipes.");
+    }
+
+    /// <summary>所有运行索引共用一次重建，避免禁用配方仍留在旧塔型或输入查询中。</summary>
+    private static void ClearCatalog() {
+        UnlockedRecipeCache.Clear();
+        RecipeList.Clear();
+        StableRecipeIndex.Clear();
+        PersistentRecipeIndex.Clear();
+        InputRecipeIndex.Clear();
+        OutputRecipeIndex.Clear();
+        for (int i = 0; i < RecipeTypeArr.Length; i++) { RecipeTypeArr[i] = new BaseRecipe[12000]; }
+    }
+
+    /// <summary>按最终来源闭包移除不能启动的配方，随后才创建解析样本目录。</summary>
+    private static void FilterUnavailableRecipes() {
+        FE.Logic.Items.ItemAvailability.Rebuild(WorldviewRecipes);
+        WorldviewRecipe[] candidates = WorldviewRecipes.ToArray();
+        ClearCatalog();
+        foreach (WorldviewRecipe recipe in candidates) {
+            bool available = recipe.Inputs.All(input => FE.Logic.Items.ItemAvailability.IsReachable(input.ItemId))
+                && recipe.Products.All(output => LDB.items.Exist(output.ItemId))
+                && FE.Logic.Items.ItemAvailability.IsReachable(recipe.AnalysisItemId);
+            if (available) { AddRecipe(recipe); }
+            else { LogInfo($"跳过无合法来源的分馏配方：{recipe.StableId}"); }
+        }
+        AdvancedRecipeCatalog.HideUnavailableRecipes();
     }
 
     /// <summary>
