@@ -1,4 +1,5 @@
 ﻿using FE.Logic.Civilization;
+using FE.Logic.Civilization.Monument;
 using FE.Logic.DataCenter.Assembly;
 using FE.Logic.Enhancements.Stacking;
 using FE.Logic.Enhancements.VanillaRecipes;
@@ -19,6 +20,7 @@ public static class FeatureBootstrap {
         // 添加生命工业使用的核心物品与原胚
         ItemManager.AddCoreItemsAndPrototypes();
         AssemblyNodes.Create();
+        MonumentCatalog.PreAdd();
         // 初步添加分馏塔
         FractionatorManager.AddFractionators();
         // 初步添加物流交互站
@@ -54,6 +56,7 @@ public static class FeatureBootstrap {
         ProcessManager.Init();
         // 计算物品价值
         ItemManager.CalculateItemValues();
+        MonumentCatalog.ApplyValues();
         MatrixNutrition.Initialize();
         // 将物品分类到各个矩阵层级中
         ItemManager.ClassifyItemsToMatrix();
@@ -65,6 +68,8 @@ public static class FeatureBootstrap {
         // AddFracRecipes 用到了 Init 生成的数据
         MetadataExtraction.RegisterSources();
         RecipeManager.AddFracRecipes();
+        MonumentManager.InitializeCatalog();
+        MonumentLoading.Initialize();
         CivilizationModule.Initialize();
         VanillaRecipeManager.AddVanillaRecipes();
         AssemblyPlanner.Initialize();

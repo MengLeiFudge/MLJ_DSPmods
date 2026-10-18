@@ -61,6 +61,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         configFile = Config;
         PermanentProfileStore.Bind(Config);
         MetadataExtraction.Bind(Config);
+        FE.Logic.Civilization.Monument.MonumentCatalog.Bind(Config);
 
         CheckPlugins.DisableMessageBox = Config.Bind("other", "DisableMessageBox", false,
             "Don't show messagebox when FractionateEverything loaded.");
@@ -191,7 +192,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     }
 
     /// <inheritdoc />
-    public string Version => $"{PluginInfo.PLUGIN_VERSION}.{NebulaMultiplayerModAPI.ProtocolVersion}";
+    public string Version => $"{PluginInfo.PLUGIN_VERSION}.{NebulaMultiplayerModAPI.ProtocolVersion}.{FE.Logic.Civilization.Monument.MonumentCatalog.IdentityHash}";
 
     public bool CheckVersion(string hostVersion, string clientVersion) {
         return hostVersion.Equals(clientVersion);

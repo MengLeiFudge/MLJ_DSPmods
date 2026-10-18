@@ -43,6 +43,7 @@ public sealed class StageRecoveryPage : CardBrowserPage {
                 SecondaryAction = available > 0 ? () => MetadataExchangeSync.Request(matrixId, true) : null,
             });
         }
+        result.AddRange(MonumentCards.Read());
         return result;
     }
 }

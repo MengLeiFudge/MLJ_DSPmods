@@ -96,6 +96,20 @@ Each item has its own capacity. Manual deposits may exceed it; excess automatic 
 
 Advanced conversions use primary materials, auxiliaries and low-loss catalysts. Fuel byproducts can feed earlier stages; equipment upgrades consume supporting materials. The adjacent Dark Fog material chain starts from energy shards exchanged against this world's FE metadata allowance, which is shared with physical extraction; combat is not required. Ordinary science matrices do not form a conversion chain.
 
+## 分馏丰碑 Fractionation Monument
+
+白糖阶段恢复丰碑配方。高级转化塔把“1矩阵＋1太阳帆”转为10枚对应来源的丰碑帆，把“1实体元数据＋1小型运载火箭”转为1枚丰碑建设火箭，基础成功率均为8%，矩阵营养仍需另外供养。
+
+所有有合法来源的矩阵都参与均衡，包括黑雾矩阵；尚未投入的种类也计零。电磁弹射器（含星环重型）从传送带识别丰碑帆，装填后只收同种，空仓可换种。帆在轨10分钟，所有来源的有效在轨数量越接近，额外加速越完整。火箭发射井供给建设火箭，任意星系可建，红巨星贡献最高、蓝巨星次之。
+
+射线接收站可切为接收丰碑结晶，先取尽已有整件产物再切换。全档接收站共享结晶预算，供帆不足会降低产量；每100件结晶送入解析塔永久强化一次，必定成功且无损毁。建设与解析进度不会因帆过期回退。阶段恢复页可查看建设、均衡与各来源在轨数量。
+
+本存档元数据额度只读取生产峰值，提取实体与兑换能量碎片共用额度，不扣原版买断余额；指标创新高才增加额度。其他星图的宇宙矩阵峰值线性增强已建成丰碑。最终目标是把全部有效普通生产配方（包括其他模组注册配方）缩短到1帧，不加速科研或FE分馏反应，也不提高20层堆叠上限。
+
+Multiplayer peers must use the same FE build and `Monument/SailIdentities` mapping. Keep this configuration with your saves: existing matrix-to-ammunition IDs must not be reassigned. A mismatch is rejected when joining or loading.
+
+The white-matrix stage opens monument conversions. Each obtainable matrix, including Dark Fog matrices, produces source-specific sails. Keep all orbital counts balanced; sails last 10 minutes, while construction and crystal-analysis progress are permanent. Silos launch construction rockets, with red giants contributing most and blue giants next. Ray receivers share a save-wide crystal budget; analyze 100 crystals for one permanent growth step. The goal is one frame for every valid ordinary production recipe, including recipes added by other mods. Research and fractionation rates are unchanged.
+
 ## 操作 Controls
 
 | 操作 | 默认按键 |

@@ -1,4 +1,116 @@
 ﻿{
+  "FE.Monument.Rocket": {
+    "zhCN": "丰碑建设火箭",
+    "enUS": "Monument construction rocket",
+    "frFR": "Fusée de construction du monument",
+    "1031": "Monument-Baurakete",
+    "1041": "記念碑建設ロケット"
+  },
+  "FE.Monument.RocketDescription": {
+    "zhCN": "由实体元数据与运载火箭转化而成。火箭发射井将它送往丰碑，永久增加全档建设贡献；红巨星贡献最高，蓝巨星次之。",
+    "enUS": "Converted from tangible metadata and a carrier rocket. Launch from a silo to permanently add construction across this save. Red giants give the most contribution, followed by blue giants.",
+    "frFR": "Issue de métadonnées tangibles et d’une fusée porteuse. Un silo l’envoie au monument pour augmenter définitivement la construction de cette sauvegarde. Les géantes rouges contribuent le plus, puis les bleues.",
+    "1031": "Aus greifbaren Metadaten und einer Trägerrakete. Ein Silo erhöht damit dauerhaft den Baufortschritt dieses Spielstands. Rote Riesen liefern den höchsten Beitrag, blaue den zweithöchsten.",
+    "1041": "実体メタデータと輸送ロケットから転化。サイロから発射するとセーブ全体の建設貢献が恒久増加します。赤色巨星が最大、青色巨星が次点です。"
+  },
+  "FE.Monument.Crystal": {
+    "zhCN": "丰碑结晶",
+    "enUS": "Monument crystal",
+    "frFR": "Cristal du monument",
+    "1031": "Monumentkristall",
+    "1041": "記念碑結晶"
+  },
+  "FE.Monument.CrystalDescription": {
+    "zhCN": "由丰碑接收模式的射线接收站收集。每解析100件，永久增强丰碑；解析必定成功且无损毁。",
+    "enUS": "Collected by ray receivers in monument mode. Every 100 analyzed permanently strengthen the monument; analysis always succeeds without destruction.",
+    "frFR": "Collecté par les récepteurs en mode monument. Chaque lot de 100 analysés renforce définitivement le monument ; analyse garantie, sans destruction.",
+    "1031": "Von Strahlenempfängern im Monumentmodus gesammelt. Je 100 analysierte Kristalle stärken das Monument dauerhaft; Analyse garantiert und ohne Zerstörung.",
+    "1041": "記念碑受信モードのレイレシーバーで収集。100個解析ごとに恒久強化され、解析は必ず成功し破壊されません。"
+  },
+  "FE.Monument.SailDescription": {
+    "zhCN": "保留来源矩阵的丰碑帆，由电磁弹射器发射，在轨持续10分钟。各种可获得矩阵的在轨数量越接近，丰碑加速越强；缺少的种类也计入差异。",
+    "enUS": "A monument sail retaining its source matrix. Rail ejectors launch it for a 10-minute orbital life. More equal counts across all obtainable matrices give stronger acceleration; missing kinds count as zero.",
+    "frFR": "Voile conservant sa matrice d’origine, lancée par éjecteur pour 10 minutes en orbite. Des nombres égaux pour toutes les matrices accessibles renforcent l’accélération ; les types absents comptent pour zéro.",
+    "1031": "Bewahrt die Ursprungsmatrix. Vom EM-Werfer gestartet, bleibt es 10 Minuten im Orbit. Gleichmäßigere Mengen aller erhältlichen Matrizen verstärken die Beschleunigung; fehlende Arten zählen als null.",
+    "1041": "由来マトリックスを保持する帆。電磁射出機で発射し軌道上で10分持続します。入手可能な全種類の枚数が均等なほど加速が強くなり、未投入種類は0枚として扱います。"
+  },
+  "FE.Monument.SailName": {
+    "zhCN": "丰碑帆·{0}",
+    "enUS": "Monument sail · {0}",
+    "frFR": "Voile du monument · {0}",
+    "1031": "Monumentsegel · {0}",
+    "1041": "記念碑帆・{0}"
+  },
+  "FE.Monument.RecipeDescription": {
+    "zhCN": "高级转化塔的丰碑制造配方。矩阵反应物与塔的营养分开结算。",
+    "enUS": "Monument recipe for an advanced conversion tower. Matrix reactants are accounted for separately from tower nutrition.",
+    "frFR": "Recette du monument pour une tour de conversion avancée. Les matrices réactives sont séparées de la nourriture.",
+    "1031": "Monumentrezept für einen fortgeschrittenen Umwandlungsturm. Reaktionsmatrizen werden getrennt von der Nahrung verbucht.",
+    "1041": "高度転化塔の記念碑製造レシピ。反応材料のマトリックスは塔の栄養と別に精算します。"
+  },
+  "FE.Monument.EmptyReceiver": {
+    "zhCN": "取出已有产物后才能切换接收模式。",
+    "enUS": "Remove existing products before changing receiver mode.",
+    "frFR": "Retirez les produits avant de changer le mode de réception.",
+    "1031": "Vor dem Moduswechsel vorhandene Produkte entnehmen.",
+    "1041": "既存の製品を取り出してから受信モードを切り替えられます。"
+  },
+  "FE.Monument.Receive": {
+    "zhCN": "接收丰碑结晶",
+    "enUS": "Receive monument crystals",
+    "frFR": "Recevoir les cristaux",
+    "1031": "Monumentkristalle empfangen",
+    "1041": "記念碑結晶を受信"
+  },
+  "FE.Monument.StopReceiving": {
+    "zhCN": "停止接收丰碑结晶",
+    "enUS": "Stop receiving crystals",
+    "frFR": "Arrêter la réception",
+    "1031": "Kristallempfang beenden",
+    "1041": "結晶受信を停止"
+  },
+  "FE.Monument.PerMinute": {
+    "zhCN": "预算 {0:N2}/分",
+    "enUS": "Budget {0:N2}/min",
+    "frFR": "Budget {0:N2}/min",
+    "1031": "Budget {0:N2}/min",
+    "1041": "割当 {0:N2}/分"
+  },
+  "FE.Monument.Title": {
+    "zhCN": "分馏丰碑",
+    "enUS": "Fractionation monument",
+    "frFR": "Monument de fractionnement",
+    "1031": "Fraktionierungsmonument",
+    "1041": "分留記念碑"
+  },
+  "FE.Monument.Balance": {
+    "zhCN": "矩阵均衡 {0:P0} · 供帆 {1:P0}",
+    "enUS": "Matrix balance {0:P0} · Sail supply {1:P0}",
+    "frFR": "Équilibre {0:P0} · Voiles {1:P0}",
+    "1031": "Matrixbalance {0:P0} · Segelversorgung {1:P0}",
+    "1041": "マトリックス均衡 {0:P0}・帆供給 {1:P0}"
+  },
+  "FE.Monument.MatrixCount": {
+    "zhCN": "{0}：在轨 {1:N0}",
+    "enUS": "{0}: {1:N0} in orbit",
+    "frFR": "{0} : {1:N0} en orbite",
+    "1031": "{0}: {1:N0} im Orbit",
+    "1041": "{0}：軌道上 {1:N0}"
+  },
+  "FE.Monument.Status": {
+    "zhCN": "建设等级 {0:N0} · 解析强化 {1:N0}（{2}/100）\n均衡 {3:P1} · 供帆 {4:P1}\n全档结晶预算 {5:N2}/分 · 跨档倍率 {6:N2}",
+    "enUS": "Construction level {0:N0} · Analysis growth {1:N0} ({2}/100)\nBalance {3:P1} · Sail supply {4:P1}\nSave-wide crystal budget {5:N2}/min · Cross-save multiplier {6:N2}",
+    "frFR": "Niveau {0:N0} · Renforcement {1:N0} ({2}/100)\nÉquilibre {3:P1} · Voiles {4:P1}\nBudget global {5:N2}/min · Multiplicateur inter-sauvegardes {6:N2}",
+    "1031": "Baustufe {0:N0} · Analysestärkung {1:N0} ({2}/100)\nBalance {3:P1} · Versorgung {4:P1}\nKristallbudget im Spielstand {5:N2}/min · Spielstandübergreifender Faktor {6:N2}",
+    "1041": "建設レベル {0:N0}・解析強化 {1:N0}（{2}/100）\n均衡 {3:P1}・帆供給 {4:P1}\nセーブ全体の結晶割当 {5:N2}/分・他セーブ倍率 {6:N2}"
+  },
+  "FE.Monument.Guide": {
+    "zhCN": "记录：丰碑可在任意星系建造。由高级转化塔把实体元数据与运载火箭转为建设火箭，供给火箭发射井；红巨星建设贡献最高，蓝巨星次之。\n所有可获得矩阵都能与太阳帆转成保留来源的丰碑帆，包括黑雾矩阵。弹射器空仓会识别传送带来料，装填后只收同种，耗尽后可换种。各类在轨数量要尽量一致，未投入种类也计零。\n火箭建设与结晶解析永久累积，帆会到期。射线接收站可切为接收结晶，全档共享产量预算；结晶送入解析塔继续强化。丰碑加速生产配方，目标是让全部普通生产配方达到一帧。",
+    "enUS": "Record: monuments can be built in any star system. Advanced conversion towers turn tangible metadata and carrier rockets into construction rockets for launch silos. Red giants contribute most, blue giants next.\nEvery obtainable matrix, including dark fog matrices, can be combined with solar sails to retain its source. Empty ejectors recognize belt inputs, then accept that kind until empty. Keep orbital counts balanced; absent kinds count as zero.\nConstruction and crystal analysis are permanent; sails expire. Ray receivers can collect crystals from a shared save-wide budget. Analyze crystals to keep growing. The goal is to bring all ordinary production recipes to one frame.",
+    "frFR": "Archives : un monument peut être construit dans tout système. Les tours avancées convertissent métadonnées et fusées en fusées de construction. Les géantes rouges contribuent le plus, puis les bleues.\nToute matrice accessible, y compris du brouillard noir, forme une voile avec une voile solaire. Un éjecteur vide reconnaît le convoyeur puis conserve ce type jusqu’à épuisement. Équilibrez toutes les quantités en orbite, absences comprises.\nConstruction et analyse sont permanentes ; les voiles expirent. Les récepteurs partagent le budget de cristaux de la sauvegarde. Analysez-les pour atteindre une image par recette de production ordinaire.",
+    "1031": "Aufzeichnung: Monumente sind in jedem Sternsystem möglich. Fortgeschrittene Umwandlungstürme machen aus Metadaten und Trägerraketen Bauraketen. Rote Riesen liefern den höchsten Beitrag, blaue den nächsten.\nJede erhältliche Matrix, auch die des Dunklen Nebels, ergibt mit Solarsegeln ein Segel bekannter Herkunft. Leere Werfer erkennen Bandmaterial und behalten die Sorte bis zur Leerung. Alle Orbitmengen ausgleichen; fehlende Arten zählen null.\nBau und Kristallanalyse bleiben dauerhaft, Segel verfallen. Empfänger teilen sich ein Kristallbudget für den gesamten Spielstand. Das Ziel ist eine Frame Dauer für jedes normale Produktionsrezept.",
+    "1041": "記録：どの星系にも建設可能です。高度転化塔で実体メタデータと輸送ロケットを建設ロケットにし、サイロへ供給します。赤色巨星の貢献が最大、青色巨星が次点です。\nダークフォッグを含む全入手可能マトリックスをソーラーセイルと転化します。空の射出機はベルト材料を識別し、空になるまで同種を受け入れます。未投入種類も0として全種類を均等にします。\n建設と結晶解析は恒久的ですが帆は期限で消えます。レイレシーバーを結晶受信へ切り替え、セーブ共通の割当を受けます。解析で強化し、全通常生産レシピの1フレーム化を目指します。"
+  },
   "FE.Assembly.Node": {
     "zhCN": "亚空间装配节点",
     "enUS": "Subspace assembly node",

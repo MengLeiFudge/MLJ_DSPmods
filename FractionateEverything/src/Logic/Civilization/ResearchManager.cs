@@ -261,7 +261,7 @@ public static partial class ResearchManager {
     public static int[] GetAnalyzableItemIds() {
         lock (Sync) {
             HashSet<int> itemIds = [.. DirectionPools.Keys, .. ItemManager.MainProgressMatrixIds, I电路板,
-                IFE残片, IFE高级矿物塔, IFE高级交互塔, IFE高级转化塔];
+                IFE残片, IFE丰碑结晶, IFE高级矿物塔, IFE高级交互塔, IFE高级转化塔];
             return itemIds.OrderBy(itemId => itemId).ToArray();
         }
     }
@@ -301,7 +301,7 @@ public static partial class ResearchManager {
     /// 判断指定物品是否已有待解析具体内容。Frag 和高级塔仍保留各自的特殊消耗路径。
     /// </summary>
     public static bool CanAnalyzeDirection(int itemId) {
-        if (itemId == IFE残片 || itemId == IFE记忆源点
+        if (itemId == IFE丰碑结晶 || itemId == IFE残片 || itemId == IFE记忆源点
             || SacrificeUnlocked && FractionatorTowerCatalog.IsAdvancedTower(itemId)) {
             return true;
         }
@@ -316,6 +316,7 @@ public static partial class ResearchManager {
     public static bool TryGetAnalysisProbabilities(int itemId, out float successRatio, out float destroyRatio) {
         successRatio = 0f;
         destroyRatio = 0f;
+        if (itemId == IFE丰碑结晶) { successRatio = 1f; return true; }
         if (itemId == IFE记忆源点) {
             if (GetPendingMemoryStage() == 0) { return false; }
             successRatio = MemoryAnalysisSuccessRatio;
@@ -378,7 +379,7 @@ public static partial class ResearchManager {
     /// <param name="outcome">当前输入的同一份结果快照。</param>
     /// <returns>实体返还或制造概率，不可由当前模式产生的物品为0。</returns>
     public static float GetAnalysisProductRatio(int itemId, int productId, AnalysisOutcome outcome) => outcome.Mode switch {
-        AnalysisMode.Research when itemId != IFE记忆源点 && productId == itemId => outcome.SuccessRatio,
+        AnalysisMode.Research when itemId != IFE记忆源点 && itemId != IFE丰碑结晶 && productId == itemId => outcome.SuccessRatio,
         AnalysisMode.SamplePreparation => outcome.SuccessRatio
             * GetPreparationCount(productId) / Math.Max(1, GetPreparationCount()),
         AnalysisMode.TowerSacrifice or AnalysisMode.MatrixSacrifice when productId == IFE记忆源点 => outcome.SuccessRatio,
@@ -596,6 +597,10 @@ public static partial class ResearchManager {
     /// <returns>实际消耗和正面成果，其他输入保留增产点侧流。</returns>
     public static AnalysisBatchResult ProcessAnalysisBatch(int itemId, int count, ref uint seed) {
         if (count <= 0 || NebulaMultiplayerModAPI.IsClient) { return default; }
+        if (itemId == IFE丰碑结晶) {
+            int consumed = Monument.MonumentManager.Analyze(count);
+            return new(consumed, consumed);
+        }
 
         if (Array.IndexOf(ItemManager.MainProgressMatrixIds, itemId) >= 0) {
             if (!ExplorationManager.FirstRelicClaimed || !CivilizationRecoveryManager.HasDataCenterCommunication) { return default; }

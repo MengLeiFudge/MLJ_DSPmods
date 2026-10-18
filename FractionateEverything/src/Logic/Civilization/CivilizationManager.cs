@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using FE.Compatibility.Nebula;
 using FE.Logic.DataCenter;
+using FE.Logic.Civilization.Monument;
 using FE.Logic.DataCenter.Assembly;
 using FE.Logic.Fractionation.Recipes;
 using static FE.Utils.Utils;
@@ -60,11 +61,15 @@ public static class CivilizationModule {
             ResearchManager.UpdateSacrificeBoosts(gameTick);
             SubspaceExpansion.GameTick(gameTick);
             MetadataExtraction.Refresh();
+            MonumentManager.Tick();
+            MonumentReceivers.Refresh();
         }
         bool dirty = ResearchManager.FlushMainThreadNotifications();
         dirty |= ExplorationManager.TakeSnapshotDirty();
         dirty |= DataCenterInventory.TakeSnapshotDirty();
         dirty |= MetadataExtraction.TakeDirty();
+        dirty |= MonumentManager.TakeDirty();
+        dirty |= MonumentReceivers.TakeDirty();
         civilizationSnapshotPending |= dirty;
         FlushNotifications();
 
@@ -125,7 +130,9 @@ public static class CivilizationModule {
         r.ReadBlocks(
             ("Research", ResearchManager.Import),
             ("Exploration", ExplorationManager.Import),
-            ("Metadata", MetadataExtraction.Import)
+            ("Metadata", MetadataExtraction.Import),
+            ("Monument", MonumentManager.Import),
+            ("MonumentReceivers", MonumentReceivers.Import)
         );
     }
 
@@ -136,7 +143,9 @@ public static class CivilizationModule {
         w.WriteBlocks(
             ("Research", ResearchManager.Export),
             ("Exploration", ExplorationManager.Export),
-            ("Metadata", MetadataExtraction.Export)
+            ("Metadata", MetadataExtraction.Export),
+            ("Monument", MonumentManager.Export),
+            ("MonumentReceivers", MonumentReceivers.Export)
         );
     }
 
@@ -148,6 +157,7 @@ public static class CivilizationModule {
         ResearchManager.RefreshAdvancedTowerInventoryMilestones();
         GrowthTechnologyManager.ConsolidateWhiteMatrixResearch();
         GrowthTechnologyManager.SyncResearchWorkload();
+        MonumentManager.Tick();
         GrowthTechnologyManager.SyncRuntimeEffects();
         if (!ExplorationManager.FirstRelicClaimed) {
             ExplorationManager.EnsureFirstRelicMark();
@@ -162,6 +172,8 @@ public static class CivilizationModule {
         ExplorationManager.IntoOtherSave();
         CivilizationRecoveryManager.IntoOtherSave();
         MetadataExtraction.IntoOtherSave();
+        MonumentManager.IntoOtherSave();
+        MonumentReceivers.IntoOtherSave();
         MessageLog.Clear();
         lastProcessedGameTick = long.MinValue;
         lastProcessedSecond = long.MinValue;

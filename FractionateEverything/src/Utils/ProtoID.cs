@@ -485,6 +485,10 @@ public static partial class Utils {
     internal const int IFE黑雾样本C = 8177;
     /// <summary>当前世界生产峰值经FE额度账本提取的实体，不能逆向生成元数据。</summary>
     internal const int IFE实体元数据 = 8178;
+    /// <summary>元数据制造的永久丰碑建设弹药。</summary>
+    internal const int IFE丰碑火箭 = 8179;
+    /// <summary>射线接收站取得的丰碑解析材料。</summary>
+    internal const int IFE丰碑结晶 = 8180;
     internal const int ISM熔炉采矿机A型 = 9446;
     internal const int ISM熔炉采矿机B型 = 9447;
     internal const int ISM化工采矿机C型 = 9448;

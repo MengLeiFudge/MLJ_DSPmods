@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using FE.Logic.Enhancements.Stacking;
 using FE.Logic.Civilization;
+using FE.Logic.Civilization.Monument;
 using FE.Logic.Fractionation.Recipes;
 using static FE.Logic.Items.ItemManager;
 using static FE.Utils.Utils;
@@ -13,7 +15,7 @@ namespace FE.Logic.Enhancements.VanillaRecipes;
 /// 原版配方调节系统的注册、查找和存档入口。
 /// </summary>
 public static class VanillaRecipeManager {
-    public const int MaxTimeLimitLevel = 16;
+    private static double appliedRatio = double.NaN;
     private static readonly List<VanillaRecipe> VanillaRecipeList = [];
     private static readonly Dictionary<int, VanillaRecipe> VanillaRecipeDic = [];
 
@@ -24,8 +26,14 @@ public static class VanillaRecipeManager {
         LogInfo("Add vanilla recipes...");
         VanillaRecipeList.Clear();
         VanillaRecipeDic.Clear();
+        appliedRatio = double.NaN;
         foreach (RecipeProto recipe in LDB.recipes.dataArray) {
-            if (recipe == null || recipe.Type == ERecipeType.Fractionate || AdvancedRecipeCatalog.IsAdvancedProto(recipe.ID)) {
+            if (recipe == null || recipe.TimeSpend <= 0 || recipe.Items == null || recipe.ItemCounts == null
+                || recipe.Items.Length != recipe.ItemCounts.Length || recipe.Results == null || recipe.Results.Length == 0
+                || recipe.ResultCounts == null || recipe.Results.Length != recipe.ResultCounts.Length
+                || recipe.ItemCounts.Any(count => count <= 0) || recipe.ResultCounts.Any(count => count <= 0)
+                || recipe.Items.Any(id => !LDB.items.Exist(id)) || recipe.Results.Any(id => !LDB.items.Exist(id))
+                || recipe.Type == ERecipeType.None || recipe.Type == ERecipeType.Fractionate || AdvancedRecipeCatalog.IsAdvancedProto(recipe.ID)) {
                 continue;
             }
 
@@ -43,26 +51,39 @@ public static class VanillaRecipeManager {
         return VanillaRecipeDic.TryGetValue(recipeId, out VanillaRecipe recipe) ? recipe : null;
     }
 
-    public static int GlobalTimeLimitLevel => GetMaxTimeLimitLevelByCurrentStack();
+    /// <summary>旧存档保留的占位字段；不再用等级表达连续丰碑加速。</summary>
+    public static int GlobalTimeLimitLevel => 0;
 
-    public static double GlobalTimeLimitRatio => StackingManager.CurrentVanillaRecipeTimeRatio;
+    public static double GlobalTimeLimitRatio => StackingManager.CurrentVanillaRecipeTimeRatio / MonumentManager.SpeedFactor;
+
+    /// <summary>空配方集不能触发通关，未解锁的有效配方也参与终局判定。</summary>
+    internal static bool AllAtOneFrame => VanillaRecipeList.Count > 0 && VanillaRecipeList.TrueForAll(value => value.recipe.TimeSpend == 1);
+
+    /// <summary>只从加载基线重新计算；整帧结果未改变时不刷新执行缓存。</summary>
+    internal static void RefreshComputedTimes() {
+        double ratio = GlobalTimeLimitRatio;
+        if (appliedRatio == ratio) { return; }
+        appliedRatio = ratio;
+        bool changed = false;
+        foreach (VanillaRecipe value in VanillaRecipeList) {
+            int previous = value.recipe.TimeSpend;
+            value.ClampTimeUpgradeToGlobalLimit();
+            changed |= previous != value.recipe.TimeSpend;
+        }
+        if (changed) { RefreshRecipeExecuteData(); }
+    }
 
     public static bool CanUpgradeGlobalTimeLimit() => false;
 
     public static bool UpgradeGlobalTimeLimit() => false;
 
     public static double GetTimeRatioForLevel(int level) {
-        return level <= 0 ? 1.0 : Math.Max(0.2, 1.0 - Math.Min(MaxTimeLimitLevel, level) * 0.05);
-    }
-
-    public static int GetRequiredStackForTimeLevel(int level) {
-        double ratio = GetTimeRatioForLevel(level);
-        return Math.Max(StackingManager.BaseUnlockedMaxStack, (int)Math.Ceiling(4.0 / ratio));
+        return GlobalTimeLimitRatio;
     }
 
     public static int GetMaxTimeLimitLevelByCurrentStack() {
         double ratio = StackingManager.CurrentVanillaRecipeTimeRatio;
-        return Math.Max(0, Math.Min(MaxTimeLimitLevel, (int)Math.Round((1.0 - ratio) / 0.05)));
+        return Math.Max(0, (int)Math.Round((1.0 - ratio) / 0.05));
     }
 
     public static void RefreshRecipeExecuteData(int recipeId = 0) {
@@ -130,6 +151,7 @@ public static class VanillaRecipeManager {
     }
 
     public static void IntoOtherSave() {
+        appliedRatio = double.NaN;
         foreach (VanillaRecipe vanillaRecipe in VanillaRecipeList) {
             vanillaRecipe.IntoOtherSave();
         }

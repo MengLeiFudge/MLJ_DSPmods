@@ -118,6 +118,7 @@ cd "/mnt/d/project/dsp/MLJ_DSPmods/AfterBuildEvent/bin/Debug"
 - Do not add candidate designs, unconfirmed balance, implementation gaps, audit reasoning, build/publish commands, validation logs, commit history, AI workflow instructions, task plans, or chat-derived status reports to either game-design document.
 - AI workflow and repository rules belong in this `AGENTS.md` or the relevant domain `AGENTS.md`; user-facing installation or public behavior belongs in `README.md`; temporary reasoning belongs in `.codex/drafts/` or `.codex/plans/`.
 - When updating FE game design, preserve the direction -> mechanism contract -> executable specification hierarchy and remove obsolete or duplicated rules instead of accumulating historical alternatives.
+- `FractionateEverything/GAME_DESIGN_DEPRECATED.md` is a read-only archive of rejected FE design directions and their rejection reasons. It is not a design source of truth and never constrains implementation. When a discussed direction is rejected, record it there instead of in the two game-design documents; when a deprecated direction is later adopted, remove its entry.
 
 ## Project Structure
 

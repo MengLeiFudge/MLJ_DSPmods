@@ -15,6 +15,8 @@ public enum WorldviewRecipeKind {
     TowerCultivation,
     EmbryoBreeding,
     Replacement,
+    /// <summary>白矩阵阶段恢复的丰碑弹药，允许矩阵作为独立反应物。</summary>
+    Monument,
 }
 
 /// <summary>生产配方的取得方式，与塔型和生产概率独立。</summary>
@@ -69,7 +71,7 @@ public sealed class WorldviewRecipe : BaseRecipe {
     public int ResearchStage { get; set; }
 
     /// <summary>稳定目录对应的研究层级；基础解析是处理入口，不参与解锁。</summary>
-    public RecipeUnlockTier UnlockTier => Kind is WorldviewRecipeKind.BasicMineral or WorldviewRecipeKind.TowerCultivation
+    public RecipeUnlockTier UnlockTier => Kind is WorldviewRecipeKind.BasicMineral or WorldviewRecipeKind.TowerCultivation or WorldviewRecipeKind.Monument
         ? RecipeUnlockTier.Common
         : Kind == WorldviewRecipeKind.EmbryoBreeding || StableId.StartsWith("mineral-memory:", StringComparison.Ordinal)
             ? RecipeUnlockTier.Legendary : RecipeUnlockTier.Rare;
@@ -78,7 +80,7 @@ public sealed class WorldviewRecipe : BaseRecipe {
     public int PersistentId { get; }
 
     /// <summary>玩家可见配方名称。</summary>
-    public string DisplayName { get; }
+    public string DisplayName { get; internal set; }
 
     /// <summary>配方类型。</summary>
     public override ERecipe RecipeType { get; }

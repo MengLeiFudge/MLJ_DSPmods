@@ -62,6 +62,26 @@ public static class AdvancedRecipeCatalog {
         }
     }
 
+    /// <summary>最终矩阵目录的展示配方走LDBTool后注册，沿用转化塔既有选择器类型。</summary>
+    internal static void RegisterPostProto(WorldviewRecipe recipe, int id, int grid) {
+        if (LDB.recipes.Exist(id) || PersistentIds.ContainsKey(id)) {
+            throw new InvalidOperationException($"FE monument recipe proto ID conflict: {id}");
+        }
+        RecipeProto template = LDB.recipes.Select(GetProtoId(30301));
+        if (template == null) { throw new InvalidOperationException("丰碑配方缺少高级转化选择器类型。"); }
+        var proto = new RecipeProto {
+            ID = id, Name = recipe.DisplayName, Description = "FE.Monument.RecipeDescription",
+            Type = template.Type, TimeSpend = 60, Items = recipe.InputArray.Select(input => input.ItemId).ToArray(),
+            ItemCounts = recipe.InputArray.Select(input => input.Count).ToArray(),
+            Results = recipe.ProductArray.Select(output => output.ItemId).ToArray(),
+            ResultCounts = recipe.ProductArray.Select(output => (int)output.Count).ToArray(),
+            GridIndex = grid, Handcraft = false, Explicit = true, NonProductive = true, IconPath = "",
+        };
+        xiaoye97.LDBTool.PostAddProto(proto);
+        if (proto.ID != id) { throw new InvalidOperationException("丰碑展示配方不能重映射稳定身份。"); }
+        PersistentIds.Add(id, recipe.PersistentId);
+    }
+
     /// <summary>在全部原型加载后移除物品的展示配方关联，避免普通物品提示泄露未解锁配方或改变主制造来源。</summary>
     public static void DetachFromItemRecipes() {
         foreach (ItemProto item in LDB.items.dataArray) {
@@ -110,6 +130,7 @@ public static class AdvancedRecipeCatalog {
         >= 30211 and <= 30213 => RFE高级繁育展示起始 + persistentId - 30211,
         >= 30301 and <= 30304 => RFE高级转化展示起始 + persistentId - 30301,
         >= 30305 and <= 30317 => RFE高级转化扩展展示起始 + persistentId - 30305,
+        >= 399999 and < 412000 => FE.Logic.Civilization.Monument.MonumentCatalog.GetRecipeProtoId(persistentId),
         _ => 0,
     };
 
