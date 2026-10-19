@@ -127,7 +127,7 @@ public sealed class AssemblyPanel : MonoBehaviour {
             AssemblyDemand demand = rows[i]; row.Demand = demand;
             row.Name.text = new string(' ', Math.Min(20, demand.Depth * 2)) + (LDB.items.Select(demand.ItemId)?.name ?? "?");
             row.Counts.text = string.Format("FE.Assembly.Counts".Translate(), demand.Required, demand.Stock, demand.Planned, demand.Missing);
-            row.Counts.color = demand.Missing > 0 ? new Color(1f, 0.45f, 0.4f) : Color.white;
+            row.Counts.color = demand.Missing > 0 ? Red : White;
             row.StockLabel.text = (demand.StockOnly ? "FE.Assembly.StockOnly" : "FE.Assembly.Auto").Translate();
             row.RecipeLabel.text = demand.RecipeId > 0 ? LDB.recipes.Select(demand.RecipeId)?.name ?? "?" : "FE.Assembly.NoRecipe".Translate();
             row.Recipe.interactable = AssemblyPlanner.GetCandidates(demand.ItemId).Length > 1;
@@ -156,13 +156,13 @@ public sealed class AssemblyPanel : MonoBehaviour {
     }
 
     private static Text Label(RectTransform parent, string text, float x, float y, float width, float height, int size = 15) =>
-        PageLayout.AddCenteredText(parent, text, size, Color.white, TextAnchor.MiddleLeft, x, y, width, height, "label", true);
+        PageLayout.AddCenteredText(parent, text, size, White, TextAnchor.MiddleLeft, x, y, width, height, "label", true);
     private static Button AddButton(RectTransform parent, string text, float x, float y, float width, Action action) {
         RectTransform rect = PageLayout.CreateContentCard(parent, "action", x, y, width, 36);
         Image image = rect.GetComponent<Image>(); image.raycastTarget = true;
         Button button = rect.gameObject.AddComponent<Button>(); button.targetGraphic = image;
         button.onClick.AddListener(() => action());
-        PageLayout.AddCenteredText(rect, text, 13, Color.white, TextAnchor.MiddleCenter, 4, 0, width - 8, 36, "label", true);
+        PageLayout.AddCenteredText(rect, text, 13, White, TextAnchor.MiddleCenter, 4, 0, width - 8, 36, "label", true);
         return button;
     }
 }
