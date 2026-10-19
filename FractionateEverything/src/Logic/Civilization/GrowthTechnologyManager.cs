@@ -54,7 +54,7 @@ public static class GrowthTechnologyManager {
 
     /// <summary>六阶段成长的单种材料预算；实际材料及比例读取最终科技树。</summary>
     private static readonly int[] FiniteGrowthCosts = [200, 400, 800, 1200, 1600, 50000];
-    private static readonly int[] StackCosts = [1, 6000, 8000, 10000, 40000];
+    private static readonly int[] StackCosts = [1, 6000, 12000, 1, 1];
     private static readonly int[] StackStages = [0, 3, 4, 5, 5];
     private static readonly TechProto[] StackTechs = new TechProto[6];
     /// <summary>成长节点的阶段身份与预算，不受参考科技材料组合影响。</summary>
@@ -84,16 +84,16 @@ public static class GrowthTechnologyManager {
     /// <summary>获取高级转化塔特质科技等级，范围 0..6。</summary>
     public static int AdvancedConversionTraitLevel => Volatile.Read(ref conversionTraitLevel);
 
-    /// <summary>配置唯一堆叠路线：原版研究提供四层，FE从八层开始。</summary>
+    /// <summary>配置紫糖八层、绿糖二十层两个节点，其余旧身份仅供存档识别。</summary>
     public static void ConfigureStackProgression() {
         for (int level = 1; level <= 5; level++) {
             TechProto tech = StackTechs[level] ?? LDB.techs.Select(TFE分馏堆叠成长 + level);
             if (tech == null) { continue; }
             int stage = StackStages[level - 1];
             int budget = StackCosts[level - 1];
-            int increment = level == 4 ? StackCosts[4] - budget : 0;
+            int increment = 0;
             tech.Level = Math.Max(1, level - 1);
-            tech.MaxLevel = level == 4 ? 4 : tech.Level;
+            tech.MaxLevel = tech.Level;
             tech.PreTechs = level == 2 ? [3315, 3803, T信息矩阵]
                 : level > 2 ? [TFE分馏堆叠成长 + level - 1] : [];
             ResearchCosts[tech.ID] = (stage, budget, increment);
@@ -101,10 +101,9 @@ public static class GrowthTechnologyManager {
             GrowthTechPositions[tech.ID] = (0, stage);
             tech.Position = GetGrowthTechPosition(0, stage);
             tech.IsHiddenTech = true;
-            tech.IsObsolete = level is < 2 or > 4;
+            tech.IsObsolete = level is < 2 or > 3;
         }
         RefreshStackTechLinks();
-        SyncUnstartedStackTechStates();
     }
 
     /// <summary>
@@ -150,7 +149,6 @@ public static class GrowthTechnologyManager {
         if (techId is TFE行星内物流交互 or TFE星际物流交互) {
             return ResearchManager.IsContentUnlocked(contentId);
         }
-        if (contentId == StackTechnologyContentId && !StackingManager.HasPilingTechnology) { return false; }
         int stage = GetResearchStage(techId);
         bool recovered = stage > 0 && ResearchManager.IsContentUnlocked(ResearchManager.StageContentId(stage));
         bool trait = contentId is ResearchManager.AdvancedMineralTraitId
@@ -170,7 +168,6 @@ public static class GrowthTechnologyManager {
         if (techId is TFE行星内物流交互 or TFE星际物流交互) {
             return history.TechUnlocked(techId == TFE行星内物流交互 ? T行星物流系统 : T星际物流系统);
         }
-        if (contentId == StackTechnologyContentId && !StackingManager.HasPilingTechnology) { return false; }
         TechProto tech = LDB.techs.Select(techId);
         int stage = GetResearchStage(techId);
         return stage > 0 && stage <= ResearchManager.CurrentMatrixStage
@@ -191,7 +188,7 @@ public static class GrowthTechnologyManager {
             TFE终极探索 => "远古广播持续回应".Translate(),
             TFE终极仓储 => "亚空间容量：无限".Translate(),
             > TFE分馏堆叠成长 and <= TFE分馏堆叠成长 + 5 =>
-                string.Format("货物堆叠上限 +{0}".Translate(), 4),
+                string.Format("货物堆叠上限 +{0}".Translate(), techId == TFE分馏堆叠成长 + 3 ? 12 : 4),
             > TFE亚空间能效 and <= TFE亚空间能效 + FiniteGrowthLevelCount => "亚空间存取耗能 -10%".Translate(),
             > TFE探索信号增幅 and <= TFE探索信号增幅 + FiniteGrowthLevelCount =>
                 BuildExplorationUnlockText(level),
@@ -244,12 +241,10 @@ public static class GrowthTechnologyManager {
             return;
         }
 
-        int stack = StackingManager.HasPilingTechnology ? 4 : 1;
-        for (int level = 2; level <= 3; level++) {
-            if (history.TechUnlocked(TFE分馏堆叠成长 + level)) { stack = level * 4; }
+        int stack = StackingManager.StationResearchStack;
+        if (history.TechUnlocked(TFE分馏堆叠成长 + 2)) {
+            stack = history.TechUnlocked(TFE分馏堆叠成长 + 3) ? StackingManager.AbsoluteMaxStack : 8;
         }
-        int completed = GetCompletedLevel(TFE分馏堆叠成长 + 4);
-        if (completed >= 3) { stack = Math.Max(stack, (completed + 1) * 4); }
         StackingManager.ConfiguredMaxStack = stack;
         StackingManager.SyncRuntimeState();
     }
@@ -404,29 +399,6 @@ public static class GrowthTechnologyManager {
         }
     }
 
-    private static void SyncUnstartedStackTechStates() {
-        GameHistoryData history = GameMain.history;
-        if (history == null) {
-            return;
-        }
-
-        for (int level = 1; level <= 5; level++) {
-            int techId = TFE分馏堆叠成长 + level;
-            TechProto tech = LDB.techs.Select(techId);
-            if (tech == null
-                || !history.techStates.TryGetValue(techId, out TechState state)
-                || state.unlocked
-                || state.hashUploaded > 0L
-                || state.maxLevel == tech.MaxLevel && state.curLevel > tech.Level) {
-                continue;
-            }
-            state.curLevel = tech.Level;
-            state.maxLevel = tech.MaxLevel;
-            state.hashNeeded = tech.GetHashNeeded(state.curLevel);
-            history.techStates[techId] = state;
-        }
-    }
-
     /// <summary>按当前原型校准FE科研工作量与白糖计数，保持未完成节点可继续结算，不重复授予效果。</summary>
     public static void SyncResearchWorkload() {
         Dictionary<int, TechState> states = GameMain.history?.techStates;
@@ -448,40 +420,31 @@ public static class GrowthTechnologyManager {
         }
     }
 
-    /// <summary>将同格式3.0存档的白糖研究状态归并到当前多级节点，保留已完成等级与当前研究量。</summary>
-    public static void ConsolidateWhiteMatrixResearch() {
-        if (!ResearchManager.BelongsToGeneration3) { return; }
-        ConsolidateResearchNode(TFE分馏堆叠成长 + 4, [TFE分馏堆叠成长 + 5]);
-    }
-
-    /// <summary>在节点等级上限变化时合并同一条白糖研究链，已归并的存档不再重复处理。</summary>
-    /// <param name="techId">当前承载白糖等级的节点。</param>
-    /// <param name="retiredIds">同一研究链中已隐藏的节点。</param>
-    private static void ConsolidateResearchNode(int techId, int[] retiredIds) {
+    /// <summary>校准单级堆叠节点；退休节点退出队列且不补偿，不从旧curLevel猜测完成状态。</summary>
+    public static void NormalizeStackResearch() {
         GameHistoryData history = GameMain.history;
-        TechProto tech = LDB.techs.Select(techId);
-        if (tech == null || history == null || !history.techStates.TryGetValue(techId, out TechState state)) { return; }
-        for (int i = 0; i < history.techQueue.Length; i++) {
-            if (retiredIds.Contains(history.techQueue[i])) { history.techQueue[i] = techId; }
+        if (history == null || !ResearchManager.BelongsToGeneration3) { return; }
+        for (int level = 1; level <= 5; level++) {
+            int techId = TFE分馏堆叠成长 + level;
+            TechProto tech = LDB.techs.Select(techId);
+            if (tech == null || !history.techStates.TryGetValue(techId, out TechState state)) { continue; }
+            state.curLevel = tech.Level;
+            state.maxLevel = tech.MaxLevel;
+            state.hashNeeded = tech.GetHashNeeded(tech.Level);
+            if (tech.IsObsolete) {
+                state.unlocked = false;
+                state.hashUploaded = 0;
+            }
+            history.techStates[techId] = state;
         }
-        if (retiredIds.Contains(history.currentTech)) { history.currentTech = techId; }
-        if (state.maxLevel == tech.MaxLevel) { return; }
-        int completed = GetCompletedLevel(techId);
-        TechState pending = state;
-        foreach (int id in retiredIds) {
-            completed = Math.Max(completed, GetCompletedLevel(id));
-            if (history.techStates.TryGetValue(id, out TechState other) && !other.unlocked
-                && other.hashUploaded > 0 && other.curLevel > pending.curLevel) { pending = other; }
+        for (int i = history.techQueue.Length - 1; i >= 0; i--) {
+            int techId = history.techQueue[i];
+            if (techId > TFE分馏堆叠成长 && techId <= TFE分馏堆叠成长 + 5
+                && LDB.techs.Select(techId)?.IsObsolete == true) {
+                history.RemoveTechInQueue(i);
+            }
         }
-        state.maxLevel = tech.MaxLevel;
-        state.unlocked = completed >= tech.MaxLevel;
-        state.curLevel = Math.Max(tech.Level, Math.Min(tech.MaxLevel, completed + 1));
-        state.hashNeeded = tech.GetHashNeeded(state.curLevel);
-        state.hashUploaded = state.unlocked ? state.hashNeeded
-            : pending.curLevel == state.curLevel ? Math.Min(pending.hashUploaded, state.hashNeeded) : 0;
-        history.techStates[techId] = state;
     }
-
 
     /// <summary>读取多级节点已经完成的等级，未研究节点的初始 curLevel 不算完成。</summary>
     /// <param name="techId">科技原型身份。</param>

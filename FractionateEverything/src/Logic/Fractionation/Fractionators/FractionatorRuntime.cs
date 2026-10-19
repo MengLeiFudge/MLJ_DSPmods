@@ -7,6 +7,7 @@ using System.Reflection.Emit;
 using UnityEngine;
 using HarmonyLib;
 using FE.Logic.DataCenter;
+using FE.Logic.Enhancements.Stacking;
 using FE.Logic.Fractionation.Recipes;
 using static FE.Utils.Utils;
 
@@ -293,8 +294,9 @@ public static partial class ProcessManager {
 
         int fluidOutputStack = GetVanillaFluidOutputStack(in fractionator);
         uint state = fractionator.InternalUpdate(factory, power, signPool, productRegister, consumeRegister);
-        // 原版在电力不足时不做传送带交互，其余情况按当前堆叠补放输出。
-        return power < 0.1f ? state : TopUpVanillaOutputs(ref fractionator, factory.cargoTraffic, fluidOutputStack);
+        // 八层研究后才接管原版塔输出；低供电仍不做额外传送带交互。
+        return power < 0.1f || !StackingManager.IsUnlocked
+            ? state : TopUpVanillaOutputs(ref fractionator, factory.cargoTraffic, fluidOutputStack);
     }
 
     /// <summary>

@@ -155,7 +155,8 @@ public static class CivilizationModule {
     public static void AfterImport() {
         AdvancedRecipeCatalog.SyncUnlocks(force: true);
         ResearchManager.RefreshAdvancedTowerInventoryMilestones();
-        GrowthTechnologyManager.ConsolidateWhiteMatrixResearch();
+        GrowthTechnologyManager.NormalizeStackResearch();
+        FE.Logic.Enhancements.Stacking.StackingManager.RestoreVanillaStackFields();
         GrowthTechnologyManager.SyncResearchWorkload();
         MonumentManager.Tick();
         GrowthTechnologyManager.SyncRuntimeEffects();

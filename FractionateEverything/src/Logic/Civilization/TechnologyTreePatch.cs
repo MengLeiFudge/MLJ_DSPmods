@@ -58,6 +58,17 @@ public static class TechnologyTreePatch {
         return false;
     }
 
+    /// <summary>物流集装科技同时提升FE塔输出堆叠，保留原版及其他模组的效果说明。</summary>
+    /// <param name="__instance">当前科技原型。</param>
+    /// <param name="__result">原版生成的解锁说明。</param>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(TechProto), nameof(TechProto.UnlockFunctionText))]
+    private static void TechProto_UnlockFunctionText_Postfix(TechProto __instance, ref string __result) {
+        if (__instance.ID >= T运输站集装物流 && __instance.ID <= T运输站集装物流 + 2) {
+            __result += "\r\n" + "FE.Growth.StationStack".Translate();
+        }
+    }
+
     /// <summary>
     /// 两个物流交互科技保留稳定的 2061/2062 ID，但在界面中属于建筑科技第一页。
     /// </summary>

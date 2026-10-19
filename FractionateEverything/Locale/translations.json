@@ -685,11 +685,18 @@
     "1041": "対応する古代遺跡の長期任務を完了すると復元されます。"
   },
   "FE分馏堆叠成长描述": {
-    "enUS": "Raises global cargo stacking and scales all vanilla recipe times by 4 / current stack size.",
-    "zhCN": "提高全局货物堆叠，并按 4/当前堆叠 等比例缩短全部原版配方耗时。",
-    "frFR": "Augmente l'empilement global des cargaisons et multiplie la durée de toutes les recettes du jeu de base par 4 / taille actuelle des piles.",
-    "1031": "Erhöht die globale Frachtstapelung und multipliziert die Dauer aller Originalrezepte mit 4 / aktueller Stapelhöhe.",
-    "1041": "貨物の全体スタック数を増やし、すべてのバニラレシピの所要時間を4÷現在のスタック数に比例させます。"
+    "enUS": "Raises stacking to 8, then 20. Applies to pilers, pile-sorter input and output, logistics stations, interaction stations and fractionator outputs. Ordinary production recipe times scale by 4 / stack size.",
+    "zhCN": "将堆叠上限依次提升至8层、20层，作用于集装机、集装分拣器输入与输出、物流塔、物流交互站及分馏塔两种输出。普通生产配方耗时按4/堆叠层数缩短。",
+    "frFR": "Porte l’empilement à 8, puis à 20. S’applique aux empileurs, aux entrées et sorties des trieurs empileurs, aux stations logistiques et d’interaction, et aux sorties des fractionneurs. La durée des recettes de production ordinaires est multipliée par 4 / taille des piles.",
+    "1031": "Erhöht die Stapelgrenze auf 8, dann auf 20. Gilt für Stapler, Ein- und Ausgabe von Stapelsortierern, Logistik- und Interaktionsstationen sowie Fraktioniererausgänge. Die Dauer gewöhnlicher Produktionsrezepte wird mit 4 / Stapelhöhe multipliziert.",
+    "1041": "スタック上限を8、次に20へ引き上げます。集積機、集積ソーターの入力と出力、物流・交互ステーション、分留塔の両出力に適用します。通常の生産レシピの所要時間を4÷スタック数に短縮します。"
+  },
+  "FE.Growth.StationStack": {
+    "enUS": "FE fractionator output stack limit +1",
+    "zhCN": "FE分馏塔输出堆叠上限 +1",
+    "frFR": "Limite d’empilement en sortie des fractionneurs FE +1",
+    "1031": "Ausgabestapelgrenze der FE-Fraktionierer +1",
+    "1041": "FE分留塔の出力スタック上限 +1"
   },
   "FE亚空间能效描述": {
     "enUS": "Reduces logistics-interaction energy use by 10% per level.",

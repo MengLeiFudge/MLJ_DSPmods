@@ -34,10 +34,8 @@ public static class InserterStackPatch {
             }
 
             // 只替换除数，保留原指令上的跳转标签与异常块；第三方循环次数补丁不触碰此表达式。
-            result[i + 3].opcode = OpCodes.Ldarg_0;
-            result[i + 3].operand = null;
-            result.Insert(i + 4, new CodeInstruction(OpCodes.Ldfld,
-                AccessTools.Field(typeof(InserterComponent), nameof(InserterComponent.stackOutput))));
+            result[i + 3].opcode = OpCodes.Call;
+            result[i + 3].operand = AccessTools.Method(typeof(InserterStackPatch), nameof(GetCargoStackSize));
             replaced++;
             i += 4;
         }
@@ -48,6 +46,10 @@ public static class InserterStackPatch {
         }
         return result;
     }
+
+    /// <summary>未接管时保留原版按四件折算货物堆数，不能用白爪尚未升级的输出层数代替。</summary>
+    /// <returns>货物堆数换算使用的每堆件数。</returns>
+    private static int GetCargoStackSize() => StackingManager.GetCompatibleMaxStack(4);
 
     private static bool LoadsThisField(CodeInstruction instruction, string fieldName) =>
         instruction.opcode == OpCodes.Ldfld

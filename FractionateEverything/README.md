@@ -80,7 +80,7 @@ The first relic uses a graphical signal bar scaled to the planet's radius. Later
 
 Use Assembly at the warehouse's top right to preview a demand tree and reserve real materials. Each row can use stock only or choose an unlocked process. Powered assembly nodes provide capacity; missing materials, power or storage space pause the order. Products enter shared storage directly. Multiplayer withdrawals use host-granted material allowances; construction and replicator checks request them automatically. The first request needs a network round trip, without requiring backpack space. Unused allowances return to shared storage.
 
-堆叠统一从原版集装研究衔接到FE的8/12/16/20层。自动集装机或集装分拣器的前置科技提供四层起点；数量升级和双向运输仍需自行研究，不会因解锁白爪自动完成其他科技。FE八层需要3315集装分拣器改良、3803运输站集装物流及信息矩阵科技。3311～3315、3801～3803调整到黄糖阶段费用；FE成长材料读取当前科技树，星环新增矩阵会按其对应阶段纳入。白糖两次堆叠升级合并在一个节点，最终保持20层。
+FE分馏塔从1层开始，随运输站集装物流三项科技逐级达到2、3、4层。紫糖阶段解锁8层后，集装机、白爪输入与输出、物流塔与物流交互站、分馏塔两种输出统一成长；绿糖阶段提升至20层。八层需要3315集装分拣器改良、3803运输站集装物流及信息矩阵科技，双向运输仍单独研究。3311～3315、3801～3803使用黄糖阶段费用；FE成长材料读取当前科技树的阶段组合。普通生产配方从8层起按4/堆叠层数缩短耗时，丰碑继续加速，实际堆叠保持20层上限。旧白糖堆叠节点停用，不返还研究消耗。
 
 探索常规十级完成后开放终极探索任务；亚空间容量达到初始的35倍后开放终极仓储任务。恢复中继或空间锚点，带着机甲背包里的源点进入回收范围，自动分批交付2400源点（不扣亚空间），再连接最终核心；任务直接授予终极科技，无矩阵研究费用。终极探索持续补足两个普通广播，终极仓储解除玩法容量限制。
 

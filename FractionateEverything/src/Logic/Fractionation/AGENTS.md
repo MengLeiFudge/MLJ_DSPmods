@@ -37,8 +37,8 @@ Fractionation/
 ## Runtime Rules
 
 - 基础塔输入使用 `ProcessManager.BufferCapacity`（20×当前全局堆叠件），高级主料使用40×当前全局堆叠件；货物计数参与速度，不替代这两条准入策略。
-- 所有塔的产物与流动输出阈值统一读取 `ProcessManager.OutputCapacity`（5×当前全局堆叠件）。按本批开始前数量准入，整批结果允许越过阈值；禁止以最坏产量预留空间或按单轮产量扩大阈值。
-- 原版分馏塔输入缓存保持 `FractionatorManager.VanillaFluidInputCargoMax`（40）货物堆；更新后由 `ProcessManager.TopUpVanillaOutputs` 把流动输出和产物叠到输出带头部。已放置塔的原版缓存字段由 `FractionatorManager.SetFractionatorCacheSize` 与 `FactorySystem.Import` 补丁同步。
+- FE塔的产物与流动输出阈值读取 `ProcessManager.OutputCapacity`（5×当前FE堆叠件）；原版塔在八层接管前保持20件，之后使用相同阈值。按本批开始前数量准入，整批结果允许越过阈值；禁止以最坏产量预留空间或按单轮产量扩大阈值。
+- 原版分馏塔输入缓存保持 `FractionatorManager.VanillaFluidInputCargoMax`（40）货物堆；八层研究完成后由 `ProcessManager.TopUpVanillaOutputs` 把流动输出和产物叠到输出带头部。已放置塔的原版缓存字段由 `FractionatorManager.SetFractionatorCacheSize` 与 `FactorySystem.Import` 补丁同步。
 - 基础塔按带尾真实stack做整批准入；基础矿物失败回流，解析按研究域的价值概率区分成功、损毁和流回，具体公式见GAME_DESIGN_SPEC。
 - 高级塔先验证已研究且塔型匹配的稳定配方 ID，再接收多输入和矩阵食物。
 - 主料与辅料使用40×当前集装层数件准入阈值；消耗概率低于10%的催化剂至少保留5件或一轮需求。备用食物硬容量5件，消化物与备用同种，二者均空才可切换。配方矩阵优先作为反应物，仅空腹且无备用时先取一件点火。旧档按消化剩余比例迁移，异种备用空间不足时保留待排。

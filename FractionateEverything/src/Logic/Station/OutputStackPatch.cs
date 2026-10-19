@@ -29,21 +29,14 @@ public static partial class StationManager {
             return instructions;
         }
 
-        // 移动到 stationPilerLevel 参数加载的位置
-        matcher.Advance(2);
-        // 替换为 GetOutputStack
-        matcher.SetInstructionAndAdvance(new CodeInstruction(OpCodes.Ldloc_S, (byte)7))// 加载 factory
-            .Insert(
-                new CodeInstruction(OpCodes.Ldloc_S, (byte)19),// 加载 &local2
-                new CodeInstruction(OpCodes.Ldind_Ref),// 解引用得到 StationComponent
-                new CodeInstruction(OpCodes.Call,
-                    AccessTools.Method(typeof(StationManager), nameof(GetOutputStack)))// 调用方法
-            );
+        // 保留原参数，八层研究后才投影到FE上限；不依赖其他局部变量编号。
+        matcher.Advance(3).Insert(new CodeInstruction(OpCodes.Call,
+            AccessTools.Method(typeof(StationManager), nameof(GetOutputStack))));
         return matcher.InstructionEnumeration();
     }
 
     /// <summary>
-    /// 实际处理时，物流交互站的集装上限使用强化上限
+    /// 单线程物流输出与并行路径使用相同的接管条件。
     /// </summary>
     [HarmonyTranspiler]
     [HarmonyPatch(typeof(PlanetTransport), nameof(PlanetTransport.GameTick_OutputToBelt))]
@@ -64,28 +57,14 @@ public static partial class StationManager {
             return instructions;
         }
 
-        // 移动到 maxPilerCount 参数加载的位置
-        matcher.Advance(2);
-        // 替换为 GetOutputStack
-        matcher.SetInstructionAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))// 当前实例（PlanetTransport）
-            .Insert(
-                new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PlanetTransport), "factory")),// factory
-                new CodeInstruction(OpCodes.Ldarg_0),// 当前实例（PlanetTransport），再次加载
-                new CodeInstruction(OpCodes.Ldfld,
-                    AccessTools.Field(typeof(PlanetTransport), "stationPool")),// stationPool
-                new CodeInstruction(OpCodes.Ldloc_3),// index
-                new CodeInstruction(OpCodes.Ldelem_Ref),// stationPool[index]
-                new CodeInstruction(OpCodes.Call,
-                    AccessTools.Method(typeof(StationManager), nameof(GetOutputStack)))// 调用方法
-            );
+        matcher.Advance(3).Insert(new CodeInstruction(OpCodes.Call,
+            AccessTools.Method(typeof(StationManager), nameof(GetOutputStack))));
         return matcher.InstructionEnumeration();
     }
 
-    /// <summary>返回统一堆叠系统控制下的物流站输出集装上限。</summary>
-    /// <param name="factory">行星工厂实例</param>
-    /// <param name="station">目标站点组件</param>
-    /// <returns>所有物流站统一使用当前堆叠上限。</returns>
-    private static int GetOutputStack(PlanetFactory factory, StationComponent station) {
-        return StackingManager.GetLogisticStationMaxStack();
-    }
+    /// <summary>八层研究前保留调用方的物流集装上限，之后使用FE成长值。</summary>
+    /// <param name="vanillaMaxStack">原版传入的运输站集装上限。</param>
+    /// <returns>当前设备接管规则下的上限。</returns>
+    private static int GetOutputStack(int vanillaMaxStack) => StackingManager.IsUnlocked
+        ? StackingManager.CurrentMaxStack : vanillaMaxStack;
 }
