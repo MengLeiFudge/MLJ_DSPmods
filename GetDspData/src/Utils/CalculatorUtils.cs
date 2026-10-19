@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using FE.Logic.Fractionation.Fractionators;
 using static GetDspData.GetDspData;
 
 namespace GetDspData.Utils;
@@ -138,11 +139,12 @@ public static partial class Utils {
 
     /// <summary>
     /// 读取物品在量化计算器中使用的占地面积；未知生产建筑返回 -1。
-    /// FE 四塔按 ERecipe 顺序对齐：培养=1、解析=2、复制=3、转化=4。
+    /// FE 活动塔型由共享目录判断，避免新增塔型遗漏建筑参数。
     /// </summary>
     /// <param name="item">待查询的物品原型。</param>
     /// <returns>计算器占地面积；非生产建筑或不在表内时为 -1。</returns>
     public static float GetSpace(this ItemProto item) {
+        if (FractionateEverythingEnable && FractionatorTowerCatalog.IsActiveFractionator(item.ID)) { return 12.96f; }
         return item.ID switch {
             I电弧熔炉 or I位面熔炉 or IOR等离子熔炉 or I负熵熔炉 or IGB等离子熔炉 => 5.76f,
             I制造台MkI or IGB基础制造台 or IOR基础制造台
@@ -158,9 +160,7 @@ public static partial class Utils {
                 or IGB物质分解设施 or IGB苍穹粒子加速器 or IGB大气采集站 => 50f,
             I原油精炼厂 => 18f,
             I射线接收站 or IMS射线重构站 => 54.82f,
-            // FE 四塔：培养/解析/复制/转化，对应 ERecipe 1/2/3/4
-            I分馏塔 or IGB聚束液体汲取设施
-                or IFE培养塔 or IFE解析塔 or IFE复制塔 or IFE转化塔 => 12.96f,
+            I分馏塔 or IGB聚束液体汲取设施 => 12.96f,
             I微型粒子对撞机 => 45.12f,
             I能量枢纽 => 64f,
             I蓄电器 or I蓄电器满 or IGB同位素温差发电机 => 4f,

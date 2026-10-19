@@ -19,7 +19,6 @@ using UnityEngine;
 using xiaoye97;
 using static BepInEx.BepInDependency.DependencyFlags;
 using static FE.Logic.Fractionation.Recipes.RecipeManager;
-using static FE.Logic.Fractionation.Recipes.ERecipeExtension;
 using static GetDspData.Utils.Utils;
 
 namespace GetDspData;
@@ -496,6 +495,9 @@ public class GetDspData : BaseUnityPlugin {
         foreach (var recipe in LDB.recipes.dataArray) {
             AddRecipe(recipe, recipes);
         }
+        if (FractionateEverythingEnable) {
+            AddFracRecipes(recipes);
+        }
         //物品
         var items = new JArray();
         dataObj.Add("items", items);
@@ -516,7 +518,7 @@ public class GetDspData : BaseUnityPlugin {
     }
 
     /// <summary>
-    /// 按注释 0..5 的固定顺序为单个物品追加计算器特殊配方。
+    /// 按注释 0..4 的固定顺序为单个物品追加计算器特殊配方。
     /// </summary>
     /// <param name="recipes">计算器配方数组，允许 Insert/Add 修改。</param>
     /// <param name="item">当前遍历到的物品原型。</param>
@@ -531,10 +533,6 @@ public class GetDspData : BaseUnityPlugin {
         AddAccumulatorChargeSpecialRecipes(recipes, item);
         //4.创世满燃料棒烧完变空燃料棒
         AddFuelExhaustRecipe(recipes, item);
-        //5.所有万物分馏的配方
-        if (FractionateEverythingEnable) {
-            AddFracRecipes(recipes, item);
-        }
     }
 
     /// <summary>
@@ -603,7 +601,10 @@ public class GetDspData : BaseUnityPlugin {
             factorySpecial = [..factorySpecial, IGB大气采集站];
         }
         if (factorySpecial.Count == 0) {
-            bool noNormalRecipe = item.recipes == null || item.recipes.Count == 0;
+            // 高级配方已从物品的普通配方关联中移除，不能因此推断为伊卡洛斯采集来源。
+            bool hasFractionationRecipe = FractionateEverythingEnable
+                && GetRecipesProducing(item.ID).Any(recipe => recipe.IsAdvanced);
+            bool noNormalRecipe = (item.recipes == null || item.recipes.Count == 0) && !hasFractionationRecipe;
             if (item.canMiningByIcarus() || (item.GridIndexValid() && noNormalRecipe)) {
                 factorySpecial = [..factorySpecial, I伊卡洛斯];
             }
@@ -889,54 +890,55 @@ public class GetDspData : BaseUnityPlugin {
     }
 
     /// <summary>
-    /// 为指定物品追加 FE 四塔分馏配方到计算器 recipes 数组。
-    /// 遍历顺序固定为 ERecipe.Cultivation/Analysis/Replication/Conversion（1/2/3/4）。
+    /// 按稳定目录导出 FE 生产配方，每张配方只写一次；解析推进研究，不作为固定物料生产。
+    /// 数量按成功轮的期望实耗与实产导出，保留最低投入和消耗概率；速率仍需计算器结合供养与流量求解。
+    /// 特质采用导出时的等级，成功率不含献祭，增产点按未喷涂处理。
     /// </summary>
     /// <param name="recipes">计算器配方数组。</param>
-    /// <param name="item">输入物品原型。</param>
-    private static void AddFracRecipes(JArray recipes, ItemProto item) {
-        if (!item.GridIndexValid()) {
-            return;
-        }
-
-        foreach (var type in RecipeTypes) {
-            BaseRecipe recipe = GetRecipe<BaseRecipe>(type, item.ID);
-            if (recipe == null) {
-                continue;
+    private static void AddFracRecipes(JArray recipes) {
+        foreach (WorldviewRecipe recipe in WorldviewRecipes.OrderBy(recipe => recipe.PersistentId)) {
+            if (recipe.Kind == WorldviewRecipeKind.BasicAnalysis) { continue; }
+            int buildingId = recipe.RecipeType.GetSpriteItemId();
+            if (!FractionatorTowerCatalog.IsActiveFractionator(buildingId) || !LDB.items.Exist(buildingId)) {
+                throw new InvalidOperationException($"FE配方生产建筑不存在：{recipe.StableId} / {buildingId}");
             }
-            ItemProto building = LDB.items.Select(recipe.RecipeType.GetSpriteItemId());
-            int fluidInputIncAvg = 0;
-            float pointsBonus = (float)ProcessManager.MaxTableMilli(fluidInputIncAvg);
-            List<int> Items = [item.ID];
-            List<float> ItemCounts = [1];
-            List<int> Results = [];
-            List<float> ResultCounts = [];
-            foreach (var info in recipe.OutputMain) {
-                Results.Add(info.OutputID);
-                ResultCounts.Add(info.OutputCount);
+            var consumeProbabilities = recipe.Inputs
+                .Select(input => AdvancedFractionatorRuntime.GetInputConsumeProbability(input, buildingId)).ToArray();
+            var outputCounts = recipe.Products
+                .Select(output => AdvancedFractionatorRuntime.GetOutputPerSuccess(recipe, output)).ToArray();
+            var outputMain = new JArray();
+            for (int i = 0; i < recipe.Products.Count; i++) {
+                outputMain.Add(new JObject {
+                    { "OutputID", recipe.Products[i].ItemId },
+                    { "OutputCount", outputCounts[i] },
+                    { "SuccessRatio", 1.0 },
+                });
             }
-            foreach (var info in recipe.OutputAppend) {
-                Results.Add(info.OutputID);
-                ResultCounts.Add(info.OutputCount);
-            }
+            int protoId = AdvancedRecipeCatalog.GetProtoId(recipe.PersistentId);
+            RecipeProto proto = protoId > 0 ? LDB.recipes.Select(protoId) : null;
             recipes.Add(new JObject {
+                { "ID", proto?.ID ?? recipe.PersistentId },
+                { "StableID", recipe.StableId },
                 { "Type", -1 },
-                { "Factories", new JArray(new[] { building.ID }) },
-                { "Name", $"[{recipe.RecipeType.GetShortName()}]{item.name}" },
-                { "Items", new JArray(Items) },
-                { "ItemCounts", new JArray(ItemCounts) },
-                { "Results", new JArray(Results) },
-                { "ResultCounts", new JArray(ResultCounts) },
+                { "Factories", new JArray(buildingId) },
+                { "Name", proto?.name ?? recipe.DisplayName.Translate() },
+                { "Items", new JArray(recipe.Inputs.Select(input => input.ItemId)) },
+                { "ItemCounts", new JArray(recipe.Inputs.Select((input, i) => input.Count * (double)consumeProbabilities[i])) },
+                { "InputCountsPerRound", new JArray(recipe.Inputs.Select(input => input.Count)) },
+                { "InputConsumeProbabilities", new JArray(consumeProbabilities) },
+                { "Results", new JArray(recipe.Products.Select(output => output.ItemId)) },
+                { "ResultCounts", new JArray(outputCounts) },
                 { "TimeSpend", 0 },
-                { "Proliferator", 1 },
-                { "SuccessRatio", recipe.SuccessRatio },
-                { "DestroyRatio", recipe.DestroyRatio },
+                { "Proliferator", recipe.IsAdvanced ? 0 : 1 },
+                { "SuccessRatio", recipe.CycleSuccessProbability },
+                { "DestroyRatio", 0.0 },
                 { "RemainInputRatio", 0.0 },
                 { "DoubleOutputRatio", 0.0 },
-                { "PointsBonus", pointsBonus },
-                { "OutputMain", BuildOutputInfoArray(recipe.OutputMain) },
-                { "OutputAppend", BuildOutputInfoArray(recipe.OutputAppend) },
-                { "IconName", ResolveIconName(item) },
+                { "PointsBonus", 0.0 },
+                { "RequiresFood", recipe.IsAdvanced },
+                { "OutputMain", outputMain },
+                { "OutputAppend", new JArray() },
+                { "IconName", proto != null ? ResolveIconName(proto) : ResolveIconName(LDB.items.Select(recipe.PrimaryProductId)) },
             });
         }
     }
@@ -977,23 +979,6 @@ public class GetDspData : BaseUnityPlugin {
                 target.Add(id.Value);
             }
         }
-    }
-
-    /// <summary>
-    /// 将 FE 输出配置投影为计算器 JSON 使用的 OutputID、OutputCount、SuccessRatio 数组。
-    /// </summary>
-    /// <param name="outputs">保持原顺序的 FE 输出配置列表。</param>
-    /// <returns>与输入列表逐项对应的计算器输出描述数组。</returns>
-    private static JArray BuildOutputInfoArray(List<OutputInfo> outputs) {
-        var arr = new JArray();
-        foreach (var output in outputs) {
-            arr.Add(new JObject {
-                { "OutputID", output.OutputID },
-                { "OutputCount", output.OutputCount },
-                { "SuccessRatio", output.SuccessRatio },
-            });
-        }
-        return arr;
     }
 
     /// <summary>
@@ -1292,8 +1277,8 @@ public class GetDspData : BaseUnityPlugin {
             } else if (proto.prefabDesc.minerType != EMinerType.None) {
                 obj.Add("Speed", 600000.0 / proto.prefabDesc.minerPeriod);
             } else {
-                //其余使用10000速度
-                LogWarning($"{proto.name}制造速度设为1.0");
+                // 分馏塔、接收站和蓄电器没有制造台倍率字段，使用中性倍率。
+                LogDebug($"{proto.name}制造速度倍率使用1.0");
                 obj.Add("Speed", 1.0);
             }
             obj.Add("MultipleOutput", GetBuildingMultipleOutput(proto));
@@ -1345,6 +1330,8 @@ public class GetDspData : BaseUnityPlugin {
     /// <param name="proto">配方原型。</param>
     /// <param name="add">目标 recipes 数组。</param>
     static void AddRecipe(RecipeProto proto, JArray add) {
+        // FE高级原型仅供选择器展示，真实生产数据由稳定目录统一导出。
+        if (FractionateEverythingEnable && AdvancedRecipeCatalog.IsAdvancedProto(proto.ID)) { return; }
         if (!proto.GridIndexValid()) {
             LogWarning(
                 $"proto.GridIndex is not valid, proto: {proto.FName()}({proto.ID}), GridIndex: {proto.GridIndex}");
