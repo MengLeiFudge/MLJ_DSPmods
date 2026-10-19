@@ -364,6 +364,15 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
 - Subdirectory `AGENTS.md` files exist for major FE domains such as `Logic/Civilization/`, `Logic/Fractionation/`, `Logic/Station/`, `Logic/DataCenter/`, `Logic/Items/`, `Logic/Enhancements/`, `UI/`, `UI/Controls/`, `UI/MainPanel/`, `Compatibility/`, `Utils/`, and `AfterBuildEvent/src/`
 - **Simulator-first workflow (mandatory):** when the user is exploring balance, pacing, or design direction and has not yet approved applying the result to the real mod, agents must restrict code changes to `VanillaCurveSim/**` (and supporting docs/plans if needed). In this stage, agents may read `FractionateEverything/**` to mirror real formulas, but must not modify FE project files until the user explicitly confirms that the simulated result should be applied to FE.
 
+## UI 字体亮度（强制）
+
+- 所有页面、按钮、覆盖面板及动态列表的文字必须保持清晰，亮度与既有正常 UI 一致；不得出现过曝、光晕糊字或同级文字亮度突变。
+- 复用现有文字工厂与主题文字色，并保留匹配的字体材质、颜色透明度及描边设置。`MyWindow.AddText` / `AddText2` 默认文字 alpha 为 `0.4`；`PageLayout.AddCenteredText` 会用传入颜色覆盖它，因此使用统一入口本身不保证亮度正确。
+- 沿用上述文字材质时，不得直接用 `Color.white`、省略 alpha 的 `new Color(r, g, b)` 或不透明富文本颜色覆盖主题文字色。状态变色应保留对应文字样式的透明度；强调信息优先用主题色和字重，不以提高发光强度代替。
+- 静态自审必须同时检查文字创建与后续刷新路径，包括按钮标签、动态行、选中态和禁用态，防止刷新时重新写入不透明颜色。处理滚动裁剪时也须保留正确亮度，不得不加区分地清空或替换字体材质。
+- 编译通过不能证明字体显示正常；未经游戏内实际确认，不得宣称亮度问题已修复。
+
+
 ## Analysis UI Layout Baseline (Mandatory)
 
 When rendering pages inside `FEAnalysisMainWindow` middle black area:
