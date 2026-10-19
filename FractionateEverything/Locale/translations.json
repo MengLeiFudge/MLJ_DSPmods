@@ -526,35 +526,59 @@
   },
   "FE.Encyclopedia.Title": {
     "enUS": "Encyclopedia",
-    "zhCN": "百科"
+    "zhCN": "百科",
+    "frFR": "Encyclopédie",
+    "1031": "Enzyklopädie",
+    "1041": "百科事典"
   },
   "FE.Encyclopedia.Summary": {
     "enUS": "Restore damaged entries through matrix progress or pages from advanced relics.",
-    "zhCN": "矩阵科技与高级遗迹中的残页，能逐步拼回损坏的文字。"
+    "zhCN": "矩阵科技与高级遗迹中的残页，能逐步拼回损坏的文字。",
+    "frFR": "Les technologies matricielles et les pages des reliques avancées permettent de reconstituer les textes endommagés.",
+    "1031": "Matrixtechnologien und Seiten aus fortgeschrittenen Relikten stellen beschädigte Texte nach und nach wieder her.",
+    "1041": "マトリックス技術と高度な遺跡の残されたページによって、損傷した文章を少しずつ復元できる。"
   },
   "FE.Encyclopedia.Readable": {
     "enUS": "Restored",
-    "zhCN": "已恢复"
+    "zhCN": "已恢复",
+    "frFR": "Restauré",
+    "1031": "Wiederhergestellt",
+    "1041": "復元済み"
   },
   "FE.Encyclopedia.Damaged": {
     "enUS": "Damaged text",
-    "zhCN": "文字损坏"
+    "zhCN": "文字损坏",
+    "frFR": "Texte endommagé",
+    "1031": "Beschädigter Text",
+    "1041": "文章が破損"
   },
   "FE.Encyclopedia.Locked": {
     "enUS": "#?% / ??? / %?#\n\nRecover the first relic, advance matrix technology or collect ancient pages to read this entry.",
-    "zhCN": "#?% / ??? / %?#\n\n寻找首个遗物、推进矩阵科技，或回收远古残页后，可以逐步辨认内容。"
+    "zhCN": "#?% / ??? / %?#\n\n寻找首个遗物、推进矩阵科技，或回收远古残页后，可以逐步辨认内容。",
+    "frFR": "#?% / ??? / %?#\n\nRetrouvez la première relique, progressez dans les technologies matricielles ou récupérez des pages anciennes pour déchiffrer ce texte.",
+    "1031": "#?% / ??? / %?#\n\nBerge das erste Relikt, erforsche Matrixtechnologien oder sammle alte Seiten, um diesen Eintrag schrittweise zu entziffern.",
+    "1041": "#?% / ??? / %?#\n\n最初の遺物の回収、マトリックス技術の研究、古代のページの収集によって、内容を少しずつ読み解ける。"
   },
   "FE.Encyclopedia.PageRecovered": {
     "enUS": "Recovered an ancient page. Part of the encyclopedia is now readable.",
-    "zhCN": "回收了一份远古残页，百科中的一部分文字已经恢复。"
+    "zhCN": "回收了一份远古残页，百科中的一部分文字已经恢复。",
+    "frFR": "Une page ancienne a été récupérée. Une partie de l’encyclopédie est désormais lisible.",
+    "1031": "Eine alte Seite wurde geborgen. Ein Teil der Enzyklopädie ist wieder lesbar.",
+    "1041": "古代のページを回収し、百科事典の文章の一部を復元した。"
   },
   "FE.Encyclopedia.LegendaryRecovered": {
     "enUS": "An ancient page restored a legendary recipe: {0}",
-    "zhCN": "远古残页恢复了传说配方：{0}"
+    "zhCN": "远古残页恢复了传说配方：{0}",
+    "frFR": "Une page ancienne a restauré une recette légendaire : {0}",
+    "1031": "Eine alte Seite hat ein legendäres Rezept wiederhergestellt: {0}",
+    "1041": "古代のページから伝説のレシピを復元した：{0}"
   },
   "FE.Encyclopedia.LegendaryTitle": {
     "enUS": "What the pages remember",
-    "zhCN": "残页记得的事"
+    "zhCN": "残页记得的事",
+    "frFR": "La mémoire des pages",
+    "1031": "Woran sich die Seiten erinnern",
+    "1041": "残されたページの記憶"
   },
   "FE.Encyclopedia.Analysis": {
     "enUS": "Common mineral replication and tower cultivation follow matrix technology. Rare recipes need a known clue before their samples can be analyzed. Exploration records identify the sample; an unmarked item passes through intact and cannot reveal a recipe by itself. The analysis page keeps undiscovered, analyzing and restored records in fixed positions. Undiscovered records hide both the sample and the result.\n\nSuccessful analysis advances shared progress and returns the same sample at the front without creating another one. Only destruction consumes it. Unprocessed samples leave at the side with their proliferator points. When a product buffer reaches its threshold, reactions pause and inputs pass through the side until products are removed. A whole processing batch may take the buffer above its threshold.\n\nAfter researching energy matrices, circuit boards can prepare replacement samples: each pass has a 1% success chance, a 3% destruction chance and a 96% return chance. Success produces one sample for an available replacement recipe and records its clue. Preparation stops when all eligible recipes have been restored.",
@@ -571,48 +595,81 @@
     "1041": "最初の反応は信号バーだけで示され、探知範囲は惑星の半径に合わせて変わる。その後の物語信号は「信号を見る」で目的地と地表をマークできる。自動移動は行わない。\n\n通常信号は接近するまで隠される。一度発見した場所は追跡一覧に残り、回収後は地点アーカイブへ移る。遺跡は少数で、母星系を中心に実際の活動範囲に応じて展開する。探索研究は断片回収と放送の頻度を改善する。報酬は亜空間へ一度だけ送られる。"
   },
   "FE.Encyclopedia.Storage": {
-    "enUS": "Each item has its own capacity. To expand subspace, power a basic analysis tower and feed science matrices into a side port. Only 8% is processed on each pass; the other 92% flows back with proliferator points. Processed matrices first fill the shared buffer of 60 per tier. Expansion consumes at most one matrix per second across all towers, preferring the highest tier. Higher tiers expand faster; growth slows as capacity rises.\n\nProcessed matrices that cannot enter the buffer are consumed as offerings and may produce one Memory at the front. The average consumption per Memory for blue, red, yellow, purple, green and white matrices is 100, 60, 40, 25, 15 and 10 respectively. Relic rewards may exceed normal capacity and can still be withdrawn.",
-    "zhCN": "每种物品独立计容量。满仓时，给基础解析塔供电，从侧面投入科学矩阵即可扩容。每次经过只处理8%，其余92%保留增产点侧流。被处理矩阵先填入全部塔共享的每档60件供料缓存，每秒全局最多使用最高档的1件扩容；高档矩阵更快，已有容量越大增长越慢。\n\n未能进入缓存的已处理矩阵会被献祭，可能从正面产出1源点。蓝、红、黄、紫、绿、白矩阵每份源点的平均实际消耗依次为100、60、40、25、15、10件。探索奖励可突破普通容量，仍能正常取出。"
+    "enUS": "Each item has its own capacity. To expand subspace, power a basic analysis tower and feed science matrices into a side port. Each matrix tier accumulates its own expansion effect, so different tiers can work at the same time. Expansion is permanent, with growth gradually slowing.\n\nProcessed matrices first enter the shared supply buffer for their tier. The remaining processed matrices become offerings and may produce Memory; unprocessed matrices flow out at the side with their proliferator points. Relic rewards may exceed normal capacity and remain available for withdrawal.",
+    "zhCN": "每种物品独立计容量。给基础解析塔供电，从侧面投入科学矩阵即可扩容。各档矩阵独立积累扩容效果，同时投入时可以同时生效；扩容效果永久保留，增长会逐渐放缓。\n\n处理后的矩阵优先进入对应档的共享供料缓存，剩余处理量用于献祭并可能产出源点；未处理的矩阵保留增产点侧流。探索奖励可突破普通容量，仍能正常取出。",
+    "frFR": "Chaque objet dispose de sa propre capacité. Pour agrandir le sous-espace, alimentez une tour d’analyse de base et introduisez des matrices scientifiques par un port latéral. Chaque palier accumule son propre effet d’extension ; plusieurs paliers peuvent agir simultanément. L’extension est permanente et sa croissance ralentit progressivement.\n\nLes matrices traitées remplissent d’abord le tampon partagé de leur palier. Le surplus traité devient une offrande et peut produire de la Mémoire ; les matrices non traitées ressortent sur le côté avec leurs points de prolifération. Les récompenses des reliques peuvent dépasser la capacité normale et restent récupérables.",
+    "1031": "Jeder Gegenstand hat eine eigene Lagerkapazität. Versorge einen einfachen Analyseturm mit Strom und führe Wissenschaftsmatrizen seitlich zu, um den Subraum zu erweitern. Jede Matrixstufe sammelt ihren eigenen Erweiterungseffekt; mehrere Stufen können gleichzeitig wirken. Die Erweiterung bleibt dauerhaft erhalten, ihr Wachstum verlangsamt sich allmählich.\n\nVerarbeitete Matrizen füllen zuerst den gemeinsamen Versorgungspuffer ihrer Stufe. Der verarbeitete Rest wird geopfert und kann Erinnerungen erzeugen; unverarbeitete Matrizen fließen mit ihren Proliferatorpunkten seitlich zurück. Reliktbelohnungen dürfen die normale Kapazität überschreiten und bleiben entnehmbar.",
+    "1041": "物品ごとに独立した容量がある。亜空間を拡張するには、基礎解析塔に電力を供給し、側面から科学マトリックスを投入する。各段階の拡張効果は独立して蓄積され、複数の段階を同時に働かせることができる。拡張効果は永久に残り、成長は徐々に遅くなる。\n\n処理されたマトリックスは、まず対応する段階の共有供給バッファに入る。残りの処理済みマトリックスは供物となり、源点を生成することがある。未処理のものは増産剤ポイントを保って側面へ流れる。遺跡の報酬は通常容量を超えて保管でき、そのまま取り出せる。"
   },
   "FE.Encyclopedia.Mineral": {
     "enUS": "After the first relic, researching electromagnetic matrices restores common mineral replication. Power a basic mineral tower, feed minerals from a side and loop the opposite output back. Products leave at the front.\n\nTower cultivation becomes available once the first matrix is produced. The story supplies the first interaction towers and embryos; exploration supplies more embryos.",
-    "zhCN": "回收首个遗物后，完成电磁矩阵科技即可恢复普通矿物复制。给基础矿物塔供电，从侧面送入矿物，另一侧流出接回输入，正面接产物带。\n\n第一枚矩阵实际生产后开放高级塔培育。主线提供首批交互塔与原胚，探索继续提供原胚补给。"
+    "zhCN": "回收首个遗物后，完成电磁矩阵科技即可恢复普通矿物复制。给基础矿物塔供电，从侧面送入矿物，另一侧流出接回输入，正面接产物带。\n\n第一枚矩阵实际生产后开放高级塔培育。主线提供首批交互塔与原胚，探索继续提供原胚补给。",
+    "frFR": "Après la première relique, la recherche des matrices électromagnétiques restaure la réplication des minerais communs. Alimentez une tour minérale de base, introduisez les minerais par un côté et ramenez la sortie opposée vers l’entrée. Les produits sortent à l’avant.\n\nLa culture des tours devient disponible dès la production de la première matrice. L’histoire fournit les premières tours d’interaction et les embryons ; l’exploration apporte des embryons supplémentaires.",
+    "1031": "Nach dem ersten Relikt stellt die Erforschung elektromagnetischer Matrizen die Vervielfältigung gewöhnlicher Mineralien wieder her. Versorge einen einfachen Mineralturm mit Strom, führe Mineralien seitlich zu und leite den gegenüberliegenden Ausgang zum Eingang zurück. Produkte verlassen den Turm vorne.\n\nSobald die erste Matrix hergestellt wurde, wird die Turmzüchtung verfügbar. Die Handlung liefert die ersten Interaktionstürme und Embryonen; weitere Embryonen stammen aus der Erkundung.",
+    "1041": "最初の遺物を回収した後、電磁マトリックスを研究すると通常鉱物の複製が復元される。基礎鉱物塔に電力を供給し、側面から鉱物を投入して反対側の出力を入力へ戻す。産物は正面から出る。\n\n最初のマトリックスを生産すると高度な塔の培養が可能になる。主線から最初の相互作用塔と原胚を得られ、探索でさらに原胚を補給できる。"
   },
   "FE.Encyclopedia.Memory": {
     "enUS": "For an early automated supply, feed surplus matrices into a powered analysis tower. Only 8% is processed on each pass. Expansion takes priority; processed matrices left over may produce Memory, with higher tiers yielding more. Unprocessed matrices flow back with proliferator points.\n\nLater, the thousand-tower story opens tower offerings. Towers without pending research are processed at 8%, and 2% of those produce one Memory. Memory first restores available stage records with a 2% success chance and no destruction. Once all available stages are restored and offerings are unlocked, only the 8% actually consumed contributes to the next minute's success bonus. A complete minute offering at least 50 Memory also restores one available legendary recipe.\n\nMemory used in production remains separate.",
-    "zhCN": "早期可将过量矩阵持续送入有电的解析塔，每次经过只处理8%。被处理件数先用于扩容，剩余部分可能凝结源点，矩阵档位越高产率越高；未处理矩阵保留增产点侧流。\n\n中后期千塔主线开放塔体献祭，无待解析内容的塔体每次经过处理8%，被处理件数的2%产出1源点。源点先以2%成功率恢复当前阶段资料，无损毁；已开放阶段全部恢复且献祭开放后，只有实际吃掉的8%计入本分钟，为下一分钟提供成功率增益。完整一分钟实际献祭至少50源点，还会恢复一项当前阶段的传说配方。\n\n生产配方使用的源点与献祭供料分开。"
+    "zhCN": "早期可将过量矩阵持续送入有电的解析塔，每次经过只处理8%。被处理件数先用于扩容，剩余部分可能凝结源点，矩阵档位越高产率越高；未处理矩阵保留增产点侧流。\n\n中后期千塔主线开放塔体献祭，无待解析内容的塔体每次经过处理8%，被处理件数的2%产出1源点。源点先以2%成功率恢复当前阶段资料，无损毁；已开放阶段全部恢复且献祭开放后，只有实际吃掉的8%计入本分钟，为下一分钟提供成功率增益。完整一分钟实际献祭至少50源点，还会恢复一项当前阶段的传说配方。\n\n生产配方使用的源点与献祭供料分开。",
+    "frFR": "Pour automatiser l’approvisionnement initial, introduisez vos matrices excédentaires dans une tour d’analyse alimentée. Seuls 8 % sont traités à chaque passage. L’extension est prioritaire ; les matrices traitées restantes peuvent produire de la Mémoire, avec un meilleur rendement aux paliers supérieurs. Les matrices non traitées ressortent avec leurs points de prolifération.\n\nPlus tard, l’histoire des mille tours permet de sacrifier des tours. Celles qui n’ont plus d’analyse en attente sont traitées à 8 %, et 2 % des unités traitées produisent une Mémoire. La Mémoire restaure d’abord les archives des étapes disponibles avec 2 % de réussite et aucune destruction. Une fois ces étapes restaurées et les offrandes débloquées, seuls les 8 % réellement consommés contribuent au bonus de réussite de la minute suivante. Une minute complète avec au moins 50 Mémoires sacrifiées restaure aussi une recette légendaire disponible.\n\nLa Mémoire utilisée en production reste séparée des offrandes.",
+    "1031": "Für eine frühe automatische Versorgung führe überschüssige Matrizen einem Analyseturm mit Strom zu. Pro Durchlauf werden 8 % verarbeitet. Die Erweiterung hat Vorrang; übrige verarbeitete Matrizen können Erinnerungen erzeugen, höhere Stufen mit höherem Ertrag. Unverarbeitete Matrizen fließen mit ihren Proliferatorpunkten zurück.\n\nSpäter schaltet die Tausend-Türme-Handlung Turmopfer frei. Türme ohne ausstehende Analyse werden zu 8 % verarbeitet; 2 % davon ergeben eine Erinnerung. Erinnerungen stellen zunächst verfügbare Stufenaufzeichnungen mit 2 % Erfolg und ohne Zerstörung wieder her. Sind alle verfügbaren Stufen wiederhergestellt und Opfer freigeschaltet, tragen nur die tatsächlich verbrauchten 8 % zum Erfolgsbonus der nächsten Minute bei. Eine vollständige Minute mit mindestens 50 geopferten Erinnerungen stellt zudem ein verfügbares legendäres Rezept wieder her.\n\nErinnerungen für Produktionsrezepte bleiben von Opfergaben getrennt.",
+    "1041": "序盤は余剰マトリックスを通電した解析塔へ送り続けることで、源点を自動供給できる。各通過で処理されるのは8%。拡張が優先され、残りの処理済みマトリックスから源点が生成されることがある。高い段階ほど生成率が高い。未処理のものは増産剤ポイントを保って側面へ戻る。\n\n中盤以降、千塔の主線で塔の献祭が開放される。解析待ち内容のない塔は8%の確率で処理され、その2%が源点1個になる。源点はまず成功率2%、破損なしで現在利用可能な段階の記録を復元する。利用可能な段階をすべて復元し、献祭が開放された後は、実際に消費された8%だけが次の1分間の成功率ボーナスに寄与する。完全な1分間に源点を50個以上献祭すると、利用可能な伝説のレシピも1件復元される。\n\n生産レシピで使う源点は献祭用とは別に扱われる。"
   },
   "FE.Encyclopedia.Legendary": {
     "enUS": "Embryo breeding and Memory reconstruction are legendary recipes. At the required matrix stage, restore them through advanced relic pages or a complete minute offering at least 50 Memory.\n\nPages first restore the three encyclopedia fragments, then one available legendary recipe. Offerings restore at most one recipe per complete minute. Unlocked recipes are retained.",
-    "zhCN": "反向繁育与源点重构属于传说配方。达到对应矩阵阶段后，通过高级遗迹残页，或完整一分钟至少50源点的献祭恢复。\n\n残页先补全三份百科记录，再恢复当前可用的一项传说配方。献祭每个完整分钟最多恢复一项，已解锁内容永久保留。"
+    "zhCN": "反向繁育与源点重构属于传说配方。达到对应矩阵阶段后，通过高级遗迹残页，或完整一分钟至少50源点的献祭恢复。\n\n残页先补全三份百科记录，再恢复当前可用的一项传说配方。献祭每个完整分钟最多恢复一项，已解锁内容永久保留。",
+    "frFR": "La reproduction des embryons et la reconstruction par Mémoire sont des recettes légendaires. Au palier matriciel requis, restaurez-les avec des pages de reliques avancées ou une minute complète d’offrandes d’au moins 50 Mémoires.\n\nLes pages restaurent d’abord les trois fragments de l’encyclopédie, puis une recette légendaire disponible. Les offrandes restaurent au maximum une recette par minute complète. Les recettes débloquées sont conservées.",
+    "1031": "Embryonenvermehrung und Rekonstruktion mit Erinnerungen sind legendäre Rezepte. Auf der erforderlichen Matrixstufe lassen sie sich mit Seiten fortgeschrittener Relikte oder einer vollständigen Minute mit mindestens 50 geopferten Erinnerungen wiederherstellen.\n\nSeiten ergänzen zuerst die drei Enzyklopädiefragmente und danach ein verfügbares legendäres Rezept. Opfer stellen höchstens ein Rezept pro vollständiger Minute wieder her. Freigeschaltete Rezepte bleiben erhalten.",
+    "1041": "原胚の逆繁殖と源点による再構築は伝説のレシピに属する。必要なマトリックス段階に達した後、高度な遺跡のページ、または完全な1分間に源点50個以上の献祭で復元できる。\n\nページはまず百科事典の3つの記録を補い、その後に現在利用可能な伝説のレシピを1件復元する。献祭では完全な1分間につき最大1件。解放したレシピは永久に保持される。"
   },
   "FE.Research.CommonRecovered": {
     "enUS": "Matrix research restored: {0}",
-    "zhCN": "矩阵研究恢复了：{0}"
+    "zhCN": "矩阵研究恢复了：{0}",
+    "frFR": "La recherche matricielle a restauré : {0}",
+    "1031": "Matrixforschung hat wiederhergestellt: {0}",
+    "1041": "マトリックス研究によって復元：{0}"
   },
   "FE.Analysis.Preparation": {
     "enUS": "Sample preparation",
-    "zhCN": "电路板制样"
+    "zhCN": "电路板制样",
+    "frFR": "Préparation d’échantillons",
+    "1031": "Probenvorbereitung",
+    "1041": "回路基板によるサンプル作成"
   },
   "FE.MessageLog.Title": {
     "enUS": "Message Log",
-    "zhCN": "消息日志"
+    "zhCN": "消息日志",
+    "frFR": "Journal des messages",
+    "1031": "Nachrichtenprotokoll",
+    "1041": "メッセージログ"
   },
   "FE.MessageLog.Summary": {
     "enUS": "The latest 50 text tips and relic messages in this game, newest first. Consecutive identical messages are merged and show ×N. Cleared when changing saves.",
-    "zhCN": "本次游戏最近50条文字提示与遗迹消息，最新在前；连续相同消息合并并显示×N，切换存档后清空。"
+    "zhCN": "本次游戏最近50条文字提示与遗迹消息，最新在前；连续相同消息合并并显示×N，切换存档后清空。",
+    "frFR": "Les 50 derniers conseils et messages de reliques de cette session, du plus récent au plus ancien. Les messages identiques consécutifs sont regroupés avec ×N. Le journal est effacé au changement de sauvegarde.",
+    "1031": "Die letzten 50 Hinweise und Reliktmeldungen dieser Spielsitzung, neueste zuerst. Aufeinanderfolgende gleiche Meldungen werden mit ×N zusammengefasst. Beim Speicherstandwechsel wird das Protokoll geleert.",
+    "1041": "このセッションの文字ヒントと遺跡メッセージを、新しい順に最大50件表示する。連続する同一メッセージは×Nにまとめられ、セーブを切り替えると消去される。"
   },
   "FE.TowerFactory.FractionatorUnsupported": {
     "enUS": "FE fractionator towers must run as placed buildings; use an assembler in slot 1 to manufacture them.",
-    "zhCN": "FE分馏塔须作为实体建筑运行；制作塔体请在第一格放制造台。"
+    "zhCN": "FE分馏塔须作为实体建筑运行；制作塔体请在第一格放制造台。",
+    "frFR": "Les tours de fractionnement FE doivent fonctionner comme bâtiments placés ; utilisez une machine d’assemblage dans le premier emplacement pour les fabriquer.",
+    "1031": "FE-Fraktioniertürme müssen als platzierte Gebäude arbeiten; zur Herstellung der Türme gehört eine Montagemaschine in den ersten Platz.",
+    "1041": "FEの分留塔は実際に設置した建物として稼働させる必要がある。塔を製造する場合は、最初のスロットに組立機を置く。"
   },
   "FE.Signals.Categories": {
     "enUS": "Ordinary {0:P0} · Story {1:P0} · Advanced {2:P0}",
-    "zhCN": "普通 {0:P0} · 主线 {1:P0} · 高级 {2:P0}"
+    "zhCN": "普通 {0:P0} · 主线 {1:P0} · 高级 {2:P0}",
+    "frFR": "Ordinaire {0:P0} · Histoire {1:P0} · Avancé {2:P0}",
+    "1031": "Gewöhnlich {0:P0} · Handlung {1:P0} · Fortgeschritten {2:P0}",
+    "1041": "通常 {0:P0} · 主線 {1:P0} · 高度 {2:P0}"
   },
   "FE.Storage.FullHint": {
     "enUS": "Storage full: power an analysis tower and feed matrices into a side port to expand it.",
-    "zhCN": "亚空间已满：给基础解析塔供电，从侧面投入矩阵扩容。"
+    "zhCN": "亚空间已满：给基础解析塔供电，从侧面投入矩阵扩容。",
+    "frFR": "Sous-espace plein : alimentez une tour d’analyse de base et introduisez des matrices par un port latéral pour l’agrandir.",
+    "1031": "Subraum voll: Versorge einen einfachen Analyseturm mit Strom und führe seitlich Matrizen zu, um ihn zu erweitern.",
+    "1041": "亜空間が満杯：基礎解析塔に電力を供給し、側面からマトリックスを投入すると拡張できる。"
   },
   "分馏页面": {
     "enUS": "Fractionate",

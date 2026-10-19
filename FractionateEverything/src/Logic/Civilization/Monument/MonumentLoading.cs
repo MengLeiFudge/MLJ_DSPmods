@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using FE.Compatibility.Mods;
 using HarmonyLib;
 using static FE.Utils.Utils;
 
@@ -16,12 +17,13 @@ internal static class MonumentLoading {
     internal static void Initialize() {
         sails = LDB.items.dataArray.Where(item => item != null && MonumentCatalog.IsSail(item.ID)).Select(item => item.ID).ToArray();
         var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".MonumentLaunchers");
-        foreach (string name in new[] {
-            "ProjectOrbitalRing.Patches.Logic.MathematicalRateEngine.SiloAndEjector",
-            "MoreMegaStructure.MoreMegaStructure",
+        foreach ((Assembly assembly, string name) in new[] {
+            (OrbitalRing.assembly, "ProjectOrbitalRing.Patches.Logic.MathematicalRateEngine.SiloAndEjector"),
+            (MoreMegaStructure.assembly, "MoreMegaStructure.MoreMegaStructure"),
         }) {
-            Type type = AccessTools.TypeByName(name);
-            if (type == null) { continue; }
+            if (assembly == null) { continue; }
+            Type type = assembly.GetType(name);
+            if (type == null) { throw new InvalidOperationException($"丰碑弹药保护类型不兼容：{name}"); }
             Protect(type, "SiloUpdatePatch", typeof(SiloComponent), nameof(KeepSilo), harmony);
             Protect(type, "EjectorUpdatePatch", typeof(EjectorComponent), nameof(KeepEjector), harmony);
             if (name == "MoreMegaStructure.MoreMegaStructure") {
