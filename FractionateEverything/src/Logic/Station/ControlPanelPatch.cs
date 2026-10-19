@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using FE.Logic.Enhancements.Stacking;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
@@ -638,9 +639,9 @@ public static partial class StationManager {
             return;
         }
 
-        // 只处理物流交互站
+        // 八层研究后，普通物流站也使用同一堆叠选择范围。
         int buildingID = __instance.factory.entityPool[station.entityId].protoId;
-        if (!IsInteractionStation(buildingID)) {
+        if (!IsInteractionStation(buildingID) && !StackingManager.IsUnlocked) {
             RestoreStationPilerLabel(__instance.techPilerButton);
             __instance.event_lock = false;
             return;
@@ -979,9 +980,9 @@ public static partial class StationManager {
             return false;
         }
 
-        // 只处理物流交互站
+        // 八层研究后，普通物流站也使用同一堆叠选择范围。
         int buildingID = __instance.factory.entityPool[station.entityId].protoId;
-        if (!IsInteractionStation(buildingID)) {
+        if (!IsInteractionStation(buildingID) && !StackingManager.IsUnlocked) {
             return true;
         }
 
@@ -1013,9 +1014,9 @@ public static partial class StationManager {
             return false;
         }
 
-        // 只处理物流交互站
+        // 八层研究后，普通物流站也使用同一堆叠选择范围。
         int buildingID = __instance.factory.entityPool[station.entityId].protoId;
-        if (!IsInteractionStation(buildingID)) {
+        if (!IsInteractionStation(buildingID) && !StackingManager.IsUnlocked) {
             return true;
         }
 
