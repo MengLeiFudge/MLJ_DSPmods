@@ -68,8 +68,21 @@ public static class GrowthTechnologyManager {
     /// <summary>长链任务是否已授予持续探索。</summary>
     public static bool UltimateExploration => GameMain.history?.TechUnlocked(TFE终极探索) == true;
 
-    /// <summary>获取亚空间存取能效科技等级，范围 0..6。</summary>
-    public static int SubspaceEfficiencyLevel => GetUnlockedLevel(TFE亚空间能效, FiniteGrowthLevelCount);
+    /// <summary>一次性研究完成后的剩余耗电倍率，索引零表示未研究。</summary>
+    private static readonly double[] SubspaceEnergyRatios = [1d, 0.7d, 0.45d, 0.3d, 0.2d];
+    /// <summary>白糖能效的重复研究次数，最后一次达到基础耗电的百分之一。</summary>
+    private const int WhiteEfficiencyLevels = 29;
+
+    /// <summary>物流交互站实际采用的单件存取耗电倍率。</summary>
+    public static double SubspaceEnergyRatio {
+        get {
+            int level = GetUnlockedLevel(TFE亚空间能效 + 1, 4);
+            int whiteLevels = Math.Max(0, GetCompletedLevel(TFE亚空间能效 + 6) - 4);
+            return whiteLevels > 0
+                ? Math.Max(0.01d, 0.2d * Math.Pow(0.9d, whiteLevels))
+                : SubspaceEnergyRatios[level];
+        }
+    }
 
     /// <summary>获取探索常规成长等级，白糖节点承载第 6～10 级。</summary>
     public static int ExplorationLevel => Math.Max(GetUnlockedLevel(TFE探索信号增幅, 5),
@@ -189,7 +202,9 @@ public static class GrowthTechnologyManager {
             TFE终极仓储 => "亚空间容量：无限".Translate(),
             > TFE分馏堆叠成长 and <= TFE分馏堆叠成长 + 5 =>
                 string.Format("货物堆叠上限 +{0}".Translate(), techId == TFE分馏堆叠成长 + 3 ? 12 : 4),
-            > TFE亚空间能效 and <= TFE亚空间能效 + FiniteGrowthLevelCount => "亚空间存取耗能 -10%".Translate(),
+            TFE亚空间能效 + 6 => "亚空间存取耗电-10%".Translate(),
+            > TFE亚空间能效 + 1 and <= TFE亚空间能效 + 5 =>
+                string.Format("FE.Growth.SubspaceEnergyRatio".Translate(), SubspaceEnergyRatios[techId - TFE亚空间能效 - 1]),
             > TFE探索信号增幅 and <= TFE探索信号增幅 + FiniteGrowthLevelCount =>
                 BuildExplorationUnlockText(level),
             > TFE高级矿物特质 and <= TFE高级矿物特质 + FiniteGrowthLevelCount => "珍奇催化物损耗 -10%".Translate(),
@@ -215,8 +230,7 @@ public static class GrowthTechnologyManager {
     public static void AddTechs() {
         AddInfrastructureTechs();
         AddStackTechs();
-        AddFiniteSeries(TFE亚空间能效, "FE亚空间能效", "FE亚空间能效描述",
-            "Assets/fe/tech分馏数据中心", 6);
+        AddEfficiencyTechs();
         AddFiniteSeries(TFE探索信号增幅, "FE探索信号增幅", "FE探索信号增幅描述",
             "Assets/fe/tech物品分解", 2);
         AddUltimateTech(TFE终极探索, "终极探索", TFE探索信号增幅 + 6, 2);
@@ -282,6 +296,22 @@ public static class GrowthTechnologyManager {
         interstellar.PropertyItemCounts = [.. interstellarVanilla.PropertyItemCounts];
         interstellar.IsHiddenTech = true;
         interstellar.IconTag = "txjjh";
+    }
+
+    /// <summary>红至绿矩阵各一次性降耗，白矩阵继续逐级乘算；旧蓝矩阵身份仅供旧档识别。</summary>
+    private static void AddEfficiencyTechs() {
+        var series = new GrowthTechSeries("FE亚空间能效", "FE亚空间能效描述", "Assets/fe/tech分馏数据中心", 6);
+        TechProto retired = RegisterGrowthTech(TFE亚空间能效 + 1, series, 0, 0, 200, new GrowthTechLevel(1, 1));
+        retired.IsObsolete = true;
+        GrowthTechPositions.Remove(retired.ID);
+        int previous = TFE行星内物流交互;
+        for (int stage = 1; stage <= 5; stage++) {
+            TechProto tech = RegisterGrowthTech(TFE亚空间能效 + stage + 1, series, previous, stage,
+                FiniteGrowthCosts[stage], new GrowthTechLevel(stage, stage == 5 ? 4 + WhiteEfficiencyLevels : stage,
+                    stage == 5 ? 10000 : 0));
+            tech.IconTag = $"fe-growth-{TFE亚空间能效}";
+            previous = tech.ID;
+        }
     }
 
     private static void AddStackTechs() {
@@ -403,6 +433,7 @@ public static class GrowthTechnologyManager {
     public static void SyncResearchWorkload() {
         Dictionary<int, TechState> states = GameMain.history?.techStates;
         if (states == null) { return; }
+        NormalizeEfficiencyResearch();
         foreach (TechProto tech in LDB.techs.dataArray) {
             if (tech == null || tech.IsObsolete || !TryGetTechnologyContentId(tech.ID, out _)
                 || !states.TryGetValue(tech.ID, out TechState state)) { continue; }
@@ -417,6 +448,29 @@ public static class GrowthTechnologyManager {
             state.hashNeeded = needed;
             state.uPointPerHash = universePoints;
             states[tech.ID] = state;
+        }
+    }
+
+    /// <summary>按原型升级能效状态；旧白糖单级完成只折算一次白糖升级，不直接获得满级。</summary>
+    private static void NormalizeEfficiencyResearch() {
+        GameHistoryData history = GameMain.history;
+        for (int offset = 1; offset <= 6; offset++) {
+            int id = TFE亚空间能效 + offset;
+            TechProto tech = LDB.techs.Select(id);
+            if (!history.techStates.TryGetValue(id, out TechState state)) { continue; }
+            if (offset == 6 && state.maxLevel != tech.MaxLevel) {
+                state.curLevel = tech.Level + (state.unlocked ? 1 : 0);
+                if (state.unlocked) { state.hashUploaded = 0; }
+                state.unlocked = false;
+            } else if (offset < 6) {
+                state.curLevel = tech.Level;
+            }
+            state.maxLevel = tech.MaxLevel;
+            if (tech.IsObsolete) { state.unlocked = false; state.hashUploaded = 0; }
+            history.techStates[id] = state;
+        }
+        for (int i = history.techQueue.Length - 1; i >= 0; i--) {
+            if (history.techQueue[i] == TFE亚空间能效 + 1) { history.RemoveTechInQueue(i); }
         }
     }
 

@@ -756,11 +756,11 @@
     "1041": "FE分留塔の出力スタック上限 +1"
   },
   "FE亚空间能效描述": {
-    "enUS": "Reduces logistics-interaction energy use by 10% per level.",
-    "zhCN": "每级使物流交互站存取亚空间的耗能降低 10%。",
-    "frFR": "Réduit de 10 % par niveau l'énergie consommée par les stations d'interaction logistique lors des transferts avec le sous-espace.",
-    "1031": "Verringert den Energieverbrauch der Logistik-Interaktionsstationen für Subraumtransfers um 10 % pro Stufe.",
-    "1041": "物流交互ステーションが亜空間と物資を出し入れする際の消費エネルギーを、レベルごとに10%削減します。"
+    "enUS": "Research after unlocking the planetary interaction station. Red, yellow, purple and green matrix upgrades reduce transfer energy to 70%, 45%, 30% and 20% of its base value. Each white matrix upgrade reduces current energy use by 10%, down to a minimum of 1% of base energy.",
+    "zhCN": "取得行星内物流交互站后研究。红、黄、紫、绿矩阵阶段依次将存取耗电降至基础值的70%、45%、30%、20%；白矩阵每次降低当前耗电的10%，最低为基础值的1%。",
+    "frFR": "Accessible après la station d’interaction planétaire. Les améliorations à matrices rouges, jaunes, violettes et vertes ramènent la consommation à 70 %, 45 %, 30 % et 20 % de sa valeur de base. Chaque amélioration à matrices blanches réduit la consommation actuelle de 10 %, jusqu’à 1 % de la valeur de base.",
+    "1031": "Nach Freischaltung der planetaren Interaktionsstation erforschbar. Rote, gelbe, violette und grüne Matrizen senken den Verbrauch auf 70 %, 45 %, 30 % und 20 % des Grundwerts. Jede Verbesserung mit weißen Matrizen senkt den aktuellen Verbrauch um 10 %, bis mindestens 1 % des Grundwerts.",
+    "1041": "惑星内交互ステーションの解放後に研究できます。赤・黄・紫・緑のマトリックス段階で消費電力を基準値の70%、45%、30%、20%に低減。白マトリックス研究ごとに現在の消費電力を10%削減し、下限は基準値の1%です。"
   },
   "FE探索信号增幅描述": {
     "enUS": "Restore the ancient receiver to recover more fragments from Dark Fog wreckage and shorten the interval between new broadcasts. Discovered locations remain recorded without further calibration.",
@@ -811,12 +811,19 @@
     "1031": "Frachtstapelgrenze +{0}",
     "1041": "貨物スタック上限 +{0}"
   },
-  "亚空间存取耗能 -10%": {
+  "FE.Growth.SubspaceEnergyRatio": {
+    "enUS": "Subspace transfer energy: {0:P0} of base",
+    "zhCN": "亚空间存取耗电降至基础值的{0:P0}",
+    "frFR": "Énergie des transferts sous-spatiaux : {0:P0} de base",
+    "1031": "Energie für Subraumtransfers: {0:P0} des Grundwerts",
+    "1041": "亜空間転送消費電力：基準値の{0:P0}"
+  },
+  "亚空间存取耗电-10%": {
     "enUS": "Subspace transfer energy -10%",
-    "zhCN": "亚空间存取耗能 -10%",
+    "zhCN": "亚空间存取耗电-10%",
     "frFR": "Énergie des transferts sous-spatiaux -10 %",
     "1031": "Energie für Subraumtransfers -10 %",
-    "1041": "亜空間への出し入れの消費エネルギー -10%"
+    "1041": "亜空間転送消費電力-10%"
   },
   "FE.Growth.ExplorationIncrement": {
     "enUS": "Broadcast interval -15% (minimum 10 min)\nFragment discovery chance +{0:P0}",

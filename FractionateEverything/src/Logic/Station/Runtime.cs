@@ -227,8 +227,7 @@ public static partial class StationManager {
 
         ItemProto itemProto = LDB.items.Select(IFE行星内物流交互站);
         // 单件耗电（J）为物品价值的平方根乘以 10000 和交互耗电倍率。
-        double efficiencyMultiplier = Math.Max(0.4d,
-            1d - GrowthTechnologyManager.SubspaceEfficiencyLevel * 0.1d);
+        double efficiencyMultiplier = GrowthTechnologyManager.SubspaceEnergyRatio;
         double cost = Math.Sqrt(itemValue[store.itemId]) * 10000
                       * itemProto.InteractEnergyRatio() * efficiencyMultiplier;
         if (cost < 0 || double.IsNaN(cost) || double.IsInfinity(cost)) {
