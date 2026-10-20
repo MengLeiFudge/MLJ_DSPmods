@@ -68,6 +68,7 @@ public static class FeatureBootstrap {
         // AddFracRecipes 用到了 Init 生成的数据
         MetadataExtraction.RegisterSources();
         RecipeManager.AddFracRecipes();
+        FractionationTabLayout.Apply();
         MonumentManager.InitializeCatalog();
         MonumentLoading.Initialize();
         CivilizationModule.Initialize();
