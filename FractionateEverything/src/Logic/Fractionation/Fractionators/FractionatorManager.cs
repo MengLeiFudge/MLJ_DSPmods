@@ -51,7 +51,7 @@ public static class FractionatorManager {
     /// 按当前全局堆叠刷新分馏塔原型和已放置分馏塔的缓存上限。
     /// </summary>
     /// <remarks>
-    /// <para>高级塔输入为40堆件数，基础塔输入为20堆件数；原版输入按40个货物计，FE两项输出阈值为5乘当前集装层数件，原版塔在八层接管前保持20件。</para>
+    /// <para>高级塔输入为40堆件数，基础塔输入为20堆件数；原版输入按40个货物计，FE两项输出阈值为5乘当前集装层数件，原版塔在六层接管前保持20件。</para>
     /// <para>FE 塔运行时直接读当前上限，这些原版字段供原版逻辑、窗口和生产统计读取。</para>
     /// </remarks>
     public static void SetFractionatorCacheSize() {

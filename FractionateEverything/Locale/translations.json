@@ -742,11 +742,11 @@
     "1041": "対応する古代遺跡の長期任務を完了すると復元されます。"
   },
   "FE分馏堆叠成长描述": {
-    "enUS": "Raises stacking to 8, then 20. Applies to pilers, pile-sorter input and output, logistics stations, interaction stations and fractionator outputs. Ordinary production recipe times scale by 4 / stack size.",
-    "zhCN": "将堆叠上限依次提升至8层、20层，作用于集装机、集装分拣器输入与输出、物流塔、物流交互站及分馏塔两种输出。普通生产配方耗时按4/堆叠层数缩短。",
-    "frFR": "Porte l’empilement à 8, puis à 20. S’applique aux empileurs, aux entrées et sorties des trieurs empileurs, aux stations logistiques et d’interaction, et aux sorties des fractionneurs. La durée des recettes de production ordinaires est multipliée par 4 / taille des piles.",
-    "1031": "Erhöht die Stapelgrenze auf 8, dann auf 20. Gilt für Stapler, Ein- und Ausgabe von Stapelsortierern, Logistik- und Interaktionsstationen sowie Fraktioniererausgänge. Die Dauer gewöhnlicher Produktionsrezepte wird mit 4 / Stapelhöhe multipliziert.",
-    "1041": "スタック上限を8、次に20へ引き上げます。集積機、集積ソーターの入力と出力、物流・交互ステーション、分留塔の両出力に適用します。通常の生産レシピの所要時間を4÷スタック数に短縮します。"
+    "enUS": "Raises stacking to 6, 8, 12, 16 and 20. Applies to pilers, pile-sorter input and output, logistics stations, interaction stations and fractionator outputs. Ordinary production recipe times scale by 4 / stack size, rounded up to whole ticks.",
+    "zhCN": "将堆叠上限依次提升至6、8、12、16、20层，作用于集装机、集装分拣器输入与输出、物流塔、物流交互站及分馏塔两种输出。普通生产配方耗时按4/堆叠层数缩短，向上取整到整帧。",
+    "frFR": "Porte l’empilement à 6, 8, 12, 16 puis 20. S’applique aux empileurs, aux entrées et sorties des trieurs empileurs, aux stations logistiques et d’interaction, et aux sorties des fractionneurs. La durée des recettes ordinaires est multipliée par 4 / taille des piles, puis arrondie au tick supérieur.",
+    "1031": "Erhöht die Stapelgrenze auf 6, 8, 12, 16 und 20. Gilt für Stapler, Ein- und Ausgabe von Stapelsortierern, Logistik- und Interaktionsstationen sowie Fraktioniererausgänge. Die Dauer gewöhnlicher Rezepte wird mit 4 / Stapelhöhe multipliziert und auf ganze Ticks aufgerundet.",
+    "1041": "スタック上限を6、8、12、16、20へ引き上げます。集積機、集積ソーターの入力と出力、物流・交互ステーション、分留塔の両出力に適用。通常の生産レシピの所要時間は4÷スタック数となり、整数ティックに切り上げます。"
   },
   "FE.Growth.StationStack": {
     "enUS": "FE fractionator output stack limit +1",
@@ -777,11 +777,11 @@
     "1041": "すべての上級鉱物塔で希少触媒の損耗を減らします。"
   },
   "FE高级交互特质描述": {
-    "enUS": "Raises the chance of an extra embryo from advanced interaction towers.",
-    "zhCN": "提高全部高级交互塔繁育额外原胚的概率。",
-    "frFR": "Augmente la probabilité d'obtenir un embryon supplémentaire dans les tours d'interaction avancées.",
-    "1031": "Erhöht die Chance auf einen zusätzlichen Embryo in verbesserten Interaktionstürmen.",
-    "1041": "すべての上級交互塔で原胚を追加繁殖する確率を上げます。"
+    "enUS": "Increases average embryo output per successful breeding cycle in all advanced interaction towers.",
+    "zhCN": "提高全部高级交互塔每次成功繁育的平均原胚产出。",
+    "frFR": "Augmente la production moyenne d’embryons par cycle de reproduction réussi dans toutes les tours d’interaction avancées.",
+    "1031": "Erhöht den durchschnittlichen Embryoertrag pro erfolgreichem Zuchtzyklus aller verbesserten Interaktionstürme.",
+    "1041": "すべての上級交互塔で繁殖成功1回あたりの平均原胚産出量を増やします。"
   },
   "FE高级转化特质描述": {
     "enUS": "Raises recovery output from advanced conversion towers.",
@@ -839,12 +839,12 @@
     "1031": "Verlust seltener Katalysatoren -10 %",
     "1041": "希少触媒の損耗 -10%"
   },
-  "额外原胚概率 +5%": {
-    "enUS": "Extra embryo chance +5%",
-    "zhCN": "额外原胚概率 +5%",
-    "frFR": "Probabilité d'un embryon supplémentaire +5 %",
-    "1031": "Chance auf zusätzlichen Embryo +5 %",
-    "1041": "追加原胚の確率 +5%"
+  "繁育平均产出 +0.25": {
+    "enUS": "Average breeding output +0.25",
+    "zhCN": "繁育平均产出 +0.25",
+    "frFR": "Production moyenne par reproduction +0,25",
+    "1031": "Durchschnittlicher Zuchtertrag +0,25",
+    "1041": "繁殖平均産出量 +0.25"
   },
   "部件回收倍率 +5%": {
     "enUS": "Component recovery +5%",

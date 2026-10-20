@@ -7,7 +7,7 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Enhancements.Stacking;
 
 /// <summary>
-/// 集装机沿用原版取货、供电和拆堆流程，仅在八层研究后提高合并上限。
+/// 集装机沿用原版取货、供电和拆堆流程，仅在六层研究后提高合并上限。
 /// </summary>
 public static class PilerStackPatch {
     /// <summary>同时替换容量比较、货物输出、剩余数量和增产点分配中的四层常量。</summary>
@@ -44,7 +44,7 @@ public static class PilerStackPatch {
         return result;
     }
 
-    /// <summary>八层后提升合并能力；旧档较大货物只保留原有层数，避免剩余缓存的byte增产点溢出。</summary>
+    /// <summary>六层后提升合并能力；旧档较大货物只保留原有层数，避免剩余缓存的byte增产点溢出。</summary>
     /// <param name="piler">当前集装机，缓存尚未扣除本次输出。</param>
     /// <returns>研究上限与已有两堆大小的最大值，不把旧货物继续叠高。</returns>
     private static int GetStackLimit(ref PilerComponent piler) => Math.Max(StackingManager.GetCompatibleMaxStack(4),

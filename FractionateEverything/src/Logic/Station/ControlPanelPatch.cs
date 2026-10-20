@@ -639,7 +639,7 @@ public static partial class StationManager {
             return;
         }
 
-        // 八层研究后，普通物流站也使用同一堆叠选择范围。
+        // 六层研究后，普通物流站也使用同一堆叠选择范围。
         int buildingID = __instance.factory.entityPool[station.entityId].protoId;
         if (!IsInteractionStation(buildingID) && !StackingManager.IsUnlocked) {
             RestoreStationPilerLabel(__instance.techPilerButton);
@@ -980,7 +980,7 @@ public static partial class StationManager {
             return false;
         }
 
-        // 八层研究后，普通物流站也使用同一堆叠选择范围。
+        // 六层研究后，普通物流站也使用同一堆叠选择范围。
         int buildingID = __instance.factory.entityPool[station.entityId].protoId;
         if (!IsInteractionStation(buildingID) && !StackingManager.IsUnlocked) {
             return true;
@@ -1014,7 +1014,7 @@ public static partial class StationManager {
             return false;
         }
 
-        // 八层研究后，普通物流站也使用同一堆叠选择范围。
+        // 六层研究后，普通物流站也使用同一堆叠选择范围。
         int buildingID = __instance.factory.entityPool[station.entityId].protoId;
         if (!IsInteractionStation(buildingID) && !StackingManager.IsUnlocked) {
             return true;

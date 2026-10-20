@@ -54,8 +54,8 @@ public static class GrowthTechnologyManager {
 
     /// <summary>六阶段成长的单种材料预算；实际材料及比例读取最终科技树。</summary>
     private static readonly int[] FiniteGrowthCosts = [200, 400, 800, 1200, 1600, 50000];
-    private static readonly int[] StackCosts = [1, 6000, 12000, 1, 1];
-    private static readonly int[] StackStages = [0, 3, 4, 5, 5];
+    private static readonly int[] StackCosts = [3000, 6000, 4000, 6000, 8000];
+    private static readonly int[] StackStages = [3, 3, 4, 4, 4];
     private static readonly TechProto[] StackTechs = new TechProto[6];
     /// <summary>成长节点的阶段身份与预算，不受参考科技材料组合影响。</summary>
     private static readonly Dictionary<int, (int Stage, int Budget, int Increment)> ResearchCosts = [];
@@ -91,13 +91,16 @@ public static class GrowthTechnologyManager {
     /// <summary>获取高级矿物塔特质科技等级，范围 0..6。</summary>
     public static int AdvancedMineralTraitLevel => Volatile.Read(ref mineralTraitLevel);
 
+    /// <summary>繁育成功轮的平均原胚产量，运行结算与界面共用。</summary>
+    public static float EmbryoBreedingOutput => 1.5f + 0.25f * AdvancedInteractionTraitLevel;
+
     /// <summary>获取高级交互塔特质科技等级，范围 0..6。</summary>
     public static int AdvancedInteractionTraitLevel => Volatile.Read(ref interactionTraitLevel);
 
     /// <summary>获取高级转化塔特质科技等级，范围 0..6。</summary>
     public static int AdvancedConversionTraitLevel => Volatile.Read(ref conversionTraitLevel);
 
-    /// <summary>配置紫糖八层、绿糖二十层两个节点，其余旧身份仅供存档识别。</summary>
+    /// <summary>配置紫糖两级与绿糖三级堆叠，五个稳定身份连续排列。</summary>
     public static void ConfigureStackProgression() {
         for (int level = 1; level <= 5; level++) {
             TechProto tech = StackTechs[level] ?? LDB.techs.Select(TFE分馏堆叠成长 + level);
@@ -105,16 +108,16 @@ public static class GrowthTechnologyManager {
             int stage = StackStages[level - 1];
             int budget = StackCosts[level - 1];
             int increment = 0;
-            tech.Level = Math.Max(1, level - 1);
+            tech.Level = level;
             tech.MaxLevel = tech.Level;
-            tech.PreTechs = level == 2 ? [3315, 3803, T信息矩阵]
-                : level > 2 ? [TFE分馏堆叠成长 + level - 1] : [];
+            tech.PreTechs = level == 1 ? [3315, 3803, T信息矩阵]
+                : [TFE分馏堆叠成长 + level - 1];
             ResearchCosts[tech.ID] = (stage, budget, increment);
             MatrixResearchCosts.Apply(tech, stage, budget, increment);
-            GrowthTechPositions[tech.ID] = (0, stage);
-            tech.Position = GetGrowthTechPosition(0, stage);
+            GrowthTechPositions[tech.ID] = (6, level - 1);
+            tech.Position = GetGrowthTechPosition(6, level - 1);
             tech.IsHiddenTech = true;
-            tech.IsObsolete = level is < 2 or > 3;
+            tech.IsObsolete = false;
         }
         RefreshStackTechLinks();
     }
@@ -201,14 +204,14 @@ public static class GrowthTechnologyManager {
             TFE终极探索 => "远古广播持续回应".Translate(),
             TFE终极仓储 => "亚空间容量：无限".Translate(),
             > TFE分馏堆叠成长 and <= TFE分馏堆叠成长 + 5 =>
-                string.Format("货物堆叠上限 +{0}".Translate(), techId == TFE分馏堆叠成长 + 3 ? 12 : 4),
+                string.Format("货物堆叠上限 +{0}".Translate(), techId <= TFE分馏堆叠成长 + 2 ? 2 : 4),
             TFE亚空间能效 + 6 => "亚空间存取耗电-10%".Translate(),
             > TFE亚空间能效 + 1 and <= TFE亚空间能效 + 5 =>
                 string.Format("FE.Growth.SubspaceEnergyRatio".Translate(), SubspaceEnergyRatios[techId - TFE亚空间能效 - 1]),
             > TFE探索信号增幅 and <= TFE探索信号增幅 + FiniteGrowthLevelCount =>
                 BuildExplorationUnlockText(level),
             > TFE高级矿物特质 and <= TFE高级矿物特质 + FiniteGrowthLevelCount => "珍奇催化物损耗 -10%".Translate(),
-            > TFE高级交互特质 and <= TFE高级交互特质 + FiniteGrowthLevelCount => "额外原胚概率 +5%".Translate(),
+            > TFE高级交互特质 and <= TFE高级交互特质 + FiniteGrowthLevelCount => "繁育平均产出 +0.25".Translate(),
             > TFE高级转化特质 and <= TFE高级转化特质 + FiniteGrowthLevelCount => "部件回收倍率 +5%".Translate(),
             _ => null,
         };
@@ -255,11 +258,7 @@ public static class GrowthTechnologyManager {
             return;
         }
 
-        int stack = StackingManager.StationResearchStack;
-        if (history.TechUnlocked(TFE分馏堆叠成长 + 2)) {
-            stack = history.TechUnlocked(TFE分馏堆叠成长 + 3) ? StackingManager.AbsoluteMaxStack : 8;
-        }
-        StackingManager.ConfiguredMaxStack = stack;
+        StackingManager.ConfiguredMaxStack = StackingManager.ResearchMaxStack;
         StackingManager.SyncRuntimeState();
     }
 
@@ -300,7 +299,7 @@ public static class GrowthTechnologyManager {
 
     /// <summary>红至绿矩阵各一次性降耗，白矩阵继续逐级乘算；旧蓝矩阵身份仅供旧档识别。</summary>
     private static void AddEfficiencyTechs() {
-        var series = new GrowthTechSeries("FE亚空间能效", "FE亚空间能效描述", "Assets/fe/tech分馏数据中心", 6);
+        var series = new GrowthTechSeries("FE亚空间能效", "FE亚空间能效描述", "Assets/fe/tech分馏数据中心", 7);
         TechProto retired = RegisterGrowthTech(TFE亚空间能效 + 1, series, 0, 0, 200, new GrowthTechLevel(1, 1));
         retired.IsObsolete = true;
         GrowthTechPositions.Remove(retired.ID);
@@ -316,7 +315,7 @@ public static class GrowthTechnologyManager {
 
     private static void AddStackTechs() {
         var series = new GrowthTechSeries("FE分馏堆叠成长", "FE分馏堆叠成长描述",
-            "Assets/fe/tech资源复制", 0);
+            "Assets/fe/tech资源复制", 6);
         int previousTech = 0;
         for (int level = 1; level <= 5; level++) {
             int techId = TFE分馏堆叠成长 + level;

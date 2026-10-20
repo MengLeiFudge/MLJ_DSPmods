@@ -27,7 +27,7 @@ public sealed class TowerTraitsPage : CardBrowserPage {
     /// <param name="itemId">塔体物品。</param>
     /// <returns>玩家可读的效果。</returns>
     private static string Describe(int itemId) => itemId switch {
-        IFE高级交互塔 => string.Format("繁育均值：{0:0.00}".Translate(), 1.5 + 0.05 * GrowthTechnologyManager.AdvancedInteractionTraitLevel),
+        IFE高级交互塔 => string.Format("繁育均值：{0:0.00}".Translate(), GrowthTechnologyManager.EmbryoBreedingOutput),
         IFE高级矿物塔 => string.Format("珍奇催化损耗倍率：{0:P0}".Translate(), 1 - 0.1 * GrowthTechnologyManager.AdvancedMineralTraitLevel),
         IFE高级转化塔 => string.Format("置换回收倍率：{0:P0}".Translate(), 0.5 + 0.05 * GrowthTechnologyManager.AdvancedConversionTraitLevel),
         _ => "等待新的记录。".Translate(),

@@ -6,7 +6,7 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Enhancements.Stacking;
 
 /// <summary>
-/// 分馏塔随物流集装科技从单层成长；八层研究完成后统一接管集装设备。
+/// 分馏塔随物流集装科技从单层成长；首级六层研究完成后统一接管集装设备。
 /// </summary>
 public static class StackingManager {
     public const int LockedMaxStack = 1;
@@ -22,8 +22,20 @@ public static class StackingManager {
     private static int configuredMaxStack = LockedMaxStack;
     private static int lastSyncedStack = -1;
     private static bool lastSyncedUnlocked;
-    /// <summary>只有已完成八层科技才接管原版集装设备，制造设备的资格不触发接管。</summary>
-    public static bool IsUnlocked => GameMain.history?.TechUnlocked(TFE分馏堆叠成长 + 2) == true;
+    /// <summary>只有已完成首级六层科技才接管原版集装设备，制造设备的资格不触发接管。</summary>
+    public static bool IsUnlocked => ResearchMaxStack > BaseUnlockedMaxStack;
+
+    private static readonly int[] ResearchStacks = [6, 8, 12, 16, 20];
+
+    /// <summary>已完成科技允许的最大层数，旧档保留节点也按其当前效果投影。</summary>
+    public static int ResearchMaxStack {
+        get {
+            for (int i = ResearchStacks.Length - 1; i >= 0; i--) {
+                if (GameMain.history?.TechUnlocked(TFE分馏堆叠成长 + i + 1) == true) { return ResearchStacks[i]; }
+            }
+            return StationResearchStack;
+        }
+    }
 
     /// <summary>分馏塔的基础层数只取物流集装的已完成科技，不读可能被旧FE覆盖的历史字段。</summary>
     public static int StationResearchStack {
@@ -49,8 +61,7 @@ public static class StackingManager {
 
     /// <summary>已同步的层数仍须满足实际研究资格，旧存档或延迟快照不能提前授予高堆叠。</summary>
     public static int CurrentMaxStack => IsUnlocked
-        ? Math.Min(Math.Max(8, configuredMaxStack),
-            GameMain.history.TechUnlocked(TFE分馏堆叠成长 + 3) ? AbsoluteMaxStack : 8)
+        ? Math.Min(Math.Max(ResearchStacks[0], configuredMaxStack), ResearchMaxStack)
         : StationResearchStack;
 
     public static double CurrentVanillaRecipeTimeRatio => IsUnlocked
@@ -108,8 +119,10 @@ public static class StackingManager {
     }
 
     private static int ClampConfiguredMaxStack(int stack) {
-        if (stack >= AbsoluteMaxStack) { return AbsoluteMaxStack; }
-        return stack >= 8 ? 8 : Math.Max(LockedMaxStack, Math.Min(BaseUnlockedMaxStack, stack));
+        for (int i = ResearchStacks.Length - 1; i >= 0; i--) {
+            if (stack >= ResearchStacks[i]) { return ResearchStacks[i]; }
+        }
+        return Math.Max(LockedMaxStack, Math.Min(BaseUnlockedMaxStack, stack));
     }
 
     private static void RestoreVisibleTechs(int[] techIds) {

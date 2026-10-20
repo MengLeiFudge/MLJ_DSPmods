@@ -29,7 +29,7 @@ public static partial class StationManager {
             return instructions;
         }
 
-        // 保留原参数，八层研究后才投影到FE上限；不依赖其他局部变量编号。
+        // 保留原参数，六层研究后才投影到FE上限；不依赖其他局部变量编号。
         matcher.Advance(3).Insert(new CodeInstruction(OpCodes.Call,
             AccessTools.Method(typeof(StationManager), nameof(GetOutputStack))));
         return matcher.InstructionEnumeration();
@@ -62,7 +62,7 @@ public static partial class StationManager {
         return matcher.InstructionEnumeration();
     }
 
-    /// <summary>八层研究前保留调用方的物流集装上限，之后使用FE成长值。</summary>
+    /// <summary>六层研究前保留调用方的物流集装上限，之后使用FE成长值。</summary>
     /// <param name="vanillaMaxStack">原版传入的运输站集装上限。</param>
     /// <returns>当前设备接管规则下的上限。</returns>
     private static int GetOutputStack(int vanillaMaxStack) => StackingManager.IsUnlocked

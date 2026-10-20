@@ -294,7 +294,7 @@ public static partial class ProcessManager {
 
         int fluidOutputStack = GetVanillaFluidOutputStack(in fractionator);
         uint state = fractionator.InternalUpdate(factory, power, signPool, productRegister, consumeRegister);
-        // 八层研究后才接管原版塔输出；低供电仍不做额外传送带交互。
+        // 六层研究后才接管原版塔输出；低供电仍不做额外传送带交互。
         return power < 0.1f || !StackingManager.IsUnlocked
             ? state : TopUpVanillaOutputs(ref fractionator, factory.cargoTraffic, fluidOutputStack);
     }

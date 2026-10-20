@@ -739,7 +739,7 @@ public static partial class AdvancedFractionatorRuntime {
     /// <returns>每个成功轮次的平均产出件数。</returns>
     public static float GetOutputPerSuccess(WorldviewRecipe recipe, WorldviewRecipeOutput output) {
         if (recipe.Kind == WorldviewRecipeKind.EmbryoBreeding && output.ItemId == IFE通用原胚) {
-            return 1.5f + GrowthTechnologyManager.AdvancedInteractionTraitLevel * 0.05f;
+            return GrowthTechnologyManager.EmbryoBreedingOutput;
         }
         if (output.ScalesWithRecovery) {
             float recoveryRatio = 0.5f + GrowthTechnologyManager.AdvancedConversionTraitLevel * 0.05f;
