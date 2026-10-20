@@ -29,7 +29,8 @@ public sealed class UltimateTasksPage : CardBrowserPage {
                         : "FE.UltimateTasksPage.CapacityComplete".Translate()
                     : (mark == null ? "FE.UltimateTasksPage.Waiting".Translate() : ExplorationManager.GetSignalDescription(mark))
                         + (step == 4 ? string.Format("FE.UltimateTasksPage.Delivery".Translate(), ExplorationManager.GetUltimateInput(branch)) : ""),
-                ActionLabel = "查看信号".Translate(), Action = mark == null ? null : () => ExplorationDetector.Track(mark) });
+                ActionLabel = (ExplorationDetector.IsTracking(mark?.Id ?? 0) ? "取消标注" : "标注位置").Translate(),
+                Action = mark == null ? null : () => ExplorationDetector.ToggleTracking(mark.Id) });
         }
         return result;
     }

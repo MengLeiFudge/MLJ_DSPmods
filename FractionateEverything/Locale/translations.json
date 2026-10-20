@@ -588,11 +588,11 @@
     "1041": "通常鉱物の複製と塔の培養はマトリックス技術に応じて開放される。レアレシピは先に手掛かりを得て、記録に示されたサンプルを解析する。手掛かりのない物品は無傷で通過し、それだけでレシピを発見することはできない。解析ページでは未発見・解析中・復元済みの記録が同じ位置に残る。未発見の記録はサンプルも結果も表示しない。\n\n解析成功は共有進捗を進め、同じサンプルを正面から返す。新たなサンプルは増えず、破損時だけ消費される。未処理のサンプルは増産剤ポイントを保ったまま側面に流れる。産物バッファがしきい値に達すると反応を止め、産物を排出・回収するまで入力は側面へ通過する。一回の処理でしきい値を超えることはある。\n\nエネルギーマトリックスの研究後は回路基板で置換用サンプルを作れる。各通過の成功率は1%、破損率は3%、側面への返却率は96%。成功すると現在利用可能なレシピのサンプルを一つ作り、手掛かりを記録する。対象レシピをすべて復元すると作成を止める。"
   },
   "FE.Encyclopedia.Explore": {
-    "enUS": "The first echo appears as a signal bar. Its reach scales with the planet, so large worlds remain searchable. Later story signals leave destinations that can be marked with View Signal. Navigation shows the way without moving Icarus.\n\nOrdinary signals remain hidden until approached. Once discovered, their locations stay in Signal Tracking until recovered, then in the location archive. Relics are sparse; the home system is the main exploration area, and new destinations follow your actual activity. Research improves fragment recovery and the frequency of new broadcasts.\n\nRecovery rewards go to subspace. Records preserve the actual result; revisiting an archive does not award it again.",
-    "zhCN": "最初的回声只表现为一条强度条，感应范围随星球大小调整。后续主线会留下可定位的目的地，在“查看信号”中建立导航与地表标记；标记不会代替伊卡洛斯移动。\n\n普通信号在接近前保持隐藏。一旦发现，位置就留在信号追踪中，回收后进入地点档案。遗迹数量稀少，母星系是主要探索区域，新的目的地随实际活动范围展开。探索研究改善残片回收和新广播的出现频率。\n\n探索物资存入亚空间。档案保存实际取得的结果，回看不会再次发奖。",
-    "frFR": "Le premier écho apparaît sous forme de barre de signal, adaptée au rayon de la planète. Les signaux narratifs suivants donnent une destination : Voir le signal place un repère sans déplacer Icarus.\n\nLes signaux ordinaires restent cachés jusqu’à votre approche. Leurs positions découvertes restent dans le suivi, puis dans les archives après récupération. Les reliques sont rares ; le système natal est la zone principale, les destinations suivent votre activité réelle. La recherche améliore la récupération de fragments et la fréquence des émissions. Les récompenses vont au sous-espace, une seule fois.",
-    "1031": "Das erste Echo erscheint als Signalbalken, dessen Reichweite sich dem Planetenradius anpasst. Spätere Handlungssignale lassen sich über Signal anzeigen markieren. Die Navigation bewegt Ikarus nicht.\n\nGewöhnliche Signale bleiben bis zur Annäherung verborgen. Entdeckte Orte bleiben in der Signalverfolgung und nach der Bergung im Archiv. Relikte sind selten; das Heimatsystem ist das Hauptgebiet, weitere Ziele folgen deiner tatsächlichen Aktivität. Forschung verbessert Fragmentfunde und die Häufigkeit neuer Sendungen. Belohnungen gelangen einmalig in den Subraum.",
-    "1041": "最初の反応は信号バーだけで示され、探知範囲は惑星の半径に合わせて変わる。その後の物語信号は「信号を見る」で目的地と地表をマークできる。自動移動は行わない。\n\n通常信号は接近するまで隠される。一度発見した場所は追跡一覧に残り、回収後は地点アーカイブへ移る。遺跡は少数で、母星系を中心に実際の活動範囲に応じて展開する。探索研究は断片回収と放送の頻度を改善する。報酬は亜空間へ一度だけ送られる。"
+    "enUS": "The first signal is only a strength bar, sensed on the surface or at low hover altitude. For later story signals and discovered sites, use Mark location in the panel or Show guide beside the signal bar. The guide points to the planet while you are away and to the location while you are on that planet. Select the same location to cancel, or another to change the destination. Icarus remains under your control.\n\nOrdinary signals remain hidden until approached. Once discovered, their locations stay in Signal Tracking until recovered, then in the location archive. Relics are sparse; the home system is the main exploration area, and new destinations follow your actual activity. Research improves fragment recovery and the frequency of new broadcasts.\n\nRecovery rewards go to subspace. Records preserve the actual result; revisiting an archive does not award it again.",
+    "zhCN": "最初的信号只有强度条，地面行走或低空悬浮时都能感知。后续主线和已发现地点可在面板中“标注位置”，也可在左侧信号栏“开启指引”。不在目标星球时连线指向星球，在目标星球时指向地点；同一地点可取消，选择其他地点则切换目标。机甲仍由玩家操控。\n\n普通信号在接近前保持隐藏。一旦发现，位置就留在信号追踪中，回收后进入地点档案。遗迹数量稀少，母星系是主要探索区域，新的目的地随实际活动范围展开。探索研究改善残片回收和新广播的出现频率。\n\n探索物资存入亚空间。档案保存实际取得的结果，回看不会再次发奖。",
+    "frFR": "Le premier signal est une simple barre de force, perceptible au sol ou en vol stationnaire bas. Pour les signaux narratifs suivants et les sites découverts, utilisez Marquer la position dans le panneau ou Afficher le guidage près de la barre. Le guidage pointe vers la planète à distance, puis vers le lieu une fois sur place. Sélectionnez le même lieu pour annuler ou un autre pour changer de destination. Icarus reste sous votre contrôle.\n\nLes signaux ordinaires restent cachés jusqu’à votre approche. Leurs positions découvertes restent dans le suivi, puis dans les archives après récupération. Les reliques sont rares ; le système natal est la zone principale, les destinations suivent votre activité réelle. La recherche améliore la récupération de fragments et la fréquence des émissions. Les récompenses vont au sous-espace, une seule fois.",
+    "1031": "Das erste Signal ist nur ein Stärkebalken, der am Boden oder im niedrigen Schwebeflug sichtbar ist. Spätere Handlungssignale und entdeckte Orte lassen sich im Fenster mit Position markieren oder neben dem Balken mit Wegweiser anzeigen verfolgen. Außerhalb des Zielplaneten zeigt die Linie zum Planeten, auf ihm zum Ort. Derselbe Ort lässt sich abwählen, ein anderer ersetzt das Ziel. Ikarus bleibt unter deiner Kontrolle.\n\nGewöhnliche Signale bleiben bis zur Annäherung verborgen. Entdeckte Orte bleiben in der Signalverfolgung und nach der Bergung im Archiv. Relikte sind selten; das Heimatsystem ist das Hauptgebiet, weitere Ziele folgen deiner tatsächlichen Aktivität. Forschung verbessert Fragmentfunde und die Häufigkeit neuer Sendungen. Belohnungen gelangen einmalig in den Subraum.",
+    "1041": "最初の信号は強度バーだけで示され、地上や低空ホバリング中に感知できる。その後の物語信号と発見済みの場所は、パネルの「位置をマーク」または左側の「ガイドを表示」で追跡できる。目的の惑星にいない時は惑星へ、その惑星にいる時は地点へ線が伸びる。同じ地点で解除し、別の地点を選ぶと目的地が切り替わる。イカロスの移動はプレイヤーが操作する。\n\n通常信号は接近するまで隠される。一度発見した場所は追跡一覧に残り、回収後は地点アーカイブへ移る。遺跡は少数で、母星系を中心に実際の活動範囲に応じて展開する。探索研究は断片回収と放送の頻度を改善する。報酬は亜空間へ一度だけ送られる。"
   },
   "FE.Encyclopedia.Storage": {
     "enUS": "Each item has its own capacity. To expand subspace, power a basic analysis tower and feed science matrices into a side port. Each matrix tier accumulates its own expansion effect, so different tiers can work at the same time. Expansion is permanent, with growth gradually slowing.\n\nProcessed matrices first enter the shared supply buffer for their tier. The remaining processed matrices become offerings and may produce Memory; unprocessed matrices flow out at the side with their proliferator points. Relic rewards may exceed normal capacity and remain available for withdrawal.",
@@ -2659,6 +2659,27 @@
     "1031": "Gewöhnliche Sendung",
     "1041": "通常放送"
   },
+  "取消标注": {
+    "enUS": "Unmark location",
+    "zhCN": "取消标注",
+    "frFR": "Retirer le repère",
+    "1031": "Markierung aufheben",
+    "1041": "マークを解除"
+  },
+  "开启指引": {
+    "enUS": "Show guide",
+    "zhCN": "开启指引",
+    "frFR": "Afficher le guidage",
+    "1031": "Wegweiser anzeigen",
+    "1041": "ガイドを表示"
+  },
+  "取消指引": {
+    "enUS": "Cancel guide",
+    "zhCN": "取消指引",
+    "frFR": "Annuler le guidage",
+    "1031": "Wegweiser beenden",
+    "1041": "ガイドを解除"
+  },
   "标注位置": {
     "enUS": "Mark location",
     "zhCN": "标注位置",
@@ -2996,11 +3017,11 @@
     "1041": "遺跡探索"
   },
   "FE.UsageGuidePage.Explore": {
-    "enUS": "Follow the first signal bar by moving on the surface or at low hover altitude. Later story signals and discovered ordinary sites can be marked from View Signal. The destination indicator and ground marker do not issue movement orders.\n\nOrdinary signals appear only nearby. Their locations are remembered permanently, so you can return later. Recovery uses the actual distance, not a full signal bar. Supplies go to subspace and the results remain in the location archive.",
-    "zhCN": "最初的信号只有强度条，地面行走或低空悬浮时都能感知。后续主线和已发现的普通地点可用“查看信号”设置天体导航及地表标记，机甲仍由玩家操控。\n\n普通信号只在靠近时浮现，发现过的位置会永久保留，可以之后再来。回收以实际距离判断，信号条满格不代替到达。物资送入亚空间，结果留在地点档案。",
-    "frFR": "Suivez la première barre de signal à pied ou en vol stationnaire bas. Les signaux narratifs suivants et les sites ordinaires découverts peuvent être marqués via Voir le signal, sans ordre de déplacement. Les signaux ordinaires n’apparaissent qu’à proximité ; leur position est mémorisée pour revenir plus tard. La récupération dépend de la distance réelle, pas du remplissage de la barre. Les ressources vont au sous-espace et les résultats restent dans les archives.",
-    "1031": "Folge dem ersten Signalbalken zu Fuß oder im niedrigen Schwebeflug. Spätere Handlungssignale und entdeckte gewöhnliche Orte können über Signal anzeigen markiert werden, ohne Bewegungsbefehl. Gewöhnliche Signale erscheinen nur in der Nähe und bleiben danach gespeichert. Die Bergung hängt von der tatsächlichen Entfernung ab, nicht von einem vollen Balken. Vorräte gehen in den Subraum, Ergebnisse ins Ortsarchiv.",
-    "1041": "最初の信号バーは徒歩や低空ホバリングで追える。その後の物語信号と発見済みの通常地点は「信号を見る」で天体と地表にマークを付けられるが、自動移動はしない。通常信号は近くでのみ現れ、一度発見した場所は永久に記録される。回収は実際の距離で判定し、バーが満ちただけでは完了しない。報酬は亜空間へ送られ、結果は地点アーカイブに残る。"
+    "enUS": "The first signal is only a strength bar, sensed on the surface or at low hover altitude. For later story signals and discovered sites, use Mark location in the panel or Show guide beside the signal bar. The guide points to the planet while you are away and to the location while you are on that planet. Select the same location to cancel, or another to change the destination. Icarus remains under your control.\n\nOrdinary signals appear only nearby. Their locations are remembered permanently, so you can return later. Recovery uses the actual distance, not a full signal bar. Supplies go to subspace and the results remain in the location archive.",
+    "zhCN": "最初的信号只有强度条，地面行走或低空悬浮时都能感知。后续主线和已发现地点可在面板中“标注位置”，也可在左侧信号栏“开启指引”。不在目标星球时连线指向星球，在目标星球时指向地点；同一地点可取消，选择其他地点则切换目标。机甲仍由玩家操控。\n\n普通信号只在靠近时浮现，发现过的位置会永久保留，可以之后再来。回收以实际距离判断，信号条满格不代替到达。物资送入亚空间，结果留在地点档案。",
+    "frFR": "Le premier signal est une simple barre de force, perceptible au sol ou en vol stationnaire bas. Pour les signaux narratifs suivants et les sites découverts, utilisez Marquer la position dans le panneau ou Afficher le guidage près de la barre. Le guidage pointe vers la planète à distance, puis vers le lieu une fois sur place. Sélectionnez le même lieu pour annuler ou un autre pour changer de destination. Icarus reste sous votre contrôle. Les signaux ordinaires apparaissent seulement à proximité ; les lieux découverts restent enregistrés. La récupération dépend de la distance réelle. Les récompenses vont au sous-espace, une seule fois, et sont conservées dans les archives.",
+    "1031": "Das erste Signal ist nur ein Stärkebalken, der am Boden oder im niedrigen Schwebeflug sichtbar ist. Spätere Handlungssignale und entdeckte Orte lassen sich im Fenster mit Position markieren oder neben dem Balken mit Wegweiser anzeigen verfolgen. Außerhalb des Zielplaneten zeigt die Linie zum Planeten, auf ihm zum Ort. Derselbe Ort lässt sich abwählen, ein anderer ersetzt das Ziel. Ikarus bleibt unter deiner Kontrolle. Gewöhnliche Signale erscheinen nur in der Nähe; entdeckte Orte bleiben gespeichert. Die Bergung hängt von der tatsächlichen Entfernung ab. Belohnungen gelangen einmalig in den Subraum, die Ergebnisse ins Ortsarchiv.",
+    "1041": "最初の信号は強度バーだけで示され、地上や低空ホバリング中に感知できる。その後の物語信号と発見済みの場所は、パネルの「位置をマーク」または左側の「ガイドを表示」で追跡できる。目的の惑星にいない時は惑星へ、その惑星にいる時は地点へ線が伸びる。同じ地点で解除し、別の地点を選ぶと目的地が切り替わる。イカロスの移動はプレイヤーが操作する。 通常信号は近くでのみ現れ、発見した場所は記録される。回収は実際の距離で判定される。報酬は一度だけ亜空間へ送られ、結果は地点アーカイブに残る。"
   },
   "随身的库房": {
     "enUS": "A Storehouse at Hand",

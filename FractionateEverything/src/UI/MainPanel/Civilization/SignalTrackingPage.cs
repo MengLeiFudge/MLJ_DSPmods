@@ -29,8 +29,8 @@ public sealed class SignalTrackingPage : CardBrowserPage {
                 ? string.Format("FE.Challenge.Status".Translate(), challenge.Progress, challenge.Required)
                 : ExplorationManager.IsKeySignal(mark) ? "关键信号".Translate() : "普通广播".Translate(),
             Detail = ExplorationManager.GetSignalDescription(mark),
-            ActionLabel = "标注位置".Translate(), Action = mark.Kind == ExplorationMarkKind.FirstRelic
-                ? null : () => ExplorationDetector.Track(mark),
+            ActionLabel = (ExplorationDetector.IsTracking(mark.Id) ? "取消标注" : "标注位置").Translate(),
+            Action = mark.Kind == ExplorationMarkKind.FirstRelic ? null : () => ExplorationDetector.ToggleTracking(mark.Id),
             SecondaryLabel = "FE.Challenge.SwitchRoute".Translate(),
             SecondaryAction = ExplorationManager.CanSwitchChallenge(mark.Id)
                 ? () => ChallengeNetwork.RequestRoute(mark.Id) : null }).ToArray();

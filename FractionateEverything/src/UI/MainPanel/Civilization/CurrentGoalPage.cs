@@ -22,8 +22,8 @@ public sealed class CurrentGoalPage : CardBrowserPage {
                 Key = $"signal-{mark.Id}", Title = ExplorationManager.GetSignalName(mark), ItemId = IFE残片,
                 Status = GameMain.galaxy?.PlanetById(mark.PlanetId)?.displayName,
                 Detail = ExplorationManager.GetSignalDescription(mark),
-                ActionLabel = "查看信号".Translate(), Action = mark.Kind == ExplorationMarkKind.FirstRelic
-                    ? null : () => ExplorationDetector.Track(mark),
+                ActionLabel = (ExplorationDetector.IsTracking(mark.Id) ? "取消标注" : "标注位置").Translate(),
+                Action = mark.Kind == ExplorationMarkKind.FirstRelic ? null : () => ExplorationDetector.ToggleTracking(mark.Id),
             });
         }
         if (keySignals.Length > 0) {

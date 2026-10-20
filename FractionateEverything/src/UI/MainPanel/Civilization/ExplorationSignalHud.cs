@@ -20,6 +20,10 @@ internal static class ExplorationSignalHud {
     private static readonly Rect[] PanelBounds = new Rect[5];
     private static int panelCount;
     private static RectTransform strengthFill;
+    private static GameObject strengthBar;
+    private static Button navigationButton;
+    private static Text navigationText;
+    private static int displayedMarkId;
 
     /// <summary>
     /// 创建 HUD；重复调用不会创建多个实例。
@@ -38,7 +42,7 @@ internal static class ExplorationSignalHud {
         rootRect.anchorMin = new Vector2(0f, 1f);
         rootRect.anchorMax = new Vector2(0f, 1f);
         rootRect.pivot = new Vector2(0f, 1f);
-        rootRect.sizeDelta = new Vector2(HudWidth, RowHeight + 14f);
+        rootRect.sizeDelta = new Vector2(HudWidth, RowHeight * 2f + 14f);
 
         for (int index = 0; index < RowTexts.Length; index++) {
             // 提示模板可能使用独立描边材质，不能只复制font后换成font.material。
@@ -74,13 +78,35 @@ internal static class ExplorationSignalHud {
             RowTexts[index] = row;
         }
         CreateSignalBar();
+        Image buttonBackground = new GameObject("signal-navigation", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+        buttonBackground.transform.SetParent(rootRect, false);
+        buttonBackground.color = new Color(0f, 0f, 0f, 0.65f);
+        buttonBackground.rectTransform.anchorMin = buttonBackground.rectTransform.anchorMax
+            = buttonBackground.rectTransform.pivot = new Vector2(0f, 1f);
+        buttonBackground.rectTransform.anchoredPosition = new Vector2(0f, -RowHeight - 14f);
+        buttonBackground.rectTransform.sizeDelta = new Vector2(HudWidth, RowHeight);
+        navigationButton = buttonBackground.gameObject.AddComponent<Button>();
+        navigationButton.targetGraphic = buttonBackground;
+        navigationText = Object.Instantiate(RowTexts[0], buttonBackground.transform, false);
+        navigationText.name = "navigation-label";
+        navigationText.rectTransform.anchoredPosition = Vector2.zero;
+        navigationText.alignment = TextAnchor.MiddleCenter;
+        navigationText.horizontalOverflow = HorizontalWrapMode.Wrap;
+        navigationText.resizeTextForBestFit = true;
+        navigationText.resizeTextMinSize = 10;
+        navigationText.resizeTextMaxSize = 16;
+        navigationButton.onClick.AddListener(() => {
+            ExplorationDetector.ToggleTracking(displayedMarkId);
+            Update();
+        });
         root.SetActive(false);
     }
 
-    /// <summary>纯图形背景与填充共用固定宽度，不提供数字或点击交互。</summary>
+    /// <summary>纯图形背景与填充共用固定宽度，条本身不拦截鼠标。</summary>
     private static void CreateSignalBar() {
         Image background = new GameObject("signal-bar", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
         background.transform.SetParent(rootRect, false);
+        strengthBar = background.gameObject;
         background.color = new Color(0f, 0f, 0f, 0.75f);
         background.raycastTarget = false;
         RectTransform bar = background.rectTransform;
@@ -158,7 +184,7 @@ internal static class ExplorationSignalHud {
     /// <returns>0表示没有空位，1表示能够使用原尺寸。</returns>
     private static float GetAvailableScale(Vector2 position, Rect safe) {
         if (position.x < safe.xMin || position.y > safe.yMax) { return 0f; }
-        float height = RowHeight + 14f;
+        float height = RowHeight * 2f + 14f;
         float scale = Mathf.Min(1f, Mathf.Min((safe.xMax - position.x) / HudWidth,
             (position.y - safe.yMin) / height));
         for (int i = 0; i < panelCount; i++) {
@@ -214,6 +240,7 @@ internal static class ExplorationSignalHud {
     /// 刷新附近信号，首遗物仅显示图形，不输出坐标和百分比。
     /// </summary>
     public static void Update() {
+        if (GameMain.isRunning && GameMain.mainPlayer != null) { ExplorationDetector.UpdateNavigation(); }
         EnsureCreated();
         if (!root) {
             ExplorationRouteView.Update(false);
@@ -236,5 +263,9 @@ internal static class ExplorationSignalHud {
         UpdatePosition(uiGame);
         RowTexts[0].text = reading.Name;
         strengthFill.sizeDelta = new Vector2((HudWidth - 4f) * reading.Strength, 8f);
+        strengthBar.SetActive(reading.ShowStrength);
+        displayedMarkId = reading.MarkId;
+        navigationButton.gameObject.SetActive(displayedMarkId > 0);
+        navigationText.text = (ExplorationDetector.IsTracking(displayedMarkId) ? "取消指引" : "开启指引").Translate();
     }
 }
