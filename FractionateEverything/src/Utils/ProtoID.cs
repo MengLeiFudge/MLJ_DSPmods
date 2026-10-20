@@ -84,6 +84,7 @@ public static partial class Utils {
     internal const int I空间翘曲器 = 1210;
     internal const int I电路板 = 1301;
     internal const int I微晶元件 = 1302;
+    internal const int IOR电路控制元件 = 1302;
     internal const int IOR晶圆 = 1302;
     internal const int I处理器 = 1303;
     internal const int IOR主板 = 1303;

@@ -54,7 +54,8 @@ public static class BasicMineralTower {
             "Assets/fe/mineral-copy-tower", tab分馏 * 1000 + 102, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE基础矿物塔,
-            ERecipeType.Assemble, 240, [I石材, I铁块, I电路板], [10, 20, 5], [IFE基础矿物塔], [1],
+            ERecipeType.Assemble, 240, [I石材, I铁块, OrbitalRing.Enable ? IOR电路控制元件 : I电路板],
+            [10, 20, 5], [IFE基础矿物塔], [1],
             "I复制塔", 0, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;

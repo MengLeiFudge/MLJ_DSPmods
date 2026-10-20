@@ -54,7 +54,8 @@ public static class BasicAnalysisTower {
             "Assets/fe/deconstruction-tower", tab分馏 * 1000 + 105, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE基础解析塔,
-            ERecipeType.Assemble, 240, [I铁块, I棱镜, I电路板], [20, 10, 5], [IFE基础解析塔], [1],
+            ERecipeType.Assemble, 240, [I铁块, I棱镜, OrbitalRing.Enable ? IOR电路控制元件 : I电路板],
+            [20, 10, 5], [IFE基础解析塔], [1],
             "I解析塔", 0, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
