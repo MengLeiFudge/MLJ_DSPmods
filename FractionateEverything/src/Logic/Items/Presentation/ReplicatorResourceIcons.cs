@@ -48,6 +48,8 @@ internal static class ReplicatorResourceIcons {
             button.targetGraphic = image;
             button.transition = Selectable.Transition.None;
             UIButton uiButton = icon.GetComponent<UIButton>();
+            // 原版 LateUpdate 直接遍历该数组；无过渡效果也必须提供空数组。
+            uiButton.transitions = [];
             uiButton.Init();
             uiButton.tips.type = UIButton.ItemTipType.Item;
             uiButton.tips.itemId = ids[i];
