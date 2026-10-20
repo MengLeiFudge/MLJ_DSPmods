@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using FE.Logic.Civilization;
-using FE.Logic.DataCenter;
 using FE.UI.MainPanel.Theme;
 using static FE.Utils.Utils;
 
@@ -16,8 +15,7 @@ public sealed class UltimateTasksPage : CardBrowserPage {
         var result = new List<PageCard>();
         for (int branch = 0; branch < 2; branch++) {
             int step = ExplorationManager.GetUltimateStep(branch);
-            bool ready = branch == 0 ? GrowthTechnologyManager.ExplorationLevel >= 10 : SubspaceExpansion.UltimateQuestReady;
-            if (!ready && step == 0) { continue; }
+            if (!ExplorationManager.IsUltimateQuestAvailable(branch)) { continue; }
             string content = branch == 0 ? "exploration" : "capacity";
             ExplorationMark mark = ExplorationManager.GetActiveMarks().FirstOrDefault(m => m.Kind == ExplorationMarkKind.Ultimate && m.ContentId == content);
             result.Add(new PageCard { Key = content, ItemId = IFE记忆源点,

@@ -108,6 +108,7 @@ public static class TechnologyTreePatch {
     /// <param name="tech">已注册的FE科技原型。</param>
     /// <returns>节点是否应当显示。</returns>
     private static bool IsTechnologyVisible(TechProto tech) => !tech.IsObsolete
+        && tech.ID is not TFE终极探索 and not TFE终极仓储
         && (GrowthTechnologyManager.IsTechnologyDiscovered(tech.ID)
             || GameMain.history?.TechUnlocked(tech.ID) == true
             || GrowthTechnologyManager.IsTechnologyPreview(tech.ID));

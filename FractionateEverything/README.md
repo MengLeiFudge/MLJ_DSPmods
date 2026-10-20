@@ -82,7 +82,7 @@ Use Assembly at the warehouse's top right to preview a demand tree and reserve r
 
 FE分馏塔从1层开始，随运输站集装物流三项科技逐级达到2、3、4层。紫糖两级依次提升至6、8层，绿糖三级依次提升至12、16、20层。从首级六层起，集装机、白爪输入与输出、物流塔与物流交互站、分馏塔两种输出统一成长。首级需要3315集装分拣器改良、3803运输站集装物流及信息矩阵科技，双向运输仍单独研究。3311～3315、3801～3803使用黄糖阶段费用；FE成长材料读取当前科技树的阶段组合。普通生产配方从6层起按4/堆叠层数缩短耗时并向上取整到整帧，丰碑继续加速，实际堆叠保持20层上限。旧档保留已完成节点并采用新效果；原2083节点现在提供12层，16/20层需继续研究。
 
-探索常规十级完成后开放终极探索任务；亚空间容量达到初始的35倍后开放终极仓储任务。恢复中继或空间锚点，带着机甲背包里的源点进入回收范围，自动分批交付2400源点（不扣亚空间），再连接最终核心；任务直接授予终极科技，无矩阵研究费用。终极探索持续补足两个普通广播，终极仓储解除玩法容量限制。
+完成主线探索并恢复宇宙矩阵资料后，在终极任务面板开放终极探索任务；亚空间容量达到初始的35倍后开放终极仓储任务。恢复中继或空间锚点，带着机甲背包里的源点进入回收范围，自动分批交付2400源点（不扣亚空间），再连接最终核心；任务直接授予最终能力，无矩阵研究费用，不占科技树位置。终极探索持续补足两个普通广播，终极仓储解除玩法容量限制。
 
 Each item has its own capacity. Manual deposits may exceed it; excess automatic deliveries from basic towers and unlimited-upload stations irreversibly contribute to expansion. Limited uploads stop at the lower of capacity and their target. All supplied science-matrix tiers expand storage independently and simultaneously. Icons show which tiers are active; hovering over an item still shows its inventory and capacity.
 

@@ -825,13 +825,6 @@
     "1031": "Energie für Subraumtransfers -10 %",
     "1041": "亜空間転送消費電力-10%"
   },
-  "FE.Growth.ExplorationIncrement": {
-    "enUS": "Broadcast interval -15% (minimum 10 min)\nFragment discovery chance +{0:P0}",
-    "zhCN": "广播间隔 -15%（最短10分钟）\n残片发现概率 +{0:P0}",
-    "frFR": "Intervalle des émissions -15 % (minimum 10 min)\nProbabilité de fragment +{0:P0}",
-    "1031": "Sendeintervall -15 % (mindestens 10 Min.)\nFragmentfundchance +{0:P0}",
-    "1041": "放送間隔 -15%（最短10分）\n断片発見確率 +{0:P0}"
-  },
   "珍奇催化物损耗 -10%": {
     "enUS": "Rare catalyst loss -10%",
     "zhCN": "珍奇催化物损耗 -10%",
@@ -2898,11 +2891,11 @@
     "1041": "長い道のりを歩んで初めて開く扉もある。"
   },
   "FE.UltimateTasksPage.Empty": {
-    "enUS": "Some doors have not yet appeared before Icarus.\n\nWhen exploration or storage reaches the end of its growth, an echo may arrive from deeper within.",
-    "zhCN": "有些门还没有出现在伊卡洛斯面前。\n\n当探索或仓储的成长走到尽头时，也许会有更深处的回声传来。",
-    "frFR": "Certaines portes ne se sont pas encore présentées à Icarus.\n\nQuand l'exploration ou le stockage arrivera au bout de sa progression, un écho pourrait venir des profondeurs.",
-    "1031": "Manche Türen sind Icarus noch nicht begegnet.\n\nWenn Erkundung oder Lagerung ihre höchste Entwicklungsstufe erreichen, könnte ein Echo aus größerer Tiefe eintreffen.",
-    "1041": "まだイカロスの前に現れていない扉がある。\n\n探索や倉庫の成長が行き着いたとき、さらに奥からこだまが届くかもしれない。"
+    "enUS": "Some doors have not yet appeared before Icarus.\n\nComplete the main exploration journey and recover the Universe Matrix records to receive the final exploration signal. A storage anchor may respond when subspace capacity reaches its milestone.",
+    "zhCN": "有些门还没有出现在伊卡洛斯面前。\n\n走完主线探索并恢复宇宙矩阵资料后，远古中继将传来终极探索信号。亚空间容量达到里程碑时，库房锚点也会回应。",
+    "frFR": "Certaines portes restent invisibles à Icarus.\n\nTerminez l’exploration principale et restaurez les archives de la matrice universelle pour recevoir le signal d’exploration ultime. Un ancrage de stockage répondra lorsque la capacité du sous-espace atteindra son jalon.",
+    "1031": "Manche Türen sind Icarus noch verborgen.\n\nSchließe die Haupterkundung ab und stelle die Aufzeichnungen zur Universummatrix wieder her, um das ultimative Erkundungssignal zu empfangen. Ein Lageranker antwortet beim Erreichen des Subraum-Kapazitätsmeilensteins.",
+    "1041": "まだイカロスの前に現れていない扉がある。\n\n主線探索を完了し、宇宙マトリックスの記録を復元すると、最終探索信号が届く。亜空間容量が節目に達すると、倉庫のアンカーも応答する。"
   },
   "长夜中的回声": {
     "enUS": "Echoes in the Long Night",

@@ -51,6 +51,7 @@ public static partial class ExplorationManager {
     private const int MaximumRecords = 1000000;
     private const long TicksPerMinute = 3600;
     private const int UltimateMemoryCost = 2400;
+    private const int StoryNodeCount = 18;
     private const float DetectionRange = 180f;
     private const float OrdinaryArrivalDistance = 18f;
     private const float KeyArrivalDistance = 30f;
@@ -146,7 +147,7 @@ public static partial class ExplorationManager {
             lock (Sync) {
                 // 4～6 号节点由“第一枚矩阵”目标负责引导，这里只覆盖后续矩阵阶段。
                 int next = storyCompleted + 1;
-                if (next < 7 || next > 18 || ActiveMarks.Any(m => m.Kind is ExplorationMarkKind.Story
+                if (next < 7 || next > StoryNodeCount || ActiveMarks.Any(m => m.Kind is ExplorationMarkKind.Story
                         or ExplorationMarkKind.PlanetDetector)) { return false; }
                 return ResearchManager.CurrentMatrixStage < (next - 1) / 3;
             }
@@ -423,7 +424,7 @@ public static partial class ExplorationManager {
 
     private static void EnsureStory() {
         int next = storyCompleted + 1;
-        if (next <= 1 || next > 18 || ActiveMarks.Any(m => m.Kind is ExplorationMarkKind.FirstRelic or ExplorationMarkKind.Story or ExplorationMarkKind.PlanetDetector)) { return; }
+        if (next <= 1 || next > StoryNodeCount || ActiveMarks.Any(m => m.Kind is ExplorationMarkKind.FirstRelic or ExplorationMarkKind.Story or ExplorationMarkKind.PlanetDetector)) { return; }
         int stage = (next - 1) / 3;
         if (ResearchManager.CurrentMatrixStage < stage || stage >= 1 && !HasProducedFirstMatrix()) { return; }
         if (next == 3 && ResearchManager.DiscoveredContentCount < 1) { return; }
@@ -452,8 +453,22 @@ public static partial class ExplorationManager {
         }
     }
 
+    /// <summary>终极任务以实际探索或容量里程碑开放，已收到入口或已推进的任务保持可用。</summary>
+    /// <param name="branch">零为探索，一为仓储。</param>
+    /// <returns>是否可以在面板显示并推进该任务链。</returns>
+    public static bool IsUltimateQuestAvailable(int branch) {
+        bool ready = branch == 0
+            ? StoryCompleted >= StoryNodeCount && ResearchManager.IsContentUnlocked(ResearchManager.StageContentId(6))
+            : SubspaceExpansion.UltimateQuestReady;
+        string content = branch == 0 ? "exploration" : "capacity";
+        lock (Sync) {
+            return ready || UltimateSteps[branch] > 0
+                || ActiveMarks.Any(m => m.Kind == ExplorationMarkKind.Ultimate && m.ContentId == content);
+        }
+    }
+
     private static void EnsureUltimate(int branch) {
-        bool ready = branch == 0 ? GrowthTechnologyManager.ExplorationLevel >= 10 : SubspaceExpansion.UltimateQuestReady;
+        bool ready = IsUltimateQuestAvailable(branch);
         string id = branch == 0 ? "exploration" : "capacity";
         if ((!ready && UltimateSteps[branch] == 0) || UltimateSteps[branch] >= 6
             || ActiveMarks.Any(m => m.Kind == ExplorationMarkKind.Ultimate && m.ContentId == id)) { return; }
@@ -744,8 +759,7 @@ public static partial class ExplorationManager {
         return pool[NextInt(pool.Length)];
     }
 
-    private static long GetGenerationIntervalTicks() => (long)(TicksPerMinute
-        * Math.Max(10d, 20d * Math.Pow(0.85, GrowthTechnologyManager.ExplorationLevel)));
+    private static long GetGenerationIntervalTicks() => 20 * TicksPerMinute;
     /// <summary>遗迹位于星球半径加默认悬浮高度一半处，岩石星球与气态巨星通用。</summary>
     private static float MarkRadius(PlanetData planet) => planet.realRadius + DefaultHoverAltitude / 2f;
     private static Vector3 RandomDirection(ref uint seed) {

@@ -1054,8 +1054,6 @@ public static partial class ResearchManager {
     private static void AddTechnologyContentDefinitions() {
         AddTechnologyContent(GrowthTechnologyManager.StackTechnologyContentId,
             "FE分馏堆叠成长".Translate(), 0);
-        AddTechnologyContent(GrowthTechnologyManager.ExplorationTechnologyContentId,
-            "FE探索信号增幅".Translate(), 1);
         AddTechnologyContent(GrowthTechnologyManager.PlanetaryInteractionTechnologyContentId,
             "T行星内物流交互".Translate(), 2);
         AddTechnologyContent(GrowthTechnologyManager.SubspaceEfficiencyTechnologyContentId,
