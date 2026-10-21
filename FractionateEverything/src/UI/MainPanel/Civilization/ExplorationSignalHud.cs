@@ -265,7 +265,7 @@ internal static class ExplorationSignalHud {
         strengthFill.sizeDelta = new Vector2((HudWidth - 4f) * reading.Strength, 8f);
         strengthBar.SetActive(reading.ShowStrength);
         displayedMarkId = reading.MarkId;
-        navigationButton.gameObject.SetActive(displayedMarkId > 0);
+        navigationButton.gameObject.SetActive(displayedMarkId != 0);
         navigationText.text = (ExplorationDetector.IsTracking(displayedMarkId) ? "取消指引" : "开启指引").Translate();
     }
 }

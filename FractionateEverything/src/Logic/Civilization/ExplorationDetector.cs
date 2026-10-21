@@ -20,6 +20,7 @@ public readonly struct DetectorReading(bool visible, float strength, string name
 /// <summary>拥有本端选定地点，在天体指引和地表位置追踪之间切换，不创建移动命令。</summary>
 public static class ExplorationDetector {
     private static GalaxyData galaxy;
+    // 0表示未选择；静默遗迹使用负数编号，剧情与动态广播使用正数编号。
     private static int targetId;
     private static int indicatorPlanetId;
     private static int locationPlanetId;
@@ -38,14 +39,14 @@ public static class ExplorationDetector {
     /// <returns>该地点正在接受指引时为true。</returns>
     public static bool IsTracking(int markId) {
         EnsureSession();
-        return markId > 0 && targetId == markId;
+        return markId != 0 && targetId == markId;
     }
 
     /// <summary>同地点取消，其他已发现地点替换当前指引；首遗物不可标注。</summary>
     /// <param name="markId">页面或HUD当前显示的地点身份。</param>
     public static void ToggleTracking(int markId) {
         EnsureSession();
-        if (markId <= 0) { return; }
+        if (markId == 0) { return; }
         if (targetId == markId) { CancelTracking(); return; }
         ExplorationMark mark = ExplorationManager.GetActiveMarks().FirstOrDefault(m => m.Id == markId);
         if (mark == null || mark.Kind == ExplorationMarkKind.FirstRelic || GameMain.mainPlayer?.navigation == null
