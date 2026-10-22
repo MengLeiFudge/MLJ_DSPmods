@@ -8,7 +8,6 @@ internal enum StorageSource {
     BasicTower,
     LimitedStation,
     UnlimitedStation,
-    Assembly,
 }
 
 /// <summary>同一批实体及增产点的守恒分配；上游仅扣除入库和折算两部分。</summary>

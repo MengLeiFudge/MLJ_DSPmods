@@ -152,7 +152,6 @@ public static class ItemInteraction {
                                 pos: (0, 2), objectName: "item-interaction-footer-next"),
                         ]),
                 ]));
-        AssemblyPanel.Create(wnd, parent);
     }
 
     /// <summary>每档固定一个图标与状态，供料变化不改变布局。</summary>

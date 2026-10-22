@@ -132,159 +132,19 @@
     "1031": "Aufzeichnung: Monumente sind in jedem Sternsystem möglich. Fortgeschrittene Umwandlungstürme machen aus Metadaten und Trägerraketen Bauraketen. Rote Riesen liefern den höchsten Beitrag, blaue den nächsten.\nJede erhältliche Matrix, auch die des Dunklen Nebels, ergibt mit Solarsegeln ein Segel bekannter Herkunft. Leere Werfer erkennen Bandmaterial und behalten die Sorte bis zur Leerung. Alle Orbitmengen ausgleichen; fehlende Arten zählen null.\nBau und Kristallanalyse bleiben dauerhaft, Segel verfallen. Empfänger teilen sich ein Kristallbudget für den gesamten Spielstand. Das Ziel ist eine Frame Dauer für jedes normale Produktionsrezept.",
     "1041": "記録：どの星系にも建設可能です。高度転化塔で実体メタデータと輸送ロケットを建設ロケットにし、サイロへ供給します。赤色巨星の貢献が最大、青色巨星が次点です。\nダークフォッグを含む全入手可能マトリックスをソーラーセイルと転化します。空の射出機はベルト材料を識別し、空になるまで同種を受け入れます。未投入種類も0として全種類を均等にします。\n建設と結晶解析は恒久的ですが帆は期限で消えます。レイレシーバーを結晶受信へ切り替え、セーブ共通の割当を受けます。解析で強化し、全通常生産レシピの1フレーム化を目指します。"
   },
-  "FE.Assembly.Node": {
-    "zhCN": "亚空间装配节点",
-    "enUS": "Subspace assembly node",
-    "frFR": "Nœud d’assemblage subspatial",
-    "1031": "Subraum-Montageknoten",
-    "1041": "亜空間組立ノード"
+  "FE.RetiredAssembly.Node": {
+    "zhCN": "退役装配节点",
+    "enUS": "Retired assembly node",
+    "frFR": "Nœud d’assemblage retiré",
+    "1031": "Stillgelegter Montageknoten",
+    "1041": "退役組立ノード"
   },
-  "FE.Assembly.NodeDescription": {
-    "zhCN": "为共享装配队列提供产能。每座满电节点提供一倍工艺速度，工作耗电1.2MW，待机60kW。订单在亚空间仓储的装配面板创建，成品直接进入仓储。",
-    "enUS": "Supplies the shared assembly queue. Each fully powered node provides 1× process speed, using 1.2 MW while working and 60 kW idle. Create orders in the warehouse assembly panel; products enter storage directly.",
-    "frFR": "Alimente la file d’assemblage partagée : vitesse ×1 par nœud alimenté, 1,2 MW en activité et 60 kW au repos. Commandes depuis le panneau d’assemblage de l’entrepôt ; produits stockés directement.",
-    "1031": "Versorgt die gemeinsame Montagewarteschlange. Je Knoten bei voller Versorgung: 1× Fertigungstempo, 1,2 MW im Betrieb, 60 kW im Leerlauf. Aufträge im Lager-Montagefenster; Produkte direkt ins Lager.",
-    "1041": "共有組立キューに生産能力を供給します。全給電で各ノード1倍速、稼働1.2MW・待機60kW。倉庫の組立画面で注文し、製品は直接倉庫に入ります。"
-  },
-  "FE.Assembly.Open": {
-    "zhCN": "装配",
-    "enUS": "Assembly",
-    "frFR": "Assemblage",
-    "1031": "Montage",
-    "1041": "組立"
-  },
-  "FE.Assembly.Amount": {
-    "zhCN": "数量",
-    "enUS": "Quantity",
-    "frFR": "Quantité",
-    "1031": "Anzahl",
-    "1041": "数量"
-  },
-  "FE.Assembly.Confirm": {
-    "zhCN": "加入队列",
-    "enUS": "Queue order",
-    "frFR": "Ajouter à la file",
-    "1031": "Auftrag einreihen",
-    "1041": "キューに追加"
-  },
-  "FE.Assembly.Queue": {
-    "zhCN": "装配队列",
-    "enUS": "Assembly queue",
-    "frFR": "File d’assemblage",
-    "1031": "Montagewarteschlange",
-    "1041": "組立キュー"
-  },
-  "FE.Assembly.InvalidAmount": {
-    "zhCN": "数量须为1～1,000,000。",
-    "enUS": "Quantity must be 1–1,000,000.",
-    "frFR": "Quantité : de 1 à 1 000 000.",
-    "1031": "Anzahl: 1–1.000.000.",
-    "1041": "数量は1～1,000,000です。"
-  },
-  "FE.Assembly.TooComplex": {
-    "zhCN": "需求树过大，请减少数量或把部分中间材料设为只取库存。",
-    "enUS": "Demand tree too large. Reduce quantity or use stock only for some intermediates.",
-    "frFR": "Arbre trop grand. Réduisez la quantité ou utilisez uniquement le stock pour certains intermédiaires.",
-    "1031": "Bedarfsbaum zu groß. Menge reduzieren oder Zwischenprodukte nur aus Lager beziehen.",
-    "1041": "需要ツリーが大きすぎます。数量を減らすか、中間材料の一部を在庫限定にしてください。"
-  },
-  "FE.Assembly.Waiting": {
-    "zhCN": "正在核对库存…",
-    "enUS": "Checking stock…",
-    "frFR": "Vérification du stock…",
-    "1031": "Lager wird geprüft…",
-    "1041": "在庫を確認中…"
-  },
-  "FE.Assembly.Help": {
-    "zhCN": "展开时预留实际物料；关闭释放草稿。已确认订单缺料或满仓时暂停，供电节点决定速度。",
-    "enUS": "Expanding reserves actual materials; closing releases the draft. Confirmed orders pause for missing materials or full storage. Powered nodes determine speed.",
-    "frFR": "Le calcul réserve les matériaux réels ; fermer libère le brouillon. Une commande confirmée attend si les matériaux manquent ou si le stockage est plein. Les nœuds alimentés fixent la vitesse.",
-    "1031": "Die Planung reserviert echte Materialien; Schließen gibt den Entwurf frei. Bestätigte Aufträge warten bei Materialmangel oder vollem Lager. Versorgte Knoten bestimmen das Tempo.",
-    "1041": "展開時に実在材料を予約し、閉じると下書きを解放します。確定済み注文は材料不足や満庫で停止し、給電ノードが速度を決めます。"
-  },
-  "FE.Assembly.Counts": {
-    "zhCN": "需要 {0:N0}   库存有 {1:N0}   将制造 {2:N0}   缺 {3:N0}",
-    "enUS": "Need {0:N0}   Stock {1:N0}   To make {2:N0}   Missing {3:N0}",
-    "frFR": "Besoin {0:N0}   Stock {1:N0}   À produire {2:N0}   Manque {3:N0}",
-    "1031": "Bedarf {0:N0}   Lager {1:N0}   Fertigen {2:N0}   Fehlend {3:N0}",
-    "1041": "必要 {0:N0}   在庫 {1:N0}   製造予定 {2:N0}   不足 {3:N0}"
-  },
-  "FE.Assembly.StockOnly": {
-    "zhCN": "只取库存",
-    "enUS": "Stock only",
-    "frFR": "Stock uniquement",
-    "1031": "Nur Lager",
-    "1041": "在庫限定"
-  },
-  "FE.Assembly.Auto": {
-    "zhCN": "库存＋制造",
-    "enUS": "Stock + crafting",
-    "frFR": "Stock + fabrication",
-    "1031": "Lager + Fertigung",
-    "1041": "在庫＋製造"
-  },
-  "FE.Assembly.NoRecipe": {
-    "zhCN": "无可用工艺",
-    "enUS": "No process",
-    "frFR": "Aucun procédé",
-    "1031": "Kein Verfahren",
-    "1041": "工法なし"
-  },
-  "FE.Assembly.Order": {
-    "zhCN": "{0}  ·  已完成 {1:N0}/{2:N0}",
-    "enUS": "{0}  ·  Completed {1:N0}/{2:N0}",
-    "frFR": "{0}  ·  Terminé {1:N0}/{2:N0}",
-    "1031": "{0}  ·  Fertig {1:N0}/{2:N0}",
-    "1041": "{0}  ·  完了 {1:N0}/{2:N0}"
-  },
-  "FE.Assembly.Status.Draft": {
-    "zhCN": "草稿",
-    "enUS": "Draft",
-    "frFR": "Brouillon",
-    "1031": "Entwurf",
-    "1041": "下書き"
-  },
-  "FE.Assembly.Status.Missing": {
-    "zhCN": "等待材料",
-    "enUS": "Waiting for materials",
-    "frFR": "Attend les matériaux",
-    "1031": "Wartet auf Material",
-    "1041": "材料待ち"
-  },
-  "FE.Assembly.Status.NoPower": {
-    "zhCN": "等待供电节点",
-    "enUS": "Waiting for powered nodes",
-    "frFR": "Attend les nœuds alimentés",
-    "1031": "Wartet auf versorgte Knoten",
-    "1041": "給電ノード待ち"
-  },
-  "FE.Assembly.Status.Working": {
-    "zhCN": "装配中",
-    "enUS": "Assembling",
-    "frFR": "Assemblage en cours",
-    "1031": "Montage läuft",
-    "1041": "組立中"
-  },
-  "FE.Assembly.Status.Full": {
-    "zhCN": "等待仓储空间",
-    "enUS": "Waiting for storage space",
-    "frFR": "Attend de l’espace de stockage",
-    "1031": "Wartet auf Lagerplatz",
-    "1041": "倉庫空き待ち"
-  },
-  "FE.Assembly.Status.Complete": {
-    "zhCN": "已完成",
-    "enUS": "Complete",
-    "frFR": "Terminé",
-    "1031": "Abgeschlossen",
-    "1041": "完了"
-  },
-  "FE.Assembly.Status.TooComplex": {
-    "zhCN": "需求树过大",
-    "enUS": "Demand tree too large",
-    "frFR": "Arbre trop grand",
-    "1031": "Bedarfsbaum zu groß",
-    "1041": "需要ツリーが大きすぎます"
+  "FE.RetiredAssembly.Description": {
+    "zhCN": "此节点已停用，不再耗电或生产。已有建筑可以拆除，无法重新建造。",
+    "enUS": "This node is retired and no longer consumes power or produces items. Existing nodes can be dismantled but cannot be rebuilt.",
+    "frFR": "Ce nœud est retiré : il ne consomme plus d’énergie et ne produit plus. Les nœuds existants peuvent être démontés, mais pas reconstruits.",
+    "1031": "Dieser Knoten ist stillgelegt und verbraucht weder Strom noch produziert er Gegenstände. Bestehende Knoten können abgebaut, aber nicht erneut errichtet werden.",
+    "1041": "このノードは退役し、電力を消費せず、生産もしません。既存の建物は撤去できますが、再建はできません。"
   },
   "FE.Challenge.Status": {
     "zhCN": "记录恢复 {0}/{1}",

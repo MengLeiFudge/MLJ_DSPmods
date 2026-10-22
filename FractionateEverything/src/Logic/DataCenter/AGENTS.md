@@ -21,11 +21,12 @@ DataCenter/
 - Expansion子块随DataCenter存档、联机快照与切档清理；仅主机结算游戏秒，停供不缩水、不补算离线时间。库存锁可进入扩容锁，扩容锁内不得反向查询库存或探索。
 - `AddExplorationReward` 允许超容量，只供首遗物和探索奖励调用。
 - 实体上传统一走 `DataCenterUploadRouter`；高级塔按原物品、数量和增产点进入普通库存，并在同类库存首次达到 1000 座时通知研究域永久开放方向；献祭只在基础解析塔发生。
-- StorageSource区分手动、基础塔、有限/无限交互站和装配。手动允许超存实体；基础塔和无限上传的超额物料不可逆折为扩容价值；有限上传同时受容量与设置目标约束，装配满仓暂停。StorageReceipt保证入库/折算/拒收及增产点守恒，只有实际入库触发取得事件。
+- StorageSource区分手动、基础塔、有限/无限交互站。手动允许超存实体；基础塔和无限上传的超额物料不可逆折为扩容价值；有限上传同时受容量与设置目标约束。StorageReceipt保证入库/折算/拒收及增产点守恒，只有实际入库触发取得事件。
 - 基础塔正面上传在同一库存锁内检查整堆、取货和分配去向；未知估值无法折算，整堆容量不足时不取。可上传判断用ItemManager按ID索引表。
 - 持有库存锁时只用 `AddStoredItem` 写库存；研究通知和手动入库的联机包由 `NotifyItemAdded` / `OnItemCountIncreased` 在释放锁后处理。
 - 下载按真实数量拆分增产点；增产点始终满足非负且不超过数量的 10 倍。
 - 实际库存变化设置 `snapshotDirty`，由主机文明快照广播；UI 刷新不得直接改数组。
 - 通信门禁使用 `CivilizationRecoveryManager.HasDataCenterCommunication`。
 - 旧 Frag/Memory 包裹 ID 只用于导入历史误入槽位时规范化，不是正式物品或上传协议。
+- RetiredAssemblyData只读退役Assembly块并归还已扣输入；不运行或保存订单，预留不重复退款。RetiredAssemblyNode仅维持旧实体及机器缓存的有效引用，禁止新建与生产。
 - 玩家包裹访问只放 `PlayerInventoryAccess`；库存重定向 patch 只做边界接线，不复制容量或业务判断。

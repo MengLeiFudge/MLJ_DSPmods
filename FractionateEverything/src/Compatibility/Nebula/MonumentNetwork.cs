@@ -12,7 +12,7 @@ public static class MonumentNetwork {
         if (factory == null) { return; }
         var packet = new MonumentReceiverPacket {
             World = ChallengeNetwork.WorldId, Planet = factory.planetId, Entity = entity, Enabled = enabled,
-            Requester = AssemblyNetwork.LocalOwner,
+            Requester = NebulaMultiplayerModAPI.LocalOwner,
         };
         if (NebulaMultiplayerModAPI.IsClient) { NebulaModAPI.MultiplayerSession.Network.SendPacket(packet); }
         else { Execute(packet); }
@@ -33,7 +33,7 @@ public static class MonumentNetwork {
 
     internal static void Apply(MonumentReceiverPacket packet) {
         if (!packet.Success) {
-            if (packet.Requester == AssemblyNetwork.LocalOwner) { UIRealtimeTip.Popup("FE.Monument.EmptyReceiver".Translate(), true); }
+            if (packet.Requester == NebulaMultiplayerModAPI.LocalOwner) { UIRealtimeTip.Popup("FE.Monument.EmptyReceiver".Translate(), true); }
             return;
         }
         if (!NebulaMultiplayerModAPI.IsClient) { return; }
@@ -64,7 +64,7 @@ public sealed class MonumentReceiverProcessor : BasePacketProcessor<MonumentRece
     public override void ProcessPacket(MonumentReceiverPacket packet, INebulaConnection connection) {
         if (packet == null || packet.World != ChallengeNetwork.WorldId) { return; }
         if (IsHost) {
-            var player = AssemblyNetwork.GetPlayer(connection);
+            var player = NebulaMultiplayerModAPI.GetPlayer(connection);
             if (packet.Reply || player == null || player.LocalPlanetId != packet.Planet) { return; }
             packet.Requester = player.PlayerId;
             MonumentNetwork.Execute(packet);

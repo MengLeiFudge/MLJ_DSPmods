@@ -24,7 +24,7 @@ namespace FE.Compatibility.Nebula;
 public static class NebulaMultiplayerModAPI {
     public const string GUID = NebulaModAPI.API_GUID;
     /// <summary>联机规则修订号；堆叠科技、设备接管及库存结算要求双方一致。</summary>
-    public const int ProtocolVersion = 14;
+    public const int ProtocolVersion = 15;
     public static bool Enable;
     public static Assembly assembly;
 
@@ -36,6 +36,14 @@ public static class NebulaMultiplayerModAPI {
     /// 玩家是否为客户端。
     /// </summary>
     public static bool IsClient = false;
+
+    internal static int LocalOwner => NebulaModAPI.IsMultiplayerActive ? NebulaModAPI.MultiplayerSession.LocalPlayer.Id : 0;
+
+    internal static IPlayerData GetPlayer(INebulaConnection connection) {
+        object network = NebulaModAPI.MultiplayerSession?.Network;
+        return network?.GetType().GetProperty("Players", BindingFlags.Instance | BindingFlags.Public)?.GetValue(network)
+            is ConcurrentPlayerCollection players ? players.Get(connection)?.Data : null;
+    }
 
     public static void Compatible() {
         Enable = Chainloader.PluginInfos.TryGetValue(GUID, out BepInEx.PluginInfo pluginInfo);

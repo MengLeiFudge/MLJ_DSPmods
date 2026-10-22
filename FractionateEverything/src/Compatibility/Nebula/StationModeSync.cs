@@ -51,6 +51,6 @@ public sealed class StationModeProcessor : BasePacketProcessor<StationModePacket
     /// <inheritdoc />
     public override void ProcessPacket(StationModePacket packet, INebulaConnection connection) {
         if (IsHost && packet != null && packet.World == ChallengeNetwork.WorldId
-            && AssemblyNetwork.GetPlayer(connection) != null) { StationModeSync.Execute(packet); }
+            && NebulaMultiplayerModAPI.GetPlayer(connection) != null) { StationModeSync.Execute(packet); }
     }
 }

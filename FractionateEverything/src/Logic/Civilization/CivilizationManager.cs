@@ -3,7 +3,6 @@ using System.IO;
 using FE.Compatibility.Nebula;
 using FE.Logic.DataCenter;
 using FE.Logic.Civilization.Monument;
-using FE.Logic.DataCenter.Assembly;
 using FE.Logic.Fractionation.Recipes;
 using static FE.Utils.Utils;
 
@@ -55,7 +54,6 @@ public static class CivilizationModule {
         if (claimSlot != lastProcessedClaimSlot) {
             lastProcessedClaimSlot = claimSlot;
             ExplorationManager.GameTick(gameTick, secondBoundary);
-            AssemblyManager.Tick();
         }
         if (secondBoundary) {
             ResearchManager.UpdateSacrificeBoosts(gameTick);

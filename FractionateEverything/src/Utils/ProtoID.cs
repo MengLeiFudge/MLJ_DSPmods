@@ -459,7 +459,7 @@ public static partial class Utils {
     internal const int IFE转化塔 = IFE高级转化塔;
     internal const int IFE行星内物流交互站 = 8131;
     internal const int IFE星际物流交互站 = 8132;
-    /// <summary>独立供电的共享装配产能节点。</summary>
+    /// <summary>退役装配节点，仅保留旧存档引用；关联模型与配方ID不得复用。</summary>
     internal const int IFE亚空间装配节点 = 8133;
     internal const int IFE残片 = 8161;
     /// <summary>旧六阶段解析数据 ID，当前版本不再注册为资源。</summary>

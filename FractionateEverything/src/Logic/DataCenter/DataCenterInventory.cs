@@ -4,7 +4,6 @@ using System.IO;
 using System.Threading;
 using FE.Compatibility.Nebula;
 using FE.Logic.Civilization;
-using FE.Logic.DataCenter.Assembly;
 using FE.Logic.Fractionation.Fractionators;
 using FE.UI.MainPanel.Setting;
 using NebulaAPI;
@@ -46,7 +45,6 @@ public static class DataCenterInventory {
                     bw.Write(Interlocked.Read(ref ManualExtractCount));
                     bw.Write(Interlocked.Read(ref ManualUploadCount));
                 }),
-                ("Assembly", AssemblyManager.Export),
                 ("MaterialLeases", MaterialLeases.Export)
             );
         }
@@ -55,8 +53,8 @@ public static class DataCenterInventory {
     public static void Import(BinaryReader r) {
         lock (centerItemCount) {
             SubspaceExpansion.IntoOtherSave();
-            AssemblyManager.IntoOtherSave();
             MaterialLeases.BeforeImport();
+            var refunds = new RetiredAssemblyData();
             r.ReadBlocks(
                 ("CenterItems", br => {
                     int size = br.ReadInt32();
@@ -77,10 +75,11 @@ public static class DataCenterInventory {
                     ManualExtractCount = Math.Max(0L, br.ReadInt64());
                     ManualUploadCount = Math.Max(0L, br.ReadInt64());
                 }),
-                ("Assembly", AssemblyManager.Import),
+                ("Assembly", refunds.Read),
                 ("MaterialLeases", MaterialLeases.Import)
             );
             // FE 自有 DataCenter 余额不经 Legacy 物理引用迁移；旧槽位由后续自有状态叶处理。
+            if (!NebulaMultiplayerModAPI.IsClient) { refunds.Restore(centerItemCount, centerItemInc); }
             NormalizeCurrencyPackagesLocked();
         }
     }
@@ -121,7 +120,6 @@ public static class DataCenterInventory {
             ManualExtractCount = 0;
             ManualUploadCount = 0;
             SubspaceExpansion.IntoOtherSave();
-            AssemblyManager.IntoOtherSave();
             MaterialLeases.ClearWorld();
             snapshotDirty = false;
         }
@@ -344,7 +342,7 @@ public static class DataCenterInventory {
 
     public static bool TakeSnapshotDirty() {
         lock (centerItemCount) {
-            bool dirty = snapshotDirty | SubspaceExpansion.TakeSnapshotDirty() | AssemblyManager.TakeDirty();
+            bool dirty = snapshotDirty | SubspaceExpansion.TakeSnapshotDirty();
             snapshotDirty = false;
             return dirty;
         }
@@ -422,7 +420,7 @@ public static class DataCenterInventory {
         if (itemId == I沙土) { return GetModDataItemCount(itemId, out inc); }
         if (itemId <= 0 || itemId >= centerItemCount.Length) { return 0; }
         lock (centerItemCount) {
-            long free = AssemblyManager.FreeCount(itemId);
+            long free = centerItemCount[itemId];
             if (free == 0) { return 0; }
             long total = centerItemCount[itemId], points = centerItemInc[itemId];
             inc = points / total >= 4 ? split_inc(ref total, ref points, free)
@@ -480,7 +478,7 @@ public static class DataCenterInventory {
             return 0;
         }
         lock (centerItemCount) {
-            count = Math.Min(count, AssemblyManager.FreeCount(itemId));
+            count = Math.Min(count, centerItemCount[itemId]);
             if (count <= 0) {
                 return 0;
             }

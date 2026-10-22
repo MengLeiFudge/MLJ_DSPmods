@@ -19,7 +19,6 @@ internal static class FractionationTabLayout {
         for (int i = 0; i < firstRow.Length; i++) { PlaceItem(firstRow[i], Grid(1, i + 1)); }
         PlaceItem(IFE行星内物流交互站, Grid(1, 7));
         PlaceItem(IFE星际物流交互站, Grid(1, 8));
-        PlaceItem(IFE亚空间装配节点, Grid(1, 9));
 
         WorldviewRecipe[] recipes = RecipeManager.WorldviewRecipes.Where(recipe => recipe.IsAdvanced)
             .OrderBy(recipe => recipe.PersistentId).ToArray();

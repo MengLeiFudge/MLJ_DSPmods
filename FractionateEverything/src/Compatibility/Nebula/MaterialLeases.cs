@@ -47,7 +47,7 @@ public static class MaterialLeases {
         __state = [];
         if (NebulaMultiplayerModAPI.IsClient || !ReferenceEquals(__instance, NebulaModAPI.MultiplayerSession?.Network?.PacketProcessor)
             || processingEnabled.GetValue(__instance) is not true) { return; }
-        lock (DataCenterInventory.centerItemCount) { __state = host.Keys.Where(connection => AssemblyNetwork.GetPlayer(connection) == null).ToArray(); }
+        lock (DataCenterInventory.centerItemCount) { __state = host.Keys.Where(connection => NebulaMultiplayerModAPI.GetPlayer(connection) == null).ToArray(); }
     }
     private static void ReleaseDisconnected(object __instance, INebulaConnection[] __state) {
         if (__state.Length == 0 || processingEnabled.GetValue(__instance) is not true
@@ -182,7 +182,7 @@ public static class MaterialLeases {
             if (closed.Contains(packet.Id)) { connection.SendPacket(new MaterialLeasePacket { World = packet.World, Id = packet.Id, Item = packet.Item, Action = 4 }); return; }
             if (!host.TryGetValue(connection, out var leases)) { leases = []; host.Add(connection, leases); }
             if (!leases.TryGetValue(packet.Id, out Lease lease)) {
-                if (packet.Action != 0 || packet.Spent != 0 || packet.SpentInc != 0 || leases.Count >= 256 || AssemblyNetwork.GetPlayer(connection) == null
+                if (packet.Action != 0 || packet.Spent != 0 || packet.SpentInc != 0 || leases.Count >= 256 || NebulaMultiplayerModAPI.GetPlayer(connection) == null
                     || leases.Values.Any(other => other.Item == packet.Item) || !PackageAccessRules.TechItemInteractionUnlocked
                     || !PackageAccessRules.CanDownloadFromDataCenter(packet.Item)) { return; }
                 lease = new() { Id = packet.Id, Item = packet.Item }; leases.Add(packet.Id, lease);
