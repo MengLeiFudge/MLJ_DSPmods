@@ -32,6 +32,7 @@ namespace FE.Compatibility;
 [BepInDependency(CustomCreateBirthStar.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(DeliverySlotsTweaks.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(DspCalculator.GUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(DspRecipeFinder.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(GenesisBook.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(MoreMegaStructure.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(Multfunction_mod.GUID, BepInDependency.DependencyFlags.SoftDependency)]
@@ -127,6 +128,7 @@ public class CheckPlugins : BaseUnityPlugin {
         CustomCreateBirthStar.Compatible();
         DeliverySlotsTweaks.Compatible();
         DspCalculator.Compatible();
+        DspRecipeFinder.Compatible();
         GenesisBook.Compatible();
         MoreMegaStructure.Compatible();
         Multfunction_mod.Compatible();
