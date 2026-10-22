@@ -57,6 +57,8 @@ public static partial class StationManager {
     }
 
     public static void Import(BinaryReader r) {
+        slotTransferMode.Clear();
+        slotCapacityMode.Clear();
         r.ReadBlocks(
             ("SlotTransferMode", br => {
                 int entityCount = br.ReadInt32();

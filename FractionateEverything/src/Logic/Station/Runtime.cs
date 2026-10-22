@@ -86,6 +86,8 @@ public static partial class StationManager {
     private static readonly ConcurrentDictionary<StationComponent[], long> lastTickDic = [];
     /// <summary>按 stationPool 复用交互站扫描缓冲，避免 30 帧热路径重复分配列表。</summary>
     private static readonly ConcurrentDictionary<StationComponent[], List<StationComponent>> stationBufferDic = [];
+    /// <summary>复用本轮请求缓冲，只均分一次电量，不为未用份额追加传输。</summary>
+    private static readonly ConcurrentDictionary<StationComponent[], List<(int Slot, int Target, ECapacityMode Capacity)>> transferBufferDic = [];
 
     /// <summary>在行星运输周期内按自定义规则处理交互站的上传下载</summary>
     /// <param name="__instance">PlanetTransport 实例</param>
@@ -128,82 +130,34 @@ public static partial class StationManager {
                     (stations[i], stations[j]) = (stations[j], stations[i]);
                 }
 
-                // 循环所有的交互站
                 float downloadThreshold = Miscellaneous.DownloadThreshold;
                 float uploadThreshold = Miscellaneous.UploadThreshold;
+                var requests = transferBufferDic.GetOrAdd(__instance.stationPool, _ => []);
                 foreach (StationComponent stationComponent in stations) {
-                    // 单个槽位可用最大电量
-                    long maxSlotEnergy = stationComponent.energy / stationComponent.storage.Length;
+                    requests.Clear();
                     long entityId = stationComponent.entityId;
-
-                    // 获取该交互站的槽位模式字典
-                    ConcurrentDictionary<int, ETransferMode> transferDictionary =
-                        slotTransferMode.GetOrAdd(entityId, _ => new ConcurrentDictionary<int, ETransferMode>());
-                    ConcurrentDictionary<int, ECapacityMode> capacityDictionary =
-                        slotCapacityMode.GetOrAdd(entityId, _ => new ConcurrentDictionary<int, ECapacityMode>());
-
-                    // 循环交互站的所有的栏位
+                    var transferDictionary = slotTransferMode.GetOrAdd(entityId, _ => []);
+                    var capacityDictionary = slotCapacityMode.GetOrAdd(entityId, _ => []);
                     for (int i = 0; i < stationComponent.storage.Length; i++) {
-                        // StationStore为struct，必须使用引用修改内容
                         ref StationStore store = ref stationComponent.storage[i];
-                        if (store.itemId <= 0 || itemValue[store.itemId] >= maxValue) {
-                            continue;
+                        if (store.itemId <= 0 || store.itemId >= itemValue.Length || itemValue[store.itemId] >= maxValue) { continue; }
+                        ETransferMode mode = transferDictionary.GetOrAdd(i, ETransferMode.Sync);
+                        ECapacityMode capacity = capacityDictionary.GetOrAdd(i, ECapacityMode.Limited);
+                        int target = store.count;
+                        // 双向开启时仍优先上传，每槽每轮只执行一个方向。
+                        if (mode is ETransferMode.Sync or ETransferMode.Upload && store.count > store.max * uploadThreshold) {
+                            target -= GetUploadTransferCount(store, uploadThreshold, capacity);
+                        } else if (mode is ETransferMode.Sync or ETransferMode.Download
+                                   && store.totalSupplyCount < store.max * downloadThreshold) {
+                            int need = Math.Max(0, Mathf.RoundToInt(store.max * downloadThreshold) - store.count);
+                            target += (int)Math.Min(need, GetAvailableItemCount(store.itemId, out _));
                         }
-
-                        // 获取该槽位的传输模式和容量模式
-                        ETransferMode transferMode = transferDictionary.GetOrAdd(i, ETransferMode.Sync);
-                        ECapacityMode capacityMode = capacityDictionary.GetOrAdd(i, ECapacityMode.Limited);
-
-                        // 根据传输模式决定行为
-                        switch (transferMode) {
-                            case ETransferMode.Upload: {
-                                // 仅上传模式：交互站 -> 数据中心
-                                // 当交互站数量超过上传阈值时，将超出部分上传到数据中心
-                                if (store.count > store.max * uploadThreshold) {
-                                    int transferCount = GetUploadTransferCount(store, uploadThreshold, capacityMode);
-                                    if (transferCount > 0) {
-                                        stationComponent.SetTargetCount(i, store.count - transferCount, maxSlotEnergy, capacityMode);
-                                    }
-                                }
-                                break;
-                            }
-                            case ETransferMode.Download: {
-                                // 仅下载模式：数据中心 -> 交互站
-                                // 当总供应量低于下载阈值时，从数据中心下载至阈值数量
-                                if (store.totalSupplyCount < store.max * downloadThreshold) {
-                                    // 使用四舍五入避免浮点精度问题（如10000*0.2=1999.999...->2000）
-                                    int targetCount = Mathf.RoundToInt(store.max * downloadThreshold);
-                                    // 目标数量不能低于当前数量
-                                    if (targetCount < store.count) {
-                                        targetCount = store.count;
-                                    }
-                                    stationComponent.SetTargetCount(i, targetCount, maxSlotEnergy);
-                                }
-                                break;
-                            }
-                            case ETransferMode.Sync:
-                            default: {
-                                // 双向同步模式
-                                // 优先处理上传，再处理下载
-                                if (store.count > store.max * uploadThreshold) {
-                                    // 数量高于上传阈值，优先执行统一的上传裁剪逻辑。
-                                    int transferCount = GetUploadTransferCount(store, uploadThreshold, capacityMode);
-                                    if (transferCount > 0) {
-                                        stationComponent.SetTargetCount(i, store.count - transferCount, maxSlotEnergy, capacityMode);
-                                    }
-                                } else if (store.totalSupplyCount < store.max * downloadThreshold) {
-                                    // 数量低于下载阈值，下载数量至阈值
-                                    // 使用四舍五入避免浮点精度问题
-                                    int targetCount = Mathf.RoundToInt(store.max * downloadThreshold);
-                                    if (targetCount < store.count) {
-                                        targetCount = store.count;
-                                    }
-                                    stationComponent.SetTargetCount(i, targetCount, maxSlotEnergy);
-                                }
-                                break;
-                            }
-                        }
-
+                        if (target != store.count) { requests.Add((i, target, capacity)); }
+                    }
+                    if (requests.Count == 0) { continue; }
+                    long budget = Math.Max(0L, stationComponent.energy) / requests.Count;
+                    foreach (var request in requests) {
+                        stationComponent.SetTargetCount(request.Slot, request.Target, budget, request.Capacity);
                     }
                 }
             }

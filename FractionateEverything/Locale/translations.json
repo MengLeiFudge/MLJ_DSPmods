@@ -1,4 +1,25 @@
 ﻿{
+  "开启下载": {
+    "zhCN": "开启下载",
+    "enUS": "Download on",
+    "frFR": "Retrait activé",
+    "1031": "Entnahme an",
+    "1041": "搬出オン"
+  },
+  "关闭下载": {
+    "zhCN": "关闭下载",
+    "enUS": "Download off",
+    "frFR": "Retrait désactivé",
+    "1031": "Entnahme aus",
+    "1041": "搬出オフ"
+  },
+  "关闭上传": {
+    "zhCN": "关闭上传",
+    "enUS": "Upload off",
+    "frFR": "Dépôt désactivé",
+    "1031": "Einlagerung aus",
+    "1041": "搬入オフ"
+  },
   "FE.Monument.Rocket": {
     "zhCN": "丰碑建设火箭",
     "enUS": "Monument construction rocket",
@@ -1680,11 +1701,11 @@
     "1041": "星間物流交互ステーション"
   },
   "I星际物流交互站": {
-    "enUS": "Interstellar logistics station that exchanges items with the fractionation subspace. Its original upload, download, synchronization, threshold and blueprint modes are retained; each transfer consumes station energy.",
-    "zhCN": "与分馏亚空间交换物品的星际物流运输站。保留原有上传、下载、双向同步、阈值与蓝图模式；每次传输消耗站内电量。",
-    "frFR": "Station logistique interstellaire échangeant des objets avec le sous-espace de fractionnement. Les modes de dépôt, de retrait, de synchronisation, les seuils et les plans sont conservés ; chaque transfert consomme l'énergie de la station.",
-    "1031": "Interstellare Logistikstation zum Austausch von Gegenständen mit dem Fraktionierungs-Subraum. Einlagerung, Entnahme, Synchronisierung, Schwellenwerte und Blaupausenmodi bleiben erhalten; jeder Transfer verbraucht Stationsenergie.",
-    "1041": "分留亜空間とアイテムを交換する星間物流ステーション。搬入・搬出・双方向同期・しきい値・ブループリントの既存モードを維持し、転送ごとにステーション内の電力を消費します。"
+    "zhCN": "与分馏亚空间交换物品。右上控制上传：关闭、有限或无限；右下独立开启或关闭下载。默认有限上传、开启下载。左侧原版物流设置独立生效，每次亚空间传输消耗站内电量。",
+    "enUS": "Exchanges items with fractionation subspace. Top right: upload off, limited or unlimited. Bottom right: download on or off. Defaults to limited upload and download on. Left-side logistics settings are independent; subspace transfers consume station energy.",
+    "frFR": "Échange des objets avec le sous-espace. En haut à droite : dépôt désactivé, limité ou illimité. En bas à droite : retrait activé ou désactivé. Par défaut : dépôt limité et retrait activé. La logistique à gauche reste indépendante ; les transferts consomment l’énergie de la station.",
+    "1031": "Tauscht Gegenstände mit dem Subraum aus. Rechts oben: Einlagerung aus, begrenzt oder unbegrenzt. Rechts unten: Entnahme an oder aus. Standard: begrenzte Einlagerung und Entnahme an. Die Logistik links bleibt unabhängig; Subraumtransfers verbrauchen Stationsenergie.",
+    "1041": "分留亜空間とアイテムを交換します。右上は搬入オフ・制限搬入・無制限搬入、右下は搬出のオン・オフ。初期設定は制限搬入と搬出オンです。左側の物流設定は独立し、亜空間転送にはステーションの電力を消費します。"
   },
   "物流交互站": {
     "enUS": "Interaction Station",
@@ -1701,11 +1722,11 @@
     "1041": "惑星内物流交互ステーション"
   },
   "I行星内物流交互站": {
-    "enUS": "Planetary logistics station that exchanges items with the fractionation subspace. Its original upload, download, synchronization, threshold and blueprint modes are retained; each transfer consumes station energy.",
-    "zhCN": "与分馏亚空间交换物品的行星内物流运输站。保留原有上传、下载、双向同步、阈值与蓝图模式；每次传输消耗站内电量。",
-    "frFR": "Station logistique planétaire échangeant des objets avec le sous-espace de fractionnement. Les modes de dépôt, de retrait, de synchronisation, les seuils et les plans sont conservés ; chaque transfert consomme l'énergie de la station.",
-    "1031": "Planetare Logistikstation zum Austausch von Gegenständen mit dem Fraktionierungs-Subraum. Einlagerung, Entnahme, Synchronisierung, Schwellenwerte und Blaupausenmodi bleiben erhalten; jeder Transfer verbraucht Stationsenergie.",
-    "1041": "分留亜空間とアイテムを交換する惑星内物流ステーション。搬入・搬出・双方向同期・しきい値・ブループリントの既存モードを維持し、転送ごとにステーション内の電力を消費します。"
+    "zhCN": "与分馏亚空间交换物品。右上控制上传：关闭、有限或无限；右下独立开启或关闭下载。默认有限上传、开启下载。左侧原版物流设置独立生效，每次亚空间传输消耗站内电量。",
+    "enUS": "Exchanges items with fractionation subspace. Top right: upload off, limited or unlimited. Bottom right: download on or off. Defaults to limited upload and download on. Left-side logistics settings are independent; subspace transfers consume station energy.",
+    "frFR": "Échange des objets avec le sous-espace. En haut à droite : dépôt désactivé, limité ou illimité. En bas à droite : retrait activé ou désactivé. Par défaut : dépôt limité et retrait activé. La logistique à gauche reste indépendante ; les transferts consomment l’énergie de la station.",
+    "1031": "Tauscht Gegenstände mit dem Subraum aus. Rechts oben: Einlagerung aus, begrenzt oder unbegrenzt. Rechts unten: Entnahme an oder aus. Standard: begrenzte Einlagerung und Entnahme an. Die Logistik links bleibt unabhängig; Subraumtransfers verbrauchen Stationsenergie.",
+    "1041": "分留亜空間とアイテムを交換します。右上は搬入オフ・制限搬入・無制限搬入、右下は搬出のオン・オフ。初期設定は制限搬入と搬出オンです。左側の物流設定は独立し、亜空間転送にはステーションの電力を消費します。"
   },
   "双向同步": {
     "enUS": "Sync",

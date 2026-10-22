@@ -8,12 +8,13 @@ namespace FE.Logic.Station;
 /// </summary>
 public static partial class StationManager {
     /// <summary>
-    /// 传输模式枚举：双向同步、仅上传、仅下载。
+    /// 存档兼容的传输组合；界面分别控制上传与下载。
     /// </summary>
     private enum ETransferMode {
         Sync = 0,
         Upload = 1,
-        Download = 2
+        Download = 2,
+        Disabled = 3
     }
 
     /// <summary>
@@ -76,34 +77,43 @@ public static partial class StationManager {
         slotCapacityMode.TryRemove(entityId, out _);
     }
 
-    /// <summary>
-    /// 根据当前模式和选项索引获取下一个传输模式（循环切换）
-    /// </summary>
-    /// <param name="currentMode">当前传输模式</param>
-    /// <param name="optionIndex">选项按钮索引（0或1）</param>
-    /// <returns>下一个传输模式</returns>
-    private static ETransferMode GetNextTransferMode(ETransferMode currentMode, int optionIndex) {
-        // 根据选项按钮索引决定模式切换逻辑
-        if (optionIndex == 0) {
-            // 选项0的切换顺序：Sync -> Upload -> Download -> Sync
-            return currentMode switch {
-                ETransferMode.Sync => ETransferMode.Upload,
-                ETransferMode.Upload => ETransferMode.Download,
-                _ => ETransferMode.Sync
-            };
-        }
+    /// <summary>读取上传选项：0关闭、1有限、2无限；旧组合保留原有行为。</summary>
+    private static int GetUploadMode(long entityId, int slot) {
+        TryGetSlotModes(entityId, slot, out int transfer, out int capacity);
+        return (ETransferMode)transfer is ETransferMode.Sync or ETransferMode.Upload ? capacity + 1 : 0;
+    }
 
-        if (optionIndex == 1) {
-            // 选项1的切换顺序：Sync -> Download -> Upload -> Sync
-            return currentMode switch {
-                ETransferMode.Sync => ETransferMode.Download,
-                ETransferMode.Upload => ETransferMode.Sync,
-                _ => ETransferMode.Upload
-            };
-        }
+    /// <summary>读取独立下载开关，未配置的槽位默认开启。</summary>
+    private static bool IsDownloadEnabled(long entityId, int slot) {
+        TryGetSlotModes(entityId, slot, out int transfer, out _);
+        return (ETransferMode)transfer is ETransferMode.Sync or ETransferMode.Download;
+    }
 
-        // 其他情况保持当前模式不变
-        return currentMode;
+    /// <summary>两套站点窗口共用的上传选项文字。</summary>
+    private static string UploadModeText(int mode) => (mode switch {
+        1 => "有限上传", 2 => "无限上传", _ => "关闭上传",
+    }).Translate();
+
+    /// <summary>原版弹窗提供两个选项，按顺序显示当前上传模式以外的两项。</summary>
+    private static int GetUploadOption(int current, int option) => option >= current ? option + 1 : option;
+
+    /// <summary>提交一个方向的修改，另一方向在主机按最新状态保留。</summary>
+    private static void ApplyModeOption(PlanetFactory factory, StationComponent station, int slot, bool upload, int option) {
+        if (option is < 0 or > 1) { return; }
+        int value = upload ? GetUploadOption(GetUploadMode(station.entityId, slot), option) : option;
+        FE.Compatibility.Nebula.StationModeSync.Request(factory, station, slot, upload, value);
+    }
+
+    /// <summary>应用已校验的单方向设置；存档与蓝图继续使用原有组合编码。</summary>
+    internal static void ApplySlotDirection(long entityId, int slot, bool upload, int value) {
+        TryGetSlotModes(entityId, slot, out int transfer, out int capacity);
+        bool send = (ETransferMode)transfer is ETransferMode.Sync or ETransferMode.Upload;
+        bool receive = (ETransferMode)transfer is ETransferMode.Sync or ETransferMode.Download;
+        if (upload) { send = value != 0; if (send) { capacity = value - 1; } }
+        else { receive = value != 0; }
+        ETransferMode mode = send ? (receive ? ETransferMode.Sync : ETransferMode.Upload)
+            : receive ? ETransferMode.Download : ETransferMode.Disabled;
+        SetSlotModes(entityId, slot, (int)mode, capacity);
     }
 
     /// <summary>
@@ -114,6 +124,7 @@ public static partial class StationManager {
         // 包括传输模式、容量模式设置
         lastTickDic.Clear();
         stationBufferDic.Clear();
+        transferBufferDic.Clear();
         slotTransferMode.Clear();
         slotCapacityMode.Clear();
         // 清理UI弹窗状态缓存

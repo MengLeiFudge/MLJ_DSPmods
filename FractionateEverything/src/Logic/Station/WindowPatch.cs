@@ -170,66 +170,21 @@ public static partial class StationManager {
         // 原版本地物流模式按钮用于确定我们新按钮的起始坐标
         RectTransform refRect = storage.localSdButton.GetComponent<RectTransform>();
 
-        // 通过实体ID拿到整个塔的同步模式
-        ConcurrentDictionary<int, ETransferMode> transferDictionary =
-            slotTransferMode.GetOrAdd(storage.station.entityId, new ConcurrentDictionary<int, ETransferMode>());
-
-        // 通过栏位索引，拿到对应栏位的同步模式
-        ETransferMode eTransferMode = transferDictionary.GetOrAdd(storage.index, ETransferMode.Sync);
-
+        int uploadMode = GetUploadMode(storage.station.entityId, storage.index);
+        bool download = IsDownloadEnabled(storage.station.entityId, storage.index);
         if (transferGameObjects.TryGetValue(storage, out GameObject tTrans)) {
-            // 显示按钮并同步当前传输模式的文本与颜色
-            // 显示按钮
             tTrans.SetActive(storage.localSdButton.gameObject.activeSelf);
-            Text transferText = tTrans.GetComponentInChildren<Text>();
-            // 根据当前模式更新文本
-            if (transferText != null) {
-                transferText.text = eTransferMode switch {
-                    ETransferMode.Sync => "双向同步".Translate(), ETransferMode.Upload => "仅上传".Translate(),
-                    ETransferMode.Download => "仅下载".Translate(),
-                    _ => "双向同步".Translate()
-                };
-            }
-            Image capImage = tTrans.GetComponent<Image>();
-            if (capImage != null) {
-                capImage.color = eTransferMode switch {
-                    ETransferMode.Sync => storage.noneSpColor, ETransferMode.Upload => storage.demandColor,
-                    ETransferMode.Download => storage.supplyColor,
-                    _ => storage.noneSpColor
-                };
-            }
-
-            // 更新位置
+            tTrans.GetComponentInChildren<Text>().text = UploadModeText(uploadMode);
+            tTrans.GetComponent<Image>().color = uploadMode == 0 ? storage.noneSpColor
+                : uploadMode == 1 ? storage.supplyColor : storage.demandColor;
             RectTransform rt = tTrans.GetComponent<RectTransform>();
             rt.anchoredPosition = new Vector2(refRect.anchoredPosition.x + spacingX, topY);
             rt.sizeDelta = new Vector2(rt.sizeDelta.x, BtnHeight);
         }
-
         if (capacityGameObjects.TryGetValue(storage, out GameObject cTrans)) {
-            // 根据当前传输/容量设置决定容量按钮是否可见以及文本颜色
-            // 通过实体ID拿到整个塔的同步模式
-            ConcurrentDictionary<int, ECapacityMode> capacityDictionary =
-                slotCapacityMode.GetOrAdd(storage.station.entityId, new ConcurrentDictionary<int, ECapacityMode>());
-
-            // 通过栏位索引，拿到对应栏位的同步模式
-            ECapacityMode eCapacityMode = capacityDictionary.GetOrAdd(storage.index, ECapacityMode.Limited);
-            cTrans.SetActive(storage.localSdButton.gameObject.activeSelf
-                             && eTransferMode is ETransferMode.Sync or ETransferMode.Upload);
-            Text capText = cTrans.GetComponentInChildren<Text>();
-            if (capText != null) {
-                capText.text = eCapacityMode switch {
-                    ECapacityMode.Limited => "有限上传".Translate(), ECapacityMode.Infinite => "无限上传".Translate(),
-                    _ => "有限上传".Translate()
-                };
-            }
-            Image capImage = cTrans.GetComponent<Image>();
-            if (capImage != null) {
-                capImage.color = eCapacityMode switch {
-                    ECapacityMode.Limited => storage.supplyColor, ECapacityMode.Infinite => storage.demandColor,
-                    _ => storage.supplyColor
-                };
-            }
-
+            cTrans.SetActive(storage.localSdButton.gameObject.activeSelf);
+            cTrans.GetComponentInChildren<Text>().text = (download ? "开启下载" : "关闭下载").Translate();
+            cTrans.GetComponent<Image>().color = download ? storage.demandColor : storage.noneSpColor;
             RectTransform rt = cTrans.GetComponent<RectTransform>();
             rt.anchoredPosition = new Vector2(refRect.anchoredPosition.x + spacingX, bottomY);
             rt.sizeDelta = new Vector2(rt.sizeDelta.x, BtnHeight);
@@ -348,7 +303,7 @@ public static partial class StationManager {
         }
     }
 
-    /// <summary>在独立面板显示传输模式弹窗并更新按钮提示</summary>
+    /// <summary>在独立面板显示上传模式弹窗并更新按钮提示</summary>
     /// <param name="__instance">当前的 UIStationStorage 实例</param>
     private static void ShowTransferPopup(UIStationStorage __instance) {
         UIStationStorage storage = __instance;
@@ -362,40 +317,18 @@ public static partial class StationManager {
         if (itemProto1 == null || itemProto2 == null)
             return;
 
-        // 通过实体和槽位读取当前传输模式，以便为选项按钮提示下一步
-
-        // 通过实体ID拿到整个塔的同步模式
-        ConcurrentDictionary<int, ETransferMode> transferDictionary =
-            slotTransferMode.GetOrAdd(station.entityId, new ConcurrentDictionary<int, ETransferMode>());
-
-        // 通过栏位索引，拿到对应栏位的同步模式
-        ETransferMode eTransferMode = transferDictionary.GetOrAdd(storage.index, ETransferMode.Sync);
+        int mode = GetUploadMode(station.entityId, storage.index);
+        int first = GetUploadOption(mode, 0);
+        int second = GetUploadOption(mode, 1);
         (long stationEntityId, int slotIndex) popupStateKey = GetPopupStateKey(storage);
-        // option0 / option1 的文字和颜色，按“当前模式”动态提示“点下去会切到什么模式”。
-        storage.optionImage0.color = eTransferMode switch {
-            ETransferMode.Sync => storage.demandColor,
-            ETransferMode.Upload => storage.supplyColor,
-            _ => storage.noneSpColor
-        };
-        storage.optionImage1.color = eTransferMode switch {
-            ETransferMode.Sync => storage.supplyColor,
-            ETransferMode.Upload => storage.noneSpColor,
-            _ => storage.demandColor
-        };
-        storage.optionText0.text = eTransferMode switch {
-            ETransferMode.Sync => "仅上传".Translate(),
-            ETransferMode.Upload => "仅下载".Translate(),
-            _ => "双向同步".Translate()
-        };
-        storage.optionText1.text = eTransferMode switch {
-            ETransferMode.Sync => "仅下载".Translate(),
-            ETransferMode.Upload => "双向同步".Translate(),
-            _ => "仅上传".Translate()
-        };
+        storage.optionImage0.color = first == 0 ? storage.noneSpColor : first == 1 ? storage.supplyColor : storage.demandColor;
+        storage.optionImage1.color = second == 0 ? storage.noneSpColor : second == 1 ? storage.supplyColor : storage.demandColor;
+        storage.optionText0.text = UploadModeText(first);
+        storage.optionText1.text = UploadModeText(second);
         storage.popupBoxRect.gameObject.SetActive(!storage.popupBoxRect.gameObject.activeSelf);
         bool isPopupActive = storage.popupBoxRect.gameObject.activeSelf;
         // 按钮点击后记录这是 FE 控制的传输弹窗，以便拦截后续事件
-        // 记录：这个弹窗是 FE 接管的、当前是否打开、当前是传输模式弹窗。
+        // 记录：这个弹窗是 FE 接管的、当前是否打开、当前是上传模式弹窗。
         slotIsMyPopup[popupStateKey] = isPopupActive;
         slotIsTransfer[popupStateKey] = true;
         slotPopupBoxRect[popupStateKey] = storage.popupBoxRect;
@@ -403,7 +336,7 @@ public static partial class StationManager {
         SetStoragePopupShift(storage, true);
     }
 
-    /// <summary>在独立面板显示容量模式弹窗并设置文本与颜色</summary>
+    /// <summary>在独立面板显示下载模式弹窗并设置文本与颜色</summary>
     /// <param name="__instance">当前的 UIStationStorage 实例</param>
     private static void ShowCapacityPopup(UIStationStorage __instance) {
         UIStationStorage storage = __instance;
@@ -419,13 +352,13 @@ public static partial class StationManager {
 
         // 容量弹窗无需根据当前模式读取字典，直接展示选项
         (long stationEntityId, int slotIndex) popupStateKey = GetPopupStateKey(storage);
-        storage.optionImage0.color = storage.demandColor;
-        storage.optionImage1.color = storage.supplyColor;
-        storage.optionText0.text = "无限上传".Translate();
-        storage.optionText1.text = "有限上传".Translate();
+        storage.optionImage0.color = storage.noneSpColor;
+        storage.optionImage1.color = storage.demandColor;
+        storage.optionText0.text = "关闭下载".Translate();
+        storage.optionText1.text = "开启下载".Translate();
         storage.popupBoxRect.gameObject.SetActive(!storage.popupBoxRect.gameObject.activeSelf);
         bool isPopupActive = storage.popupBoxRect.gameObject.activeSelf;
-        // false 代表当前是“容量模式弹窗”，后续点击 option 时走容量逻辑。
+        // false 代表当前是“下载模式弹窗”，后续点击 option 时走容量逻辑。
         slotIsMyPopup[popupStateKey] = isPopupActive;
         slotIsTransfer[popupStateKey] = false;
         slotPopupBoxRect[popupStateKey] = storage.popupBoxRect;
@@ -509,24 +442,7 @@ public static partial class StationManager {
             if (itemProto1 == null || itemProto2 == null)
                 return false;
             // 数据收集完成后继续，根据 popup 类型走不同逻辑
-            if (GetPopupFlag(slotIsTransfer, popupStateKey)) {
-                // 当前是“传输模式弹窗”：按 idx 计算下一个传输模式。
-                ConcurrentDictionary<int, ETransferMode> transferDictionary =
-                    slotTransferMode.GetOrAdd(station.entityId, new ConcurrentDictionary<int, ETransferMode>());
-                ETransferMode eTransferMode = transferDictionary.GetOrAdd(storage.index, ETransferMode.Sync);
-                ETransferMode nextMode = GetNextTransferMode(eTransferMode, idx);
-                transferDictionary.TryUpdate(storage.index, nextMode, eTransferMode);
-            } else {
-                // 当前是“容量模式弹窗”：option0=无限上传，option1=有限上传。
-                ConcurrentDictionary<int, ECapacityMode> capacityDictionary =
-                    slotCapacityMode.GetOrAdd(station.entityId, new ConcurrentDictionary<int, ECapacityMode>());
-                ECapacityMode eCapacityMode = capacityDictionary.GetOrAdd(storage.index, ECapacityMode.Limited);
-                if (idx == 0) {
-                    capacityDictionary.TryUpdate(storage.index, ECapacityMode.Infinite, eCapacityMode);
-                } else if (idx == 1) {
-                    capacityDictionary.TryUpdate(storage.index, ECapacityMode.Limited, eCapacityMode);
-                }
-            }
+            ApplyModeOption(stationWindow.factory, station, storage.index, GetPopupFlag(slotIsTransfer, popupStateKey), idx);
 
             // 选完就关闭弹窗，并标记为“非 FE 弹窗激活态”。
             storage.popupBoxRect.gameObject.SetActive(false);

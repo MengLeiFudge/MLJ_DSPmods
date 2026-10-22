@@ -24,7 +24,7 @@ namespace FE.Compatibility.Nebula;
 public static class NebulaMultiplayerModAPI {
     public const string GUID = NebulaModAPI.API_GUID;
     /// <summary>联机规则修订号；堆叠科技、设备接管及库存结算要求双方一致。</summary>
-    public const int ProtocolVersion = 13;
+    public const int ProtocolVersion = 14;
     public static bool Enable;
     public static Assembly assembly;
 
@@ -92,7 +92,8 @@ public static class NebulaMultiplayerModAPI {
             writer.WriteBlocks(
                 ("Civilization", CivilizationModule.Export),
                 // 亚空间快照覆盖完整稀疏库存，避免仅同步 Frag/Memory 时遗漏普通物资。
-                ("DataCenter", Export)
+                ("DataCenter", Export),
+                ("StationModes", FE.Logic.Station.StationManager.Export)
             );
             stateData = provider.CloseAndGetBytes();
         }
@@ -355,6 +356,7 @@ public class CivilizationStatePacketProcessor : BasePacketProcessor<Civilization
                     IntoOtherSave();
                     Import(br);
                 }),
+                ("StationModes", FE.Logic.Station.StationManager.Import),
                 ("Process", _ => { })
             );
         }
