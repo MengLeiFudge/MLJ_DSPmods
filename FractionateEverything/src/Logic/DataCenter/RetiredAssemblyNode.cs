@@ -18,9 +18,10 @@ internal static class RetiredAssemblyNode {
         model = ProtoRegistry.RegisterModel(MFE亚空间装配节点, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         // 旧制造台导入和取回缓存仍会解引用该配方；None 类型不进入生产配方选择。
+        // CommonAPI在GridIndex为0时读取产物原型；留空图标使其先取得产物，避免空引用。
         RecipeProto recipe = ProtoRegistry.RegisterRecipe(RFE亚空间装配节点, ERecipeType.None, 600,
             [I钢材, I处理器, I电浆激发器], [20, 10, 10], [IFE亚空间装配节点], [1],
-            "FE.RetiredAssembly.Description", 0, 0, item.Name, item.IconPath);
+            "FE.RetiredAssembly.Description", 0, 0, item.Name, "");
         recipe.Handcraft = false;
         recipe.Explicit = true;
         recipe.NonProductive = true;
