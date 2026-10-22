@@ -364,6 +364,13 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
 - Subdirectory `AGENTS.md` files exist for major FE domains such as `Logic/Civilization/`, `Logic/Fractionation/`, `Logic/Station/`, `Logic/DataCenter/`, `Logic/Items/`, `Logic/Enhancements/`, `UI/`, `UI/Controls/`, `UI/MainPanel/`, `Compatibility/`, `Utils/`, and `AfterBuildEvent/src/`
 - **Simulator-first workflow (mandatory):** when the user is exploring balance, pacing, or design direction and has not yet approved applying the result to the real mod, agents must restrict code changes to `VanillaCurveSim/**` (and supporting docs/plans if needed). In this stage, agents may read `FractionateEverything/**` to mirror real formulas, but must not modify FE project files until the user explicitly confirms that the simulated result should be applied to FE.
 
+## 配方描述与展示语义（强制）
+
+- 配方描述正文沿用原版写法，用简短自然语言说明材料来源、转化过程、催化关系及产物用途；默认一至三句，定性说明特殊工艺的意义，不写成操作教程、数值清单或实现说明。
+- 数量、成功率、催化消耗率、时间、速率及科技加成由配方图、专门数值字段或机器运行窗口表达，描述正文不重复这些参数；接线、供养和操作教学归手册或百科，不能堆进配方悬停描述。
+- 展示必须区分实际消耗、催化剂持有需求、成功轮产出和平均产量；不能把催化剂画成每轮全额消耗，也不能把占位时间当成真实加工时间。普通配方图不能准确表达时，应修正相应展示，不用“时间仅示意”“图中按多轮显示”等长段说明掩盖歧义。
+- 修改配方文案前，对照原版安装目录的 `Locale/2052/prototype.txt` 中 `R等离子精炼`、`RX射线裂解`、`R重整精炼` 等配方词条；该文件为 UTF-16。`gamedata/DecompiledSource/Assembly-CSharp/UIItemTip.cs` 的 `SetTip` 可核对正文、制造来源与配方图的职责。各语言保持相同信息边界，数值真源仍在 `GAME_DESIGN_SPEC.md` 与运行逻辑。
+
 ## UI 字体亮度（强制）
 
 - 所有页面、按钮、覆盖面板及动态列表的文字必须保持清晰，亮度与既有正常 UI 一致；不得出现过曝、光晕糊字或同级文字亮度突变。
