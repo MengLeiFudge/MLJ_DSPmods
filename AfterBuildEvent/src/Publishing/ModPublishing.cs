@@ -772,8 +772,6 @@ static partial class AfterBuildEvent {
         File.WriteAllLines(doorstop_config, lines);
     }
 
-    private static readonly DateTime StableZipEntryTime = new(2000, 1, 1, 0, 0, 0);
-
     static void ZipMod(List<string> fileList, string zipPath) {
         string zipParentDir = new FileInfo(zipPath).DirectoryName;
         if (zipParentDir == null) {
@@ -791,7 +789,8 @@ static partial class AfterBuildEvent {
             //但是也有一些特殊情况需要文件夹
             FileInfo fileInfo = new(file);
             var entry = new ZipEntry(Path.GetFileName(file)) {
-                DateTime = StableZipEntryTime,
+                // BepInEx 按 DLL 修改时间判断是否重读插件及依赖声明。
+                DateTime = fileInfo.LastWriteTime,
                 Size = fileInfo.Length,
             };
             zipStream.PutNextEntry(entry);

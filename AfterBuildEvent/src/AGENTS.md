@@ -178,10 +178,10 @@ Do not reintroduce `bin\win\<Configuration>` or `bin\<Configuration>\net472` in 
 local mod/tool project it packages or uses for calculator export, and those referenced projects should remain
 `OutputType=Library`.
 
-## Deterministic Zip Rule
+## ZIP 时间与内容去重
 
-Mode `1` package zips must be deterministic for unchanged contents. `ZipMod()` sorts entries by file name and
-uses a fixed zip entry timestamp so rerunning `AfterBuildEvent.exe 1` does not change zip SHA256 solely because
-the command ran at a different time. Do not reintroduce current-time entry metadata into package zips.
+`ZipMod()` 按文件名排序，并保留源文件的实际最后修改时间。BepInEx 通过 DLL 路径和修改时间判断是否重读插件及依赖声明；不得将所有 ZIP 条目设为统一固定时间，否则覆盖更新可能继续使用旧依赖缓存。
+
+ZIP 时间字段遵循格式本身的精度；文件内容是否变化仍由内容哈希判定。不要用 ZIP 时间、源文件时间或 ZIP 字节哈希代替内容去重。
 Mode `1` also maintains the local publish guard in `ModZips\publish-content-sha256\`. Only update that cache after
 the qqbot request succeeds. A package that matches the local content hash must not be sent to qqbot at all.
