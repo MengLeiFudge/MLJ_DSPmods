@@ -105,7 +105,8 @@ cd "/mnt/d/project/dsp/MLJ_DSPmods/AfterBuildEvent/bin/Debug"
 ## FE 代码与资源分离
 
 - `FractionateEverything.dll` 以代码为主，不嵌入 PNG 图标等大体积美术资源，避免第三方补丁引用主程序集时携带整套资源。
-- 独立配方图标采用外置 PNG 资源目录，随模组 ZIP 发布并由打包流程同步到 R2；主 DLL 仅保留加载逻辑和稳定配方映射。建筑模型与材质继续使用独立 AssetBundle。
+- PNG 图标嵌入独立的 `FractionateEverything.Resources.dll`，随模组 ZIP 发布并同步到 R2；主 DLL 仅保留加载逻辑和稳定配方映射，不对资源 DLL 建立编译依赖，第三方补丁无需引用资源程序集。
+- 现有 FE 建筑复用原版预制体，材质由代码复制并改色；现有 `fe` AssetBundle 承载 PNG 图标，不承载建筑模型或材质。图标迁入资源 DLL 并同步替换加载、打包和导出入口后，可移除该包；不能仅因资源包名而假定它承担模型依赖。
 
 ## Calculator Icon Export Notes
 
