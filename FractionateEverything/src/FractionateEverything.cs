@@ -33,6 +33,7 @@ namespace FE;
 [BepInDependency(BuildBarToolPlugin.GUID)]
 [BepInDependency(NebulaModAPI.API_GUID)]
 [BepInDependency(CheckPlugins.GUID)]
+[BepInDependency(FE.Compatibility.Mods.TowerFactory.GUID)]
 [BepInDependency("AchievementsEnabler", BepInDependency.DependencyFlags.HardDependency)]
 [CommonAPISubmoduleDependency(nameof(CustomKeyBindSystem), nameof(ProtoRegistry), nameof(TabSystem),
     nameof(LocalizationModule), nameof(AssemblerRecipeSystem), nameof(PickerExtensionsSystem))]

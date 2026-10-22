@@ -40,8 +40,8 @@ public static partial class StationManager {
                     controlPanelSpacingX = refRect.sizeDelta.x + ExtraSpacing;
                 }
 
-                // 每个存储槽需要注入传输模式按钮，若已存在就直接缓存
-                string transferName = "FE_cp_transferModeButton_" + index;
+                // 按钮身份属于行控件，不绑定分页后会改变的实际槽位编号。
+                string transferName = "FE_cp_transferModeButton";
                 Transform transferTrans = FindControlPanelModeButtonTransform(storage, transferName);
                 if (transferTrans == null) {
                     // 创建新的传输模式按钮，使用原版按钮作为模板
@@ -59,7 +59,7 @@ public static partial class StationManager {
                 }
 
                 // 再注入容量模式按钮，逻辑同上
-                string capacityName = "FE_cp_capacityModeButton_" + index;
+                string capacityName = "FE_cp_capacityModeButton";
                 Transform capacityTrans = FindControlPanelModeButtonTransform(storage, capacityName);
                 if (capacityTrans == null) {
                     // 创建新的容量模式按钮，使用原版按钮作为模板
@@ -108,12 +108,24 @@ public static partial class StationManager {
         slotPopupBoxRect.Clear();
     }
 
+    /// <summary>分页复用同一行控件时关闭旧槽弹窗，避免把旧选项应用到新槽。</summary>
+    [HarmonyPrefix]
+    [HarmonyPriority(Priority.Last)]
+    [HarmonyPatch(typeof(UIControlPanelStationStorage), nameof(UIControlPanelStationStorage.SetData))]
+    public static void UIControlPanelStationStorage_SetData_Prefix(UIControlPanelStationStorage __instance,
+        PlanetFactory _factory, StationComponent _station, int _index) {
+        if (__instance.factory == _factory && __instance.station == _station && __instance.index == _index) { return; }
+        ClearPopupState(GetPopupStateKey(__instance));
+        __instance.ClosePopMenu();
+        SetControlPanelStoragePopupShift(__instance, false);
+    }
+
     /// <summary>打开总控面板存储槽时初始化自定义按钮并绑定点击事件</summary>
     /// <param name="__instance">当前的 UIControlPanelStationStorage 实例</param>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UIControlPanelStationStorage), nameof(UIControlPanelStationStorage._OnOpen))]
     public static void UIControlPanelStationStorage_OnOpen_Postfix(UIControlPanelStationStorage __instance) {
-        string transferName = "FE_cp_transferModeButton_" + __instance.index;
+        string transferName = "FE_cp_transferModeButton";
         Transform transferTrans = FindControlPanelModeButtonTransform(__instance, transferName);
         if (transferTrans != null) {
             // 替换转移按钮的监听，确保我们弹窗逻辑被优先调用
@@ -124,7 +136,7 @@ public static partial class StationManager {
             controlPanelTransferGameObjects[__instance] = transferTrans.gameObject;
         }
 
-        string capacityName = "FE_cp_capacityModeButton_" + __instance.index;
+        string capacityName = "FE_cp_capacityModeButton";
         Transform capacityTrans = FindControlPanelModeButtonTransform(__instance, capacityName);
         if (capacityTrans != null) {
             // 同样处理容量按钮，绑定弹窗显示逻辑
@@ -141,7 +153,7 @@ public static partial class StationManager {
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UIControlPanelStationStorage), nameof(UIControlPanelStationStorage._OnClose))]
     public static void UIControlPanelStationStorage_OnClose_Postfix(UIControlPanelStationStorage __instance) {
-        string transferName = "FE_cp_transferModeButton_" + __instance.index;
+        string transferName = "FE_cp_transferModeButton";
         Transform transferTrans = FindControlPanelModeButtonTransform(__instance, transferName);
         if (transferTrans != null) {
             Button transferBtn = transferTrans.GetComponent<Button>();
@@ -149,7 +161,7 @@ public static partial class StationManager {
             transferBtn.onClick.RemoveAllListeners();
         }
 
-        string capacityName = "FE_cp_capacityModeButton_" + __instance.index;
+        string capacityName = "FE_cp_capacityModeButton";
         Transform capacityTrans = FindControlPanelModeButtonTransform(__instance, capacityName);
         if (capacityTrans != null) {
             Button capBtn = capacityTrans.GetComponent<Button>();
@@ -326,7 +338,7 @@ public static partial class StationManager {
         // 确保缓存中有自定义的传输按钮引用
         if (!controlPanelTransferGameObjects.TryGetValue(storage, out _)) {
             Transform transferTrans =
-                FindControlPanelModeButtonTransform(storage, "FE_cp_transferModeButton_" + storage.index);
+                FindControlPanelModeButtonTransform(storage, "FE_cp_transferModeButton");
             if (transferTrans != null) {
                 controlPanelTransferGameObjects[storage] = transferTrans.gameObject;
             }
@@ -335,7 +347,7 @@ public static partial class StationManager {
         // 同时保证容量按钮也已准备好
         if (!controlPanelCapacityGameObjects.TryGetValue(storage, out _)) {
             Transform capacityTrans =
-                FindControlPanelModeButtonTransform(storage, "FE_cp_capacityModeButton_" + storage.index);
+                FindControlPanelModeButtonTransform(storage, "FE_cp_capacityModeButton");
             if (capacityTrans != null) {
                 controlPanelCapacityGameObjects[storage] = capacityTrans.gameObject;
             }

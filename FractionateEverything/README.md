@@ -9,6 +9,10 @@
 
 Fractionate Everything is a living-industry progression built around exploration, sample analysis and sustained automation. Begin with a relic on your home world, then develop five specialized fractionators and a galaxy-wide subspace inventory.
 
+TowerFactory 为必需前置，BigTower 可选；使用模组管理器安装会一并安装 TowerFactory 的依赖。FE交互站支持塔厂生产及扩展槽位，槽位数量和分页沿用 TowerFactory / BigTower 的设置。
+
+TowerFactory is required; BigTower is optional. Installing through a mod manager also installs TowerFactory's dependencies. FE interaction stations support tower production and expanded slots, using the slot count and paging settings supplied by these mods.
+
 ## 从哪里开始 Getting Started
 
 开局的G手册会出现“神秘信号？”。首遗物位于出生点所在半球，并避开黑雾基地。屏幕只显示一条信号强度条，感应范围按星球半径调整；在大星球上远处也能感知。地面行走和低空悬浮都能接近，实际进入范围才会回收。关键信号的结果会打开确认弹窗。首遗物提供：
@@ -80,6 +84,10 @@ The first relic uses a graphical signal bar scaled to the planet's radius. Later
 Each FE interaction-station slot controls upload and download separately; new slots default to limited upload and download enabled. Only slots with actual transfer requests share the energy budget, once per cycle. Transfer efficiency stops at 20% of base energy. The separate station-power chain adds charging power and storage capacity: 10%, 20%, 30% and 40% of base values before white matrices, then another 10% of base per white upgrade. Added capacity does not refill stored energy.
 
 亚空间负责库存，生产由玩家自己搭产线或配置塔厂。FE不再提供下单、装配队列和供工时节点。更新后，未完成订单已扣的材料与增产点退回亚空间；仅预留的材料直接解除占用。旧节点停用、不可新建，已有建筑可以拆除。
+
+塔厂由玩家配置：第一格放机器并设为原版仓储，第二格指定产品，其余格指定原料。FE交互站可将机器格关闭上传和下载、产品格开启上传并关闭下载、原料格关闭上传并开启下载；不自动替玩家改槽位或工艺。FE生命分馏塔须实体建造并供养，不能放在机器格代替原版分馏塔运行。
+
+Configure tower factories yourself: machine in slot 1 with vanilla storage mode, product in slot 2, ingredients in the remaining slots. For FE stations, disable both subspace directions for the machine, upload products only, and download ingredients only. FE does not change these settings or choose processes for you. FE fractionators require their own placed buildings and cannot act as vanilla fractionators inside a tower factory.
 
 联机取物先由主机划拨额度，客户端建造与机甲制造预检查会自动请求缺口；首次申请有一次网络往返，确认后可直接使用亚空间材料，不必先转入背包。手动提取仍遵循取到手中或背包的设置，未用额度自动返还共享库存。
 

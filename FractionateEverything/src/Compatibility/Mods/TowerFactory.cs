@@ -7,12 +7,12 @@ namespace FE.Compatibility.Mods;
 
 /// <summary>保留交互站的塔厂能力，避免将 FE 分馏塔误用为普通分馏生产机器。</summary>
 public static class TowerFactory {
-    /// <summary>塔厂插件的稳定标识，用于软依赖和启动检测。</summary>
+    /// <summary>塔厂插件的稳定标识，用于主插件硬依赖和启动检测。</summary>
     public const string GUID = "com.yummi.dsp.towerfactory";
     /// <summary>本次启动是否安装塔厂插件。</summary>
     public static bool Enable;
 
-    /// <summary>通过反射安装兼容补丁，未安装塔厂时不解析其程序集。</summary>
+    /// <summary>通过反射安装兼容补丁，依赖缺失时由启动检测处理。</summary>
     public static void Compatible() {
         Enable = Chainloader.PluginInfos.TryGetValue(GUID, out BepInEx.PluginInfo pluginInfo);
         if (!Enable || pluginInfo == null) { return; }

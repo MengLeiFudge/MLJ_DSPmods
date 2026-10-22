@@ -40,6 +40,7 @@ namespace FE.Compatibility;
 [BepInDependency(SmelterMiner.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(TheyComeFromVoid.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(TowerFactory.GUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency("com.yummi.dsp.bigtower", BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(UxAssist.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 public class CheckPlugins : BaseUnityPlugin {
     public const string GUID = PluginInfo.PLUGIN_GUID + ".CheckPlugins";
@@ -92,6 +93,10 @@ public class CheckPlugins : BaseUnityPlugin {
         if (!Chainloader.PluginInfos.ContainsKey(NebulaMultiplayerModAPI.GUID)) {
             dependencyOk = false;
             sb.Append($"\nNebulaMultiplayerModAPI ({NebulaMultiplayerModAPI.GUID})");
+        }
+        if (!Chainloader.PluginInfos.ContainsKey(TowerFactory.GUID)) {
+            dependencyOk = false;
+            sb.Append($"\nTowerFactory ({TowerFactory.GUID})");
         }
         if (!dependencyOk) {
             _missingModsList = sb.ToString();
