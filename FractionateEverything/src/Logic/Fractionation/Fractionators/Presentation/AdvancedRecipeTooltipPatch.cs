@@ -48,7 +48,7 @@ public static class AdvancedRecipeTooltipPatch {
     [HarmonyTranspiler]
     [HarmonyPatch(typeof(UIItemTip), nameof(UIItemTip.SetTip))]
     private static IEnumerable<CodeInstruction> UIItemTip_SetTip_Transpiler(IEnumerable<CodeInstruction> instructions) {
-        MethodInfo unlocked = AccessTools.Method(typeof(GameHistoryData), nameof(GameHistoryData.TechUnlocked));
+        MethodInfo unlocked = AccessTools.Method(typeof(GameHistoryData), nameof(GameHistoryData.TechUnlocked), [typeof(int)]);
         MethodInfo setText = AccessTools.PropertySetter(typeof(Text), nameof(Text.text));
         MethodInfo showStats = AccessTools.Method(typeof(AdvancedRecipeTooltipPatch), nameof(ShouldShowStatistics));
         MethodInfo writeStats = AccessTools.Method(typeof(AdvancedRecipeTooltipPatch), nameof(SetStatistics));
