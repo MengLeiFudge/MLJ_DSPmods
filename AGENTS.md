@@ -102,6 +102,11 @@ cd "/mnt/d/project/dsp/MLJ_DSPmods/AfterBuildEvent/bin/Debug"
 - Game libraries are "publicized" (all members made public) for mod access
 - BepInEx NuGet feed: `https://nuget.bepinex.dev/v3/index.json`
 
+## FE 代码与资源分离
+
+- `FractionateEverything.dll` 以代码为主，不嵌入 PNG 图标等大体积美术资源，避免第三方补丁引用主程序集时携带整套资源。
+- 独立配方图标采用外置 PNG 资源目录，随模组 ZIP 发布并由打包流程同步到 R2；主 DLL 仅保留加载逻辑和稳定配方映射。建筑模型与材质继续使用独立 AssetBundle。
+
 ## Calculator Icon Export Notes
 
 - `AfterBuildEvent` 的计算器图标正式流程应以游戏内 `ItemProto.iconSprite` / `RecipeProto.iconSprite` 导出为准。
