@@ -41,11 +41,11 @@ public static class AdvancedRecipeCatalog {
             };
             // 名称和说明在 Awake 统一加载；此阶段晚于语言键索引建立，不能再注册翻译。
             string nameKey = recipe.Kind == WorldviewRecipeKind.Replacement ? recipe.DisplayName : $"FE.AdvancedRecipe.{id}";
-            string descriptionKey = recipe.Kind == WorldviewRecipeKind.Replacement
-                ? "FE.AdvancedRecipe.ConversionDescription" : nameKey + ".Description";
+            string descriptionKey = recipe.Kind == WorldviewRecipeKind.Replacement && recipe.PersistentId > 30304
+                ? "FE.AdvancedRecipe.ConversionDescription" : $"FE.AdvancedRecipe.{id}.Description";
             row += (column - 1) / 14;
             int gridColumn = (column - 1) % 14 + 1;
-            // 原版数量字段仅支持整数；繁育按两轮的物料比例展示，真实概率与催化剂规则写在说明中。
+            // 原型保留整数比例；提示图的平均消耗、产出与概率由表现层读取运行配方。
             int scale = recipe.ProductArray.Any(output => output.Count != Math.Floor(output.Count)) ? 2 : 1;
 
             RecipeProto proto = ProtoRegistry.RegisterRecipe(id, type, 60,

@@ -1,4 +1,25 @@
 ﻿{
+  "FE.AdvancedRecipe.AverageQuantities": {
+    "zhCN": "每次成功：平均消耗与产出",
+    "enUS": "Per success: average consumption and yield",
+    "frFR": "Par réussite : consommation et production moyennes",
+    "1031": "Je Erfolg: mittlerer Verbrauch und Ertrag",
+    "1041": "成功時の平均消費量・産出量"
+  },
+  "FE.AdvancedRecipe.MinimumAuxiliary": {
+    "zhCN": "辅料与催化剂最低持有量",
+    "enUS": "Minimum auxiliary and catalyst stock",
+    "frFR": "Réserve minimale d’auxiliaires et de catalyseurs",
+    "1031": "Mindestbestand an Hilfsstoffen und Katalysatoren",
+    "1041": "補助材・触媒の最低保持量"
+  },
+  "FE.AdvancedRecipe.AuxiliaryRequirement": {
+    "zhCN": "{0} × {1}（成功时消耗概率 {2:P1}）",
+    "enUS": "{0} × {1} ({2:P1} consumption chance on success)",
+    "frFR": "{0} × {1} ({2:P1} de consommation en cas de réussite)",
+    "1031": "{0} × {1} ({2:P1} Verbrauchschance bei Erfolg)",
+    "1041": "{0} × {1}（成功時の消費確率 {2:P1}）"
+  },
   "开启下载": {
     "zhCN": "开启下载",
     "enUS": "Download on",
@@ -63,11 +84,11 @@
     "1041": "記念碑帆・{0}"
   },
   "FE.Monument.RecipeDescription": {
-    "zhCN": "高级转化塔的丰碑制造配方。矩阵反应物与塔的营养分开结算。",
-    "enUS": "Monument recipe for an advanced conversion tower. Matrix reactants are accounted for separately from tower nutrition.",
-    "frFR": "Recette du monument pour une tour de conversion avancée. Les matrices réactives sont séparées de la nourriture.",
-    "1031": "Monumentrezept für einen fortgeschrittenen Umwandlungsturm. Reaktionsmatrizen werden getrennt von der Nahrung verbucht.",
-    "1041": "高度転化塔の記念碑製造レシピ。反応材料のマトリックスは塔の栄養と別に精算します。"
+    "zhCN": "通过高级转化，将材料中保存的信息固化为丰碑构件，用于维持和扩展丰碑。",
+    "enUS": "Advanced conversion binds the information preserved in materials into monument components, sustaining and expanding the monument.",
+    "frFR": "La conversion avancée fixe les informations conservées dans les matériaux en composants destinés à entretenir et agrandir le monument.",
+    "1031": "Fortgeschrittene Umwandlung bindet die in Materialien gespeicherten Informationen in Bauteile, die das Monument erhalten und erweitern.",
+    "1041": "高度な変換により材料に保存された情報を記念碑の構成部品へと固定し、記念碑を維持・拡張する。"
   },
   "FE.Monument.EmptyReceiver": {
     "zhCN": "取出已有产物后才能切换接收模式。",
@@ -252,11 +273,11 @@
     "1041": "{0}→{1}変換"
   },
   "FE.AdvancedRecipe.ConversionDescription": {
-    "enUS": "Supply all reactants and matrix food together. Failed primary material returns through the side port; auxiliaries and catalysts are consumed only on success. Check the tower window for quantities and probabilities.",
-    "zhCN": "需要同时供给全部反应物与矩阵食物。主料失败从侧面流回，辅料和催化剂仅在成功时按概率消耗。数量与概率见塔内配方。",
-    "frFR": "Alimentez tous les réactifs et la nourriture matricielle. La matière principale non convertie repart par le côté ; auxiliaires et catalyseurs ne sont consommés qu’en cas de réussite. Quantités et probabilités dans la fenêtre de la tour.",
-    "1031": "Alle Reaktionsstoffe und Matrixnahrung zuführen. Nicht umgewandeltes Hauptmaterial fließt seitlich zurück; Hilfsstoffe und Katalysatoren werden nur bei Erfolg verbraucht. Mengen und Wahrscheinlichkeiten stehen im Turmfenster.",
-    "1041": "全反応物とマトリックス食料を供給します。失敗した主原料は側面へ戻り、補助材と触媒は成功時のみ確率で消費されます。量と確率はタワー内のレシピに表示されます。"
+    "enUS": "Auxiliary materials and catalysis rearrange the structure of existing products, converting them into new industrial materials.",
+    "zhCN": "利用辅料与催化作用重排既有制品的结构，将其转化为新的工业材料。",
+    "frFR": "Des matériaux auxiliaires et la catalyse réorganisent la structure de produits existants pour les convertir en nouveaux matériaux industriels.",
+    "1031": "Hilfsstoffe und Katalyse ordnen die Struktur vorhandener Erzeugnisse neu und wandeln sie in neue Industriematerialien um.",
+    "1041": "補助材と触媒作用で既存製品の構造を再配列し、新たな工業材料へと変換する。"
   },
   "FE.Storage.Expansion": {
     "enUS": "Matrix expansion",
@@ -1169,11 +1190,11 @@
     "1041": "光学格子結晶の触媒増殖"
   },
   "FE.AdvancedRecipe.1065.Description": {
-    "enUS": "In an advanced mineral tower, supply Stone × 3, using Optical Grating Crystal × 1 as a catalyst. Each success produces Optical Grating Crystal × 1.\nBase success chance: 8%. Failed raw materials flow back through the side output; products leave at the front. The catalyst stays in the tower and has a base consumption chance of 5% on successful cycles only; mineral traits reduce this loss.\nNourish the working tower with science matrices. Memory offerings improve success chance. Diagram quantities are material ratios; the shown time is illustrative, and actual speed depends on intake, stacking, matrices and durability.",
-    "zhCN": "在高级矿物塔中投入石矿 × 3，以光栅石 × 1作催化剂，成功后产出光栅石 × 1。\n基础成功率8%，失败原料从侧面流回，产物从正面输出。 催化剂仅在成功轮以5%的基础概率消耗，其余留在塔内；矿物特质可降低损耗。\n用科学矩阵供养正在工作的塔；源点献祭可提高成功率。图中数量为物料比例、时间为示意，实际速度随进料、堆叠、矩阵与耐久变化。",
-    "frFR": "Dans une tour minérale avancée, fournissez Pierre × 3 et utilisez Cristal à réseau optique × 1 comme catalyseur. Chaque réussite produit Cristal à réseau optique × 1.\nChance de réussite de base : 8 %. Les matières premières reviennent par la sortie latérale en cas d’échec ; les produits sortent à l’avant. Le catalyseur reste dans la tour et ne risque d’être consommé que lors d’un cycle réussi, avec un taux de base de 5 % ; les traits minéraux réduisent ce risque.\nNourrissez la tour avec des matrices scientifiques. Les offrandes de Mémoire améliorent la réussite. Le schéma indique les proportions et le temps est indicatif ; la vitesse dépend de l’apport, de l’empilement, des matrices et de la durabilité.",
-    "1031": "Im verbesserten Mineralturm werden Stein × 3 und Optischer Gitterkristall × 1 als Katalysator eingesetzt. Jeder Erfolg erzeugt Optischer Gitterkristall × 1.\nGrund-Erfolgschance: 8 %. Bei Fehlschlag kehren Rohstoffe durch den Seitenausgang zurück; Produkte verlassen den Turm vorne. Der Katalysator bleibt im Turm und wird nur bei Erfolg mit einer Grundchance von 5 % verbraucht; Mineralmerkmale senken den Verlust.\nWissenschaftsmatrizen ernähren den arbeitenden Turm. Erinnerungsopfer erhöhen die Erfolgschance. Das Diagramm zeigt Mengenverhältnisse und die Zeit ist beispielhaft; die Geschwindigkeit hängt von Zufuhr, Stapelung, Matrizen und Haltbarkeit ab.",
-    "1041": "上級鉱物塔に石 × 3を投入し、光学格子結晶 × 1を触媒として使います。成功時に光学格子結晶 × 1を生産します。\n基本成功率は8%。失敗した原料は側面から戻り、製品は正面から出ます。 触媒は成功した処理でのみ基本5%の確率で消費され、それ以外は塔内に残ります。鉱物特性で損耗を減らせます。\n科学マトリックスで稼働中の塔を養い、記憶コアの献祭で成功率を高められます。図の数量は材料比率で、時間は目安です。実際の速度は供給量、スタック、マトリックス、耐久度によって変わります。"
+    "enUS": "Optical grating crystals act as seeds, guiding the matter in stone into new crystals of the same structure.",
+    "zhCN": "以光栅石为晶种，引导石矿中的物质重新排列，生长出新的光栅石。",
+    "frFR": "Des cristaux à réseau optique servent de germes et réorganisent la matière de la pierre pour former de nouveaux cristaux.",
+    "1031": "Optische Gitterkristalle dienen als Keime und ordnen die Materie im Gestein zu neuen Kristallen gleicher Struktur.",
+    "1041": "光学格子結晶を種として石の物質を再配列し、新たな光学格子結晶を成長させる。"
   },
   "FE.AdvancedRecipe.1066": {
     "enUS": "Fractal Silicon Catalytic Proliferation",
@@ -1183,11 +1204,11 @@
     "1041": "フラクタルシリコンの触媒増殖"
   },
   "FE.AdvancedRecipe.1066.Description": {
-    "enUS": "In an advanced mineral tower, supply Silicon Ore × 3 + Stone × 3, using Fractal Silicon × 1 as a catalyst. Each success produces Fractal Silicon × 1.\nBase success chance: 8%. Failed raw materials flow back through the side output; products leave at the front. The catalyst stays in the tower and has a base consumption chance of 5% on successful cycles only; mineral traits reduce this loss.\nNourish the working tower with science matrices. Memory offerings improve success chance. Diagram quantities are material ratios; the shown time is illustrative, and actual speed depends on intake, stacking, matrices and durability.",
-    "zhCN": "在高级矿物塔中投入硅石 × 3 + 石矿 × 3，以分形硅石 × 1作催化剂，成功后产出分形硅石 × 1。\n基础成功率8%，失败原料从侧面流回，产物从正面输出。 催化剂仅在成功轮以5%的基础概率消耗，其余留在塔内；矿物特质可降低损耗。\n用科学矩阵供养正在工作的塔；源点献祭可提高成功率。图中数量为物料比例、时间为示意，实际速度随进料、堆叠、矩阵与耐久变化。",
-    "frFR": "Dans une tour minérale avancée, fournissez Minerai de silicium × 3 + Pierre × 3 et utilisez Silicium fractal × 1 comme catalyseur. Chaque réussite produit Silicium fractal × 1.\nChance de réussite de base : 8 %. Les matières premières reviennent par la sortie latérale en cas d’échec ; les produits sortent à l’avant. Le catalyseur reste dans la tour et ne risque d’être consommé que lors d’un cycle réussi, avec un taux de base de 5 % ; les traits minéraux réduisent ce risque.\nNourrissez la tour avec des matrices scientifiques. Les offrandes de Mémoire améliorent la réussite. Le schéma indique les proportions et le temps est indicatif ; la vitesse dépend de l’apport, de l’empilement, des matrices et de la durabilité.",
-    "1031": "Im verbesserten Mineralturm werden Siliziumerz × 3 + Stein × 3 und Fraktales Silizium × 1 als Katalysator eingesetzt. Jeder Erfolg erzeugt Fraktales Silizium × 1.\nGrund-Erfolgschance: 8 %. Bei Fehlschlag kehren Rohstoffe durch den Seitenausgang zurück; Produkte verlassen den Turm vorne. Der Katalysator bleibt im Turm und wird nur bei Erfolg mit einer Grundchance von 5 % verbraucht; Mineralmerkmale senken den Verlust.\nWissenschaftsmatrizen ernähren den arbeitenden Turm. Erinnerungsopfer erhöhen die Erfolgschance. Das Diagramm zeigt Mengenverhältnisse und die Zeit ist beispielhaft; die Geschwindigkeit hängt von Zufuhr, Stapelung, Matrizen und Haltbarkeit ab.",
-    "1041": "上級鉱物塔にシリコン鉱石 × 3 + 石 × 3を投入し、フラクタルシリコン × 1を触媒として使います。成功時にフラクタルシリコン × 1を生産します。\n基本成功率は8%。失敗した原料は側面から戻り、製品は正面から出ます。 触媒は成功した処理でのみ基本5%の確率で消費され、それ以外は塔内に残ります。鉱物特性で損耗を減らせます。\n科学マトリックスで稼働中の塔を養い、記憶コアの献祭で成功率を高められます。図の数量は材料比率で、時間は目安です。実際の速度は供給量、スタック、マトリックス、耐久度によって変わります。"
+    "enUS": "Fractal silicon seeds reorganize silicon ore and stone into new fractal structures.",
+    "zhCN": "以分形硅石为晶种，将硅石与石矿中的物质重新组织，延展出新的分形结构。",
+    "frFR": "Des germes de silicium fractal réorganisent le minerai de silicium et la pierre en nouvelles structures fractales.",
+    "1031": "Fraktales Silizium dient als Keim, um Siliziumerz und Gestein zu neuen fraktalen Strukturen zu ordnen.",
+    "1041": "フラクタルシリコンを種としてシリコン鉱石と石を再構成し、新たなフラクタル構造を形成する。"
   },
   "FE.AdvancedRecipe.1067": {
     "enUS": "Kimberlite Ore Catalytic Proliferation",
@@ -1197,11 +1218,11 @@
     "1041": "キンバーライト鉱石の触媒増殖"
   },
   "FE.AdvancedRecipe.1067.Description": {
-    "enUS": "In an advanced mineral tower, supply Coal × 3, using Kimberlite Ore × 1 as a catalyst. Each success produces Kimberlite Ore × 1.\nBase success chance: 8%. Failed raw materials flow back through the side output; products leave at the front. The catalyst stays in the tower and has a base consumption chance of 5% on successful cycles only; mineral traits reduce this loss.\nNourish the working tower with science matrices. Memory offerings improve success chance. Diagram quantities are material ratios; the shown time is illustrative, and actual speed depends on intake, stacking, matrices and durability.",
-    "zhCN": "在高级矿物塔中投入煤矿 × 3，以金伯利矿石 × 1作催化剂，成功后产出金伯利矿石 × 1。\n基础成功率8%，失败原料从侧面流回，产物从正面输出。 催化剂仅在成功轮以5%的基础概率消耗，其余留在塔内；矿物特质可降低损耗。\n用科学矩阵供养正在工作的塔；源点献祭可提高成功率。图中数量为物料比例、时间为示意，实际速度随进料、堆叠、矩阵与耐久变化。",
-    "frFR": "Dans une tour minérale avancée, fournissez Charbon × 3 et utilisez Minerai de kimberlite × 1 comme catalyseur. Chaque réussite produit Minerai de kimberlite × 1.\nChance de réussite de base : 8 %. Les matières premières reviennent par la sortie latérale en cas d’échec ; les produits sortent à l’avant. Le catalyseur reste dans la tour et ne risque d’être consommé que lors d’un cycle réussi, avec un taux de base de 5 % ; les traits minéraux réduisent ce risque.\nNourrissez la tour avec des matrices scientifiques. Les offrandes de Mémoire améliorent la réussite. Le schéma indique les proportions et le temps est indicatif ; la vitesse dépend de l’apport, de l’empilement, des matrices et de la durabilité.",
-    "1031": "Im verbesserten Mineralturm werden Kohle × 3 und Kimberliterz × 1 als Katalysator eingesetzt. Jeder Erfolg erzeugt Kimberliterz × 1.\nGrund-Erfolgschance: 8 %. Bei Fehlschlag kehren Rohstoffe durch den Seitenausgang zurück; Produkte verlassen den Turm vorne. Der Katalysator bleibt im Turm und wird nur bei Erfolg mit einer Grundchance von 5 % verbraucht; Mineralmerkmale senken den Verlust.\nWissenschaftsmatrizen ernähren den arbeitenden Turm. Erinnerungsopfer erhöhen die Erfolgschance. Das Diagramm zeigt Mengenverhältnisse und die Zeit ist beispielhaft; die Geschwindigkeit hängt von Zufuhr, Stapelung, Matrizen und Haltbarkeit ab.",
-    "1041": "上級鉱物塔に石炭 × 3を投入し、キンバーライト鉱石 × 1を触媒として使います。成功時にキンバーライト鉱石 × 1を生産します。\n基本成功率は8%。失敗した原料は側面から戻り、製品は正面から出ます。 触媒は成功した処理でのみ基本5%の確率で消費され、それ以外は塔内に残ります。鉱物特性で損耗を減らせます。\n科学マトリックスで稼働中の塔を養い、記憶コアの献祭で成功率を高められます。図の数量は材料比率で、時間は目安です。実際の速度は供給量、スタック、マトリックス、耐久度によって変わります。"
+    "enUS": "Kimberlite catalyzes the rearrangement of carbon in coal, forming new kimberlite ore.",
+    "zhCN": "在金伯利矿石的催化作用下，煤矿中的碳重新排列，形成新的金伯利矿石。",
+    "frFR": "La kimberlite catalyse la réorganisation du carbone du charbon pour former du nouveau minerai de kimberlite.",
+    "1031": "Kimberlit katalysiert die Neuordnung des Kohlenstoffs in Kohle und bildet neues Kimberliterz.",
+    "1041": "キンバーライト鉱石の触媒作用で石炭中の炭素を再配列し、新たなキンバーライト鉱石を形成する。"
   },
   "FE.AdvancedRecipe.1068": {
     "enUS": "Fire Ice Catalytic Proliferation",
@@ -1211,11 +1232,11 @@
     "1041": "可燃氷の触媒増殖"
   },
   "FE.AdvancedRecipe.1068.Description": {
-    "enUS": "In an advanced mineral tower, supply Crude Oil × 3, using Fire Ice × 1 as a catalyst. Each success produces Fire Ice × 1.\nBase success chance: 8%. Failed raw materials flow back through the side output; products leave at the front. The catalyst stays in the tower and has a base consumption chance of 5% on successful cycles only; mineral traits reduce this loss.\nNourish the working tower with science matrices. Memory offerings improve success chance. Diagram quantities are material ratios; the shown time is illustrative, and actual speed depends on intake, stacking, matrices and durability.",
-    "zhCN": "在高级矿物塔中投入原油 × 3，以可燃冰 × 1作催化剂，成功后产出可燃冰 × 1。\n基础成功率8%，失败原料从侧面流回，产物从正面输出。 催化剂仅在成功轮以5%的基础概率消耗，其余留在塔内；矿物特质可降低损耗。\n用科学矩阵供养正在工作的塔；源点献祭可提高成功率。图中数量为物料比例、时间为示意，实际速度随进料、堆叠、矩阵与耐久变化。",
-    "frFR": "Dans une tour minérale avancée, fournissez Pétrole brut × 3 et utilisez Glace combustible × 1 comme catalyseur. Chaque réussite produit Glace combustible × 1.\nChance de réussite de base : 8 %. Les matières premières reviennent par la sortie latérale en cas d’échec ; les produits sortent à l’avant. Le catalyseur reste dans la tour et ne risque d’être consommé que lors d’un cycle réussi, avec un taux de base de 5 % ; les traits minéraux réduisent ce risque.\nNourrissez la tour avec des matrices scientifiques. Les offrandes de Mémoire améliorent la réussite. Le schéma indique les proportions et le temps est indicatif ; la vitesse dépend de l’apport, de l’empilement, des matrices et de la durabilité.",
-    "1031": "Im verbesserten Mineralturm werden Rohöl × 3 und Brennbares Eis × 1 als Katalysator eingesetzt. Jeder Erfolg erzeugt Brennbares Eis × 1.\nGrund-Erfolgschance: 8 %. Bei Fehlschlag kehren Rohstoffe durch den Seitenausgang zurück; Produkte verlassen den Turm vorne. Der Katalysator bleibt im Turm und wird nur bei Erfolg mit einer Grundchance von 5 % verbraucht; Mineralmerkmale senken den Verlust.\nWissenschaftsmatrizen ernähren den arbeitenden Turm. Erinnerungsopfer erhöhen die Erfolgschance. Das Diagramm zeigt Mengenverhältnisse und die Zeit ist beispielhaft; die Geschwindigkeit hängt von Zufuhr, Stapelung, Matrizen und Haltbarkeit ab.",
-    "1041": "上級鉱物塔に原油 × 3を投入し、可燃氷 × 1を触媒として使います。成功時に可燃氷 × 1を生産します。\n基本成功率は8%。失敗した原料は側面から戻り、製品は正面から出ます。 触媒は成功した処理でのみ基本5%の確率で消費され、それ以外は塔内に残ります。鉱物特性で損耗を減らせます。\n科学マトリックスで稼働中の塔を養い、記憶コアの献祭で成功率を高められます。図の数量は材料比率で、時間は目安です。実際の速度は供給量、スタック、マトリックス、耐久度によって変わります。"
+    "enUS": "Fire ice catalyzes the conversion of matter from crude oil into stable fire ice crystals.",
+    "zhCN": "利用可燃冰的催化作用，将原油中的物质转化为稳定的可燃冰晶体。",
+    "frFR": "La glace combustible catalyse la transformation de la matière du pétrole brut en cristaux stables de glace combustible.",
+    "1031": "Brennbares Eis katalysiert die Umwandlung von Materie aus Rohöl in stabile Kristalle aus brennbarem Eis.",
+    "1041": "可燃氷の触媒作用を利用し、原油中の物質を安定した可燃氷の結晶に変換する。"
   },
   "FE.AdvancedRecipe.1069": {
     "enUS": "Spiniform Stalagmite Crystal Catalytic Proliferation",
@@ -1225,11 +1246,11 @@
     "1041": "スピニフォーム石筍結晶の触媒増殖"
   },
   "FE.AdvancedRecipe.1069.Description": {
-    "enUS": "In an advanced mineral tower, supply Plant Fuel × 3 + Coal × 3, using Spiniform Stalagmite Crystal × 1 as a catalyst. Each success produces Spiniform Stalagmite Crystal × 1.\nBase success chance: 8%. Failed raw materials flow back through the side output; products leave at the front. The catalyst stays in the tower and has a base consumption chance of 5% on successful cycles only; mineral traits reduce this loss.\nNourish the working tower with science matrices. Memory offerings improve success chance. Diagram quantities are material ratios; the shown time is illustrative, and actual speed depends on intake, stacking, matrices and durability.",
-    "zhCN": "在高级矿物塔中投入植物燃料 × 3 + 煤矿 × 3，以刺笋结晶 × 1作催化剂，成功后产出刺笋结晶 × 1。\n基础成功率8%，失败原料从侧面流回，产物从正面输出。 催化剂仅在成功轮以5%的基础概率消耗，其余留在塔内；矿物特质可降低损耗。\n用科学矩阵供养正在工作的塔；源点献祭可提高成功率。图中数量为物料比例、时间为示意，实际速度随进料、堆叠、矩阵与耐久变化。",
-    "frFR": "Dans une tour minérale avancée, fournissez Combustible végétal × 3 + Charbon × 3 et utilisez Cristal de stalagmite spiniforme × 1 comme catalyseur. Chaque réussite produit Cristal de stalagmite spiniforme × 1.\nChance de réussite de base : 8 %. Les matières premières reviennent par la sortie latérale en cas d’échec ; les produits sortent à l’avant. Le catalyseur reste dans la tour et ne risque d’être consommé que lors d’un cycle réussi, avec un taux de base de 5 % ; les traits minéraux réduisent ce risque.\nNourrissez la tour avec des matrices scientifiques. Les offrandes de Mémoire améliorent la réussite. Le schéma indique les proportions et le temps est indicatif ; la vitesse dépend de l’apport, de l’empilement, des matrices et de la durabilité.",
-    "1031": "Im verbesserten Mineralturm werden Pflanzenbrennstoff × 3 + Kohle × 3 und Spiniformer Stalagmitkristall × 1 als Katalysator eingesetzt. Jeder Erfolg erzeugt Spiniformer Stalagmitkristall × 1.\nGrund-Erfolgschance: 8 %. Bei Fehlschlag kehren Rohstoffe durch den Seitenausgang zurück; Produkte verlassen den Turm vorne. Der Katalysator bleibt im Turm und wird nur bei Erfolg mit einer Grundchance von 5 % verbraucht; Mineralmerkmale senken den Verlust.\nWissenschaftsmatrizen ernähren den arbeitenden Turm. Erinnerungsopfer erhöhen die Erfolgschance. Das Diagramm zeigt Mengenverhältnisse und die Zeit ist beispielhaft; die Geschwindigkeit hängt von Zufuhr, Stapelung, Matrizen und Haltbarkeit ab.",
-    "1041": "上級鉱物塔に植物燃料 × 3 + 石炭 × 3を投入し、スピニフォーム石筍結晶 × 1を触媒として使います。成功時にスピニフォーム石筍結晶 × 1を生産します。\n基本成功率は8%。失敗した原料は側面から戻り、製品は正面から出ます。 触媒は成功した処理でのみ基本5%の確率で消費され、それ以外は塔内に残ります。鉱物特性で損耗を減らせます。\n科学マトリックスで稼働中の塔を養い、記憶コアの献祭で成功率を高められます。図の数量は材料比率で、時間は目安です。実際の速度は供給量、スタック、マトリックス、耐久度によって変わります。"
+    "enUS": "Spiniform stalagmite crystals serve as growth templates, reorganizing plant fuel and coal into new crystals.",
+    "zhCN": "以刺笋结晶为生长模板，将植物燃料与煤矿中的物质重组为新的结晶。",
+    "frFR": "Les cristaux de stalagmite spiniforme servent de modèles de croissance pour réorganiser le combustible végétal et le charbon en nouveaux cristaux.",
+    "1031": "Spiniforme Stalagmitkristalle dienen als Wachstumsvorlagen und ordnen Pflanzenbrennstoff und Kohle zu neuen Kristallen.",
+    "1041": "スピニフォーム石筍結晶を成長の型として、植物燃料と石炭を新たな結晶へと再構成する。"
   },
   "FE.AdvancedRecipe.1070": {
     "enUS": "Unipolar Magnet Catalytic Proliferation",
@@ -1239,11 +1260,11 @@
     "1041": "単極磁石の触媒増殖"
   },
   "FE.AdvancedRecipe.1070.Description": {
-    "enUS": "In an advanced mineral tower, supply Fractal Silicon × 1 + Organic Crystal × 1 + Spiniform Stalagmite Crystal × 1, using Unipolar Magnet × 1 as a catalyst. Each success produces Unipolar Magnet × 1.\nBase success chance: 8%. Failed raw materials flow back through the side output; products leave at the front. The catalyst stays in the tower and has a base consumption chance of 5% on successful cycles only; mineral traits reduce this loss.\nNourish the working tower with science matrices. Memory offerings improve success chance. Diagram quantities are material ratios; the shown time is illustrative, and actual speed depends on intake, stacking, matrices and durability.",
-    "zhCN": "在高级矿物塔中投入分形硅石 × 1 + 有机晶体 × 1 + 刺笋结晶 × 1，以单极磁石 × 1作催化剂，成功后产出单极磁石 × 1。\n基础成功率8%，失败原料从侧面流回，产物从正面输出。 催化剂仅在成功轮以5%的基础概率消耗，其余留在塔内；矿物特质可降低损耗。\n用科学矩阵供养正在工作的塔；源点献祭可提高成功率。图中数量为物料比例、时间为示意，实际速度随进料、堆叠、矩阵与耐久变化。",
-    "frFR": "Dans une tour minérale avancée, fournissez Silicium fractal × 1 + Cristal organique × 1 + Cristal de stalagmite spiniforme × 1 et utilisez Aimant unipolaire × 1 comme catalyseur. Chaque réussite produit Aimant unipolaire × 1.\nChance de réussite de base : 8 %. Les matières premières reviennent par la sortie latérale en cas d’échec ; les produits sortent à l’avant. Le catalyseur reste dans la tour et ne risque d’être consommé que lors d’un cycle réussi, avec un taux de base de 5 % ; les traits minéraux réduisent ce risque.\nNourrissez la tour avec des matrices scientifiques. Les offrandes de Mémoire améliorent la réussite. Le schéma indique les proportions et le temps est indicatif ; la vitesse dépend de l’apport, de l’empilement, des matrices et de la durabilité.",
-    "1031": "Im verbesserten Mineralturm werden Fraktales Silizium × 1 + Organischer Kristall × 1 + Spiniformer Stalagmitkristall × 1 und Unipolarer Magnet × 1 als Katalysator eingesetzt. Jeder Erfolg erzeugt Unipolarer Magnet × 1.\nGrund-Erfolgschance: 8 %. Bei Fehlschlag kehren Rohstoffe durch den Seitenausgang zurück; Produkte verlassen den Turm vorne. Der Katalysator bleibt im Turm und wird nur bei Erfolg mit einer Grundchance von 5 % verbraucht; Mineralmerkmale senken den Verlust.\nWissenschaftsmatrizen ernähren den arbeitenden Turm. Erinnerungsopfer erhöhen die Erfolgschance. Das Diagramm zeigt Mengenverhältnisse und die Zeit ist beispielhaft; die Geschwindigkeit hängt von Zufuhr, Stapelung, Matrizen und Haltbarkeit ab.",
-    "1041": "上級鉱物塔にフラクタルシリコン × 1 + 有機結晶 × 1 + スピニフォーム石筍結晶 × 1を投入し、単極磁石 × 1を触媒として使います。成功時に単極磁石 × 1を生産します。\n基本成功率は8%。失敗した原料は側面から戻り、製品は正面から出ます。 触媒は成功した処理でのみ基本5%の確率で消費され、それ以外は塔内に残ります。鉱物特性で損耗を減らせます。\n科学マトリックスで稼働中の塔を養い、記憶コアの献祭で成功率を高められます。図の数量は材料比率で、時間は目安です。実際の速度は供給量、スタック、マトリックス、耐久度によって変わります。"
+    "enUS": "Unipolar magnets catalyze the recombination of fractal silicon, organic crystals and spiniform stalagmite crystals into new unipolar magnets.",
+    "zhCN": "在单极磁石的催化作用下，分形硅石、有机晶体与刺笋结晶重新组合，形成新的单极磁石。",
+    "frFR": "Les aimants unipolaires catalysent la recombinaison du silicium fractal, des cristaux organiques et des cristaux de stalagmite spiniforme en nouveaux aimants unipolaires.",
+    "1031": "Unipolare Magnete katalysieren die Verbindung von fraktalem Silizium, organischen Kristallen und spiniformen Stalagmitkristallen zu neuen unipolaren Magneten.",
+    "1041": "単極磁石の触媒作用でフラクタルシリコン、有機結晶、スピニフォーム石筍結晶を再結合し、新たな単極磁石を形成する。"
   },
   "FE.AdvancedRecipe.1071": {
     "enUS": "Unipolar Magnet Memory Reconstruction",
@@ -1253,11 +1274,11 @@
     "1041": "記憶コアによる単極磁石の再構成"
   },
   "FE.AdvancedRecipe.1071.Description": {
-    "enUS": "In an advanced mineral tower, supply Memory × 1, using Unipolar Magnet × 1 as a catalyst. Each success produces Unipolar Magnet × 20. Memory is a production input here and does not count as an offering.\nBase success chance: 8%. Failed raw materials flow back through the side output; products leave at the front. The catalyst stays in the tower and has a base consumption chance of 5% on successful cycles only; mineral traits reduce this loss.\nNourish the working tower with science matrices. Memory offerings improve success chance. Diagram quantities are material ratios; the shown time is illustrative, and actual speed depends on intake, stacking, matrices and durability.",
-    "zhCN": "在高级矿物塔中投入源点 × 1，以单极磁石 × 1作催化剂，成功后产出单极磁石 × 20。 这里的源点是生产原料，不计入献祭。\n基础成功率8%，失败原料从侧面流回，产物从正面输出。 催化剂仅在成功轮以5%的基础概率消耗，其余留在塔内；矿物特质可降低损耗。\n用科学矩阵供养正在工作的塔；源点献祭可提高成功率。图中数量为物料比例、时间为示意，实际速度随进料、堆叠、矩阵与耐久变化。",
-    "frFR": "Dans une tour minérale avancée, fournissez Mémoire × 1 et utilisez Aimant unipolaire × 1 comme catalyseur. Chaque réussite produit Aimant unipolaire × 20. La Mémoire est ici une matière première, pas une offrande.\nChance de réussite de base : 8 %. Les matières premières reviennent par la sortie latérale en cas d’échec ; les produits sortent à l’avant. Le catalyseur reste dans la tour et ne risque d’être consommé que lors d’un cycle réussi, avec un taux de base de 5 % ; les traits minéraux réduisent ce risque.\nNourrissez la tour avec des matrices scientifiques. Les offrandes de Mémoire améliorent la réussite. Le schéma indique les proportions et le temps est indicatif ; la vitesse dépend de l’apport, de l’empilement, des matrices et de la durabilité.",
-    "1031": "Im verbesserten Mineralturm werden Erinnerung × 1 und Unipolarer Magnet × 1 als Katalysator eingesetzt. Jeder Erfolg erzeugt Unipolarer Magnet × 20. Die Erinnerung ist hier Rohstoff und zählt nicht als Opfer.\nGrund-Erfolgschance: 8 %. Bei Fehlschlag kehren Rohstoffe durch den Seitenausgang zurück; Produkte verlassen den Turm vorne. Der Katalysator bleibt im Turm und wird nur bei Erfolg mit einer Grundchance von 5 % verbraucht; Mineralmerkmale senken den Verlust.\nWissenschaftsmatrizen ernähren den arbeitenden Turm. Erinnerungsopfer erhöhen die Erfolgschance. Das Diagramm zeigt Mengenverhältnisse und die Zeit ist beispielhaft; die Geschwindigkeit hängt von Zufuhr, Stapelung, Matrizen und Haltbarkeit ab.",
-    "1041": "上級鉱物塔に記憶コア × 1を投入し、単極磁石 × 1を触媒として使います。成功時に単極磁石 × 20を生産します。 ここで使う記憶コアは生産原料であり、献祭には数えません。\n基本成功率は8%。失敗した原料は側面から戻り、製品は正面から出ます。 触媒は成功した処理でのみ基本5%の確率で消費され、それ以外は塔内に残ります。鉱物特性で損耗を減らせます。\n科学マトリックスで稼働中の塔を養い、記憶コアの献祭で成功率を高められます。図の数量は材料比率で、時間は目安です。実際の速度は供給量、スタック、マトリックス、耐久度によって変わります。"
+    "enUS": "Using unipolar magnets as a template, structural memories preserved in Memory are condensed back into physical matter.",
+    "zhCN": "以单极磁石为模板，将源点中保存的结构记忆重新凝结为实物。",
+    "frFR": "À partir de aimants unipolaires servant de modèle, les souvenirs structurels conservés dans la Mémoire sont condensés en matière.",
+    "1031": "Mit unipolaren Magneten als Vorlage werden die in Erinnerungen bewahrten Strukturinformationen wieder zu Materie verdichtet.",
+    "1041": "単極磁石を型として、記憶コアに保存された構造の記憶を再び物質として凝縮する。"
   },
   "FE.AdvancedRecipe.1082": {
     "enUS": "Organic Crystal Catalytic Proliferation",
@@ -1267,11 +1288,11 @@
     "1041": "有機結晶の触媒増殖"
   },
   "FE.AdvancedRecipe.1082.Description": {
-    "enUS": "In an advanced mineral tower, supply Crude Oil × 3 + Water × 3, using Organic Crystal × 1 as a catalyst. Each success produces Organic Crystal × 1.\nBase success chance: 8%. Failed raw materials flow back through the side output; products leave at the front. The catalyst stays in the tower and has a base consumption chance of 5% on successful cycles only; mineral traits reduce this loss.\nNourish the working tower with science matrices. Memory offerings improve success chance. Diagram quantities are material ratios; the shown time is illustrative, and actual speed depends on intake, stacking, matrices and durability.",
-    "zhCN": "在高级矿物塔中投入原油 × 3 + 水 × 3，以有机晶体 × 1作催化剂，成功后产出有机晶体 × 1。\n基础成功率8%，失败原料从侧面流回，产物从正面输出。 催化剂仅在成功轮以5%的基础概率消耗，其余留在塔内；矿物特质可降低损耗。\n用科学矩阵供养正在工作的塔；源点献祭可提高成功率。图中数量为物料比例、时间为示意，实际速度随进料、堆叠、矩阵与耐久变化。",
-    "frFR": "Dans une tour minérale avancée, fournissez Pétrole brut × 3 + Eau × 3 et utilisez Cristal organique × 1 comme catalyseur. Chaque réussite produit Cristal organique × 1.\nChance de réussite de base : 8 %. Les matières premières reviennent par la sortie latérale en cas d’échec ; les produits sortent à l’avant. Le catalyseur reste dans la tour et ne risque d’être consommé que lors d’un cycle réussi, avec un taux de base de 5 % ; les traits minéraux réduisent ce risque.\nNourrissez la tour avec des matrices scientifiques. Les offrandes de Mémoire améliorent la réussite. Le schéma indique les proportions et le temps est indicatif ; la vitesse dépend de l’apport, de l’empilement, des matrices et de la durabilité.",
-    "1031": "Im verbesserten Mineralturm werden Rohöl × 3 + Wasser × 3 und Organischer Kristall × 1 als Katalysator eingesetzt. Jeder Erfolg erzeugt Organischer Kristall × 1.\nGrund-Erfolgschance: 8 %. Bei Fehlschlag kehren Rohstoffe durch den Seitenausgang zurück; Produkte verlassen den Turm vorne. Der Katalysator bleibt im Turm und wird nur bei Erfolg mit einer Grundchance von 5 % verbraucht; Mineralmerkmale senken den Verlust.\nWissenschaftsmatrizen ernähren den arbeitenden Turm. Erinnerungsopfer erhöhen die Erfolgschance. Das Diagramm zeigt Mengenverhältnisse und die Zeit ist beispielhaft; die Geschwindigkeit hängt von Zufuhr, Stapelung, Matrizen und Haltbarkeit ab.",
-    "1041": "上級鉱物塔に原油 × 3 + 水 × 3を投入し、有機結晶 × 1を触媒として使います。成功時に有機結晶 × 1を生産します。\n基本成功率は8%。失敗した原料は側面から戻り、製品は正面から出ます。 触媒は成功した処理でのみ基本5%の確率で消費され、それ以外は塔内に残ります。鉱物特性で損耗を減らせます。\n科学マトリックスで稼働中の塔を養い、記憶コアの献祭で成功率を高められます。図の数量は材料比率で、時間は目安です。実際の速度は供給量、スタック、マトリックス、耐久度によって変わります。"
+    "enUS": "Organic crystals act as seeds, guiding matter from crude oil and water into new organic crystals.",
+    "zhCN": "以有机晶体为晶种，引导原油与水中的物质结合，生长出新的有机晶体。",
+    "frFR": "Des cristaux organiques servent de germes et guident la matière du pétrole brut et de l’eau pour former de nouveaux cristaux organiques.",
+    "1031": "Organische Kristalle dienen als Keime, um Materie aus Rohöl und Wasser zu neuen organischen Kristallen zu verbinden.",
+    "1041": "有機結晶を種として原油と水の物質を結合させ、新たな有機結晶を成長させる。"
   },
   "FE.AdvancedRecipe.1083": {
     "enUS": "Fractal Silicon Memory Reconstruction",
@@ -1281,11 +1302,11 @@
     "1041": "記憶コアによるフラクタルシリコンの再構成"
   },
   "FE.AdvancedRecipe.1083.Description": {
-    "enUS": "In an advanced mineral tower, supply Memory × 1, using Fractal Silicon × 1 as a catalyst. Each success produces Fractal Silicon × 60. Memory is a production input here and does not count as an offering.\nBase success chance: 8%. Failed raw materials flow back through the side output; products leave at the front. The catalyst stays in the tower and has a base consumption chance of 5% on successful cycles only; mineral traits reduce this loss.\nNourish the working tower with science matrices. Memory offerings improve success chance. Diagram quantities are material ratios; the shown time is illustrative, and actual speed depends on intake, stacking, matrices and durability.",
-    "zhCN": "在高级矿物塔中投入源点 × 1，以分形硅石 × 1作催化剂，成功后产出分形硅石 × 60。 这里的源点是生产原料，不计入献祭。\n基础成功率8%，失败原料从侧面流回，产物从正面输出。 催化剂仅在成功轮以5%的基础概率消耗，其余留在塔内；矿物特质可降低损耗。\n用科学矩阵供养正在工作的塔；源点献祭可提高成功率。图中数量为物料比例、时间为示意，实际速度随进料、堆叠、矩阵与耐久变化。",
-    "frFR": "Dans une tour minérale avancée, fournissez Mémoire × 1 et utilisez Silicium fractal × 1 comme catalyseur. Chaque réussite produit Silicium fractal × 60. La Mémoire est ici une matière première, pas une offrande.\nChance de réussite de base : 8 %. Les matières premières reviennent par la sortie latérale en cas d’échec ; les produits sortent à l’avant. Le catalyseur reste dans la tour et ne risque d’être consommé que lors d’un cycle réussi, avec un taux de base de 5 % ; les traits minéraux réduisent ce risque.\nNourrissez la tour avec des matrices scientifiques. Les offrandes de Mémoire améliorent la réussite. Le schéma indique les proportions et le temps est indicatif ; la vitesse dépend de l’apport, de l’empilement, des matrices et de la durabilité.",
-    "1031": "Im verbesserten Mineralturm werden Erinnerung × 1 und Fraktales Silizium × 1 als Katalysator eingesetzt. Jeder Erfolg erzeugt Fraktales Silizium × 60. Die Erinnerung ist hier Rohstoff und zählt nicht als Opfer.\nGrund-Erfolgschance: 8 %. Bei Fehlschlag kehren Rohstoffe durch den Seitenausgang zurück; Produkte verlassen den Turm vorne. Der Katalysator bleibt im Turm und wird nur bei Erfolg mit einer Grundchance von 5 % verbraucht; Mineralmerkmale senken den Verlust.\nWissenschaftsmatrizen ernähren den arbeitenden Turm. Erinnerungsopfer erhöhen die Erfolgschance. Das Diagramm zeigt Mengenverhältnisse und die Zeit ist beispielhaft; die Geschwindigkeit hängt von Zufuhr, Stapelung, Matrizen und Haltbarkeit ab.",
-    "1041": "上級鉱物塔に記憶コア × 1を投入し、フラクタルシリコン × 1を触媒として使います。成功時にフラクタルシリコン × 60を生産します。 ここで使う記憶コアは生産原料であり、献祭には数えません。\n基本成功率は8%。失敗した原料は側面から戻り、製品は正面から出ます。 触媒は成功した処理でのみ基本5%の確率で消費され、それ以外は塔内に残ります。鉱物特性で損耗を減らせます。\n科学マトリックスで稼働中の塔を養い、記憶コアの献祭で成功率を高められます。図の数量は材料比率で、時間は目安です。実際の速度は供給量、スタック、マトリックス、耐久度によって変わります。"
+    "enUS": "Using fractal silicon as a template, structural memories preserved in Memory are condensed back into physical matter.",
+    "zhCN": "以分形硅石为模板，将源点中保存的结构记忆重新凝结为实物。",
+    "frFR": "À partir de silicium fractal servant de modèle, les souvenirs structurels conservés dans la Mémoire sont condensés en matière.",
+    "1031": "Mit fraktalem Silizium als Vorlage werden die in Erinnerungen bewahrten Strukturinformationen wieder zu Materie verdichtet.",
+    "1041": "フラクタルシリコンを型として、記憶コアに保存された構造の記憶を再び物質として凝縮する。"
   },
   "FE.AdvancedRecipe.1084": {
     "enUS": "Organic Crystal Memory Reconstruction",
@@ -1295,11 +1316,11 @@
     "1041": "記憶コアによる有機結晶の再構成"
   },
   "FE.AdvancedRecipe.1084.Description": {
-    "enUS": "In an advanced mineral tower, supply Memory × 1, using Organic Crystal × 1 as a catalyst. Each success produces Organic Crystal × 60. Memory is a production input here and does not count as an offering.\nBase success chance: 8%. Failed raw materials flow back through the side output; products leave at the front. The catalyst stays in the tower and has a base consumption chance of 5% on successful cycles only; mineral traits reduce this loss.\nNourish the working tower with science matrices. Memory offerings improve success chance. Diagram quantities are material ratios; the shown time is illustrative, and actual speed depends on intake, stacking, matrices and durability.",
-    "zhCN": "在高级矿物塔中投入源点 × 1，以有机晶体 × 1作催化剂，成功后产出有机晶体 × 60。 这里的源点是生产原料，不计入献祭。\n基础成功率8%，失败原料从侧面流回，产物从正面输出。 催化剂仅在成功轮以5%的基础概率消耗，其余留在塔内；矿物特质可降低损耗。\n用科学矩阵供养正在工作的塔；源点献祭可提高成功率。图中数量为物料比例、时间为示意，实际速度随进料、堆叠、矩阵与耐久变化。",
-    "frFR": "Dans une tour minérale avancée, fournissez Mémoire × 1 et utilisez Cristal organique × 1 comme catalyseur. Chaque réussite produit Cristal organique × 60. La Mémoire est ici une matière première, pas une offrande.\nChance de réussite de base : 8 %. Les matières premières reviennent par la sortie latérale en cas d’échec ; les produits sortent à l’avant. Le catalyseur reste dans la tour et ne risque d’être consommé que lors d’un cycle réussi, avec un taux de base de 5 % ; les traits minéraux réduisent ce risque.\nNourrissez la tour avec des matrices scientifiques. Les offrandes de Mémoire améliorent la réussite. Le schéma indique les proportions et le temps est indicatif ; la vitesse dépend de l’apport, de l’empilement, des matrices et de la durabilité.",
-    "1031": "Im verbesserten Mineralturm werden Erinnerung × 1 und Organischer Kristall × 1 als Katalysator eingesetzt. Jeder Erfolg erzeugt Organischer Kristall × 60. Die Erinnerung ist hier Rohstoff und zählt nicht als Opfer.\nGrund-Erfolgschance: 8 %. Bei Fehlschlag kehren Rohstoffe durch den Seitenausgang zurück; Produkte verlassen den Turm vorne. Der Katalysator bleibt im Turm und wird nur bei Erfolg mit einer Grundchance von 5 % verbraucht; Mineralmerkmale senken den Verlust.\nWissenschaftsmatrizen ernähren den arbeitenden Turm. Erinnerungsopfer erhöhen die Erfolgschance. Das Diagramm zeigt Mengenverhältnisse und die Zeit ist beispielhaft; die Geschwindigkeit hängt von Zufuhr, Stapelung, Matrizen und Haltbarkeit ab.",
-    "1041": "上級鉱物塔に記憶コア × 1を投入し、有機結晶 × 1を触媒として使います。成功時に有機結晶 × 60を生産します。 ここで使う記憶コアは生産原料であり、献祭には数えません。\n基本成功率は8%。失敗した原料は側面から戻り、製品は正面から出ます。 触媒は成功した処理でのみ基本5%の確率で消費され、それ以外は塔内に残ります。鉱物特性で損耗を減らせます。\n科学マトリックスで稼働中の塔を養い、記憶コアの献祭で成功率を高められます。図の数量は材料比率で、時間は目安です。実際の速度は供給量、スタック、マトリックス、耐久度によって変わります。"
+    "enUS": "Using organic crystals as a template, structural memories preserved in Memory are condensed back into physical matter.",
+    "zhCN": "以有机晶体为模板，将源点中保存的结构记忆重新凝结为实物。",
+    "frFR": "À partir de cristaux organiques servant de modèle, les souvenirs structurels conservés dans la Mémoire sont condensés en matière.",
+    "1031": "Mit organischen Kristallen als Vorlage werden die in Erinnerungen bewahrten Strukturinformationen wieder zu Materie verdichtet.",
+    "1041": "有機結晶を型として、記憶コアに保存された構造の記憶を再び物質として凝縮する。"
   },
   "FE.AdvancedRecipe.1085": {
     "enUS": "Spiniform Stalagmite Crystal Memory Reconstruction",
@@ -1309,11 +1330,11 @@
     "1041": "記憶コアによるスピニフォーム石筍結晶の再構成"
   },
   "FE.AdvancedRecipe.1085.Description": {
-    "enUS": "In an advanced mineral tower, supply Memory × 1, using Spiniform Stalagmite Crystal × 1 as a catalyst. Each success produces Spiniform Stalagmite Crystal × 60. Memory is a production input here and does not count as an offering.\nBase success chance: 8%. Failed raw materials flow back through the side output; products leave at the front. The catalyst stays in the tower and has a base consumption chance of 5% on successful cycles only; mineral traits reduce this loss.\nNourish the working tower with science matrices. Memory offerings improve success chance. Diagram quantities are material ratios; the shown time is illustrative, and actual speed depends on intake, stacking, matrices and durability.",
-    "zhCN": "在高级矿物塔中投入源点 × 1，以刺笋结晶 × 1作催化剂，成功后产出刺笋结晶 × 60。 这里的源点是生产原料，不计入献祭。\n基础成功率8%，失败原料从侧面流回，产物从正面输出。 催化剂仅在成功轮以5%的基础概率消耗，其余留在塔内；矿物特质可降低损耗。\n用科学矩阵供养正在工作的塔；源点献祭可提高成功率。图中数量为物料比例、时间为示意，实际速度随进料、堆叠、矩阵与耐久变化。",
-    "frFR": "Dans une tour minérale avancée, fournissez Mémoire × 1 et utilisez Cristal de stalagmite spiniforme × 1 comme catalyseur. Chaque réussite produit Cristal de stalagmite spiniforme × 60. La Mémoire est ici une matière première, pas une offrande.\nChance de réussite de base : 8 %. Les matières premières reviennent par la sortie latérale en cas d’échec ; les produits sortent à l’avant. Le catalyseur reste dans la tour et ne risque d’être consommé que lors d’un cycle réussi, avec un taux de base de 5 % ; les traits minéraux réduisent ce risque.\nNourrissez la tour avec des matrices scientifiques. Les offrandes de Mémoire améliorent la réussite. Le schéma indique les proportions et le temps est indicatif ; la vitesse dépend de l’apport, de l’empilement, des matrices et de la durabilité.",
-    "1031": "Im verbesserten Mineralturm werden Erinnerung × 1 und Spiniformer Stalagmitkristall × 1 als Katalysator eingesetzt. Jeder Erfolg erzeugt Spiniformer Stalagmitkristall × 60. Die Erinnerung ist hier Rohstoff und zählt nicht als Opfer.\nGrund-Erfolgschance: 8 %. Bei Fehlschlag kehren Rohstoffe durch den Seitenausgang zurück; Produkte verlassen den Turm vorne. Der Katalysator bleibt im Turm und wird nur bei Erfolg mit einer Grundchance von 5 % verbraucht; Mineralmerkmale senken den Verlust.\nWissenschaftsmatrizen ernähren den arbeitenden Turm. Erinnerungsopfer erhöhen die Erfolgschance. Das Diagramm zeigt Mengenverhältnisse und die Zeit ist beispielhaft; die Geschwindigkeit hängt von Zufuhr, Stapelung, Matrizen und Haltbarkeit ab.",
-    "1041": "上級鉱物塔に記憶コア × 1を投入し、スピニフォーム石筍結晶 × 1を触媒として使います。成功時にスピニフォーム石筍結晶 × 60を生産します。 ここで使う記憶コアは生産原料であり、献祭には数えません。\n基本成功率は8%。失敗した原料は側面から戻り、製品は正面から出ます。 触媒は成功した処理でのみ基本5%の確率で消費され、それ以外は塔内に残ります。鉱物特性で損耗を減らせます。\n科学マトリックスで稼働中の塔を養い、記憶コアの献祭で成功率を高められます。図の数量は材料比率で、時間は目安です。実際の速度は供給量、スタック、マトリックス、耐久度によって変わります。"
+    "enUS": "Using spiniform stalagmite crystals as a template, structural memories preserved in Memory are condensed back into physical matter.",
+    "zhCN": "以刺笋结晶为模板，将源点中保存的结构记忆重新凝结为实物。",
+    "frFR": "À partir de cristaux de stalagmite spiniforme servant de modèle, les souvenirs structurels conservés dans la Mémoire sont condensés en matière.",
+    "1031": "Mit spiniformen Stalagmitkristallen als Vorlage werden die in Erinnerungen bewahrten Strukturinformationen wieder zu Materie verdichtet.",
+    "1041": "スピニフォーム石筍結晶を型として、記憶コアに保存された構造の記憶を再び物質として凝縮する。"
   },
   "FE.AdvancedRecipe.1086": {
     "enUS": "Fire Ice Memory Reconstruction",
@@ -1323,11 +1344,11 @@
     "1041": "記憶コアによる可燃氷の再構成"
   },
   "FE.AdvancedRecipe.1086.Description": {
-    "enUS": "In an advanced mineral tower, supply Memory × 1, using Fire Ice × 1 as a catalyst. Each success produces Fire Ice × 120. Memory is a production input here and does not count as an offering.\nBase success chance: 8%. Failed raw materials flow back through the side output; products leave at the front. The catalyst stays in the tower and has a base consumption chance of 5% on successful cycles only; mineral traits reduce this loss.\nNourish the working tower with science matrices. Memory offerings improve success chance. Diagram quantities are material ratios; the shown time is illustrative, and actual speed depends on intake, stacking, matrices and durability.",
-    "zhCN": "在高级矿物塔中投入源点 × 1，以可燃冰 × 1作催化剂，成功后产出可燃冰 × 120。 这里的源点是生产原料，不计入献祭。\n基础成功率8%，失败原料从侧面流回，产物从正面输出。 催化剂仅在成功轮以5%的基础概率消耗，其余留在塔内；矿物特质可降低损耗。\n用科学矩阵供养正在工作的塔；源点献祭可提高成功率。图中数量为物料比例、时间为示意，实际速度随进料、堆叠、矩阵与耐久变化。",
-    "frFR": "Dans une tour minérale avancée, fournissez Mémoire × 1 et utilisez Glace combustible × 1 comme catalyseur. Chaque réussite produit Glace combustible × 120. La Mémoire est ici une matière première, pas une offrande.\nChance de réussite de base : 8 %. Les matières premières reviennent par la sortie latérale en cas d’échec ; les produits sortent à l’avant. Le catalyseur reste dans la tour et ne risque d’être consommé que lors d’un cycle réussi, avec un taux de base de 5 % ; les traits minéraux réduisent ce risque.\nNourrissez la tour avec des matrices scientifiques. Les offrandes de Mémoire améliorent la réussite. Le schéma indique les proportions et le temps est indicatif ; la vitesse dépend de l’apport, de l’empilement, des matrices et de la durabilité.",
-    "1031": "Im verbesserten Mineralturm werden Erinnerung × 1 und Brennbares Eis × 1 als Katalysator eingesetzt. Jeder Erfolg erzeugt Brennbares Eis × 120. Die Erinnerung ist hier Rohstoff und zählt nicht als Opfer.\nGrund-Erfolgschance: 8 %. Bei Fehlschlag kehren Rohstoffe durch den Seitenausgang zurück; Produkte verlassen den Turm vorne. Der Katalysator bleibt im Turm und wird nur bei Erfolg mit einer Grundchance von 5 % verbraucht; Mineralmerkmale senken den Verlust.\nWissenschaftsmatrizen ernähren den arbeitenden Turm. Erinnerungsopfer erhöhen die Erfolgschance. Das Diagramm zeigt Mengenverhältnisse und die Zeit ist beispielhaft; die Geschwindigkeit hängt von Zufuhr, Stapelung, Matrizen und Haltbarkeit ab.",
-    "1041": "上級鉱物塔に記憶コア × 1を投入し、可燃氷 × 1を触媒として使います。成功時に可燃氷 × 120を生産します。 ここで使う記憶コアは生産原料であり、献祭には数えません。\n基本成功率は8%。失敗した原料は側面から戻り、製品は正面から出ます。 触媒は成功した処理でのみ基本5%の確率で消費され、それ以外は塔内に残ります。鉱物特性で損耗を減らせます。\n科学マトリックスで稼働中の塔を養い、記憶コアの献祭で成功率を高められます。図の数量は材料比率で、時間は目安です。実際の速度は供給量、スタック、マトリックス、耐久度によって変わります。"
+    "enUS": "Using fire ice as a template, structural memories preserved in Memory are condensed back into physical matter.",
+    "zhCN": "以可燃冰为模板，将源点中保存的结构记忆重新凝结为实物。",
+    "frFR": "À partir de glace combustible servant de modèle, les souvenirs structurels conservés dans la Mémoire sont condensés en matière.",
+    "1031": "Mit brennbarem Eis als Vorlage werden die in Erinnerungen bewahrten Strukturinformationen wieder zu Materie verdichtet.",
+    "1041": "可燃氷を型として、記憶コアに保存された構造の記憶を再び物質として凝縮する。"
   },
   "FE.AdvancedRecipe.1087": {
     "enUS": "Kimberlite Ore Memory Reconstruction",
@@ -1337,11 +1358,11 @@
     "1041": "記憶コアによるキンバーライト鉱石の再構成"
   },
   "FE.AdvancedRecipe.1087.Description": {
-    "enUS": "In an advanced mineral tower, supply Memory × 1, using Kimberlite Ore × 1 as a catalyst. Each success produces Kimberlite Ore × 120. Memory is a production input here and does not count as an offering.\nBase success chance: 8%. Failed raw materials flow back through the side output; products leave at the front. The catalyst stays in the tower and has a base consumption chance of 5% on successful cycles only; mineral traits reduce this loss.\nNourish the working tower with science matrices. Memory offerings improve success chance. Diagram quantities are material ratios; the shown time is illustrative, and actual speed depends on intake, stacking, matrices and durability.",
-    "zhCN": "在高级矿物塔中投入源点 × 1，以金伯利矿石 × 1作催化剂，成功后产出金伯利矿石 × 120。 这里的源点是生产原料，不计入献祭。\n基础成功率8%，失败原料从侧面流回，产物从正面输出。 催化剂仅在成功轮以5%的基础概率消耗，其余留在塔内；矿物特质可降低损耗。\n用科学矩阵供养正在工作的塔；源点献祭可提高成功率。图中数量为物料比例、时间为示意，实际速度随进料、堆叠、矩阵与耐久变化。",
-    "frFR": "Dans une tour minérale avancée, fournissez Mémoire × 1 et utilisez Minerai de kimberlite × 1 comme catalyseur. Chaque réussite produit Minerai de kimberlite × 120. La Mémoire est ici une matière première, pas une offrande.\nChance de réussite de base : 8 %. Les matières premières reviennent par la sortie latérale en cas d’échec ; les produits sortent à l’avant. Le catalyseur reste dans la tour et ne risque d’être consommé que lors d’un cycle réussi, avec un taux de base de 5 % ; les traits minéraux réduisent ce risque.\nNourrissez la tour avec des matrices scientifiques. Les offrandes de Mémoire améliorent la réussite. Le schéma indique les proportions et le temps est indicatif ; la vitesse dépend de l’apport, de l’empilement, des matrices et de la durabilité.",
-    "1031": "Im verbesserten Mineralturm werden Erinnerung × 1 und Kimberliterz × 1 als Katalysator eingesetzt. Jeder Erfolg erzeugt Kimberliterz × 120. Die Erinnerung ist hier Rohstoff und zählt nicht als Opfer.\nGrund-Erfolgschance: 8 %. Bei Fehlschlag kehren Rohstoffe durch den Seitenausgang zurück; Produkte verlassen den Turm vorne. Der Katalysator bleibt im Turm und wird nur bei Erfolg mit einer Grundchance von 5 % verbraucht; Mineralmerkmale senken den Verlust.\nWissenschaftsmatrizen ernähren den arbeitenden Turm. Erinnerungsopfer erhöhen die Erfolgschance. Das Diagramm zeigt Mengenverhältnisse und die Zeit ist beispielhaft; die Geschwindigkeit hängt von Zufuhr, Stapelung, Matrizen und Haltbarkeit ab.",
-    "1041": "上級鉱物塔に記憶コア × 1を投入し、キンバーライト鉱石 × 1を触媒として使います。成功時にキンバーライト鉱石 × 120を生産します。 ここで使う記憶コアは生産原料であり、献祭には数えません。\n基本成功率は8%。失敗した原料は側面から戻り、製品は正面から出ます。 触媒は成功した処理でのみ基本5%の確率で消費され、それ以外は塔内に残ります。鉱物特性で損耗を減らせます。\n科学マトリックスで稼働中の塔を養い、記憶コアの献祭で成功率を高められます。図の数量は材料比率で、時間は目安です。実際の速度は供給量、スタック、マトリックス、耐久度によって変わります。"
+    "enUS": "Using kimberlite ore as a template, structural memories preserved in Memory are condensed back into physical matter.",
+    "zhCN": "以金伯利矿石为模板，将源点中保存的结构记忆重新凝结为实物。",
+    "frFR": "À partir de minerai de kimberlite servant de modèle, les souvenirs structurels conservés dans la Mémoire sont condensés en matière.",
+    "1031": "Mit Kimberliterz als Vorlage werden die in Erinnerungen bewahrten Strukturinformationen wieder zu Materie verdichtet.",
+    "1041": "キンバーライト鉱石を型として、記憶コアに保存された構造の記憶を再び物質として凝縮する。"
   },
   "FE.AdvancedRecipe.1088": {
     "enUS": "Optical Grating Crystal Memory Reconstruction",
@@ -1351,11 +1372,11 @@
     "1041": "記憶コアによる光学格子結晶の再構成"
   },
   "FE.AdvancedRecipe.1088.Description": {
-    "enUS": "In an advanced mineral tower, supply Memory × 1, using Optical Grating Crystal × 1 as a catalyst. Each success produces Optical Grating Crystal × 120. Memory is a production input here and does not count as an offering.\nBase success chance: 8%. Failed raw materials flow back through the side output; products leave at the front. The catalyst stays in the tower and has a base consumption chance of 5% on successful cycles only; mineral traits reduce this loss.\nNourish the working tower with science matrices. Memory offerings improve success chance. Diagram quantities are material ratios; the shown time is illustrative, and actual speed depends on intake, stacking, matrices and durability.",
-    "zhCN": "在高级矿物塔中投入源点 × 1，以光栅石 × 1作催化剂，成功后产出光栅石 × 120。 这里的源点是生产原料，不计入献祭。\n基础成功率8%，失败原料从侧面流回，产物从正面输出。 催化剂仅在成功轮以5%的基础概率消耗，其余留在塔内；矿物特质可降低损耗。\n用科学矩阵供养正在工作的塔；源点献祭可提高成功率。图中数量为物料比例、时间为示意，实际速度随进料、堆叠、矩阵与耐久变化。",
-    "frFR": "Dans une tour minérale avancée, fournissez Mémoire × 1 et utilisez Cristal à réseau optique × 1 comme catalyseur. Chaque réussite produit Cristal à réseau optique × 120. La Mémoire est ici une matière première, pas une offrande.\nChance de réussite de base : 8 %. Les matières premières reviennent par la sortie latérale en cas d’échec ; les produits sortent à l’avant. Le catalyseur reste dans la tour et ne risque d’être consommé que lors d’un cycle réussi, avec un taux de base de 5 % ; les traits minéraux réduisent ce risque.\nNourrissez la tour avec des matrices scientifiques. Les offrandes de Mémoire améliorent la réussite. Le schéma indique les proportions et le temps est indicatif ; la vitesse dépend de l’apport, de l’empilement, des matrices et de la durabilité.",
-    "1031": "Im verbesserten Mineralturm werden Erinnerung × 1 und Optischer Gitterkristall × 1 als Katalysator eingesetzt. Jeder Erfolg erzeugt Optischer Gitterkristall × 120. Die Erinnerung ist hier Rohstoff und zählt nicht als Opfer.\nGrund-Erfolgschance: 8 %. Bei Fehlschlag kehren Rohstoffe durch den Seitenausgang zurück; Produkte verlassen den Turm vorne. Der Katalysator bleibt im Turm und wird nur bei Erfolg mit einer Grundchance von 5 % verbraucht; Mineralmerkmale senken den Verlust.\nWissenschaftsmatrizen ernähren den arbeitenden Turm. Erinnerungsopfer erhöhen die Erfolgschance. Das Diagramm zeigt Mengenverhältnisse und die Zeit ist beispielhaft; die Geschwindigkeit hängt von Zufuhr, Stapelung, Matrizen und Haltbarkeit ab.",
-    "1041": "上級鉱物塔に記憶コア × 1を投入し、光学格子結晶 × 1を触媒として使います。成功時に光学格子結晶 × 120を生産します。 ここで使う記憶コアは生産原料であり、献祭には数えません。\n基本成功率は8%。失敗した原料は側面から戻り、製品は正面から出ます。 触媒は成功した処理でのみ基本5%の確率で消費され、それ以外は塔内に残ります。鉱物特性で損耗を減らせます。\n科学マトリックスで稼働中の塔を養い、記憶コアの献祭で成功率を高められます。図の数量は材料比率で、時間は目安です。実際の速度は供給量、スタック、マトリックス、耐久度によって変わります。"
+    "enUS": "Using optical grating crystals as a template, structural memories preserved in Memory are condensed back into physical matter.",
+    "zhCN": "以光栅石为模板，将源点中保存的结构记忆重新凝结为实物。",
+    "frFR": "À partir de cristaux à réseau optique servant de modèle, les souvenirs structurels conservés dans la Mémoire sont condensés en matière.",
+    "1031": "Mit optischen Gitterkristallen als Vorlage werden die in Erinnerungen bewahrten Strukturinformationen wieder zu Materie verdichtet.",
+    "1041": "光学格子結晶を型として、記憶コアに保存された構造の記憶を再び物質として凝縮する。"
   },
   "FE.AdvancedRecipe.1072": {
     "enUS": "Cultivate Advanced Mineral Tower",
@@ -1365,11 +1386,11 @@
     "1041": "上級鉱物塔を育成"
   },
   "FE.AdvancedRecipe.1072.Description": {
-    "enUS": "Feed 1 Universal Tower Embryo into an advanced interaction tower to cultivate 1 Advanced Mineral Tower on success.\nBase success chance: 8%. Failed raw materials flow back through the side output; products leave at the front.\nNourish the working tower with science matrices. Memory offerings improve success chance. Diagram quantities are material ratios; the shown time is illustrative, and actual speed depends on intake, stacking, matrices and durability.",
-    "zhCN": "在高级交互塔中投入1个通用原胚，成功后培育出1座高级矿物塔。\n基础成功率8%，失败原料从侧面流回，产物从正面输出。\n用科学矩阵供养正在工作的塔；源点献祭可提高成功率。图中数量为物料比例、时间为示意，实际速度随进料、堆叠、矩阵与耐久变化。",
-    "frFR": "Introduisez 1 embryon de tour universel dans une tour d’interaction avancée pour cultiver 1 Tour minérale avancée en cas de réussite.\nChance de réussite de base : 8 %. Les matières premières reviennent par la sortie latérale en cas d’échec ; les produits sortent à l’avant.\nNourrissez la tour avec des matrices scientifiques. Les offrandes de Mémoire améliorent la réussite. Le schéma indique les proportions et le temps est indicatif ; la vitesse dépend de l’apport, de l’empilement, des matrices et de la durabilité.",
-    "1031": "Führe einem verbesserten Interaktionsturm 1 universellen Turmembryo zu. Ein Erfolg erzeugt 1 Verbesserter Mineralturm.\nGrund-Erfolgschance: 8 %. Bei Fehlschlag kehren Rohstoffe durch den Seitenausgang zurück; Produkte verlassen den Turm vorne.\nWissenschaftsmatrizen ernähren den arbeitenden Turm. Erinnerungsopfer erhöhen die Erfolgschance. Das Diagramm zeigt Mengenverhältnisse und die Zeit ist beispielhaft; die Geschwindigkeit hängt von Zufuhr, Stapelung, Matrizen und Haltbarkeit ab.",
-    "1041": "上級交互塔に汎用原胚1個を投入すると、成功時に上級鉱物塔1基を育成します。\n基本成功率は8%。失敗した原料は側面から戻り、製品は正面から出ます。\n科学マトリックスで稼働中の塔を養い、記憶コアの献祭で成功率を高められます。図の数量は材料比率で、時間は目安です。実際の速度は供給量、スタック、マトリックス、耐久度によって変わります。"
+    "enUS": "Directed differentiation develops a universal tower embryo into an advanced mineral tower with a complete living structure.",
+    "zhCN": "引导通用原胚定向分化，培育成具有完整活性结构的高级矿物塔。",
+    "frFR": "La différenciation dirigée transforme un embryon universel en une tour minérale avancée, dotée d’une structure vivante complète.",
+    "1031": "Gezielte Differenzierung lässt aus einem universellen Turmembryo die vollständige lebende Struktur eines verbesserten Mineralturms entstehen.",
+    "1041": "汎用原胚の分化を誘導し、完全な生体構造を持つ上級鉱物塔へと育成する。"
   },
   "FE.AdvancedRecipe.1073": {
     "enUS": "Cultivate Advanced Interaction Tower",
@@ -1379,11 +1400,11 @@
     "1041": "上級交互塔を育成"
   },
   "FE.AdvancedRecipe.1073.Description": {
-    "enUS": "Feed 1 Universal Tower Embryo into an advanced interaction tower to cultivate 1 Advanced Interaction Tower on success.\nBase success chance: 8%. Failed raw materials flow back through the side output; products leave at the front.\nNourish the working tower with science matrices. Memory offerings improve success chance. Diagram quantities are material ratios; the shown time is illustrative, and actual speed depends on intake, stacking, matrices and durability.",
-    "zhCN": "在高级交互塔中投入1个通用原胚，成功后培育出1座高级交互塔。\n基础成功率8%，失败原料从侧面流回，产物从正面输出。\n用科学矩阵供养正在工作的塔；源点献祭可提高成功率。图中数量为物料比例、时间为示意，实际速度随进料、堆叠、矩阵与耐久变化。",
-    "frFR": "Introduisez 1 embryon de tour universel dans une tour d’interaction avancée pour cultiver 1 Tour d'interaction avancée en cas de réussite.\nChance de réussite de base : 8 %. Les matières premières reviennent par la sortie latérale en cas d’échec ; les produits sortent à l’avant.\nNourrissez la tour avec des matrices scientifiques. Les offrandes de Mémoire améliorent la réussite. Le schéma indique les proportions et le temps est indicatif ; la vitesse dépend de l’apport, de l’empilement, des matrices et de la durabilité.",
-    "1031": "Führe einem verbesserten Interaktionsturm 1 universellen Turmembryo zu. Ein Erfolg erzeugt 1 Verbesserter Interaktionsturm.\nGrund-Erfolgschance: 8 %. Bei Fehlschlag kehren Rohstoffe durch den Seitenausgang zurück; Produkte verlassen den Turm vorne.\nWissenschaftsmatrizen ernähren den arbeitenden Turm. Erinnerungsopfer erhöhen die Erfolgschance. Das Diagramm zeigt Mengenverhältnisse und die Zeit ist beispielhaft; die Geschwindigkeit hängt von Zufuhr, Stapelung, Matrizen und Haltbarkeit ab.",
-    "1041": "上級交互塔に汎用原胚1個を投入すると、成功時に上級交互塔1基を育成します。\n基本成功率は8%。失敗した原料は側面から戻り、製品は正面から出ます。\n科学マトリックスで稼働中の塔を養い、記憶コアの献祭で成功率を高められます。図の数量は材料比率で、時間は目安です。実際の速度は供給量、スタック、マトリックス、耐久度によって変わります。"
+    "enUS": "Directed differentiation develops a universal tower embryo into an advanced interaction tower with a complete living structure.",
+    "zhCN": "引导通用原胚定向分化，培育成具有完整活性结构的高级交互塔。",
+    "frFR": "La différenciation dirigée transforme un embryon universel en une tour d’interaction avancée, dotée d’une structure vivante complète.",
+    "1031": "Gezielte Differenzierung lässt aus einem universellen Turmembryo die vollständige lebende Struktur eines verbesserten Interaktionsturms entstehen.",
+    "1041": "汎用原胚の分化を誘導し、完全な生体構造を持つ上級交互塔へと育成する。"
   },
   "FE.AdvancedRecipe.1074": {
     "enUS": "Cultivate Advanced Conversion Tower",
@@ -1393,11 +1414,11 @@
     "1041": "上級転換塔を育成"
   },
   "FE.AdvancedRecipe.1074.Description": {
-    "enUS": "Feed 1 Universal Tower Embryo into an advanced interaction tower to cultivate 1 Advanced Conversion Tower on success.\nBase success chance: 8%. Failed raw materials flow back through the side output; products leave at the front.\nNourish the working tower with science matrices. Memory offerings improve success chance. Diagram quantities are material ratios; the shown time is illustrative, and actual speed depends on intake, stacking, matrices and durability.",
-    "zhCN": "在高级交互塔中投入1个通用原胚，成功后培育出1座高级转化塔。\n基础成功率8%，失败原料从侧面流回，产物从正面输出。\n用科学矩阵供养正在工作的塔；源点献祭可提高成功率。图中数量为物料比例、时间为示意，实际速度随进料、堆叠、矩阵与耐久变化。",
-    "frFR": "Introduisez 1 embryon de tour universel dans une tour d’interaction avancée pour cultiver 1 Tour de conversion avancée en cas de réussite.\nChance de réussite de base : 8 %. Les matières premières reviennent par la sortie latérale en cas d’échec ; les produits sortent à l’avant.\nNourrissez la tour avec des matrices scientifiques. Les offrandes de Mémoire améliorent la réussite. Le schéma indique les proportions et le temps est indicatif ; la vitesse dépend de l’apport, de l’empilement, des matrices et de la durabilité.",
-    "1031": "Führe einem verbesserten Interaktionsturm 1 universellen Turmembryo zu. Ein Erfolg erzeugt 1 Verbesserter Umwandlungsturm.\nGrund-Erfolgschance: 8 %. Bei Fehlschlag kehren Rohstoffe durch den Seitenausgang zurück; Produkte verlassen den Turm vorne.\nWissenschaftsmatrizen ernähren den arbeitenden Turm. Erinnerungsopfer erhöhen die Erfolgschance. Das Diagramm zeigt Mengenverhältnisse und die Zeit ist beispielhaft; die Geschwindigkeit hängt von Zufuhr, Stapelung, Matrizen und Haltbarkeit ab.",
-    "1041": "上級交互塔に汎用原胚1個を投入すると、成功時に上級転換塔1基を育成します。\n基本成功率は8%。失敗した原料は側面から戻り、製品は正面から出ます。\n科学マトリックスで稼働中の塔を養い、記憶コアの献祭で成功率を高められます。図の数量は材料比率で、時間は目安です。実際の速度は供給量、スタック、マトリックス、耐久度によって変わります。"
+    "enUS": "Directed differentiation develops a universal tower embryo into an advanced conversion tower with a complete living structure.",
+    "zhCN": "引导通用原胚定向分化，培育成具有完整活性结构的高级转化塔。",
+    "frFR": "La différenciation dirigée transforme un embryon universel en une tour de conversion avancée, dotée d’une structure vivante complète.",
+    "1031": "Gezielte Differenzierung lässt aus einem universellen Turmembryo die vollständige lebende Struktur eines verbesserten Umwandlungsturms entstehen.",
+    "1041": "汎用原胚の分化を誘導し、完全な生体構造を持つ上級転換塔へと育成する。"
   },
   "FE.AdvancedRecipe.1075": {
     "enUS": "Advanced Mineral Tower Embryo Breeding",
@@ -1407,11 +1428,11 @@
     "1041": "上級鉱物塔による原胚繁殖"
   },
   "FE.AdvancedRecipe.1075.Description": {
-    "enUS": "In an advanced interaction tower, use Advanced Mineral Tower × 1 as raw material and 1 Universal Tower Embryo as a catalyst. Each success produces a base average of 1.5 embryos; interaction traits increase the yield. The diagram shows the ratio for two cycles.\nBase success chance: 8%. Failed raw materials flow back through the side output; products leave at the front. The embryo catalyst stays in the tower and has a 5% consumption chance on successful cycles only.\nNourish the working tower with science matrices. Memory offerings improve success chance. Diagram quantities are material ratios; the shown time is illustrative, and actual speed depends on intake, stacking, matrices and durability.",
-    "zhCN": "在高级交互塔中投入1座高级矿物塔，以1个通用原胚作催化剂。每次成功基础平均产出1.5个通用原胚，交互特质可提高产量；图中按两轮显示物料比例。\n基础成功率8%，失败原料从侧面流回，产物从正面输出。 原胚催化剂仅在成功轮以5%的概率消耗，其余留在塔内。\n用科学矩阵供养正在工作的塔；源点献祭可提高成功率。图中数量为物料比例、时间为示意，实际速度随进料、堆叠、矩阵与耐久变化。",
-    "frFR": "Dans une tour d’interaction avancée, utilisez Tour minérale avancée × 1 comme matière première et 1 embryon universel comme catalyseur. Chaque réussite produit en moyenne 1,5 embryon de base ; les traits d’interaction augmentent ce rendement. Le schéma représente deux cycles.\nChance de réussite de base : 8 %. Les matières premières reviennent par la sortie latérale en cas d’échec ; les produits sortent à l’avant. L’embryon catalyseur reste dans la tour et ne risque d’être consommé qu’en cas de réussite, à 5 %.\nNourrissez la tour avec des matrices scientifiques. Les offrandes de Mémoire améliorent la réussite. Le schéma indique les proportions et le temps est indicatif ; la vitesse dépend de l’apport, de l’empilement, des matrices et de la durabilité.",
-    "1031": "Im verbesserten Interaktionsturm dienen Verbesserter Mineralturm × 1 als Rohstoff und 1 universeller Turmembryo als Katalysator. Jeder Erfolg erzeugt im Grundwert durchschnittlich 1,5 Embryonen; Interaktionsmerkmale erhöhen den Ertrag. Das Diagramm zeigt zwei Durchgänge.\nGrund-Erfolgschance: 8 %. Bei Fehlschlag kehren Rohstoffe durch den Seitenausgang zurück; Produkte verlassen den Turm vorne. Der Embryo bleibt im Turm und wird nur bei Erfolg mit 5 % Wahrscheinlichkeit verbraucht.\nWissenschaftsmatrizen ernähren den arbeitenden Turm. Erinnerungsopfer erhöhen die Erfolgschance. Das Diagramm zeigt Mengenverhältnisse und die Zeit ist beispielhaft; die Geschwindigkeit hängt von Zufuhr, Stapelung, Matrizen und Haltbarkeit ab.",
-    "1041": "上級交互塔に原料として上級鉱物塔1基、触媒として汎用原胚1個を投入します。成功時の基本産出量は平均1.5個の汎用原胚で、交互特性により増加します。図は2回分の材料比率です。\n基本成功率は8%。失敗した原料は側面から戻り、製品は正面から出ます。 触媒の原胚は成功時にのみ5%の確率で消費され、それ以外は塔内に残ります。\n科学マトリックスで稼働中の塔を養い、記憶コアの献祭で成功率を高められます。図の数量は材料比率で、時間は目安です。実際の速度は供給量、スタック、マトリックス、耐久度によって変わります。"
+    "enUS": "A universal embryo catalyzes the redifferentiation of living tissue from an advanced mineral tower, producing new universal embryos.",
+    "zhCN": "在原胚的催化作用下，将高级矿物塔的活性组织重新分化，繁育出新的通用原胚。",
+    "frFR": "Un embryon universel catalyse la redifférenciation des tissus vivants d’une tour minérale avancée, produisant de nouveaux embryons universels.",
+    "1031": "Ein universeller Embryo katalysiert die erneute Differenzierung des lebenden Gewebes eines verbesserten Mineralturms, wodurch neue universelle Embryonen entstehen.",
+    "1041": "原胚の触媒作用で上級鉱物塔の生体組織を再分化させ、新たな汎用原胚を繁殖させる。"
   },
   "FE.AdvancedRecipe.1076": {
     "enUS": "Advanced Interaction Tower Embryo Breeding",
@@ -1421,11 +1442,11 @@
     "1041": "上級交互塔による原胚繁殖"
   },
   "FE.AdvancedRecipe.1076.Description": {
-    "enUS": "In an advanced interaction tower, use Advanced Interaction Tower × 1 as raw material and 1 Universal Tower Embryo as a catalyst. Each success produces a base average of 1.5 embryos; interaction traits increase the yield. The diagram shows the ratio for two cycles.\nBase success chance: 8%. Failed raw materials flow back through the side output; products leave at the front. The embryo catalyst stays in the tower and has a 5% consumption chance on successful cycles only.\nNourish the working tower with science matrices. Memory offerings improve success chance. Diagram quantities are material ratios; the shown time is illustrative, and actual speed depends on intake, stacking, matrices and durability.",
-    "zhCN": "在高级交互塔中投入1座高级交互塔，以1个通用原胚作催化剂。每次成功基础平均产出1.5个通用原胚，交互特质可提高产量；图中按两轮显示物料比例。\n基础成功率8%，失败原料从侧面流回，产物从正面输出。 原胚催化剂仅在成功轮以5%的概率消耗，其余留在塔内。\n用科学矩阵供养正在工作的塔；源点献祭可提高成功率。图中数量为物料比例、时间为示意，实际速度随进料、堆叠、矩阵与耐久变化。",
-    "frFR": "Dans une tour d’interaction avancée, utilisez Tour d'interaction avancée × 1 comme matière première et 1 embryon universel comme catalyseur. Chaque réussite produit en moyenne 1,5 embryon de base ; les traits d’interaction augmentent ce rendement. Le schéma représente deux cycles.\nChance de réussite de base : 8 %. Les matières premières reviennent par la sortie latérale en cas d’échec ; les produits sortent à l’avant. L’embryon catalyseur reste dans la tour et ne risque d’être consommé qu’en cas de réussite, à 5 %.\nNourrissez la tour avec des matrices scientifiques. Les offrandes de Mémoire améliorent la réussite. Le schéma indique les proportions et le temps est indicatif ; la vitesse dépend de l’apport, de l’empilement, des matrices et de la durabilité.",
-    "1031": "Im verbesserten Interaktionsturm dienen Verbesserter Interaktionsturm × 1 als Rohstoff und 1 universeller Turmembryo als Katalysator. Jeder Erfolg erzeugt im Grundwert durchschnittlich 1,5 Embryonen; Interaktionsmerkmale erhöhen den Ertrag. Das Diagramm zeigt zwei Durchgänge.\nGrund-Erfolgschance: 8 %. Bei Fehlschlag kehren Rohstoffe durch den Seitenausgang zurück; Produkte verlassen den Turm vorne. Der Embryo bleibt im Turm und wird nur bei Erfolg mit 5 % Wahrscheinlichkeit verbraucht.\nWissenschaftsmatrizen ernähren den arbeitenden Turm. Erinnerungsopfer erhöhen die Erfolgschance. Das Diagramm zeigt Mengenverhältnisse und die Zeit ist beispielhaft; die Geschwindigkeit hängt von Zufuhr, Stapelung, Matrizen und Haltbarkeit ab.",
-    "1041": "上級交互塔に原料として上級交互塔1基、触媒として汎用原胚1個を投入します。成功時の基本産出量は平均1.5個の汎用原胚で、交互特性により増加します。図は2回分の材料比率です。\n基本成功率は8%。失敗した原料は側面から戻り、製品は正面から出ます。 触媒の原胚は成功時にのみ5%の確率で消費され、それ以外は塔内に残ります。\n科学マトリックスで稼働中の塔を養い、記憶コアの献祭で成功率を高められます。図の数量は材料比率で、時間は目安です。実際の速度は供給量、スタック、マトリックス、耐久度によって変わります。"
+    "enUS": "A universal embryo catalyzes the redifferentiation of living tissue from an advanced interaction tower, producing new universal embryos.",
+    "zhCN": "在原胚的催化作用下，将高级交互塔的活性组织重新分化，繁育出新的通用原胚。",
+    "frFR": "Un embryon universel catalyse la redifférenciation des tissus vivants d’une tour d’interaction avancée, produisant de nouveaux embryons universels.",
+    "1031": "Ein universeller Embryo katalysiert die erneute Differenzierung des lebenden Gewebes eines verbesserten Interaktionsturms, wodurch neue universelle Embryonen entstehen.",
+    "1041": "原胚の触媒作用で上級交互塔の生体組織を再分化させ、新たな汎用原胚を繁殖させる。"
   },
   "FE.AdvancedRecipe.1077": {
     "enUS": "Advanced Conversion Tower Embryo Breeding",
@@ -1435,11 +1456,11 @@
     "1041": "上級転換塔による原胚繁殖"
   },
   "FE.AdvancedRecipe.1077.Description": {
-    "enUS": "In an advanced interaction tower, use Advanced Conversion Tower × 1 as raw material and 1 Universal Tower Embryo as a catalyst. Each success produces a base average of 1.5 embryos; interaction traits increase the yield. The diagram shows the ratio for two cycles.\nBase success chance: 8%. Failed raw materials flow back through the side output; products leave at the front. The embryo catalyst stays in the tower and has a 5% consumption chance on successful cycles only.\nNourish the working tower with science matrices. Memory offerings improve success chance. Diagram quantities are material ratios; the shown time is illustrative, and actual speed depends on intake, stacking, matrices and durability.",
-    "zhCN": "在高级交互塔中投入1座高级转化塔，以1个通用原胚作催化剂。每次成功基础平均产出1.5个通用原胚，交互特质可提高产量；图中按两轮显示物料比例。\n基础成功率8%，失败原料从侧面流回，产物从正面输出。 原胚催化剂仅在成功轮以5%的概率消耗，其余留在塔内。\n用科学矩阵供养正在工作的塔；源点献祭可提高成功率。图中数量为物料比例、时间为示意，实际速度随进料、堆叠、矩阵与耐久变化。",
-    "frFR": "Dans une tour d’interaction avancée, utilisez Tour de conversion avancée × 1 comme matière première et 1 embryon universel comme catalyseur. Chaque réussite produit en moyenne 1,5 embryon de base ; les traits d’interaction augmentent ce rendement. Le schéma représente deux cycles.\nChance de réussite de base : 8 %. Les matières premières reviennent par la sortie latérale en cas d’échec ; les produits sortent à l’avant. L’embryon catalyseur reste dans la tour et ne risque d’être consommé qu’en cas de réussite, à 5 %.\nNourrissez la tour avec des matrices scientifiques. Les offrandes de Mémoire améliorent la réussite. Le schéma indique les proportions et le temps est indicatif ; la vitesse dépend de l’apport, de l’empilement, des matrices et de la durabilité.",
-    "1031": "Im verbesserten Interaktionsturm dienen Verbesserter Umwandlungsturm × 1 als Rohstoff und 1 universeller Turmembryo als Katalysator. Jeder Erfolg erzeugt im Grundwert durchschnittlich 1,5 Embryonen; Interaktionsmerkmale erhöhen den Ertrag. Das Diagramm zeigt zwei Durchgänge.\nGrund-Erfolgschance: 8 %. Bei Fehlschlag kehren Rohstoffe durch den Seitenausgang zurück; Produkte verlassen den Turm vorne. Der Embryo bleibt im Turm und wird nur bei Erfolg mit 5 % Wahrscheinlichkeit verbraucht.\nWissenschaftsmatrizen ernähren den arbeitenden Turm. Erinnerungsopfer erhöhen die Erfolgschance. Das Diagramm zeigt Mengenverhältnisse und die Zeit ist beispielhaft; die Geschwindigkeit hängt von Zufuhr, Stapelung, Matrizen und Haltbarkeit ab.",
-    "1041": "上級交互塔に原料として上級転換塔1基、触媒として汎用原胚1個を投入します。成功時の基本産出量は平均1.5個の汎用原胚で、交互特性により増加します。図は2回分の材料比率です。\n基本成功率は8%。失敗した原料は側面から戻り、製品は正面から出ます。 触媒の原胚は成功時にのみ5%の確率で消費され、それ以外は塔内に残ります。\n科学マトリックスで稼働中の塔を養い、記憶コアの献祭で成功率を高められます。図の数量は材料比率で、時間は目安です。実際の速度は供給量、スタック、マトリックス、耐久度によって変わります。"
+    "enUS": "A universal embryo catalyzes the redifferentiation of living tissue from an advanced conversion tower, producing new universal embryos.",
+    "zhCN": "在原胚的催化作用下，将高级转化塔的活性组织重新分化，繁育出新的通用原胚。",
+    "frFR": "Un embryon universel catalyse la redifférenciation des tissus vivants d’une tour de conversion avancée, produisant de nouveaux embryons universels.",
+    "1031": "Ein universeller Embryo katalysiert die erneute Differenzierung des lebenden Gewebes eines verbesserten Umwandlungsturms, wodurch neue universelle Embryonen entstehen.",
+    "1041": "原胚の触媒作用で上級転換塔の生体組織を再分化させ、新たな汎用原胚を繁殖させる。"
   },
   "FE.AdvancedRecipe.1078": {
     "enUS": "Deuterium Replacement for Hydrogen Fuel Rod",
@@ -1449,11 +1470,11 @@
     "1041": "水素燃料棒の重水素置換"
   },
   "FE.AdvancedRecipe.1078.Description": {
-    "enUS": "In an advanced conversion tower, supply Hydrogen Fuel Rod × 1 + Deuterium × 10 to produce Deuteron Fuel Rod × 1 on success, while recovering Hydrogen.\nBase success chance: 8%. Failed raw materials flow back through the side output; products leave at the front. The diagram shows Hydrogen × 5 at full recovery. The base recovery rate is 50%, improved by conversion traits. Recovered amounts are long-term averages.\nNourish the working tower with science matrices. Memory offerings improve success chance. Diagram quantities are material ratios; the shown time is illustrative, and actual speed depends on intake, stacking, matrices and durability.",
-    "zhCN": "在高级转化塔中投入液氢燃料棒 × 1 + 重氢 × 10，成功后产出氘核燃料棒 × 1，并回收氢。\n基础成功率8%，失败原料从侧面流回，产物从正面输出。 图中氢 × 5为完全回收量，基础回收率50%，转化特质可提高回收率；回收数量按长期平均结算。\n用科学矩阵供养正在工作的塔；源点献祭可提高成功率。图中数量为物料比例、时间为示意，实际速度随进料、堆叠、矩阵与耐久变化。",
-    "frFR": "Dans une tour de conversion avancée, fournissez Barre de combustible à hydrogène × 1 + Deutérium × 10 pour produire Barre de combustible au deutéron × 1 en cas de réussite et récupérer Hydrogène.\nChance de réussite de base : 8 %. Les matières premières reviennent par la sortie latérale en cas d’échec ; les produits sortent à l’avant. Le schéma montre Hydrogène × 5 à récupération complète. Le taux de base est de 50 %, amélioré par les traits de conversion. Les quantités récupérées sont des moyennes à long terme.\nNourrissez la tour avec des matrices scientifiques. Les offrandes de Mémoire améliorent la réussite. Le schéma indique les proportions et le temps est indicatif ; la vitesse dépend de l’apport, de l’empilement, des matrices et de la durabilité.",
-    "1031": "Im verbesserten Umwandlungsturm werden Wasserstoffbrennstab × 1 + Deuterium × 10 eingesetzt. Ein Erfolg erzeugt Deuteriumbrennstab × 1 und gewinnt Wasserstoff zurück.\nGrund-Erfolgschance: 8 %. Bei Fehlschlag kehren Rohstoffe durch den Seitenausgang zurück; Produkte verlassen den Turm vorne. Das Diagramm zeigt Wasserstoff × 5 bei vollständiger Rückgewinnung. Der Grundwert beträgt 50 % und steigt durch Umwandlungsmerkmale. Rückgewinnungsmengen sind langfristige Mittelwerte.\nWissenschaftsmatrizen ernähren den arbeitenden Turm. Erinnerungsopfer erhöhen die Erfolgschance. Das Diagramm zeigt Mengenverhältnisse und die Zeit ist beispielhaft; die Geschwindigkeit hängt von Zufuhr, Stapelung, Matrizen und Haltbarkeit ab.",
-    "1041": "上級転換塔に水素燃料棒 × 1 + 重水素 × 10を投入すると、成功時に重水素燃料棒 × 1を生産し、水素も回収します。\n基本成功率は8%。失敗した原料は側面から戻り、製品は正面から出ます。 図の水素 × 5は完全回収量です。基本回収率は50%で、転換特性により上がります。回収量は長期平均として計算されます。\n科学マトリックスで稼働中の塔を養い、記憶コアの献祭で成功率を高められます。図の数量は材料比率で、時間は目安です。実際の速度は供給量、スタック、マトリックス、耐久度によって変わります。"
+    "enUS": "Titanium alloy catalyzes the replacement of fuel in hydrogen fuel rods with deuterium, producing deuteron fuel rods and recovering some hydrogen.",
+    "zhCN": "借助钛合金的催化作用，以重氢置换液氢燃料棒中的燃料，制成氘核燃料棒，并回收部分氢。",
+    "frFR": "L’alliage de titane catalyse le remplacement du combustible des barres à hydrogène par du deutérium, produisant des barres au deutéron et récupérant une partie de l’hydrogène.",
+    "1031": "Titanlegierung katalysiert den Austausch des Brennstoffs in Wasserstoffbrennstäben durch Deuterium. Dabei entstehen Deuteriumbrennstäbe und ein Teil des Wasserstoffs wird zurückgewonnen.",
+    "1041": "チタン合金の触媒作用で水素燃料棒の燃料を重水素に置換し、重水素燃料棒を製造するとともに水素の一部を回収する。"
   },
   "FE.AdvancedRecipe.1079": {
     "enUS": "Antimatter Replacement for Deuteron Fuel Rod",
@@ -1463,11 +1484,11 @@
     "1041": "重水素燃料棒の反物質置換"
   },
   "FE.AdvancedRecipe.1079.Description": {
-    "enUS": "In an advanced conversion tower, supply Deuteron Fuel Rod × 1 + Antimatter × 2 + Annihilation Constraint Sphere × 1 to produce Antimatter Fuel Rod × 1 on success, while recovering Deuterium.\nBase success chance: 8%. Failed raw materials flow back through the side output; products leave at the front. The diagram shows Deuterium × 10 at full recovery. The base recovery rate is 50%, improved by conversion traits. Recovered amounts are long-term averages.\nNourish the working tower with science matrices. Memory offerings improve success chance. Diagram quantities are material ratios; the shown time is illustrative, and actual speed depends on intake, stacking, matrices and durability.",
-    "zhCN": "在高级转化塔中投入氘核燃料棒 × 1 + 反物质 × 2 + 湮灭约束球 × 1，成功后产出反物质燃料棒 × 1，并回收重氢。\n基础成功率8%，失败原料从侧面流回，产物从正面输出。 图中重氢 × 10为完全回收量，基础回收率50%，转化特质可提高回收率；回收数量按长期平均结算。\n用科学矩阵供养正在工作的塔；源点献祭可提高成功率。图中数量为物料比例、时间为示意，实际速度随进料、堆叠、矩阵与耐久变化。",
-    "frFR": "Dans une tour de conversion avancée, fournissez Barre de combustible au deutéron × 1 + Antimatière × 2 + Sphère de confinement d'annihilation × 1 pour produire Barre de combustible à antimatière × 1 en cas de réussite et récupérer Deutérium.\nChance de réussite de base : 8 %. Les matières premières reviennent par la sortie latérale en cas d’échec ; les produits sortent à l’avant. Le schéma montre Deutérium × 10 à récupération complète. Le taux de base est de 50 %, amélioré par les traits de conversion. Les quantités récupérées sont des moyennes à long terme.\nNourrissez la tour avec des matrices scientifiques. Les offrandes de Mémoire améliorent la réussite. Le schéma indique les proportions et le temps est indicatif ; la vitesse dépend de l’apport, de l’empilement, des matrices et de la durabilité.",
-    "1031": "Im verbesserten Umwandlungsturm werden Deuteriumbrennstab × 1 + Antimaterie × 2 + Annihilationsbegrenzungskugel × 1 eingesetzt. Ein Erfolg erzeugt Antimateriebrennstab × 1 und gewinnt Deuterium zurück.\nGrund-Erfolgschance: 8 %. Bei Fehlschlag kehren Rohstoffe durch den Seitenausgang zurück; Produkte verlassen den Turm vorne. Das Diagramm zeigt Deuterium × 10 bei vollständiger Rückgewinnung. Der Grundwert beträgt 50 % und steigt durch Umwandlungsmerkmale. Rückgewinnungsmengen sind langfristige Mittelwerte.\nWissenschaftsmatrizen ernähren den arbeitenden Turm. Erinnerungsopfer erhöhen die Erfolgschance. Das Diagramm zeigt Mengenverhältnisse und die Zeit ist beispielhaft; die Geschwindigkeit hängt von Zufuhr, Stapelung, Matrizen und Haltbarkeit ab.",
-    "1041": "上級転換塔に重水素燃料棒 × 1 + 反物質 × 2 + 対消滅拘束球 × 1を投入すると、成功時に反物質燃料棒 × 1を生産し、重水素も回収します。\n基本成功率は8%。失敗した原料は側面から戻り、製品は正面から出ます。 図の重水素 × 10は完全回収量です。基本回収率は50%で、転換特性により上がります。回収量は長期平均として計算されます。\n科学マトリックスで稼働中の塔を養い、記憶コアの献祭で成功率を高められます。図の数量は材料比率で、時間は目安です。実際の速度は供給量、スタック、マトリックス、耐久度によって変わります。"
+    "enUS": "An annihilation constraint sphere enables antimatter to replace the fuel in deuteron fuel rods, producing antimatter fuel rods and recovering some deuterium.",
+    "zhCN": "在湮灭约束球的作用下，以反物质置换氘核燃料棒中的燃料，制成反物质燃料棒，并回收部分重氢。",
+    "frFR": "Une sphère de confinement d’annihilation permet de remplacer le combustible des barres au deutéron par de l’antimatière, tout en récupérant une partie du deutérium.",
+    "1031": "Eine Annihilationsbegrenzungskugel ermöglicht es, den Brennstoff in Deuteriumbrennstäben durch Antimaterie zu ersetzen und dabei einen Teil des Deuteriums zurückzugewinnen.",
+    "1041": "対消滅拘束球の作用で重水素燃料棒の燃料を反物質に置換し、反物質燃料棒を製造するとともに重水素の一部を回収する。"
   },
   "FE.AdvancedRecipe.1080": {
     "enUS": "Mining Machine Reconstruction",
@@ -1477,11 +1498,11 @@
     "1041": "採掘機を大型採掘機に再構成"
   },
   "FE.AdvancedRecipe.1080.Description": {
-    "enUS": "In an advanced conversion tower, supply Mining Machine × 1 + Processor × 1 to produce Advanced Mining Machine × 1 on success, while recovering Gear.\nBase success chance: 8%. Failed raw materials flow back through the side output; products leave at the front. The diagram shows Gear × 2 at full recovery. The base recovery rate is 50%, improved by conversion traits. Recovered amounts are long-term averages.\nNourish the working tower with science matrices. Memory offerings improve success chance. Diagram quantities are material ratios; the shown time is illustrative, and actual speed depends on intake, stacking, matrices and durability.",
-    "zhCN": "在高级转化塔中投入采矿机 × 1 + 处理器 × 1，成功后产出大型采矿机 × 1，并回收齿轮。\n基础成功率8%，失败原料从侧面流回，产物从正面输出。 图中齿轮 × 2为完全回收量，基础回收率50%，转化特质可提高回收率；回收数量按长期平均结算。\n用科学矩阵供养正在工作的塔；源点献祭可提高成功率。图中数量为物料比例、时间为示意，实际速度随进料、堆叠、矩阵与耐久变化。",
-    "frFR": "Dans une tour de conversion avancée, fournissez Machine minière × 1 + Processeur × 1 pour produire Machine minière avancée × 1 en cas de réussite et récupérer Engrenage.\nChance de réussite de base : 8 %. Les matières premières reviennent par la sortie latérale en cas d’échec ; les produits sortent à l’avant. Le schéma montre Engrenage × 2 à récupération complète. Le taux de base est de 50 %, amélioré par les traits de conversion. Les quantités récupérées sont des moyennes à long terme.\nNourrissez la tour avec des matrices scientifiques. Les offrandes de Mémoire améliorent la réussite. Le schéma indique les proportions et le temps est indicatif ; la vitesse dépend de l’apport, de l’empilement, des matrices et de la durabilité.",
-    "1031": "Im verbesserten Umwandlungsturm werden Bergbaumaschine × 1 + Prozessor × 1 eingesetzt. Ein Erfolg erzeugt Erweiterte Bergbaumaschine × 1 und gewinnt Zahnrad zurück.\nGrund-Erfolgschance: 8 %. Bei Fehlschlag kehren Rohstoffe durch den Seitenausgang zurück; Produkte verlassen den Turm vorne. Das Diagramm zeigt Zahnrad × 2 bei vollständiger Rückgewinnung. Der Grundwert beträgt 50 % und steigt durch Umwandlungsmerkmale. Rückgewinnungsmengen sind langfristige Mittelwerte.\nWissenschaftsmatrizen ernähren den arbeitenden Turm. Erinnerungsopfer erhöhen die Erfolgschance. Das Diagramm zeigt Mengenverhältnisse und die Zeit ist beispielhaft; die Geschwindigkeit hängt von Zufuhr, Stapelung, Matrizen und Haltbarkeit ab.",
-    "1041": "上級転換塔に採掘機 × 1 + プロセッサ × 1を投入すると、成功時に大型採掘機 × 1を生産し、歯車も回収します。\n基本成功率は8%。失敗した原料は側面から戻り、製品は正面から出ます。 図の歯車 × 2は完全回収量です。基本回収率は50%で、転換特性により上がります。回収量は長期平均として計算されます。\n科学マトリックスで稼働中の塔を養い、記憶コアの献祭で成功率を高められます。図の数量は材料比率で、時間は目安です。実際の速度は供給量、スタック、マトリックス、耐久度によって変わります。"
+    "enUS": "Processors and a quantum chip reconstruct the control structure of a mining machine, transforming it into an advanced mining machine.",
+    "zhCN": "利用处理器与量子芯片重构采矿机的控制结构，将其改造为大型采矿机。",
+    "frFR": "Des processeurs et une puce quantique reconstruisent le système de commande d’une machine minière pour en faire une machine minière avancée.",
+    "1031": "Prozessoren und ein Quantenchip bauen die Steuerstruktur einer Bergbaumaschine um und machen daraus eine erweiterte Bergbaumaschine.",
+    "1041": "プロセッサと量子チップで採掘機の制御構造を再構成し、大型採掘機へと改造する。"
   },
   "FE.AdvancedRecipe.1081": {
     "enUS": "Arc Smelter Reconstruction",
@@ -1491,11 +1512,11 @@
     "1041": "アーク製錬所をプレーン製錬所に再構成"
   },
   "FE.AdvancedRecipe.1081.Description": {
-    "enUS": "In an advanced conversion tower, supply Arc Smelter × 1 + Casimir Crystal × 1 to produce Plane Smelter × 1 on success, while recovering Magnetic Coil.\nBase success chance: 8%. Failed raw materials flow back through the side output; products leave at the front. The diagram shows Magnetic Coil × 2 at full recovery. The base recovery rate is 50%, improved by conversion traits. Recovered amounts are long-term averages.\nNourish the working tower with science matrices. Memory offerings improve success chance. Diagram quantities are material ratios; the shown time is illustrative, and actual speed depends on intake, stacking, matrices and durability.",
-    "zhCN": "在高级转化塔中投入电弧熔炉 × 1 + 卡西米尔晶体 × 1，成功后产出位面熔炉 × 1，并回收磁线圈。\n基础成功率8%，失败原料从侧面流回，产物从正面输出。 图中磁线圈 × 2为完全回收量，基础回收率50%，转化特质可提高回收率；回收数量按长期平均结算。\n用科学矩阵供养正在工作的塔；源点献祭可提高成功率。图中数量为物料比例、时间为示意，实际速度随进料、堆叠、矩阵与耐久变化。",
-    "frFR": "Dans une tour de conversion avancée, fournissez Fonderie à arc × 1 + Cristal de Casimir × 1 pour produire Fonderie planaire × 1 en cas de réussite et récupérer Bobine magnétique.\nChance de réussite de base : 8 %. Les matières premières reviennent par la sortie latérale en cas d’échec ; les produits sortent à l’avant. Le schéma montre Bobine magnétique × 2 à récupération complète. Le taux de base est de 50 %, amélioré par les traits de conversion. Les quantités récupérées sont des moyennes à long terme.\nNourrissez la tour avec des matrices scientifiques. Les offrandes de Mémoire améliorent la réussite. Le schéma indique les proportions et le temps est indicatif ; la vitesse dépend de l’apport, de l’empilement, des matrices et de la durabilité.",
-    "1031": "Im verbesserten Umwandlungsturm werden Lichtbogenschmelzofen × 1 + Casimir-Kristall × 1 eingesetzt. Ein Erfolg erzeugt Ebenenschmelzofen × 1 und gewinnt Magnetspule zurück.\nGrund-Erfolgschance: 8 %. Bei Fehlschlag kehren Rohstoffe durch den Seitenausgang zurück; Produkte verlassen den Turm vorne. Das Diagramm zeigt Magnetspule × 2 bei vollständiger Rückgewinnung. Der Grundwert beträgt 50 % und steigt durch Umwandlungsmerkmale. Rückgewinnungsmengen sind langfristige Mittelwerte.\nWissenschaftsmatrizen ernähren den arbeitenden Turm. Erinnerungsopfer erhöhen die Erfolgschance. Das Diagramm zeigt Mengenverhältnisse und die Zeit ist beispielhaft; die Geschwindigkeit hängt von Zufuhr, Stapelung, Matrizen und Haltbarkeit ab.",
-    "1041": "上級転換塔にアーク製錬所 × 1 + カシミール結晶 × 1を投入すると、成功時にプレーン製錬所 × 1を生産し、磁気コイルも回収します。\n基本成功率は8%。失敗した原料は側面から戻り、製品は正面から出ます。 図の磁気コイル × 2は完全回収量です。基本回収率は50%で、転換特性により上がります。回収量は長期平均として計算されます。\n科学マトリックスで稼働中の塔を養い、記憶コアの献祭で成功率を高められます。図の数量は材料比率で、時間は目安です。実際の速度は供給量、スタック、マトリックス、耐久度によって変わります。"
+    "enUS": "Casimir crystals and a unipolar magnet reconstruct the smelting structure of an arc smelter, giving it the processing capabilities of a plane smelter.",
+    "zhCN": "借助卡西米尔晶体与单极磁石，重构电弧熔炉的冶炼结构，使其具备位面熔炉的加工能力。",
+    "frFR": "Des cristaux de Casimir et un aimant unipolaire reconstruisent la structure d’une fonderie à arc pour lui donner les capacités d’une fonderie planaire.",
+    "1031": "Casimir-Kristalle und ein unipolarer Magnet bauen die Schmelzstruktur eines Lichtbogenschmelzofens um und verleihen ihm die Fähigkeiten eines Ebenenschmelzofens.",
+    "1041": "カシミール結晶と単極磁石でアーク製錬所の製錬構造を再構成し、プレーン製錬所の加工能力を与える。"
   },
   "{0}解析": {
     "enUS": "Analyze {0}",
