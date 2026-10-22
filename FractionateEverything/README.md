@@ -73,7 +73,11 @@ The first relic uses a graphical signal bar scaled to the planet's radius. Later
 
 向已供电的基础解析塔持续投入主线矩阵即可永久扩容。各档同时工作、独立累积，效果各不相同，积累越多边际增长越慢；多塔共享同档供料，停供不缩水。仓储页固定矩阵图标分别显示“生效中”，问号说明并行关系，不公开增长倍率或速率。
 
-手动存取和基础塔正面上传无额外耗能。行星/星际物流交互站自动存取，保留槽位模式、阈值、增产点、蓝图与复制粘贴；按物品价值和实际搬运量消耗站内电量。
+手动存取和基础塔正面上传无额外耗能。FE行星/星际物流交互站每槽右上选择关闭上传、有限上传或无限上传，右下独立开关下载；新槽默认有限上传并开启下载。左侧原版物流供需独立，保留阈值、增产点、蓝图与复制粘贴。电量只在本轮有实际存取需求的槽位间均分一次，按实际搬运量扣除，未用部分留到下轮。
+
+亚空间能效在红、黄、紫、绿阶段将单件存取耗电降到基础值的70%、45%、30%、20%，绿糖封顶。第二页另有“交互站电力”：上述四阶段分别增加基础充电功率与储能的10%、20%、30%、40%，累计达到2倍；白糖每级再加基础值的10%。仅影响FE两种交互站，提高上限不会自动补电。旧白糖降耗节点退役，已完成的有限降耗节点保留。
+
+Each FE interaction-station slot controls upload and download separately; new slots default to limited upload and download enabled. Only slots with actual transfer requests share the energy budget, once per cycle. Transfer efficiency stops at 20% of base energy. The separate station-power chain adds charging power and storage capacity: 10%, 20%, 30% and 40% of base values before white matrices, then another 10% of base per white upgrade. Added capacity does not refill stored energy.
 
 仓储页右上“装配”可下单，需求树显示需要、库存有、将制造与缺料，每行可限定只取库存或切换已解锁工艺。展开会预留实际材料，关闭释放草稿；确认订单后，建造并供电亚空间装配节点即可生产。节点在处理器科技解锁，每座满电提供一倍工艺速度，工作1.2MW、待机60kW。成品直接入库，缺料、断电或满仓时保留订单等待；取消仅退还当前未完成工艺的输入。
 联机取物先由主机划拨额度，客户端建造与机甲制造预检查会自动请求缺口；首次申请有一次网络往返，确认后可直接使用亚空间材料，不必先转入背包。手动提取仍遵循取到手中或背包的设置，未用额度自动返还共享库存。

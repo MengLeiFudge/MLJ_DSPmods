@@ -1,6 +1,7 @@
 ﻿using BuildBarTool;
 using CommonAPI.Systems;
 using FE.Compatibility.Mods;
+using FE.Logic.Civilization;
 using FE.Logic.Enhancements.Stacking;
 using UnityEngine;
 using static FE.FractionateEverything;
@@ -69,8 +70,9 @@ public static class PlanetaryInteractionStation {
         model.HpMax = stationModel.HpMax;
         model.prefabDesc.stationMaxItemKinds = stationModel.prefabDesc.stationMaxItemKinds;
         model.prefabDesc.stationMaxItemCount = stationModel.prefabDesc.stationMaxItemCount;
-        model.prefabDesc.stationMaxEnergyAcc = stationModel.prefabDesc.stationMaxEnergyAcc;
-        workEnergyPerTick = stationModel.prefabDesc.workEnergyPerTick;
+        double powerRatio = GrowthTechnologyManager.InteractionStationPowerRatio;
+        model.prefabDesc.stationMaxEnergyAcc = (long)(stationModel.prefabDesc.stationMaxEnergyAcc * powerRatio);
+        workEnergyPerTick = (long)(stationModel.prefabDesc.workEnergyPerTick * powerRatio);
         idleEnergyPerTick = stationModel.prefabDesc.idleEnergyPerTick;
     }
 }

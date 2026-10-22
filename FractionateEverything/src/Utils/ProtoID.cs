@@ -1093,6 +1093,8 @@ public static partial class Utils {
     internal const int TFE高级交互特质 = 2120;
     internal const int TFE高级转化特质 = 2130;
     internal const int TFE亚空间能效 = 2140;
+    /// <summary>交互站充电与储能科技，2181～2185为独立节点。</summary>
+    internal const int TFE交互站电力 = 2180;
     /// <summary>旧六阶段补给科技 ID，当前版本不注册也不复用。</summary>
     internal const int TFE阶段补给1 = 2071;
     /// <summary>旧六阶段补给科技 ID，当前版本不注册也不复用。</summary>

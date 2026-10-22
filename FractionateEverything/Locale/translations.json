@@ -777,11 +777,60 @@
     "1041": "FE分留塔の出力スタック上限 +1"
   },
   "FE亚空间能效描述": {
-    "enUS": "Research after unlocking the planetary interaction station. Red, yellow, purple and green matrix upgrades reduce transfer energy to 70%, 45%, 30% and 20% of its base value. Each white matrix upgrade reduces current energy use by 10%, down to a minimum of 1% of base energy.",
-    "zhCN": "取得行星内物流交互站后研究。红、黄、紫、绿矩阵阶段依次将存取耗电降至基础值的70%、45%、30%、20%；白矩阵每次降低当前耗电的10%，最低为基础值的1%。",
-    "frFR": "Accessible après la station d’interaction planétaire. Les améliorations à matrices rouges, jaunes, violettes et vertes ramènent la consommation à 70 %, 45 %, 30 % et 20 % de sa valeur de base. Chaque amélioration à matrices blanches réduit la consommation actuelle de 10 %, jusqu’à 1 % de la valeur de base.",
-    "1031": "Nach Freischaltung der planetaren Interaktionsstation erforschbar. Rote, gelbe, violette und grüne Matrizen senken den Verbrauch auf 70 %, 45 %, 30 % und 20 % des Grundwerts. Jede Verbesserung mit weißen Matrizen senkt den aktuellen Verbrauch um 10 %, bis mindestens 1 % des Grundwerts.",
-    "1041": "惑星内交互ステーションの解放後に研究できます。赤・黄・紫・緑のマトリックス段階で消費電力を基準値の70%、45%、30%、20%に低減。白マトリックス研究ごとに現在の消費電力を10%削減し、下限は基準値の1%です。"
+    "enUS": "Research after unlocking the planetary interaction station. Red, yellow, purple and green matrix upgrades reduce transfer energy to 70%, 45%, 30% and 20% of its base value. The minimum is 20%.",
+    "zhCN": "取得行星内物流交互站后研究。红、黄、紫、绿矩阵阶段依次将存取耗电降至基础值的70%、45%、30%、20%，最低20%。",
+    "frFR": "Accessible après la station d’interaction planétaire. Les améliorations à matrices rouges, jaunes, violettes et vertes ramènent la consommation à 70 %, 45 %, 30 % et 20 % de sa valeur de base. Le minimum est de 20 %.",
+    "1031": "Nach Freischaltung der planetaren Interaktionsstation erforschbar. Rote, gelbe, violette und grüne Matrizen senken den Verbrauch auf 70 %, 45 %, 30 % und 20 % des Grundwerts. Der Mindestwert beträgt 20 %.",
+    "1041": "惑星内交互ステーションの解放後に研究できます。赤・黄・紫・緑のマトリックス段階で消費電力を基準値の70%、45%、30%、20%に低減。下限は20%です。"
+  },
+  "FE交互站电力 1": {
+    "enUS": "Interaction Station Power",
+    "zhCN": "交互站电力",
+    "frFR": "Énergie des stations d’interaction",
+    "1031": "Energie der Interaktionsstationen",
+    "1041": "交互ステーション電力"
+  },
+  "FE交互站电力 2": {
+    "enUS": "Interaction Station Power",
+    "zhCN": "交互站电力",
+    "frFR": "Énergie des stations d’interaction",
+    "1031": "Energie der Interaktionsstationen",
+    "1041": "交互ステーション電力"
+  },
+  "FE交互站电力 3": {
+    "enUS": "Interaction Station Power",
+    "zhCN": "交互站电力",
+    "frFR": "Énergie des stations d’interaction",
+    "1031": "Energie der Interaktionsstationen",
+    "1041": "交互ステーション電力"
+  },
+  "FE交互站电力 4": {
+    "enUS": "Interaction Station Power",
+    "zhCN": "交互站电力",
+    "frFR": "Énergie des stations d’interaction",
+    "1031": "Energie der Interaktionsstationen",
+    "1041": "交互ステーション電力"
+  },
+  "FE交互站电力 5": {
+    "enUS": "Interaction Station Power",
+    "zhCN": "交互站电力",
+    "frFR": "Énergie des stations d’interaction",
+    "1031": "Energie der Interaktionsstationen",
+    "1041": "交互ステーション電力"
+  },
+  "FE交互站电力描述": {
+    "enUS": "Increases charging power and energy capacity of FE planetary and interstellar interaction stations. Red, yellow, purple and green upgrades add 10%, 20%, 30% and 40% of base values. Each white matrix upgrade adds another 10% of base values. More capacity does not supply free energy; charging still depends on the grid and station settings.",
+    "zhCN": "提高FE行星内、星际物流交互站的充电功率与储能上限。红、黄、紫、绿阶段分别增加基础值的10%、20%、30%、40%；白矩阵每级再增加基础值的10%。提高上限不会补充电量，实际充电仍受电网与站内设置限制。",
+    "frFR": "Augmente la puissance de charge et la capacité énergétique des stations d’interaction FE planétaires et interstellaires. Les améliorations rouges, jaunes, violettes et vertes ajoutent 10 %, 20 %, 30 % et 40 % des valeurs de base. Chaque niveau blanc ajoute 10 % de base. La capacité accrue ne fournit pas d’énergie gratuite ; la charge dépend du réseau et des réglages de la station.",
+    "1031": "Erhöht Ladeleistung und Energiespeicher der planetaren und interstellaren FE-Interaktionsstationen. Rote, gelbe, violette und grüne Stufen addieren 10 %, 20 %, 30 % und 40 % der Grundwerte. Jede weiße Stufe addiert weitere 10 % der Grundwerte. Mehr Kapazität liefert keine kostenlose Energie; das Laden hängt weiter vom Netz und den Stationseinstellungen ab.",
+    "1041": "FEの惑星内・星間交互ステーションの充電電力と蓄電上限を強化します。赤・黄・紫・緑段階で基準値の10%、20%、30%、40%を加算。白段階は研究ごとに基準値の10%を加算します。上限の増加で電力は補充されず、実際の充電は電力網とステーション設定に制限されます。"
+  },
+  "FE.Growth.StationPower": {
+    "enUS": "Charging power and energy capacity +{0}% of base",
+    "zhCN": "充电功率与储能上限 +基础值的{0}%",
+    "frFR": "Puissance de charge et capacité énergétique +{0} % de base",
+    "1031": "Ladeleistung und Energiespeicher +{0}% der Grundwerte",
+    "1041": "充電電力・蓄電上限 +基準値の{0}%"
   },
   "FE探索信号增幅描述": {
     "enUS": "Restore the ancient receiver to recover more fragments from Dark Fog wreckage and shorten the interval between new broadcasts. Discovered locations remain recorded without further calibration.",
