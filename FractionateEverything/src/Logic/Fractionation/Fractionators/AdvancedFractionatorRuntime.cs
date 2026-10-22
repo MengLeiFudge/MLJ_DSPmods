@@ -241,6 +241,7 @@ public static partial class AdvancedFractionatorRuntime {
             state.OutputCursor = 0;
             state.FlowOutputCursor = 0;
             fractionator.progress = 0;
+            MirrorVanillaFields(ref fractionator, state, factory.entitySignPool, fractionator.entityId, buildingId);
         }
         return true;
     }
@@ -728,8 +729,9 @@ public static partial class AdvancedFractionatorRuntime {
             : Math.Min(1f, recipe.CycleSuccessProbability
                            * (1f + ResearchManager.GetAdvancedTowerSacrificeBoost(buildingId)));
         if (entityId > 0 && entityId < signPool.Length) {
-            signPool[entityId].iconId0 = (uint)(fractionator.fluidId > 0 ? fractionator.fluidId : 0);
-            signPool[entityId].iconType = fractionator.fluidId > 0 ? 1U : 0U;
+            int recipeId = recipe == null ? 0 : AdvancedRecipeCatalog.GetProtoId(recipe.PersistentId);
+            signPool[entityId].iconId0 = (uint)recipeId;
+            signPool[entityId].iconType = recipeId > 0 ? 2U : 0U;
         }
     }
 

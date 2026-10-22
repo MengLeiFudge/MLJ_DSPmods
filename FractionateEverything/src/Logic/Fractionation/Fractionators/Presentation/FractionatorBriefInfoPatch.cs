@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using FE.Logic.Fractionation.Recipes;
 using static FE.Logic.Fractionation.Fractionators.ProcessManager;
 
 namespace FE.Logic.Fractionation.Fractionators.Presentation;
@@ -24,8 +25,16 @@ public static class FractionatorBriefInfoPatch {
             FractionatorComponent fractionator = _factory.factorySystem.fractionatorPool[fractionatorId];
             if (FractionatorTowerCatalog.IsAdvancedTower(entityData.protoId)) {
                 AdvancedFractionatorState state = AdvancedFractionatorRuntime.GetState(_factory, fractionatorId);
-                if (state == null) { __instance.reading0 = 0d; }
-                else { lock (state) { __instance.reading0 = state.ProcessingRate * 60d; } }
+                __instance.reading0 = 0d;
+                __instance.recipeId = 0;
+                if (state != null) {
+                    lock (state) {
+                        __instance.reading0 = state.ProcessingRate * 60d;
+                        __instance.recipeId = AdvancedRecipeCatalog.GetProtoId(state.SelectedRecipeId);
+                    }
+                }
+                __instance.sign.iconId0 = (uint)__instance.recipeId;
+                __instance.sign.iconType = __instance.recipeId > 0 ? 2U : 0U;
                 return;
             }
             int fluidId = fractionator.fluidId;

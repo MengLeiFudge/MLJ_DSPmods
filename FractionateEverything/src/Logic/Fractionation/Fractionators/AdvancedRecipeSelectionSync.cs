@@ -1,5 +1,7 @@
 using System;
 using FE.Compatibility.Nebula;
+using FE.Logic.Civilization;
+using FE.Logic.Fractionation.Recipes;
 using HarmonyLib;
 using NebulaAPI;
 
@@ -11,8 +13,6 @@ namespace FE.Logic.Fractionation.Fractionators;
 public static class AdvancedRecipeSelectionSync {
     private const int ParameterMagic = 0x46524543;
     private const int ParameterVersion = 1;
-    private static bool hasClipboard;
-    private static int clipboardRecipeId;
 
     /// <summary>
     /// 设置选定配方，并在本地手动操作时发送 Nebula 建筑变更包。
@@ -41,31 +41,76 @@ public static class AdvancedRecipeSelectionSync {
         return factory != null && SetSelectedRecipeAndSync(factory, entityId, recipeId);
     }
 
-    /// <summary>
-    /// 复制建筑设置时记录高级塔配方。
-    /// </summary>
+    /// <summary>配方随原版剪贴板保存，复制其他建筑或清空剪贴板时一并失效。</summary>
     [HarmonyPostfix]
-    [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.OnCopyBuildingSetting))]
-    private static void PlanetFactory_OnCopyBuildingSetting_Postfix(PlanetFactory __instance, int entityId) {
-        if (!TryGetAdvancedFractionator(__instance, entityId, out FractionatorComponent fractionator)) {
-            hasClipboard = false;
-            clipboardRecipeId = 0;
+    [HarmonyPatch(typeof(BuildingParameters), nameof(BuildingParameters.CopyFromFactoryObject))]
+    private static void BuildingParameters_CopyFromFactoryObject_Postfix(ref BuildingParameters __instance,
+        int objectId, PlanetFactory factory, bool __result) {
+        if (!__result || !TryGetAdvancedFractionator(factory, objectId, out FractionatorComponent fractionator)) {
             return;
         }
-        AdvancedFractionatorState state = AdvancedFractionatorRuntime.GetState(__instance, fractionator.id);
-        hasClipboard = true;
-        clipboardRecipeId = state?.SelectedRecipeId ?? 0;
+        AdvancedFractionatorState state = AdvancedFractionatorRuntime.GetState(factory, fractionator.id);
+        int recipeId = 0;
+        if (state != null) { lock (state) { recipeId = state.SelectedRecipeId; } }
+        __instance.parameters = FractionatorBlueprintParameters.Upsert(
+            __instance.parameters, ParameterMagic, ParameterVersion, recipeId);
     }
 
-    /// <summary>
-    /// 粘贴建筑设置时恢复高级塔配方。
-    /// </summary>
+    /// <summary>原版没有分馏塔分支；在操作入口开放同型高级塔，而不是等待成功通知。</summary>
     [HarmonyPostfix]
-    [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.OnPasteBuildingSetting))]
-    private static void PlanetFactory_OnPasteBuildingSetting_Postfix(PlanetFactory __instance, int entityId) {
-        if (hasClipboard) {
-            SetSelectedRecipeAndSync(__instance, entityId, clipboardRecipeId, manual: true);
+    [HarmonyPatch(typeof(BuildingParameters), nameof(BuildingParameters.CanPasteToFactoryObject))]
+    private static void BuildingParameters_CanPasteToFactoryObject_Postfix(BuildingParameters __instance,
+        int objectId, PlanetFactory factory, ref bool __result) {
+        if (FractionatorTowerCatalog.IsAdvancedTower(__instance.itemId)) {
+            __result = CanPasteRecipe(__instance, factory, objectId, out _);
         }
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(BuildingParameters), nameof(BuildingParameters.PasteToFactoryObject))]
+    private static bool BuildingParameters_PasteToFactoryObject_Prefix(BuildingParameters __instance,
+        int objectId, PlanetFactory factory, ref bool __result) {
+        if (!FractionatorTowerCatalog.IsAdvancedTower(__instance.itemId)) { return true; }
+        __result = CanPasteRecipe(__instance, factory, objectId, out int recipeId)
+            && SetSelectedRecipeAndSync(factory, objectId, recipeId, manual: true);
+        return false;
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(BuildingParameters), nameof(BuildingParameters.CopiedTipText))]
+    private static void BuildingParameters_CopiedTipText_Postfix(BuildingParameters __instance, ref string __result) {
+        if (TryGetCopiedRecipe(__instance, out int recipeId)) {
+            __result = "配方已复制".Translate() + GetRecipeName(recipeId);
+        }
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(BuildingParameters), nameof(BuildingParameters.PastedTipText))]
+    private static void BuildingParameters_PastedTipText_Postfix(BuildingParameters __instance, ref string __result) {
+        if (TryGetCopiedRecipe(__instance, out int recipeId)) {
+            __result = "配方已粘贴".Translate() + GetRecipeName(recipeId);
+        }
+    }
+
+    private static string GetRecipeName(int recipeId) =>
+        RecipeManager.GetRecipe(recipeId)?.DisplayName ?? "无".Translate();
+
+    private static bool TryGetCopiedRecipe(BuildingParameters settings, out int recipeId) {
+        recipeId = 0;
+        return FractionatorTowerCatalog.IsAdvancedTower(settings.itemId)
+            && FractionatorBlueprintParameters.TryRead(settings.parameters, ParameterMagic, ParameterVersion, out recipeId);
+    }
+
+    private static bool CanPasteRecipe(BuildingParameters settings, PlanetFactory factory, int entityId,
+        out int recipeId) {
+        if (!TryGetCopiedRecipe(settings, out recipeId)
+            || !TryGetAdvancedFractionator(factory, entityId, out _)
+            || factory.entityPool[entityId].protoId != settings.itemId) { return false; }
+        if (recipeId == 0) { return true; }
+        WorldviewRecipe recipe = RecipeManager.GetRecipe(recipeId);
+        return recipe?.IsAdvanced == true
+            && recipe.RecipeType == FractionatorTowerCatalog.GetRecipeType(settings.itemId)
+            && ResearchManager.IsContentUnlocked(recipe.StableId);
     }
 
     /// <summary>
