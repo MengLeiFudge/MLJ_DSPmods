@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Library</OutputType>
+        <AssemblyName>FractionateEverything.Resources</AssemblyName>
+        <RootNamespace>FE.Resources</RootNamespace>
+        <Version>3.0.0</Version>
+        <Description>万物分馏图标资源</Description>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all"/>
+        <EmbeddedResource Include="Icons\*.png" LogicalName="FE.Icons.%(Filename)%(Extension)"/>
+    </ItemGroup>
+</Project>

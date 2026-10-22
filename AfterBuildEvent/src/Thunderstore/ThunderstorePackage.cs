@@ -81,7 +81,7 @@ internal sealed class ThunderstorePackage : IDisposable {
             files.Add(changelog);
         }
         if (name == "FractionateEverything") {
-            files.Add(Path.Combine(projectDir, "Assets", "fe"));
+            files.Add(Path.Combine(projectDir, "bin", configuration, "FractionateEverything.Resources.dll"));
         } else if (name == "GetDspData") {
             files.Add(Path.Combine(PathConfig.SolutionFullDir, "lib", "Newtonsoft.Json.dll"));
         }

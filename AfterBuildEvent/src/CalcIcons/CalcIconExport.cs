@@ -549,8 +549,9 @@ static partial class AfterBuildEvent {
             },
             new() {
                 TargetMod = "FractionateEverything",
-                AssetStudioPackageName = "MengLei-FractionateEverything",
-                AssetStudioRelativePaths = ["fe"],
+                EmbeddedDllPackageName = "MengLei-FractionateEverything",
+                EmbeddedDllRelativePath = "FractionateEverything.Resources.dll",
+                SourcePrefix = "FE.Icons.",
                 EnabledMods = ["MengLei-FractionateEverything"],
                 LowerPriorityMods = ["Vanilla"],
             },

@@ -263,13 +263,7 @@ static partial class AfterBuildEvent {
                 string jsonDll = $@"{SolutionDir}\lib\Newtonsoft.Json.dll";
                 fileList.Add(jsonDll);
             } else if (projectName == "FractionateEverything") {
-                //fe
-                string originFEAssets = @"D:\project\unity\DSP_FEAssets\AssetBundles\StandaloneWindows64\fe";
-                string projectFEAssets = $@"{SolutionDir}\FractionateEverything\Assets\fe";
-                if (File.Exists(originFEAssets)) {
-                    File.Copy(originFEAssets, projectFEAssets, true);
-                }
-                fileList.Add(projectFEAssets);
+                fileList.Add(GetProjectOutputPath(projectName, BuildConfiguration, "FractionateEverything.Resources.dll"));
             }
             //打包
             if (!Directory.Exists(r2ModDir)) {
@@ -298,6 +292,7 @@ static partial class AfterBuildEvent {
                 }
                 CopyFileWithRetry(file, targetPath);
             }
+            if (projectName == "FractionateEverything") { RetireLegacyFeAssetBundle(); }
             if (!string.IsNullOrWhiteSpace(manifestVersion)) {
                 if (UpdateModVersionInConfig(thunderstoreModName, manifestVersion)) {
                     Console.WriteLine($"已同步 mods.yml 版本：{thunderstoreModName} -> {manifestVersion}");
@@ -421,6 +416,9 @@ static partial class AfterBuildEvent {
     }
 
     private static string GetProjectNameFromChangedPath(string path) {
+        if (path.StartsWith("FractionateEverything.Resources/", StringComparison.OrdinalIgnoreCase)) {
+            return "FractionateEverything";
+        }
         foreach (PublishTarget target in PublishTargets) {
             string prefix = $"{target.ProjectName}/";
             if (path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) {

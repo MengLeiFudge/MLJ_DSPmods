@@ -154,8 +154,8 @@ static partial class AfterBuildEvent {
         string jsonDll = Path.Combine(SolutionFullDir, "lib", "Newtonsoft.Json.dll");
         CopyToR2RespectingOld(jsonDll, Path.Combine(R2PluginsDir, "MengLei-GetDspData", "Newtonsoft.Json.dll"), false);
 
-        string feAsset = Path.Combine(SolutionFullDir, "FractionateEverything", "Assets", "fe");
-        CopyToR2RespectingOld(feAsset, Path.Combine(R2PluginsDir, "MengLei-FractionateEverything", "fe"), false);
+        SyncProjectFileToR2("FractionateEverything", BuildConfiguration, "FractionateEverything.Resources.dll");
+        RetireLegacyFeAssetBundle();
         Console.WriteLine("已同步计算器数据导出所需本项目 DLL 到 R2");
     }
 

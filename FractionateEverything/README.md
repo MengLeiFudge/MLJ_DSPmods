@@ -149,6 +149,10 @@ The current save format is version 13. Nebula is host-authoritative; all players
 
 Install with r2modman or another Thunderstore-compatible manager. Required dependencies are declared in the package manifest.
 
+手动安装或更新时，请将发布包内的 `FractionateEverything.dll` 和 `FractionateEverything.Resources.dll` 一起放入同一插件目录。后者提供图标，缺失时模组无法完整加载。旧 `fe` 图标包已不再使用。
+
+For manual installation or updates, place both `FractionateEverything.dll` and `FractionateEverything.Resources.dll` from the release package in the same plugin directory. The resource DLL supplies the icons and is required. The old `fe` asset bundle is no longer used.
+
 与 DSPCalculator 一起使用时，计算器会跳过 FE 高级塔配方；普通配方照常计算，仅由高级塔生产的物品按外部输入处理。高级塔的实际产率请查看塔窗口。
 
 When using DSPCalculator, FE advanced-tower recipes are excluded from calculations. Ordinary recipes remain available; items produced only by advanced towers are treated as external inputs. Check the tower window for actual production rates.

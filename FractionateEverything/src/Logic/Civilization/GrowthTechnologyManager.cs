@@ -214,11 +214,11 @@ public static class GrowthTechnologyManager {
         AddUltimateTech(TFE终极探索, "终极探索");
         AddUltimateTech(TFE终极仓储, "终极仓储");
         AddFiniteSeries(TFE高级矿物特质, "FE高级矿物特质", "FE高级矿物特质描述",
-            "Assets/fe/tech资源复制", 0);
+            "Assets/fe/珍奇催化稳定性", 0);
         AddFiniteSeries(TFE高级交互特质, "FE高级交互特质", "FE高级交互特质描述",
-            "Assets/fe/tech物品交互", 1);
+            "Assets/fe/原胚繁育活性", 1);
         AddFiniteSeries(TFE高级转化特质, "FE高级转化特质", "FE高级转化特质描述",
-            "Assets/fe/tech物品转化", 2);
+            "Assets/fe/置换回收效率", 2);
     }
 
     /// <summary>
@@ -257,7 +257,7 @@ public static class GrowthTechnologyManager {
         TechProto planetaryVanilla = LDB.techs.Select(T行星物流系统);
         TechProto planetary = ProtoRegistry.RegisterTech(
             TFE行星内物流交互, "T行星内物流交互", "行星内物流交互描述", "行星内物流交互结果",
-            planetaryVanilla.IconPath, [],
+            "Assets/fe/行星亚空间交互", [],
             [.. planetaryVanilla.Items], [.. planetaryVanilla.ItemPoints], planetaryVanilla.HashNeeded,
             [RFE行星内物流交互站], GetInteractionTechPosition(false));
         planetary.PreTechsImplicit = [T行星物流系统];
@@ -269,7 +269,7 @@ public static class GrowthTechnologyManager {
         TechProto interstellarVanilla = LDB.techs.Select(T星际物流系统);
         TechProto interstellar = ProtoRegistry.RegisterTech(
             TFE星际物流交互, "T星际物流交互", "星际物流交互描述", "星际物流交互结果",
-            interstellarVanilla.IconPath, [],
+            "Assets/fe/星际亚空间交互", [],
             [.. interstellarVanilla.Items], [.. interstellarVanilla.ItemPoints], interstellarVanilla.HashNeeded,
             [RFE星际物流交互站], GetInteractionTechPosition(true));
         interstellar.PreTechsImplicit = [T星际物流系统];
@@ -281,7 +281,7 @@ public static class GrowthTechnologyManager {
 
     /// <summary>红至绿矩阵各一次性降耗；旧蓝、白矩阵身份仅供旧档识别。</summary>
     private static void AddEfficiencyTechs() {
-        var series = new GrowthTechSeries("FE亚空间能效", "FE亚空间能效描述", "Assets/fe/tech分馏数据中心", 4);
+        var series = new GrowthTechSeries("FE亚空间能效", "FE亚空间能效描述", "Assets/fe/亚空间存取能效", 4);
         TechProto retired = RegisterGrowthTech(TFE亚空间能效 + 1, series, 0, 0, 200, new GrowthTechLevel(1, 1));
         retired.IsObsolete = true;
         GrowthTechPositions.Remove(retired.ID);
@@ -300,7 +300,7 @@ public static class GrowthTechnologyManager {
 
     /// <summary>充电与储能按原始数值累加；白矩阵沿用原版无限科技等级范围。</summary>
     private static void AddStationPowerTechs() {
-        var series = new GrowthTechSeries("FE交互站电力", "FE交互站电力描述", "Assets/fe/tech分馏数据中心", 5);
+        var series = new GrowthTechSeries("FE交互站电力", "FE交互站电力描述", "Assets/fe/交互站电力", 5);
         int previous = TFE行星内物流交互;
         for (int stage = 1; stage <= 5; stage++) {
             TechProto tech = RegisterGrowthTech(TFE交互站电力 + stage, series, previous, stage,
@@ -313,7 +313,7 @@ public static class GrowthTechnologyManager {
 
     private static void AddStackTechs() {
         var series = new GrowthTechSeries("FE分馏堆叠成长", "FE分馏堆叠成长描述",
-            "Assets/fe/tech资源复制", 3);
+            "Assets/fe/超级压缩技术", 3);
         int previousTech = 0;
         for (int level = 1; level <= 5; level++) {
             int techId = TFE分馏堆叠成长 + level;
@@ -328,7 +328,7 @@ public static class GrowthTechnologyManager {
 
     /// <summary>保留旧科技原型以读取存档身份，不再提供研究入口或效果。</summary>
     private static void AddRetiredExplorationTechs() {
-        var series = new GrowthTechSeries("FE探索信号增幅", "FE探索信号增幅描述", "Assets/fe/tech物品分解", 0);
+        var series = new GrowthTechSeries("FE探索信号增幅", "FE探索信号增幅描述", "Assets/fe/探索信号增幅", 0);
         for (int level = 1; level <= FiniteGrowthLevelCount; level++) {
             TechProto tech = RegisterGrowthTech(TFE探索信号增幅 + level, series, 0,
                 level - 1, FiniteGrowthCosts[level - 1], new GrowthTechLevel(level, level == 6 ? 10 : level));
@@ -533,7 +533,7 @@ public static class GrowthTechnologyManager {
     /// <param name="name">名称键。</param>
     private static void AddUltimateTech(int id, string name) {
         TechProto tech = ProtoRegistry.RegisterTech(id, name, "终极任务科技描述", "FE成长科技结果",
-            "Assets/fe/tech分馏数据中心", [], [], [], 0, [], Vector2.zero);
+            $"Assets/fe/{name}", [], [], [], 0, [], Vector2.zero);
         tech.Level = 11;
         tech.MaxLevel = 11;
         tech.IsHiddenTech = true;

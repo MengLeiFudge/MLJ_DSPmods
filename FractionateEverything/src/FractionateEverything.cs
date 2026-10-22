@@ -13,6 +13,7 @@ using FE.Lifecycle;
 using FE.Compatibility;
 using FE.Compatibility.Nebula;
 using FE.Logic.Civilization;
+using FE.Logic.Items.Presentation;
 using FE.UI.Foundation.Window;
 using FE.UI.MainPanel;
 using HarmonyLib;
@@ -49,7 +50,6 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     /// </summary>
     public static int tab分馏;
     public static string ModPath;
-    public static ResourceData FEAssets;
     public static readonly Harmony harmony = new(PluginInfo.PLUGIN_GUID);
 
     #endregion
@@ -92,9 +92,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
 
             var executingAssembly = Assembly.GetExecutingAssembly();
             ModPath = Path.GetDirectoryName(executingAssembly.Location);
-            FEAssets = new(PluginInfo.PLUGIN_GUID, "fe", ModPath);
-            FEAssets.LoadAssetBundle("fe");
-            ProtoRegistry.AddResource(FEAssets);
+            IconResources.Load(ModPath);
 
             NebulaModAPI.RegisterPackets(executingAssembly);
 

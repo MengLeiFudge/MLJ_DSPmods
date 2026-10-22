@@ -106,7 +106,9 @@ cd "/mnt/d/project/dsp/MLJ_DSPmods/AfterBuildEvent/bin/Debug"
 
 - `FractionateEverything.dll` 以代码为主，不嵌入 PNG 图标等大体积美术资源，避免第三方补丁引用主程序集时携带整套资源。
 - PNG 图标嵌入独立的 `FractionateEverything.Resources.dll`，随模组 ZIP 发布并同步到 R2；主 DLL 仅保留加载逻辑和稳定配方映射，不对资源 DLL 建立编译依赖，第三方补丁无需引用资源程序集。
-- 现有 FE 建筑复用原版预制体，材质由代码复制并改色；现有 `fe` AssetBundle 承载 PNG 图标，不承载建筑模型或材质。图标迁入资源 DLL 并同步替换加载、打包和导出入口后，可移除该包；不能仅因资源包名而假定它承担模型依赖。
+- 图标源文件归 `FractionateEverything.Resources/Icons/`，以 `FE.Icons.<文件名>.png` 嵌入资源 DLL；`IconResources` 为 `Assets/fe/` 虚拟路径提供共享的 80×80 ARGB32 纹理与 Sprite。新增图标须同步核对原型路径、资源名及图集要求。
+- 科技图标文件名与中文科技名一致，同系列等级共享图标；内容使用纯白 RGB，背景透明，边缘由 alpha 抗锯齿，不使用彩色物品图代替科技图标。科技改名时同步调整图片名和引用。
+- FE 建筑复用原版预制体，材质由代码复制并改色。构建、R2 部署、ZIP 打包和计算器图标提取统一使用资源 DLL，不再依赖 Unity 工程或 `fe` AssetBundle。
 
 ## Calculator Icon Export Notes
 
