@@ -11,6 +11,7 @@ using CommonAPI.Systems.ModLocalization;
 using crecheng.DSPModSave;
 using FE.Lifecycle;
 using FE.Compatibility;
+using FE.Compatibility.Mods;
 using FE.Compatibility.Nebula;
 using FE.Logic.Civilization;
 using FE.Logic.Items.Presentation;
@@ -34,8 +35,8 @@ namespace FE;
 [BepInDependency(BuildBarToolPlugin.GUID)]
 [BepInDependency(NebulaModAPI.API_GUID)]
 [BepInDependency(CheckPlugins.GUID)]
-[BepInDependency(FE.Compatibility.Mods.TowerFactory.GUID)]
-[BepInDependency(CheckPlugins.AchievementsEnablerGuid, BepInDependency.DependencyFlags.HardDependency)]
+[BepInDependency(TowerFactory.GUID)]
+[BepInDependency(AchievementsEnabler.GUID)]
 [CommonAPISubmoduleDependency(nameof(CustomKeyBindSystem), nameof(ProtoRegistry), nameof(TabSystem),
     nameof(LocalizationModule), nameof(AssemblerRecipeSystem), nameof(PickerExtensionsSystem))]
 public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerModWithSettings {

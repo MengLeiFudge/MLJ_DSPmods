@@ -25,8 +25,10 @@ namespace FE.Compatibility;
 [BepInDependency(CommonAPIPlugin.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(BuildBarToolPlugin.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(NebulaMultiplayerModAPI.GUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(AchievementsEnabler.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(AutoSorter.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(Auxilaryfunction.GUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(BigTower.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(BuildToolOpt.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(CheatEnabler.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(CustomCreateBirthStar.GUID, BepInDependency.DependencyFlags.SoftDependency)]
@@ -41,15 +43,11 @@ namespace FE.Compatibility;
 [BepInDependency(SmelterMiner.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(TheyComeFromVoid.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(TowerFactory.GUID, BepInDependency.DependencyFlags.SoftDependency)]
-[BepInDependency("com.yummi.dsp.bigtower", BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(UxAssist.GUID, BepInDependency.DependencyFlags.SoftDependency)]
-[BepInDependency(CheckPlugins.AchievementsEnablerGuid, BepInDependency.DependencyFlags.SoftDependency)]
 public class CheckPlugins : BaseUnityPlugin {
     public const string GUID = PluginInfo.PLUGIN_GUID + ".CheckPlugins";
     public const string NAME = PluginInfo.PLUGIN_NAME + ".CheckPlugins";
     public const string VERSION = PluginInfo.PLUGIN_VERSION;
-    /// <summary>成就启用器标识，与主插件的硬依赖声明共用。</summary>
-    public const string AchievementsEnablerGuid = "AchievementsEnabler";
 
     private static bool _shown;
     private static string _missingModsList;
@@ -102,9 +100,9 @@ public class CheckPlugins : BaseUnityPlugin {
             dependencyOk = false;
             sb.Append($"\nTowerFactory ({TowerFactory.GUID})");
         }
-        if (!Chainloader.PluginInfos.ContainsKey(AchievementsEnablerGuid)) {
+        if (!Chainloader.PluginInfos.ContainsKey(AchievementsEnabler.GUID)) {
             dependencyOk = false;
-            sb.Append($"\nAchievementsEnabler ({AchievementsEnablerGuid})");
+            sb.Append($"\nAchievementsEnabler ({AchievementsEnabler.GUID})");
         }
         if (!dependencyOk) {
             _missingModsList = sb.ToString();
