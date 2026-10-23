@@ -59,13 +59,9 @@ internal sealed class ThunderstorePackage : IDisposable {
         if (FileVersionInfo.GetVersionInfo(dllPath).ProductVersion != version) {
             throw new InvalidDataException("DLL 版本与 manifest 不一致，请先重新构建。");
         }
-        // 其余插件使用构建生成的 PluginInfo；蓝图星球自行声明 BepInPlugin 的版本常量。
-        string pluginSource = name == "BlueprintPlanet"
-            ? Path.Combine(projectDir, "src", "BlueprintPlanetPlugin.cs")
-            : Path.Combine(projectDir, "obj", configuration, "GeneratedFile.cs");
-        string versionField = name == "BlueprintPlanet" ? "PluginVersion" : "PLUGIN_VERSION";
+        string pluginSource = Path.Combine(projectDir, "obj", configuration, "GeneratedFile.cs");
         string declaredVersion = Regex.Match(File.ReadAllText(pluginSource),
-            @"\bconst\s+string\s+" + versionField + "\\s*=\\s*\"([^\"]+)\"").Groups[1].Value;
+            "\\bconst\\s+string\\s+PLUGIN_VERSION\\s*=\\s*\"([^\"]+)\"").Groups[1].Value;
         if (declaredVersion != version) {
             throw new InvalidDataException("BepInEx 插件版本与 manifest 不一致。");
         }

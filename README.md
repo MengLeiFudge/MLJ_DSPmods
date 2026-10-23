@@ -36,26 +36,6 @@ tree, and Interaction Stations that connect production lines directly to the dat
 For mod developers only, you can export in-game items, recipes, models, technology and other information to a specified
 file.
 
-### [Save Data Exporter 存档数据导出](https://github.com/MengLeiFudge/MLJ_DSPmods/tree/master/SaveDataExporter)
-
-按自定义快捷键导出当前已载入存档的星系/星球维度物品统计数据，默认快捷键为空，输出为 `.xlsx`，可在游戏设置的“杂项”页面选择按时间戳生成新文件或按存档名固定覆盖。
-
-Exports per-star and per-planet item statistics from the currently loaded save through a custom hotkey. The hotkey is
-unbound by default, the output format is `.xlsx`, and file naming can either create timestamped files or overwrite a
-save-name-specific file.
-
-### [UXAEnhance UXAssist强化](https://github.com/MengLeiFudge/MLJ_DSPmods/tree/master/UXAEnhance)
-
-强化 UXAssist 的自动配置物流设施页面：支持通过本模组配置提高滑条上限，并为每个滑条提供单项全局应用按钮。
-
-Enhances UXAssist's auto-config logistics UI with configurable slider limits and per-slider global apply buttons.
-
-### [Blueprint Planet 蓝图星球](https://github.com/MengLeiFudge/MLJ_DSPmods/tree/master/BlueprintPlanet)
-
-新建原版蓝图时自动记录当前星球名称为“蓝图星球”属性，并将它作为缩略图文字默认值。
-
-When creating a new vanilla blueprint, records the current planet name as the “Blueprint Planet” property and uses it as the default thumbnail text.
-
 ## 模组安装说明 Mod Installation Guide
 
 你可以在[thunderstore](https://thunderstore.io/c/dyson-sphere-program/p/MengLei/)查看我发布的所有模组。
@@ -83,7 +63,7 @@ ID 从目标群的 NapCat `get_group_root_files` 响应 `folders[].folder_id` �
 
 本地交付使用 `AfterBuildEvent.exe 1`：关闭游戏、更新本地 r2modman 模组、打包、修正 Doorstop，再按变更范围向 QQ 群 319567534 推送文件。雷霆商店是独立流程，必须明确批准具体包及版本；日常本地交付和 QQ 推送不会触发商店上传。
 
-先用 Windows MSBuild 完成 Debug 构建，并在 `AfterBuildEvent/bin/Debug` 执行模式 `1` 生成当前 ZIP。支持的商店目标为 `FractionateEverything`、`BlueprintPlanet`、`SaveDataExporter`、`UXAEnhance`、`GetDspData`，每次指定一个项目。当前 GetDspData 缺少 README.md；BlueprintPlanet、SaveDataExporter、UXAEnhance 缺少各自的 Assets/icon.png。补齐这些必需素材前，对应包会被准备阶段阻止发布。
+先用 Windows MSBuild 完成 Debug 构建，并在 `AfterBuildEvent/bin/Debug` 执行模式 `1` 生成当前 ZIP。支持的商店目标为 `FractionateEverything`、`GetDspData`，每次指定一个项目。准备阶段会检查必需素材，缺失时阻止发布。
 
 准备阶段不读取密钥、不上传、不改本地模组：
 
@@ -99,9 +79,7 @@ ID 从目标群的 NapCat `get_group_root_files` 响应 `folders[].folder_id` �
 | 包名 | 默认分类 |
 |---|---|
 | FractionateEverything | Cheats、Game Breaking、Quality of Life |
-| BlueprintPlanet | Blueprints、Quality of Life |
-| UXAEnhance | Logistics、Quality of Life |
-| GetDspData、SaveDataExporter | Info |
+| GetDspData | Info |
 
 首次发布前，在仓库根目录安装固定版本的 CLI：
 

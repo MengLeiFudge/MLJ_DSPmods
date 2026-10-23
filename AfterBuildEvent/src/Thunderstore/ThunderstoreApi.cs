@@ -17,10 +17,7 @@ internal static class ThunderstoreApi {
     public static readonly IReadOnlyDictionary<string, string[]> DefaultCategories =
         new Dictionary<string, string[]>(StringComparer.Ordinal) {
             ["FractionateEverything"] = ["cheats", "game-breaking", "quality-of-life"],
-            ["BlueprintPlanet"] = ["blueprints", "quality-of-life"],
-            ["UXAEnhance"] = ["logistics", "quality-of-life"],
             ["GetDspData"] = ["info"],
-            ["SaveDataExporter"] = ["info"],
         };
 
     /// <summary>读取包及社区信息；新包返回 null。</summary>
