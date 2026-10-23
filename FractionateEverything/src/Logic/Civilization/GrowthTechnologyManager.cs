@@ -282,18 +282,22 @@ public static class GrowthTechnologyManager {
     /// <summary>红至绿矩阵各一次性降耗；旧蓝、白矩阵身份仅供旧档识别。</summary>
     private static void AddEfficiencyTechs() {
         var series = new GrowthTechSeries("FE亚空间能效", "FE亚空间能效描述", "Assets/fe/亚空间存取能效", 4);
-        TechProto retired = RegisterGrowthTech(TFE亚空间能效 + 1, series, 0, 0, 200, new GrowthTechLevel(1, 1));
+        // LDBTool 按名称绑定 ID；退休节点与现用节点等级重叠，使用独立固定键避开旧名称映射。
+        TechProto retired = RegisterGrowthTech(TFE亚空间能效 + 1, series, 0, 0, 200, new GrowthTechLevel(1, 1),
+            nameKey: $"FE亚空间能效.T{TFE亚空间能效 + 1}");
         retired.IsObsolete = true;
         GrowthTechPositions.Remove(retired.ID);
         int previous = TFE行星内物流交互;
         for (int stage = 1; stage <= 4; stage++) {
             TechProto tech = RegisterGrowthTech(TFE亚空间能效 + stage + 1, series, previous, stage,
-                FiniteGrowthCosts[stage], new GrowthTechLevel(stage, stage));
+                FiniteGrowthCosts[stage], new GrowthTechLevel(stage, stage),
+                nameKey: $"FE亚空间能效.T{TFE亚空间能效 + stage + 1}");
             tech.IconTag = $"fe-growth-{TFE亚空间能效}";
             previous = tech.ID;
         }
         TechProto retiredWhite = RegisterGrowthTech(TFE亚空间能效 + 6, series, 0, 5,
-            FiniteGrowthCosts[5], new GrowthTechLevel(5, 33));
+            FiniteGrowthCosts[5], new GrowthTechLevel(5, 33),
+            nameKey: $"FE亚空间能效.T{TFE亚空间能效 + 6}");
         retiredWhite.IsObsolete = true;
         GrowthTechPositions.Remove(retiredWhite.ID);
     }
@@ -352,9 +356,9 @@ public static class GrowthTechnologyManager {
     }
 
     private static TechProto RegisterGrowthTech(int techId, GrowthTechSeries series,
-        int previousTech, int stage, int matrixCost, GrowthTechLevel levelDefinition) {
+        int previousTech, int stage, int matrixCost, GrowthTechLevel levelDefinition, string nameKey = null) {
         TechProto reference = MatrixResearchCosts.GetReference(stage);
-        string nodeNameKey = $"{series.NameKey} {levelDefinition.Level}";
+        string nodeNameKey = nameKey ?? $"{series.NameKey} {levelDefinition.Level}";
         TechProto tech = ProtoRegistry.RegisterTech(
             techId, nodeNameKey, series.DescriptionKey, "FE成长科技结果", series.IconPath,
             previousTech > 0 ? [previousTech] : [],
