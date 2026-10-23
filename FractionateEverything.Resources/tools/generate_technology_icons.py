@@ -114,13 +114,6 @@ def generate():
     icon.save("星际亚空间交互")
 
     icon = Icon()
-    icon.ellipse((33, 33, 47, 47))
-    for offset in (13, 24):
-        icon.line([(40 - offset, 22), (29 - offset, 40), (40 - offset, 58)], 3)
-        icon.line([(40 + offset, 22), (51 + offset, 40), (40 + offset, 58)], 3)
-    icon.save("探索信号增幅")
-
-    icon = Icon()
     icon.ellipse((9, 9, 71, 71))
     icon.polygon([(50, 23), (45, 45), (23, 57), (35, 35)])
     for points in ([(40, 5), (40, 15)], [(40, 65), (40, 75)],

@@ -367,10 +367,10 @@ public static class ItemManager {
             itemValue[IMS多功能集成组件] = maxCalculatedValue;
         }
 
-        // 基础塔正面上传可接收全部已注册实体物品；上传路由负责容量和历史包裹规范化。
+        // 基础塔正面上传可接收全部已注册实体物品，上传路由负责容量。
         Array.Clear(uploadableItems, 0, uploadableItems.Length);
         foreach (ItemProto item in LDB.items.dataArray) {
-            if (item != null && item.ID > 0 && item.ID < 12000 && !IsCurrencyPackageItem(item.ID)) {
+            if (item != null && item.ID > 0 && item.ID < 12000) {
                 uploadableItems[item.ID] = true;
             }
         }
@@ -390,57 +390,6 @@ public static class ItemManager {
     ];
 
     public static readonly int[] itemToMatrix = new int[12000];
-
-    /// <summary>
-    /// 判断是否为 2.x 存档可能遗留的 Frag/Memory 面额包裹。
-    /// </summary>
-    public static bool IsCurrencyPackageItem(int itemId) =>
-        itemId is IFE残片10 or IFE残片100 or IFE残片1000
-            or IFE记忆源点10 or IFE记忆源点100 or IFE记忆源点1000;
-
-    /// <summary>
-    /// 将货币包裹解析为基础物品与面额；基础物品自身返回 faceValue=1。
-    /// </summary>
-    public static bool TryGetCurrencyNormalization(int itemId, out int baseItemId, out int faceValue) {
-        switch (itemId) {
-            case IFE残片:
-                baseItemId = IFE残片;
-                faceValue = 1;
-                return true;
-            case IFE残片10:
-                baseItemId = IFE残片;
-                faceValue = 10;
-                return true;
-            case IFE残片100:
-                baseItemId = IFE残片;
-                faceValue = 100;
-                return true;
-            case IFE残片1000:
-                baseItemId = IFE残片;
-                faceValue = 1000;
-                return true;
-            case IFE记忆源点:
-                baseItemId = IFE记忆源点;
-                faceValue = 1;
-                return true;
-            case IFE记忆源点10:
-                baseItemId = IFE记忆源点;
-                faceValue = 10;
-                return true;
-            case IFE记忆源点100:
-                baseItemId = IFE记忆源点;
-                faceValue = 100;
-                return true;
-            case IFE记忆源点1000:
-                baseItemId = IFE记忆源点;
-                faceValue = 1000;
-                return true;
-            default:
-                baseItemId = 0;
-                faceValue = 0;
-                return false;
-        }
-    }
 
     /// <summary>
     /// 获取主线矩阵阶段索引。黑雾矩阵不是主线矩阵，返回 -1 供调用方显式分支处理。
@@ -565,8 +514,7 @@ public static class ItemManager {
     }
 
     /// <summary>研究资源的业务身份独立于价值，不参与普通复制、丢弃回收或自动整理。</summary>
-    public static bool IsProgressionResource(int itemId) => itemId is IFE残片 or IFE记忆源点 or IFE实体元数据
-        || IsCurrencyPackageItem(itemId);
+    public static bool IsProgressionResource(int itemId) => itemId is IFE残片 or IFE记忆源点 or IFE实体元数据;
 
     /// <summary>保持显式物品资格，避免有限估值使研究资源被自动整理或丢弃回收。</summary>
     public static bool CanAutoStoreItem(int itemId) => IsUploadableItem(itemId) && !IsProgressionResource(itemId);

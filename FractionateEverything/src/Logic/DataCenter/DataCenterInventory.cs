@@ -54,7 +54,6 @@ public static class DataCenterInventory {
         lock (centerItemCount) {
             SubspaceExpansion.IntoOtherSave();
             MaterialLeases.BeforeImport();
-            var refunds = new RetiredAssemblyData();
             r.ReadBlocks(
                 ("CenterItems", br => {
                     int size = br.ReadInt32();
@@ -75,42 +74,9 @@ public static class DataCenterInventory {
                     ManualExtractCount = Math.Max(0L, br.ReadInt64());
                     ManualUploadCount = Math.Max(0L, br.ReadInt64());
                 }),
-                ("Assembly", refunds.Read),
                 ("MaterialLeases", MaterialLeases.Import)
             );
-            // FE 自有 DataCenter 余额不经 Legacy 物理引用迁移；旧槽位由后续自有状态叶处理。
-            if (!NebulaMultiplayerModAPI.IsClient) { refunds.Restore(centerItemCount, centerItemInc); }
-            NormalizeCurrencyPackagesLocked();
         }
-    }
-
-    /// <summary>
-    /// 将误入自身槽的货币包裹折算为基础余额并清空包裹槽。
-    /// </summary>
-    private static void NormalizeCurrencyPackagesLocked() {
-        lock (centerItemCount) {
-            NormalizeOnePackage(IFE残片10, IFE残片, 10);
-            NormalizeOnePackage(IFE残片100, IFE残片, 100);
-            NormalizeOnePackage(IFE残片1000, IFE残片, 1000);
-            NormalizeOnePackage(IFE记忆源点10, IFE记忆源点, 10);
-            NormalizeOnePackage(IFE记忆源点100, IFE记忆源点, 100);
-            NormalizeOnePackage(IFE记忆源点1000, IFE记忆源点, 1000);
-        }
-    }
-
-    private static void NormalizeOnePackage(int packageId, int baseId, int faceValue) {
-        long packageCount = centerItemCount[packageId];
-        if (packageCount <= 0) {
-            centerItemCount[packageId] = 0;
-            centerItemInc[packageId] = 0;
-            return;
-        }
-
-        // 溢出时基础余额饱和，仍清空包裹槽，避免丢值回绕。
-        long converted = SaturatingMulNonNegative(packageCount, faceValue);
-        centerItemCount[baseId] = SaturatingAddNonNegative(centerItemCount[baseId], converted);
-        centerItemCount[packageId] = 0;
-        centerItemInc[packageId] = 0;
     }
 
     public static void IntoOtherSave() {
@@ -256,13 +222,6 @@ public static class DataCenterInventory {
         }
         if (itemId <= 0 || itemId >= 12000) {
             return 0;
-        }
-
-        if (IsCurrencyPackageItem(itemId)
-            && TryGetCurrencyNormalization(itemId, out int baseItemId, out int faceValue)) {
-            itemId = baseItemId;
-            count = SaturatingMulNonNegative(count, faceValue);
-            inc = 0;
         }
 
         StorageReceipt receipt = AddStoredItem(itemId, count, inc, StorageSource.Manual, out long newCount);
@@ -459,9 +418,6 @@ public static class DataCenterInventory {
     private static long TakeItemFromModDataInternal(int itemId, long count, out long inc) {
         inc = 0;
         if (count <= 0) {
-            return 0;
-        }
-        if (IsCurrencyPackageItem(itemId)) {
             return 0;
         }
         if (itemId == I沙土) {

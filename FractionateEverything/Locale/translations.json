@@ -153,20 +153,6 @@
     "1031": "Aufzeichnung: Monumente sind in jedem Sternsystem möglich. Fortgeschrittene Umwandlungstürme machen aus Metadaten und Trägerraketen Bauraketen. Rote Riesen liefern den höchsten Beitrag, blaue den nächsten.\nJede erhältliche Matrix, auch die des Dunklen Nebels, ergibt mit Solarsegeln ein Segel bekannter Herkunft. Leere Werfer erkennen Bandmaterial und behalten die Sorte bis zur Leerung. Alle Orbitmengen ausgleichen; fehlende Arten zählen null.\nBau und Kristallanalyse bleiben dauerhaft, Segel verfallen. Empfänger teilen sich ein Kristallbudget für den gesamten Spielstand. Das Ziel ist eine Frame Dauer für jedes normale Produktionsrezept.",
     "1041": "記録：どの星系にも建設可能です。高度転化塔で実体メタデータと輸送ロケットを建設ロケットにし、サイロへ供給します。赤色巨星の貢献が最大、青色巨星が次点です。\nダークフォッグを含む全入手可能マトリックスをソーラーセイルと転化します。空の射出機はベルト材料を識別し、空になるまで同種を受け入れます。未投入種類も0として全種類を均等にします。\n建設と結晶解析は恒久的ですが帆は期限で消えます。レイレシーバーを結晶受信へ切り替え、セーブ共通の割当を受けます。解析で強化し、全通常生産レシピの1フレーム化を目指します。"
   },
-  "FE.RetiredAssembly.Node": {
-    "zhCN": "退役装配节点",
-    "enUS": "Retired assembly node",
-    "frFR": "Nœud d’assemblage retiré",
-    "1031": "Stillgelegter Montageknoten",
-    "1041": "退役組立ノード"
-  },
-  "FE.RetiredAssembly.Description": {
-    "zhCN": "此节点已停用，不再耗电或生产。已有建筑可以拆除，无法重新建造。",
-    "enUS": "This node is retired and no longer consumes power or produces items. Existing nodes can be dismantled but cannot be rebuilt.",
-    "frFR": "Ce nœud est retiré : il ne consomme plus d’énergie et ne produit plus. Les nœuds existants peuvent être démontés, mais pas reconstruits.",
-    "1031": "Dieser Knoten ist stillgelegt und verbraucht weder Strom noch produziert er Gegenstände. Bestehende Knoten können abgebaut, aber nicht erneut errichtet werden.",
-    "1041": "このノードは退役し、電力を消費せず、生産もしません。既存の建物は撤去できますが、再建はできません。"
-  },
   "FE.Challenge.Status": {
     "zhCN": "记录恢复 {0}/{1}",
     "enUS": "Recovery {0}/{1}",
@@ -712,13 +698,6 @@
     "frFR": "Puissance de charge et capacité énergétique +{0} % de base",
     "1031": "Ladeleistung und Energiespeicher +{0}% der Grundwerte",
     "1041": "充電電力・蓄電上限 +基準値の{0}%"
-  },
-  "FE探索信号增幅描述": {
-    "enUS": "Restore the ancient receiver to recover more fragments from Dark Fog wreckage and shorten the interval between new broadcasts. Discovered locations remain recorded without further calibration.",
-    "zhCN": "修复远古接收器，辨识黑雾残骸中的更多残片，缩短新广播的出现间隔。已经发现的位置会持续保留，不必再次校准。",
-    "frFR": "Réparez le récepteur antique pour récupérer plus de fragments dans les débris du Brouillard noir et réduire l’intervalle entre émissions. Les lieux découverts restent enregistrés sans nouveau calibrage.",
-    "1031": "Repariere den antiken Empfänger, um mehr Fragmente in Trümmern des Dunklen Nebels zu finden und Sendeintervalle zu verkürzen. Entdeckte Orte bleiben ohne weitere Kalibrierung gespeichert.",
-    "1041": "古代の受信機を修復し、ダークフォグの残骸からより多くの断片を見つけ、放送の間隔を短縮する。発見済みの場所は再校正せずに保持される。"
   },
   "FE高级矿物特质描述": {
     "enUS": "Reduces rare-catalyst consumption in every advanced mineral tower.",
@@ -3779,13 +3758,6 @@
     "1031": "Effizienz der Subraumtransfers",
     "1041": "亜空間転送効率"
   },
-  "FE探索信号增幅": {
-    "enUS": "Exploration Signal Amplification",
-    "zhCN": "探索信号增幅",
-    "frFR": "Amplification des signaux d'exploration",
-    "1031": "Verstärkung der Erkundungssignale",
-    "1041": "探索信号増幅"
-  },
   "FE高级矿物特质": {
     "enUS": "Rare Catalyst Stability",
     "zhCN": "珍奇催化稳定性",
@@ -4073,13 +4045,6 @@
     "1031": "Superkompressionstechnologie",
     "1041": "超圧縮技術"
   },
-  "FE亚空间能效.T2141": {
-    "enUS": "Subspace Transfer Efficiency",
-    "zhCN": "亚空间存取能效",
-    "frFR": "Efficacité des transferts sous-spatiaux",
-    "1031": "Effizienz der Subraumtransfers",
-    "1041": "亜空間転送効率"
-  },
   "FE亚空间能效.T2142": {
     "enUS": "Subspace Transfer Efficiency",
     "zhCN": "亚空间存取能效",
@@ -4107,55 +4072,6 @@
     "frFR": "Efficacité des transferts sous-spatiaux",
     "1031": "Effizienz der Subraumtransfers",
     "1041": "亜空間転送効率"
-  },
-  "FE亚空间能效.T2146": {
-    "enUS": "Subspace Transfer Efficiency",
-    "zhCN": "亚空间存取能效",
-    "frFR": "Efficacité des transferts sous-spatiaux",
-    "1031": "Effizienz der Subraumtransfers",
-    "1041": "亜空間転送効率"
-  },
-  "FE探索信号增幅 1": {
-    "enUS": "Exploration Signal Amplification",
-    "zhCN": "探索信号增幅",
-    "frFR": "Amplification des signaux d'exploration",
-    "1031": "Verstärkung der Erkundungssignale",
-    "1041": "探索信号増幅"
-  },
-  "FE探索信号增幅 2": {
-    "enUS": "Exploration Signal Amplification",
-    "zhCN": "探索信号增幅",
-    "frFR": "Amplification des signaux d'exploration",
-    "1031": "Verstärkung der Erkundungssignale",
-    "1041": "探索信号増幅"
-  },
-  "FE探索信号增幅 3": {
-    "enUS": "Exploration Signal Amplification",
-    "zhCN": "探索信号增幅",
-    "frFR": "Amplification des signaux d'exploration",
-    "1031": "Verstärkung der Erkundungssignale",
-    "1041": "探索信号増幅"
-  },
-  "FE探索信号增幅 4": {
-    "enUS": "Exploration Signal Amplification",
-    "zhCN": "探索信号增幅",
-    "frFR": "Amplification des signaux d'exploration",
-    "1031": "Verstärkung der Erkundungssignale",
-    "1041": "探索信号増幅"
-  },
-  "FE探索信号增幅 5": {
-    "enUS": "Exploration Signal Amplification",
-    "zhCN": "探索信号增幅",
-    "frFR": "Amplification des signaux d'exploration",
-    "1031": "Verstärkung der Erkundungssignale",
-    "1041": "探索信号増幅"
-  },
-  "FE探索信号增幅 6": {
-    "enUS": "Exploration Signal Amplification",
-    "zhCN": "探索信号增幅",
-    "frFR": "Amplification des signaux d'exploration",
-    "1031": "Verstärkung der Erkundungssignale",
-    "1041": "探索信号増幅"
   },
   "FE高级矿物特质 1": {
     "enUS": "Rare Catalyst Stability",

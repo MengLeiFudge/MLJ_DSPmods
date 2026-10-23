@@ -1,6 +1,5 @@
 ﻿using FE.Logic.Civilization;
 using FE.Logic.Civilization.Monument;
-using FE.Logic.DataCenter;
 using FE.Logic.Enhancements.Stacking;
 using FE.Logic.Enhancements.VanillaRecipes;
 using FE.Logic.Fractionation.Recipes;
@@ -19,7 +18,6 @@ public static class FeatureBootstrap {
     public static void PreAddData() {
         // 添加生命工业使用的核心物品与原胚
         ItemManager.AddCoreItemsAndPrototypes();
-        RetiredAssemblyNode.Create();
         MonumentCatalog.PreAdd();
         // 初步添加分馏塔
         FractionatorManager.AddFractionators();
@@ -36,7 +34,6 @@ public static class FeatureBootstrap {
         // 设置分馏塔、物流交互站颜色
         FractionatorManager.SetFractionatorMaterial();
         StationManager.SetStationMaterial();
-        RetiredAssemblyNode.Configure();
     }
 
     /// <summary>

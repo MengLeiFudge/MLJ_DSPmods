@@ -459,31 +459,8 @@ public static partial class Utils {
     internal const int IFE转化塔 = IFE高级转化塔;
     internal const int IFE行星内物流交互站 = 8131;
     internal const int IFE星际物流交互站 = 8132;
-    /// <summary>退役装配节点，仅保留旧存档引用；关联模型与配方ID不得复用。</summary>
-    internal const int IFE亚空间装配节点 = 8133;
     internal const int IFE残片 = 8161;
-    /// <summary>旧六阶段解析数据 ID，当前版本不再注册为资源。</summary>
-    internal const int IFE电磁解析数据 = 8162;
-    /// <summary>旧六阶段解析数据 ID，当前版本不再注册为资源。</summary>
-    internal const int IFE能量解析数据 = 8163;
-    /// <summary>旧六阶段解析数据 ID，当前版本不再注册为资源。</summary>
-    internal const int IFE结构解析数据 = 8164;
-    /// <summary>旧六阶段解析数据 ID，当前版本不再注册为资源。</summary>
-    internal const int IFE信息解析数据 = 8165;
-    /// <summary>旧六阶段解析数据 ID，当前版本不再注册为资源。</summary>
-    internal const int IFE引力解析数据 = 8166;
-    /// <summary>旧六阶段解析数据 ID，当前版本不再注册为资源。</summary>
-    internal const int IFE宇宙解析数据 = 8167;
-    internal const int IFE残片10 = 8168;
-    internal const int IFE残片100 = 8169;
-    internal const int IFE残片1000 = 8170;
     internal const int IFE记忆源点 = 8171;
-    internal const int IFE记忆源点10 = 8172;
-    internal const int IFE记忆源点100 = 8173;
-    internal const int IFE记忆源点1000 = 8174;
-    internal const int IFE黑雾样本A = 8175;
-    internal const int IFE黑雾样本B = 8176;
-    internal const int IFE黑雾样本C = 8177;
     /// <summary>当前世界生产峰值经FE额度账本提取的实体，不能逆向生成元数据。</summary>
     internal const int IFE实体元数据 = 8178;
     /// <summary>元数据制造的永久丰碑建设弹药。</summary>
@@ -642,7 +619,6 @@ public static partial class Utils {
     internal const int MFE基础矿物塔 = 653;
     internal const int MFE高级转化塔 = 654;
     internal const int MFE高级矿物塔 = 655;
-    internal const int MFE亚空间装配节点 = 656;
     internal const int MFE培养塔 = MFE高级交互塔;
     internal const int MFE解析塔 = MFE基础解析塔;
     internal const int MFE复制塔 = MFE基础矿物塔;
@@ -1025,7 +1001,6 @@ public static partial class Utils {
     internal const int RFE高级转化展示起始 = 1078;
     /// <summary>高级转化扩展展示配方1100～1112，对应稳定身份30305～30317。</summary>
     internal const int RFE高级转化扩展展示起始 = 1100;
-    internal const int RFE亚空间装配节点 = 1113;
 
     internal const int T戴森球计划 = 1;
     internal const int T电磁学 = 1001;
@@ -1071,8 +1046,6 @@ public static partial class Utils {
     internal const int TGB标准制造单元 = 1202;
     internal const int T量子打印 = 1203;
     internal const int TGB高精度加工 = 1203;
-    /// <summary>旧亚空间网络科技 ID，仅用于识别历史状态；当前版本不注册。</summary>
-    internal const int TFE分馏数据中心 = 2051;
     internal const int TFE分馏塔原胚 = 2052;
     internal const int TFE培养塔 = 2053;
     internal const int TFE解析塔 = 2054;
@@ -1082,31 +1055,16 @@ public static partial class Utils {
     internal const int TFE星际物流交互 = 2062;
 
     internal const int TFE分馏堆叠成长 = 2080;
-    /// <summary>保留2091～2099历史扩容科技编号；容量现归矩阵扩容状态，不再注册或复用这些编号。</summary>
-    internal const int TFE亚空间扩容 = 2090;
     /// <summary>长链探索完成后授予的终极探索节点。</summary>
     internal const int TFE终极探索 = 2171;
     /// <summary>长链仓储任务完成后授予的终极容量节点。</summary>
     internal const int TFE终极仓储 = 2172;
-    internal const int TFE探索信号增幅 = 2150;
     internal const int TFE高级矿物特质 = 2110;
     internal const int TFE高级交互特质 = 2120;
     internal const int TFE高级转化特质 = 2130;
     internal const int TFE亚空间能效 = 2140;
     /// <summary>交互站充电与储能科技，2181～2185为独立节点。</summary>
     internal const int TFE交互站电力 = 2180;
-    /// <summary>旧六阶段补给科技 ID，当前版本不注册也不复用。</summary>
-    internal const int TFE阶段补给1 = 2071;
-    /// <summary>旧六阶段补给科技 ID，当前版本不注册也不复用。</summary>
-    internal const int TFE阶段补给2 = 2072;
-    /// <summary>旧六阶段补给科技 ID，当前版本不注册也不复用。</summary>
-    internal const int TFE阶段补给3 = 2073;
-    /// <summary>旧六阶段补给科技 ID，当前版本不注册也不复用。</summary>
-    internal const int TFE阶段补给4 = 2074;
-    /// <summary>旧六阶段补给科技 ID，当前版本不注册也不复用。</summary>
-    internal const int TFE阶段补给5 = 2075;
-    /// <summary>旧六阶段补给科技 ID，当前版本不注册也不复用。</summary>
-    internal const int TFE阶段补给6 = 2076;
     internal const int T处理器 = 1302;
     internal const int T量子芯片 = 1303;
     internal const int T光子聚束采矿 = 1304;

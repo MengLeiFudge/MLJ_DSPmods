@@ -45,9 +45,6 @@ public static class GrowthTechnologyManager {
     /// <summary>亚空间存取能效科技方向的稳定内容 ID。</summary>
     public const string SubspaceEfficiencyTechnologyContentId = "technology:subspace-efficiency";
 
-    /// <summary>探索信号增幅科技方向的稳定内容 ID。</summary>
-    public const string ExplorationTechnologyContentId = "technology:exploration-signal";
-
     private const int FiniteGrowthLevelCount = 6;
     /// <summary>成长首行相对第二页宇宙探索的网格行，护盾链下方留出一行空白。</summary>
     private const int FirstGrowthRow = 36;
@@ -126,11 +123,9 @@ public static class GrowthTechnologyManager {
             TFE行星内物流交互 => PlanetaryInteractionTechnologyContentId,
             TFE星际物流交互 => InterstellarInteractionTechnologyContentId,
             > TFE分馏堆叠成长 and <= TFE分馏堆叠成长 + 5 => StackTechnologyContentId,
-            > TFE亚空间能效 and <= TFE亚空间能效 + FiniteGrowthLevelCount =>
+            > TFE亚空间能效 + 1 and <= TFE亚空间能效 + 5 =>
                 SubspaceEfficiencyTechnologyContentId,
             > TFE交互站电力 and <= TFE交互站电力 + 5 => SubspaceEfficiencyTechnologyContentId,
-            > TFE探索信号增幅 and <= TFE探索信号增幅 + FiniteGrowthLevelCount =>
-                ExplorationTechnologyContentId,
             > TFE高级矿物特质 and <= TFE高级矿物特质 + FiniteGrowthLevelCount =>
                 ResearchManager.AdvancedMineralTraitId,
             > TFE高级交互特质 and <= TFE高级交互特质 + FiniteGrowthLevelCount =>
@@ -210,7 +205,6 @@ public static class GrowthTechnologyManager {
         AddStackTechs();
         AddEfficiencyTechs();
         AddStationPowerTechs();
-        AddRetiredExplorationTechs();
         AddUltimateTech(TFE终极探索, "终极探索");
         AddUltimateTech(TFE终极仓储, "终极仓储");
         AddFiniteSeries(TFE高级矿物特质, "FE高级矿物特质", "FE高级矿物特质描述",
@@ -279,14 +273,9 @@ public static class GrowthTechnologyManager {
         interstellar.IconTag = "txjjh";
     }
 
-    /// <summary>红至绿矩阵各一次性降耗；旧蓝、白矩阵身份仅供旧档识别。</summary>
+    /// <summary>红至绿矩阵各一次性降耗。</summary>
     private static void AddEfficiencyTechs() {
         var series = new GrowthTechSeries("FE亚空间能效", "FE亚空间能效描述", "Assets/fe/亚空间存取能效", 4);
-        // LDBTool 按名称绑定 ID；退休节点与现用节点等级重叠，使用独立固定键避开旧名称映射。
-        TechProto retired = RegisterGrowthTech(TFE亚空间能效 + 1, series, 0, 0, 200, new GrowthTechLevel(1, 1),
-            nameKey: $"FE亚空间能效.T{TFE亚空间能效 + 1}");
-        retired.IsObsolete = true;
-        GrowthTechPositions.Remove(retired.ID);
         int previous = TFE行星内物流交互;
         for (int stage = 1; stage <= 4; stage++) {
             TechProto tech = RegisterGrowthTech(TFE亚空间能效 + stage + 1, series, previous, stage,
@@ -295,11 +284,6 @@ public static class GrowthTechnologyManager {
             tech.IconTag = $"fe-growth-{TFE亚空间能效}";
             previous = tech.ID;
         }
-        TechProto retiredWhite = RegisterGrowthTech(TFE亚空间能效 + 6, series, 0, 5,
-            FiniteGrowthCosts[5], new GrowthTechLevel(5, 33),
-            nameKey: $"FE亚空间能效.T{TFE亚空间能效 + 6}");
-        retiredWhite.IsObsolete = true;
-        GrowthTechPositions.Remove(retiredWhite.ID);
     }
 
     /// <summary>充电与储能按原始数值累加；白矩阵沿用原版无限科技等级范围。</summary>
@@ -328,17 +312,6 @@ public static class GrowthTechnologyManager {
             previousTech = techId;
         }
         ConfigureStackProgression();
-    }
-
-    /// <summary>保留旧科技原型以读取存档身份，不再提供研究入口或效果。</summary>
-    private static void AddRetiredExplorationTechs() {
-        var series = new GrowthTechSeries("FE探索信号增幅", "FE探索信号增幅描述", "Assets/fe/探索信号增幅", 0);
-        for (int level = 1; level <= FiniteGrowthLevelCount; level++) {
-            TechProto tech = RegisterGrowthTech(TFE探索信号增幅 + level, series, 0,
-                level - 1, FiniteGrowthCosts[level - 1], new GrowthTechLevel(level, level == 6 ? 10 : level));
-            tech.IsObsolete = true;
-            GrowthTechPositions.Remove(tech.ID);
-        }
     }
 
     private static void AddFiniteSeries(int baseTechId, string nameKey, string descriptionKey,
@@ -436,76 +409,6 @@ public static class GrowthTechnologyManager {
             prerequisite.postTechArray = LDB.techs.dataArray
                 .Where(candidate => candidate?.IsObsolete == false && candidate.PreTechs?.Contains(techId) == true)
                 .ToArray();
-        }
-    }
-
-    /// <summary>按当前原型校准FE科研工作量与白糖计数，保持未完成节点可继续结算，不重复授予效果。</summary>
-    public static void SyncResearchWorkload() {
-        Dictionary<int, TechState> states = GameMain.history?.techStates;
-        if (states == null) { return; }
-        NormalizeEfficiencyResearch();
-        for (int i = GameMain.history.techQueue.Length - 1; i >= 0; i--) {
-            int id = GameMain.history.techQueue[i];
-            if (id > TFE探索信号增幅 && id <= TFE探索信号增幅 + FiniteGrowthLevelCount
-                || id is TFE终极探索 or TFE终极仓储) { GameMain.history.RemoveTechInQueue(i); }
-        }
-        foreach (TechProto tech in LDB.techs.dataArray) {
-            if (tech == null || tech.IsObsolete || !TryGetTechnologyContentId(tech.ID, out _)
-                || !states.TryGetValue(tech.ID, out TechState state)) { continue; }
-            long needed = tech.GetHashNeeded(state.curLevel);
-            if (needed <= 0) { continue; }
-            // 原版导入已用新原型覆盖hashNeeded，但保留原hashUploaded；超过新总量会使AddTechHash直接返回。
-            long uploaded = state.unlocked ? needed : Math.Min(needed - 1, Math.Max(0L, state.hashUploaded));
-            int universePoints = tech.Items.Length > 0 && tech.Items[0] == I宇宙矩阵 ? tech.ItemPoints[0] : 0;
-            if (state.hashNeeded == needed && state.hashUploaded == uploaded
-                && state.uPointPerHash == universePoints) { continue; }
-            state.hashUploaded = uploaded;
-            state.hashNeeded = needed;
-            state.uPointPerHash = universePoints;
-            states[tech.ID] = state;
-        }
-    }
-
-    /// <summary>有限能效保留完成状态；退休节点清除进度并退出队列，不转换成新科技。</summary>
-    private static void NormalizeEfficiencyResearch() {
-        GameHistoryData history = GameMain.history;
-        for (int offset = 1; offset <= 6; offset++) {
-            int id = TFE亚空间能效 + offset;
-            TechProto tech = LDB.techs.Select(id);
-            if (!history.techStates.TryGetValue(id, out TechState state)) { continue; }
-            state.curLevel = tech.Level;
-            state.maxLevel = tech.MaxLevel;
-            if (tech.IsObsolete) { state.unlocked = false; state.hashUploaded = 0; }
-            history.techStates[id] = state;
-        }
-        for (int i = history.techQueue.Length - 1; i >= 0; i--) {
-            if (history.techQueue[i] is TFE亚空间能效 + 1 or TFE亚空间能效 + 6) { history.RemoveTechInQueue(i); }
-        }
-    }
-
-    /// <summary>校准单级堆叠节点；退休节点退出队列且不补偿，不从旧curLevel猜测完成状态。</summary>
-    public static void NormalizeStackResearch() {
-        GameHistoryData history = GameMain.history;
-        if (history == null || !ResearchManager.BelongsToGeneration3) { return; }
-        for (int level = 1; level <= 5; level++) {
-            int techId = TFE分馏堆叠成长 + level;
-            TechProto tech = LDB.techs.Select(techId);
-            if (tech == null || !history.techStates.TryGetValue(techId, out TechState state)) { continue; }
-            state.curLevel = tech.Level;
-            state.maxLevel = tech.MaxLevel;
-            state.hashNeeded = tech.GetHashNeeded(tech.Level);
-            if (tech.IsObsolete) {
-                state.unlocked = false;
-                state.hashUploaded = 0;
-            }
-            history.techStates[techId] = state;
-        }
-        for (int i = history.techQueue.Length - 1; i >= 0; i--) {
-            int techId = history.techQueue[i];
-            if (techId > TFE分馏堆叠成长 && techId <= TFE分馏堆叠成长 + 5
-                && LDB.techs.Select(techId)?.IsObsolete == true) {
-                history.RemoveTechInQueue(i);
-            }
         }
     }
 

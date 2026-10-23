@@ -8,7 +8,7 @@
 DataCenter/
 ├── DataCenterInventory.cs      # long 数量/增产点、容量、部分接收、奖励超容、存档
 ├── SubspaceExpansion.cs        # 全局矩阵供料、永久容量倍率、按秒结算和扩容子块
-├── DataCenterUploadRouter.cs   # 实体上传、基础塔整批预检、旧包裹规范化
+├── DataCenterUploadRouter.cs   # 实体上传、基础塔整批预检
 ├── PlayerInventoryAccess.cs    # 玩家背包 add/take/count 和提示
 ├── PackageAccessRules.cs       # 通信门禁、建筑师/沙盒临时背包边界
 └── Patches/                    # 计数、扣取、临时背包、排序和丢弃回收重定向
@@ -27,6 +27,4 @@ DataCenter/
 - 下载按真实数量拆分增产点；增产点始终满足非负且不超过数量的 10 倍。
 - 实际库存变化设置 `snapshotDirty`，由主机文明快照广播；UI 刷新不得直接改数组。
 - 通信门禁使用 `CivilizationRecoveryManager.HasDataCenterCommunication`。
-- 旧 Frag/Memory 包裹 ID 只用于导入历史误入槽位时规范化，不是正式物品或上传协议。
-- RetiredAssemblyData只读退役Assembly块并归还已扣输入；不运行或保存订单，预留不重复退款。RetiredAssemblyNode仅维持旧实体及机器缓存的有效引用，禁止新建与生产。
 - 玩家包裹访问只放 `PlayerInventoryAccess`；库存重定向 patch 只做边界接线，不复制容量或业务判断。

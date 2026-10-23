@@ -82,8 +82,7 @@ public static class GenesisBook {
             or >= TFE高级矿物特质 + 1 and <= TFE高级矿物特质 + 6
             or >= TFE高级交互特质 + 1 and <= TFE高级交互特质 + 6
             or >= TFE高级转化特质 + 1 and <= TFE高级转化特质 + 6
-            or >= TFE亚空间能效 + 1 and <= TFE亚空间能效 + 6
-            or >= TFE探索信号增幅 + 1 and <= TFE探索信号增幅 + 6
+            or >= TFE亚空间能效 + 2 and <= TFE亚空间能效 + 5
             or >= TFE交互站电力 + 1 and <= TFE交互站电力 + 5;
     }
 }
