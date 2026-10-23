@@ -43,10 +43,13 @@ namespace FE.Compatibility;
 [BepInDependency(TowerFactory.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency("com.yummi.dsp.bigtower", BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(UxAssist.GUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(CheckPlugins.AchievementsEnablerGuid, BepInDependency.DependencyFlags.SoftDependency)]
 public class CheckPlugins : BaseUnityPlugin {
     public const string GUID = PluginInfo.PLUGIN_GUID + ".CheckPlugins";
     public const string NAME = PluginInfo.PLUGIN_NAME + ".CheckPlugins";
     public const string VERSION = PluginInfo.PLUGIN_VERSION;
+    /// <summary>成就启用器标识，与主插件的硬依赖声明共用。</summary>
+    public const string AchievementsEnablerGuid = "AchievementsEnabler";
 
     private static bool _shown;
     private static string _missingModsList;
@@ -98,6 +101,10 @@ public class CheckPlugins : BaseUnityPlugin {
         if (!Chainloader.PluginInfos.ContainsKey(TowerFactory.GUID)) {
             dependencyOk = false;
             sb.Append($"\nTowerFactory ({TowerFactory.GUID})");
+        }
+        if (!Chainloader.PluginInfos.ContainsKey(AchievementsEnablerGuid)) {
+            dependencyOk = false;
+            sb.Append($"\nAchievementsEnabler ({AchievementsEnablerGuid})");
         }
         if (!dependencyOk) {
             _missingModsList = sb.ToString();
@@ -154,7 +161,7 @@ public class CheckPlugins : BaseUnityPlugin {
             null,
             () => {
 #if DEBUG
-                Application.OpenURL(Path.Combine(FractionateEverything.ModPath, "CHANGELOG.md"));
+                Application.OpenURL(Path.Combine(Path.GetDirectoryName(typeof(CheckPlugins).Assembly.Location), "CHANGELOG.md"));
 #else
                 Application.OpenURL("FE日志链接".Translate());
 #endif
@@ -170,7 +177,7 @@ public class CheckPlugins : BaseUnityPlugin {
             null,
             () => {
 #if DEBUG
-                Application.OpenURL(Path.Combine(FractionateEverything.ModPath, "CHANGELOG.md"));
+                Application.OpenURL(Path.Combine(Path.GetDirectoryName(typeof(CheckPlugins).Assembly.Location), "CHANGELOG.md"));
 #else
                 Application.OpenURL("FE日志链接".Translate());
 #endif
@@ -179,8 +186,14 @@ public class CheckPlugins : BaseUnityPlugin {
         );
     }
 
+    /// <summary>配置就绪后显示一次启动说明；主插件未初始化时记录错误并跳过说明。</summary>
     public static void OnMainMenuOpen() {
         if (_shown) return;
+        if (DisableMessageBox == null) {
+            _shown = true;
+            LogError("FE 主插件尚未完成配置初始化，已跳过启动说明；请查看此前的依赖加载错误或启动异常，并提供完整 LogOutput.log。");
+            return;
+        }
         if (!DisableMessageBox.Value) {
             ShowMessageBox();
             DisableMessageBox.Value = true;
@@ -196,7 +209,7 @@ public class CheckPlugins : BaseUnityPlugin {
             null,
             () => {
 #if DEBUG
-                Application.OpenURL(Path.Combine(FractionateEverything.ModPath, "CHANGELOG.md"));
+                Application.OpenURL(Path.Combine(Path.GetDirectoryName(typeof(CheckPlugins).Assembly.Location), "CHANGELOG.md"));
 #else
                 Application.OpenURL("FE日志链接".Translate());
 #endif
