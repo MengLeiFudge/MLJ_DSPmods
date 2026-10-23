@@ -1,4 +1,18 @@
 ﻿{
+  "FE.Save.Version22Notice.Title": {
+    "zhCN": "旧存档游玩建议",
+    "enUS": "Playing an older save",
+    "frFR": "Jouer avec une ancienne sauvegarde",
+    "1031": "Spielen mit einem älteren Spielstand",
+    "1041": "旧セーブデータでのプレイについて"
+  },
+  "FE.Save.Version22Notice.Body": {
+    "zhCN": "万物分馏 3.0 的玩法与成长路线变化较大，建议新建存档游玩，以体验完整流程。",
+    "enUS": "Fractionate Everything 3.0 significantly changes gameplay and progression. We recommend starting a new save to experience the full progression.",
+    "frFR": "Fractionate Everything 3.0 modifie considérablement les mécaniques de jeu et la progression. Nous vous conseillons de commencer une nouvelle partie pour découvrir l’ensemble du parcours.",
+    "1031": "Fractionate Everything 3.0 verändert Spielmechaniken und Fortschritt erheblich. Wir empfehlen einen neuen Spielstand, um den gesamten Spielverlauf zu erleben.",
+    "1041": "万物分馏 3.0 ではゲームの仕組みと進行が大きく変わりました。一連の流れを体験するため、新しいセーブデータでのプレイをおすすめします。"
+  },
   "FE.AdvancedRecipe.AverageQuantities": {
     "zhCN": "每次成功：平均消耗与产出",
     "enUS": "Per success: average consumption and yield",

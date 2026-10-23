@@ -168,6 +168,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
             }
             ResearchManager.InitializeVersion22State();
             CivilizationModule.AfterImport();
+            CivilizationModule.QueueVersion22Notice();
             return;
         }
         if (version != FeatureSaveRegistry.CurrentVersion) {

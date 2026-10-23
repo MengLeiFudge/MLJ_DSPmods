@@ -16,6 +16,7 @@ public static class CivilizationModule {
     private static readonly Queue<string> PendingNotifications = [];
     /// <summary>已结算的回收结果，在主线程逐条显示；由 NotificationSync 保护。</summary>
     private static readonly Queue<ExplorationMark> PendingRecoveries = [];
+    private static bool version22NoticePending;
     private static long lastProcessedGameTick = long.MinValue;
     /// <summary>上次执行按秒逻辑的游戏秒；低帧率时一帧可能推进多刻，不能用 gameTick % 60 判断整秒。</summary>
     private static long lastProcessedSecond = long.MinValue;
@@ -39,7 +40,7 @@ public static class CivilizationModule {
         }
 
         AdvancedRecipeCatalog.SyncUnlocks();
-        FlushRecoveryPopups();
+        FlushPopups();
         long gameTick = GameMain.gameTick;
         if (gameTick == lastProcessedGameTick) {
             return;
@@ -109,13 +110,29 @@ public static class CivilizationModule {
         lock (NotificationSync) { PendingRecoveries.Enqueue(mark); }
     }
 
-    /// <summary>仅在没有其他弹窗时显示下一条回收结果，避免提示相互覆盖。</summary>
-    private static void FlushRecoveryPopups() {
+    /// <summary>在成功载入2.2存档后，排队显示本次载入的游玩建议。</summary>
+    public static void QueueVersion22Notice() {
+        lock (NotificationSync) { version22NoticePending = true; }
+    }
+
+    /// <summary>游戏界面就绪后逐条显示载入建议和回收结果，避免提示相互覆盖。</summary>
+    private static void FlushPopups() {
         if (UIRoot.instance?.uiGame?.active != true || UIMessageBox.activeCount > 0) { return; }
-        ExplorationMark recovery;
+        ExplorationMark recovery = null;
+        bool showVersion22Notice;
         lock (NotificationSync) {
-            if (PendingRecoveries.Count == 0) { return; }
-            recovery = PendingRecoveries.Dequeue();
+            showVersion22Notice = version22NoticePending;
+            if (showVersion22Notice) {
+                version22NoticePending = false;
+            } else {
+                if (PendingRecoveries.Count == 0) { return; }
+                recovery = PendingRecoveries.Dequeue();
+            }
+        }
+        if (showVersion22Notice) {
+            UIMessageBox.Show("FE.Save.Version22Notice.Title".Translate(), "FE.Save.Version22Notice.Body".Translate(),
+                "确定".Translate(), UIMessageBox.INFO, null);
+            return;
         }
         UIMessageBox.Show(ExplorationManager.GetSignalName(recovery), ExplorationManager.GetRecoveryText(recovery),
             "确定".Translate(), UIMessageBox.INFO, null);
@@ -178,6 +195,7 @@ public static class CivilizationModule {
         lock (NotificationSync) {
             PendingNotifications.Clear();
             PendingRecoveries.Clear();
+            version22NoticePending = false;
         }
     }
 

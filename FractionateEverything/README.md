@@ -15,9 +15,9 @@ TowerFactory is required; BigTower is optional. Installing through a mod manager
 
 ## 存档兼容 Save Compatibility
 
-当前版本只兼容 FE 2.2 历史存档，不兼容任何历史 3.0 存档。2.2 导入只转换有当前对应物的物品、建筑与配方引用，清理已移除内容；FE 研究、探索、亚空间与成长进度从当前规则开始，不补偿旧进度。当前格式的保存与读取照常支持。
+当前版本只兼容 FE 2.2 历史存档，不兼容任何历史 3.0 存档。2.2 导入只转换有当前对应物的物品、建筑与配方引用，清理已移除内容；FE 研究、探索、亚空间与成长进度从当前规则开始，不补偿旧进度。当前格式的保存与读取照常支持。载入2.2存档后会提示：3.0变化较大，建议新建存档体验完整流程。
 
-The only supported historical saves are from FE 2.2. Earlier FE 3.0 saves are unsupported. Importing 2.2 converts supported item, building and recipe references and removes retired content; FE research, exploration, subspace and progression start under the current rules without compensation. Current-format saves remain supported.
+The only supported historical saves are from FE 2.2. Earlier FE 3.0 saves are unsupported. Importing 2.2 converts supported item, building and recipe references and removes retired content; FE research, exploration, subspace and progression start under the current rules without compensation. Current-format saves remain supported. After loading a 2.2 save, a notice recommends starting a new save to experience the full 3.0 progression.
 
 ## 从哪里开始 Getting Started
 
