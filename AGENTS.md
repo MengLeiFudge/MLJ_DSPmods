@@ -102,6 +102,14 @@ cd "/mnt/d/project/dsp/MLJ_DSPmods/AfterBuildEvent/bin/Debug"
 - Game libraries are "publicized" (all members made public) for mod access
 - BepInEx NuGet feed: `https://nuget.bepinex.dev/v3/index.json`
 
+## FE 存档兼容边界（强制）
+
+- 当前 3.0 唯一的历史存档兼容目标是 FE 2.2；不兼容 3.0 自身任何历史版本。
+- 删除旧 3.0 的格式读取、迁移、进度校准、补偿、退款、退休原型及仅服务这些路径的代码，不为其增加兜底或占位。
+- 当前版本正常保存、读取、数据校验和运行状态同步仍须保留。格式发生不兼容变化时更新版本并拒绝旧 3.0 数据，不能静默重置后冒充成功导入。
+- 2.2 兼容集中在 `Compatibility/LegacySave/`：转换仍有对应物的物品、模型和配方物理引用，清理无对应的旧实体；不恢复已删除玩法，不把旧业务进度换成 3.0 奖励。
+- 此限制针对 FE 自身存档历史，不撤销 TowerFactory、BigTower、创世、星环、Nebula 等外部模组兼容。
+
 ## FE 代码与资源分离
 
 - `FractionateEverything.dll` 以代码为主，不嵌入 PNG 图标等大体积美术资源，避免第三方补丁引用主程序集时携带整套资源。
@@ -135,7 +143,7 @@ FractionateEverything/src/
 ├── FractionateEverything.cs    # BepInEx plugin entry point (Awake, config, Harmony)
 ├── Lifecycle/                  # Feature bootstrap and save/load dispatch
 ├── Compatibility/              # Per-mod detection + integration → Compatibility/AGENTS.md
-│   ├── LegacySave/             # FE 2.x physical Item/Model/Recipe reference migration (vanilla containers only)
+│   ├── LegacySave/             # FE 2.2 physical Item/Model/Recipe reference conversion (vanilla containers only)
 │   ├── Mods/                   # General external mod integrations
 │   └── Nebula/                 # Multiplayer packets and sync hooks
 ├── Logic/                      # → Logic/AGENTS.md

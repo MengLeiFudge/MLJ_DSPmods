@@ -7,7 +7,6 @@ using System.Threading;
 using FE.Logic.Enhancements.Stacking;
 using FE.Logic.Fractionation.Recipes;
 using FE.Logic.Items;
-using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Fractionators;
 
@@ -101,12 +100,10 @@ public static partial class AdvancedFractionatorRuntime {
     /// <param name="seen">完整快照的存活集合；增量及存档读取传 null。</param>
     private static void ReadStates(BinaryReader reader, HashSet<(int planetId, int fractionatorId)> seen) {
         int header = reader.ReadInt32();
-        bool hasDigestion = header is -3 or -4;
-        bool hasCargo = hasDigestion || header == -2;
-        int count = hasCargo ? ReadStateCount(reader) : header;
-        if (count < 0 || count > MaximumStateCount) {
+        if (header != -4) {
             throw new InvalidDataException($"Invalid advanced fractionator state header: {header}");
         }
+        int count = ReadStateCount(reader);
         for (int i = 0; i < count; i++) {
             var key = (planetId: reader.ReadInt32(), fractionatorId: reader.ReadInt32());
             bool valid = key.planetId > 0 && key.fractionatorId > 0;
@@ -117,24 +114,16 @@ public static partial class AdvancedFractionatorRuntime {
                 int recipeId = reader.ReadInt32();
                 WorldviewRecipe recipe = RecipeManager.GetRecipe(recipeId);
                 state.SelectedRecipeId = recipeId != 0 && recipe?.IsAdvanced != true ? 0 : recipeId;
-                if (hasDigestion) {
-                    int itemId = reader.ReadInt32();
-                    double energy = reader.ReadDouble();
-                    int inc = Math.Max(0, Math.Min(10, reader.ReadInt32()));
-                    double capacity = GetFoodEnergy(itemId, inc);
-                    double oldCapacity = header == -4 ? 1d : GetLegacyFoodEnergy(itemId, inc);
-                    if (capacity > 0d && oldCapacity > 0d && !double.IsNaN(energy) && !double.IsInfinity(energy) && energy > 0d) {
-                        state.DigestingItemId = itemId;
-                        state.DigestingEnergy = Math.Min(1d, energy / oldCapacity) * capacity;
-                        state.DigestingInc = inc;
-                        state.DigestionVersion++;
-                    } else {
-                        ClearDigestion(state);
-                    }
+                int itemId = reader.ReadInt32();
+                double energy = reader.ReadDouble();
+                int inc = Math.Max(0, Math.Min(10, reader.ReadInt32()));
+                double capacity = GetFoodEnergy(itemId, inc);
+                if (capacity > 0d && !double.IsNaN(energy) && !double.IsInfinity(energy) && energy > 0d) {
+                    state.DigestingItemId = itemId;
+                    state.DigestingEnergy = Math.Min(1d, energy) * capacity;
+                    state.DigestingInc = inc;
+                    state.DigestionVersion++;
                 } else {
-                    // 旧营养及最近矩阵层次只消费字节，不能折算进新消化槽。
-                    reader.ReadSingle();
-                    reader.ReadInt32();
                     ClearDigestion(state);
                 }
                 state.OutputCursor = Math.Max(0, reader.ReadInt32());
@@ -148,37 +137,36 @@ public static partial class AdvancedFractionatorRuntime {
                 ClampIncDictionary(state.InputInc, state.Inputs);
                 RemoveNonFoodEntries(state.Foods, state.FoodInc);
                 ClampIncDictionary(state.FoodInc, state.Foods);
+                if (state.Foods.Count > 1 || SumCounts(state.Foods) > FoodCapacity
+                    || state.DigestingEnergy > 0d && state.Foods.Keys.Any(id => id != state.DigestingItemId)) {
+                    throw new InvalidDataException("Invalid advanced fractionator food reserve.");
+                }
                 ClampIncDictionary(state.FlowOutputInc, state.FlowOutputs);
                 state.InputCargo.Clear();
-                if (hasCargo) {
-                    int cargoCount = reader.ReadInt32();
-                    if (cargoCount < 0 || cargoCount > MaximumDictionaryEntryCount) {
-                        throw new InvalidDataException($"Invalid input cargo count: {cargoCount}");
-                    }
-                    for (int j = 0; j < cargoCount; j++) {
-                        int itemId = reader.ReadInt32();
-                        double cargo = reader.ReadDouble();
-                        int items = GetCount(state.Inputs, itemId);
-                        if (items > 0 && !double.IsNaN(cargo) && !double.IsInfinity(cargo) && cargo > 0d) {
-                            state.InputCargo[itemId] = Math.Max(items / (double)StackingManager.AbsoluteMaxStack,
-                                Math.Min(items, cargo));
-                        }
-                    }
-                    double rate = reader.ReadDouble();
-                    state.ProcessingRate = double.IsNaN(rate) || double.IsInfinity(rate) ? 0d
-                        : Math.Max(0d, Math.Min(30d * StackingManager.AbsoluteMaxStack * MatrixNutrition.MaximumSpeed, rate));
-                    double remainder = reader.ReadDouble();
-                    state.ProgressRemainder = double.IsNaN(remainder) || double.IsInfinity(remainder)
-                        ? 0d : Math.Max(0d, Math.Min(1d, remainder));
-                } else {
-                    state.ProcessingRate = 0d;
-                    state.ProgressRemainder = 0d;
+                int cargoCount = reader.ReadInt32();
+                if (cargoCount < 0 || cargoCount > MaximumDictionaryEntryCount) {
+                    throw new InvalidDataException($"Invalid input cargo count: {cargoCount}");
                 }
-                // 旧版没有货物数证据，按单件一堆恢复；真实带入后自然替换，无关库存运行时逐批侧流。
+                for (int j = 0; j < cargoCount; j++) {
+                    int inputId = reader.ReadInt32();
+                    double cargo = reader.ReadDouble();
+                    int items = GetCount(state.Inputs, inputId);
+                    if (items > 0 && !double.IsNaN(cargo) && !double.IsInfinity(cargo) && cargo > 0d) {
+                        state.InputCargo[inputId] = Math.Max(items / (double)StackingManager.AbsoluteMaxStack,
+                            Math.Min(items, cargo));
+                    }
+                }
+                double rate = reader.ReadDouble();
+                state.ProcessingRate = double.IsNaN(rate) || double.IsInfinity(rate) ? 0d
+                    : Math.Max(0d, Math.Min(30d * StackingManager.AbsoluteMaxStack * MatrixNutrition.MaximumSpeed, rate));
+                double remainder = reader.ReadDouble();
+                state.ProgressRemainder = double.IsNaN(remainder) || double.IsInfinity(remainder)
+                    ? 0d : Math.Max(0d, Math.Min(1d, remainder));
                 foreach (var pair in state.Inputs) {
-                    if (!state.InputCargo.ContainsKey(pair.Key)) { state.InputCargo[pair.Key] = pair.Value; }
+                    if (!state.InputCargo.ContainsKey(pair.Key)) {
+                        throw new InvalidDataException($"Missing input cargo count: {pair.Key}");
+                    }
                 }
-                if (!hasCargo) { DrainUnusedInputs(state, recipe, passthrough: false); }
             }
             if (valid) { seen?.Add(key); }
         }
@@ -212,15 +200,5 @@ public static partial class AdvancedFractionatorRuntime {
         }
         writer.Write(state.ProcessingRate);
         writer.Write(state.ProgressRemainder);
-    }
-
-    /// <summary>仅用于版本3消化状态迁移；旧能量按原矩阵容量换成剩余比例。</summary>
-    private static double GetLegacyFoodEnergy(int itemId, int inc) {
-        double share = itemId switch {
-            I电磁矩阵 => 0.16d, I能量矩阵 => 0.11d, I结构矩阵 => 0.07d,
-            I信息矩阵 => 0.04d, I引力矩阵 => 0.02d, I宇宙矩阵 => 0.01d, _ => 0d,
-        };
-        return share <= 0d ? 0d : (1d / share - 1d)
-            * (1d + Cargo.incTableMilli[Math.Max(0, Math.Min(10, inc))]);
     }
 }

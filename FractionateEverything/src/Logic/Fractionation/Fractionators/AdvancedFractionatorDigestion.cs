@@ -48,7 +48,7 @@ public static partial class AdvancedFractionatorRuntime {
         return (consumption / energy, 1d / (1d + energy));
     }
 
-    /// <summary>只在空槽点燃一件，同种备用优先；旧档残留多种时按营养价值选择。</summary>
+    /// <summary>只在空槽点燃一件备用矩阵。</summary>
     private static bool EnsureDigestingFood(AdvancedFractionatorState state, int[] consumeRegister, int preferredItemId = 0) {
         if (state.DigestingEnergy > 0d) { return true; }
         int itemId = GetCount(state.Foods, preferredItemId) > 0 && IsFoodItem(preferredItemId)
@@ -64,19 +64,12 @@ public static partial class AdvancedFractionatorRuntime {
         return true;
     }
 
-    /// <summary>从真实备用库存选最高营养的有效矩阵，同价值按ID稳定排序。</summary>
+    /// <summary>读取备用槽内有库存的有效矩阵。</summary>
     private static int SelectReserveFood(AdvancedFractionatorState state) {
-        int selected = 0;
-        double energy = 0d;
         foreach (var pair in state.Foods) {
-            if (pair.Value <= 0) { continue; }
-            double candidate = MatrixNutrition.GetEnergy(pair.Key);
-            if (candidate > energy || candidate > 0d && candidate == energy && pair.Key < selected) {
-                selected = pair.Key;
-                energy = candidate;
-            }
+            if (pair.Value > 0 && IsFoodItem(pair.Key)) { return pair.Key; }
         }
-        return selected;
+        return 0;
     }
 
     /// <summary>按实际消费逐件扣能量；耗尽后才换件，最后一件的余量不丢失，也不保存断粮欠账。</summary>

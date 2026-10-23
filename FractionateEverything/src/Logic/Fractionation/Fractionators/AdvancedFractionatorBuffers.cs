@@ -127,7 +127,7 @@ public static partial class AdvancedFractionatorRuntime {
         }
     }
 
-    /// <summary>逐批侧流旧配方输入、产物堵塞时的反应输入及异种旧食物；目的槽已到阈值时保留原物。</summary>
+    /// <summary>逐批侧流切换配方后剩余的输入及产物堵塞时的反应输入；目的槽已到阈值时保留原物。</summary>
     /// <param name="state">调用方已持有实例锁的缓存。</param>
     /// <param name="recipe">当前配方，决定需要保留的反应物。</param>
     /// <param name="passthrough">产物达到阈值时将全部反应物侧流。</param>
@@ -142,22 +142,6 @@ public static partial class AdvancedFractionatorRuntime {
             if (GetCount(state.FlowOutputs, itemId) >= OutputCapacity) { continue; }
             int moved = Math.Min(GetCount(state.Inputs, itemId), stackLimit);
             int inc = TakeInput(state, itemId, moved);
-            AddCount(state.FlowOutputs, itemId, moved);
-            AddCount(state.FlowOutputInc, itemId, inc);
-            state.SnapshotDirty = true;
-        }
-        // 旧档保留消化物及同种备用；空消化槽时按营养价值选取，其余逐批排空。
-        int reserveId = state.DigestingEnergy > 0d ? state.DigestingItemId : SelectReserveFood(state);
-        pending.Clear();
-        foreach (var pair in state.Foods) {
-            if (pair.Key != reserveId || pair.Value > FoodCapacity) { pending.Add(pair.Key); }
-        }
-        foreach (int itemId in pending) {
-            if (GetCount(state.FlowOutputs, itemId) >= OutputCapacity) { continue; }
-            int excess = GetCount(state.Foods, itemId) - (itemId == reserveId ? FoodCapacity : 0);
-            int moved = Math.Min(excess, stackLimit);
-            if (moved <= 0) { continue; }
-            int inc = TakeCount(state.Foods, state.FoodInc, itemId, moved);
             AddCount(state.FlowOutputs, itemId, moved);
             AddCount(state.FlowOutputInc, itemId, inc);
             state.SnapshotDirty = true;

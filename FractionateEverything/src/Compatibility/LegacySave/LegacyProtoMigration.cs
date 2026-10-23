@@ -89,7 +89,7 @@ public static class LegacyProtoMigration {
     public static bool IsRetiredRecipeId(int id) => RetiredRecipeIds.Contains(id);
 
     /// <summary>
-    /// 导入物品 ID：2.x 存档及独立导入执行当前映射或退休清零，当前格式的 GameData 导入原样返回。
+    /// 导入物品 ID：2.2 存档及独立导入执行当前映射或退休清零，当前格式的 GameData 导入原样返回。
     /// </summary>
     public static int MapItemId(int id) {
         if (!ShouldMapImportedId) {
@@ -102,7 +102,7 @@ public static class LegacyProtoMigration {
     }
 
     /// <summary>
-    /// 导入模型 ID：2.x 存档及独立导入执行当前映射或退休清零，当前格式的 GameData 导入原样返回。
+    /// 导入模型 ID：2.2 存档及独立导入执行当前映射或退休清零，当前格式的 GameData 导入原样返回。
     /// </summary>
     public static int MapModelId(int id) {
         if (!ShouldMapImportedId) {
@@ -115,7 +115,7 @@ public static class LegacyProtoMigration {
     }
 
     /// <summary>
-    /// 导入配方 ID：2.x 存档及独立导入执行当前映射或退休清零，当前格式的 GameData 导入原样返回。
+    /// 导入配方 ID：2.2 存档及独立导入执行当前映射或退休清零，当前格式的 GameData 导入原样返回。
     /// </summary>
     public static int MapRecipeId(int id) {
         if (!ShouldMapImportedId) {
@@ -162,16 +162,20 @@ public static class LegacyProtoMigration {
             }
             stream.Position = feDataStart;
             int feSaveVersion = reader.ReadInt32();
-            return feSaveVersion is > 0 and < 10;
+            if (feSaveVersion is 1 or 2) { return true; }
+            if (feSaveVersion != FE.Lifecycle.FeatureSaveRegistry.CurrentVersion) {
+                throw new NotSupportedException($"不支持 FE 存档格式 {feSaveVersion}；只支持当前格式和 2.2 存档，不兼容历史 3.0 存档。");
+            }
+            return false;
         } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException
             or FormatException or DecoderFallbackException) {
-            LogWarning($"[LegacySave] 无法读取 {saveName}.moddsv 的 FE 版本，已禁用 2.x 物理迁移：{ex.Message}");
+            LogWarning($"[LegacySave] 无法读取 {saveName}.moddsv 的 FE 版本，已禁用 2.2 物理转换：{ex.Message}");
             return false;
         }
     }
 
     /// <summary>
-    /// 在原版 GameData 导入前识别 FE moddsv 格式，避免把 version 10 的过渡存档或其他模组 ID 当作 2.x 内容。
+    /// 在原版 GameData 导入前识别 2.2 的格式1/2，并拒绝历史3.0存档。
     /// </summary>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(GameSave), nameof(GameSave.LoadCurrentGame))]

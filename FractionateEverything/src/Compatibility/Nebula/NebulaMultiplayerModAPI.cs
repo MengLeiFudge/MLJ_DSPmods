@@ -24,7 +24,7 @@ namespace FE.Compatibility.Nebula;
 public static class NebulaMultiplayerModAPI {
     public const string GUID = NebulaModAPI.API_GUID;
     /// <summary>联机规则修订号；堆叠科技、设备接管及库存结算要求双方一致。</summary>
-    public const int ProtocolVersion = 15;
+    public const int ProtocolVersion = 16;
     public static bool Enable;
     public static Assembly assembly;
 
@@ -357,15 +357,12 @@ public class CivilizationStatePacketProcessor : BasePacketProcessor<Civilization
             BinaryReader reader = provider.BinaryReader;
             reader.ReadBlocks(
                 ("Civilization", CivilizationModule.Import),
-                // 旧版统计块已按长度隔离；静默跳过，不恢复配方或过程计数。
-                ("Recipes", _ => { }),
                 ("DataCenter", br => {
                     // 稀疏 Import 不会清除缺席槽；先清空旧库存再导入主机全量快照。
                     IntoOtherSave();
                     Import(br);
                 }),
-                ("StationModes", FE.Logic.Station.StationManager.Import),
-                ("Process", _ => { })
+                ("StationModes", FE.Logic.Station.StationManager.Import)
             );
         }
         StackingManager.ConfiguredMaxStack = packet.configuredMaxStack;

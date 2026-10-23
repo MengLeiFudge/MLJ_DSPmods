@@ -13,6 +13,12 @@ TowerFactory 为必需前置，BigTower 可选；使用模组管理器安装会�
 
 TowerFactory is required; BigTower is optional. Installing through a mod manager also installs TowerFactory's dependencies. FE interaction stations support tower production and expanded slots, using the slot count and paging settings supplied by these mods.
 
+## 存档兼容 Save Compatibility
+
+当前版本只兼容 FE 2.2 历史存档，不兼容任何历史 3.0 存档。2.2 导入只转换有当前对应物的物品、建筑与配方引用，清理已移除内容；FE 研究、探索、亚空间与成长进度从当前规则开始，不补偿旧进度。当前格式的保存与读取照常支持。
+
+The only supported historical saves are from FE 2.2. Earlier FE 3.0 saves are unsupported. Importing 2.2 converts supported item, building and recipe references and removes retired content; FE research, exploration, subspace and progression start under the current rules without compensation. Current-format saves remain supported.
+
 ## 从哪里开始 Getting Started
 
 开局的G手册会出现“神秘信号？”。首遗物位于出生点所在半球，并避开黑雾基地。屏幕只显示一条信号强度条，感应范围按星球半径调整；在大星球上远处也能感知。地面行走和低空悬浮都能接近，实际进入范围才会回收。关键信号的结果会打开确认弹窗。首遗物提供：
@@ -55,11 +61,11 @@ Each sample has one shared probabilistic analysis slot. Memory restores growth q
 
 ## 遗迹与广播 Exploration
 
-静默遗迹位置和质量固定，回收后不刷新。母星默认2处，出生星系其他岩石星每颗6处，其他星系每颗3处，气巨1处。旧档已经发现或回收的点保留，可能多于这个数量。
+静默遗迹位置和质量固定，回收后不刷新。母星默认2处，出生星系其他岩石星每颗6处，其他星系每颗3处，气巨1处。
 
-新的高质量广播可带航迹、战斗或生产挑战，全档最多同时两项。航迹按固定路径依次经过节点，持续偏离会从起点重来；生产需在现场新建并实际运行指定配方，旧库存不计入。战斗或生产可在现场改走航迹，原进度清零。完成直接回收阶段对应的源点，旧地点不追加挑战。
+新的高质量广播可带航迹、战斗或生产挑战，全档最多同时两项。航迹按固定路径依次经过节点，持续偏离会从起点重来；生产需在现场新建并实际运行指定配方，旧库存不计入。战斗或生产可在现场改走航迹，原进度清零。完成直接回收阶段对应的源点。
 
-New high-quality broadcasts may require a fixed route, ground combat or production from newly built machines. Up to two challenges can remain active. Combat and production can be replaced by a route at the site, resetting progress; existing locations retain their original requirements.
+New high-quality broadcasts may require a fixed route, ground combat or production from newly built machines. Up to two challenges can remain active. Combat and production can be replaced by a route at the site, resetting progress.
 
 普通广播在近距离发现前完全隐藏。一旦进入180米感知范围，位置就永久记录，可稍后从信号追踪页重新标注。后续主线点击“查看信号”即可设置目标星球导航和地表标记，不会自动移动。首主线仅有强度条，不公开坐标，不需要换挡或切模式。
 
@@ -79,11 +85,11 @@ The first relic uses a graphical signal bar scaled to the planet's radius. Later
 
 手动存取和基础塔正面上传无额外耗能。FE行星/星际物流交互站每槽右上选择关闭上传、有限上传或无限上传，右下独立开关下载；新槽默认有限上传并开启下载。左侧原版物流供需独立，保留阈值、增产点、蓝图与复制粘贴。电量只在本轮有实际存取需求的槽位间均分一次，按实际搬运量扣除，未用部分留到下轮。
 
-亚空间能效在红、黄、紫、绿阶段将单件存取耗电降到基础值的70%、45%、30%、20%，绿糖封顶。第二页另有“交互站电力”：上述四阶段分别增加基础充电功率与储能的10%、20%、30%、40%，累计达到2倍；白糖每级再加基础值的10%。仅影响FE两种交互站，提高上限不会自动补电。旧白糖降耗节点退役，已完成的有限降耗节点保留。
+亚空间能效在红、黄、紫、绿阶段将单件存取耗电降到基础值的70%、45%、30%、20%，绿糖封顶。第二页另有“交互站电力”：上述四阶段分别增加基础充电功率与储能的10%、20%、30%、40%，累计达到2倍；白糖每级再加基础值的10%。仅影响FE两种交互站，提高上限不会自动补电。
 
 Each FE interaction-station slot controls upload and download separately; new slots default to limited upload and download enabled. Only slots with actual transfer requests share the energy budget, once per cycle. Transfer efficiency stops at 20% of base energy. The separate station-power chain adds charging power and storage capacity: 10%, 20%, 30% and 40% of base values before white matrices, then another 10% of base per white upgrade. Added capacity does not refill stored energy.
 
-亚空间负责库存，生产由玩家自己搭产线或配置塔厂。FE不再提供下单、装配队列和供工时节点。更新后，未完成订单已扣的材料与增产点退回亚空间；仅预留的材料直接解除占用。旧节点停用、不可新建，已有建筑可以拆除。
+亚空间负责库存，生产由玩家自己搭产线或配置塔厂。FE不再提供下单、装配队列和供工时节点。
 
 塔厂由玩家配置：第一格放机器并设为原版仓储，第二格指定产品，其余格指定原料。FE交互站可将机器格关闭上传和下载、产品格开启上传并关闭下载、原料格关闭上传并开启下载；不自动替玩家改槽位或工艺。FE生命分馏塔须实体建造并供养，不能放在机器格代替原版分馏塔运行。
 
@@ -91,9 +97,9 @@ Configure tower factories yourself: machine in slot 1 with vanilla storage mode,
 
 联机取物先由主机划拨额度，客户端建造与机甲制造预检查会自动请求缺口；首次申请有一次网络往返，确认后可直接使用亚空间材料，不必先转入背包。手动提取仍遵循取到手中或背包的设置，未用额度自动返还共享库存。
 
-Subspace stores materials; players build production lines or configure tower factories. FE no longer provides orders, assembly queues or powered assembly nodes. Unfinished orders refund deducted inputs and proliferator points; reservations are released without duplicate refunds. Existing nodes are disabled and can be dismantled, but cannot be rebuilt. Multiplayer withdrawals use host-granted material allowances; construction and replicator checks request them automatically. The first request needs a network round trip, without requiring backpack space. Unused allowances return to shared storage.
+Subspace stores materials; players build production lines or configure tower factories. FE no longer provides orders, assembly queues or powered assembly nodes. Multiplayer withdrawals use host-granted material allowances; construction and replicator checks request them automatically. The first request needs a network round trip, without requiring backpack space. Unused allowances return to shared storage.
 
-FE分馏塔从1层开始，随运输站集装物流三项科技逐级达到2、3、4层。紫糖两级依次提升至6、8层，绿糖三级依次提升至12、16、20层。从首级六层起，集装机、白爪输入与输出、物流塔与物流交互站、分馏塔两种输出统一成长。首级需要3315集装分拣器改良、3803运输站集装物流及信息矩阵科技，双向运输仍单独研究。3311～3315、3801～3803使用黄糖阶段费用；FE成长材料读取当前科技树的阶段组合。普通生产配方从6层起按4/堆叠层数缩短耗时并向上取整到整帧，丰碑继续加速，实际堆叠保持20层上限。旧档保留已完成节点并采用新效果；原2083节点现在提供12层，16/20层需继续研究。
+FE分馏塔从1层开始，随运输站集装物流三项科技逐级达到2、3、4层。紫糖两级依次提升至6、8层，绿糖三级依次提升至12、16、20层。从首级六层起，集装机、白爪输入与输出、物流塔与物流交互站、分馏塔两种输出统一成长。首级需要3315集装分拣器改良、3803运输站集装物流及信息矩阵科技，双向运输仍单独研究。3311～3315、3801～3803使用黄糖阶段费用；FE成长材料读取当前科技树的阶段组合。普通生产配方从6层起按4/堆叠层数缩短耗时并向上取整到整帧，丰碑继续加速，实际堆叠保持20层上限。
 
 完成主线探索并恢复宇宙矩阵资料后，在终极任务面板开放终极探索任务；亚空间容量达到初始的35倍后开放终极仓储任务。恢复中继或空间锚点，带着机甲背包里的源点进入回收范围，自动分批交付2400源点（不扣亚空间），再连接最终核心；任务直接授予最终能力，无矩阵研究费用，不占科技树位置。终极探索持续补足两个普通广播，终极仓储解除玩法容量限制。
 

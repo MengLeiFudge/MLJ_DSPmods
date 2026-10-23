@@ -359,13 +359,13 @@ public static partial class ExplorationManager {
         }
     }
 
-    /// <summary>恢复当前格式状态，兼容读取带成品文本的版本1，重建静默认领集合。</summary>
+    /// <summary>恢复当前格式状态并重建静默认领集合。</summary>
     /// <param name="reader">存档或主机快照流。</param>
     public static void Import(BinaryReader reader) {
         lock (Sync) {
             IntoOtherSave();
             int version = reader.ReadInt32();
-            if (version is < 1 or > 6) { throw new InvalidDataException("不支持的探索存档格式。"); }
+            if (version != 6) { throw new InvalidDataException("不支持的探索存档格式。"); }
             nextMarkId = reader.ReadInt32(); storyCompleted = reader.ReadInt32(); nextTimedGenerationTick = reader.ReadInt64(); randomSeed = reader.ReadUInt32();
             capacityHintShown = reader.ReadBoolean();
             for (int i = 0; i < 2; i++) { UltimateSteps[i] = Math.Max(0, Math.Min(6, reader.ReadInt32())); UltimateInputs[i] = Math.Max(0, Math.Min(UltimateMemoryCost, reader.ReadInt32())); }
@@ -374,25 +374,21 @@ public static partial class ExplorationManager {
             count = ReadCount(reader);
             for (int i = 0; i < count; i++) {
                 var record = new ExplorationRecord { Mark = ReadMark(reader), Tick = reader.ReadInt64() };
-                // 版本1已经保存完整的结算事实，旧成品文本只需消费，不作为显示来源。
-                if (version == 1) { reader.ReadString(); }
                 Records.Add(record);
                 if (record.Mark.Kind == ExplorationMarkKind.SilentCache) { CollectedSilentMarks.Add(record.Mark.Id); }
             }
-            if (version >= 3) {
-                count = ReadCount(reader);
-                for (int i = 0; i < count; i++) {
-                    int planetId = reader.ReadInt32();
-                    long tick = reader.ReadInt64();
-                    if (planetId <= 0 || tick < 0 || LastBroadcastTicks.ContainsKey(planetId)) {
-                        throw new InvalidDataException("广播冷却数据无效。");
-                    }
-                    LastBroadcastTicks.Add(planetId, tick);
+            count = ReadCount(reader);
+            for (int i = 0; i < count; i++) {
+                int planetId = reader.ReadInt32();
+                long tick = reader.ReadInt64();
+                if (planetId <= 0 || tick < 0 || LastBroadcastTicks.ContainsKey(planetId)) {
+                    throw new InvalidDataException("广播冷却数据无效。");
                 }
+                LastBroadcastTicks.Add(planetId, tick);
             }
-            ImportDiscoveries(reader, version);
-            ImportDeliveries(reader, version);
-            ImportChallenges(reader, version);
+            ImportDiscoveries(reader);
+            ImportDeliveries(reader);
+            ImportChallenges(reader);
             if (nextMarkId <= 0 || storyCompleted < 0 || storyCompleted > 18) { throw new InvalidDataException("探索进度无效。"); }
             MarkDirty();
         }
@@ -576,9 +572,9 @@ public static partial class ExplorationManager {
         if (SilentMarks.TryGetValue(planetId, out ExplorationMark[] cached)) { return cached; }
         PlanetData planet = GameMain.galaxy?.PlanetById(planetId);
         if (planet == null) { return []; }
-        int[] counts = planet.type == EPlanetType.Gas ? [1, 1, 1]
-            : planetId == GameMain.galaxy.birthPlanetId ? [20, 12, 8]
-            : planet.star.id == GameMain.galaxy.birthStarId ? [12, 10, 8] : [6, 8, 10];
+        int[] counts = planet.type == EPlanetType.Gas ? [1, 0, 0]
+            : planetId == GameMain.galaxy.birthPlanetId ? [2, 0, 0]
+            : planet.star.id == GameMain.galaxy.birthStarId ? [2, 2, 2] : [1, 1, 1];
         int total = counts.Sum();
         uint seed = unchecked((uint)(GameMain.galaxy.seed * 397 ^ planetId * 7919)) | 1u;
         Quaternion rotation = Quaternion.FromToRotation(Vector3.up, RandomDirection(ref seed));
@@ -594,16 +590,6 @@ public static partial class ExplorationManager {
                 LocalPosition = direction * MarkRadius(planet), Kind = ExplorationMarkKind.SilentCache,
                 Quality = i < counts[0] ? 1 : i < counts[0] + counts[1] ? 2 : 3 };
         }
-        // 缩减未发现地点，但保留原几何、已发现快照与已领奖身份。
-        int perQuality = planetId == GameMain.galaxy.birthPlanetId ? 0
-            : planet.star.id == GameMain.galaxy.birthStarId ? 2 : 1;
-        marks = marks.Where((mark, index) => planet.type == EPlanetType.Gas ? index == 0
-            : planetId == GameMain.galaxy.birthPlanetId ? index < 2
-            : index < perQuality || index >= counts[0] && index < counts[0] + perQuality
-                || index >= counts[0] + counts[1] && index < counts[0] + counts[1] + perQuality)
-            .Where(mark => !DiscoveredMarks.ContainsKey(mark.Id))
-            .Concat(DiscoveredMarks.Values.Where(mark => mark.Id < 0 && mark.PlanetId == planetId))
-            .ToArray();
         SilentMarks[planetId] = marks;
         return marks;
     }
@@ -646,8 +632,7 @@ public static partial class ExplorationManager {
     /// <returns>与目标的距离，单位米。</returns>
     private static double GetSignalDistance(ExplorationMark mark, PlanetData planet, VectorLF3 position) {
         Vector3 local = (Vector3)Maths.QRotateLF(Quaternion.Inverse(planet.runtimeRotation), position - planet.uPosition);
-        // 按当前高度规则重算遗迹位置，旧存档中贴地或高悬的点位同样适用。
-        return (local - mark.LocalPosition.normalized * MarkRadius(planet)).magnitude;
+        return (local - mark.LocalPosition).magnitude;
     }
 
     /// <summary>返回空间命中半径，单位米；水平命中半径在地面与默认悬浮高度上相同。</summary>

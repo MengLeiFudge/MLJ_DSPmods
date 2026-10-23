@@ -422,7 +422,6 @@ public static partial class FractionatorWindow {
     }
 
     /// <summary>食物单格：图标取正在消化的矩阵（无则取备用），右下角只计与图标同种的备用，遮罩表示当前一件已消耗比例。</summary>
-    /// <remarks>旧档可能残留与消化物异种、待后端排出的备用；它不计入格内数字，但仍阻止长按销毁，与后端空备用校验一致。</remarks>
     private static void UpdateAdvancedFood(AdvancedFractionatorState state, WorldviewRecipe recipe, int buildingId) {
         bool digesting = state.DigestingEnergy > 0d;
         int shownId = digesting ? state.DigestingItemId : 0;

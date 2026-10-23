@@ -707,7 +707,6 @@ public static partial class AdvancedFractionatorRuntime {
 
         bool hasReserve = SumCounts(state.Foods) > 0;
         bool losingDurability = state.DigestingEnergy <= 0d && !hasReserve;
-        // 旧档异种备用仍待排出，不能作为当前消化物的恢复储备。
         bool recovering = state.DigestingEnergy > 0d && GetCount(state.Foods, state.DigestingItemId) > 0;
         if (!losingDurability && !recovering) { return; }
         if (!losingDurability && combatStatId <= 0) {

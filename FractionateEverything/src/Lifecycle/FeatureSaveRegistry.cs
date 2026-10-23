@@ -15,15 +15,14 @@ namespace FE.Lifecycle;
 /// FE 功能域存档块注册表，集中维护保存、读取和切档清理顺序。
 /// </summary>
 public static class FeatureSaveRegistry {
+    /// <summary>当前存档格式；只读取此格式，2.2 由独立兼容入口处理。</summary>
+    public const int CurrentVersion = 14;
+
     public static void Import(BinaryReader r) {
         r.ReadBlocks(
-            // 旧配方与过程统计块由ReadBlock按长度隔离，识别标签后整块跳过。
-            ("Recipe", _ => { }),
-            ("VanillaRecipes", VanillaRecipeManager.Import),
             ("Stacking", StackingManager.Import),
             ("Building", FractionatorManager.Import),
             ("Item", DataCenterInventory.Import),
-            ("Process", _ => { }),
             ("Civilization3", CivilizationModule.Import),
             ("UI", MainWindow.Import),
             ("Station", StationManager.Import)
@@ -34,7 +33,6 @@ public static class FeatureSaveRegistry {
 
     public static void Export(BinaryWriter w) {
         w.WriteBlocks(
-            ("VanillaRecipes", VanillaRecipeManager.Export),
             ("Stacking", StackingManager.Export),
             ("Building", FractionatorManager.Export),
             ("Item", DataCenterInventory.Export),

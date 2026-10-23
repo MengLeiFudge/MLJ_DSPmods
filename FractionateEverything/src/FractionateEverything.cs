@@ -114,6 +114,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
             LDBTool.PreAddDataAction += FeatureBootstrap.PreAddData;
             LDBTool.PostAddDataAction += FeatureBootstrap.PostAddData;
 
+            harmony.PatchAll(typeof(FE.Compatibility.LegacySave.LegacyProtoMigration));
             string CheckPluginsNamespace = typeof(CheckPlugins).Namespace;
             foreach (Type type in executingAssembly.GetTypes()) {
                 //Compatibility内的类由自己patch，不在这里处理
@@ -160,13 +161,17 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     public void Import(BinaryReader r) {
         FeatureSaveRegistry.IntoOtherSave();
         int version = r.ReadInt32();
-        if (version != 13) {
-            // 当前玩法使用独立格式，不转换旧版本的研究、探索或科技状态。
+        if (version is 1 or 2) {
+            // 2.2 的物理引用由 LegacyProtoMigration 转换，FE 业务从当前规则开始。
             if (r.BaseStream.CanSeek) {
                 r.BaseStream.Seek(0, SeekOrigin.End);
             }
-            ResearchManager.MarkLegacyGeneration();
+            ResearchManager.InitializeVersion22State();
+            CivilizationModule.AfterImport();
             return;
+        }
+        if (version != FeatureSaveRegistry.CurrentVersion) {
+            throw new InvalidDataException($"不支持 FE 存档格式 {version}；只支持当前格式和 2.2 存档，不兼容历史 3.0 存档。");
         }
         FeatureSaveRegistry.Import(r);
     }
@@ -175,7 +180,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     /// 导出存档时执行。
     /// </summary>
     public void Export(BinaryWriter w) {
-        w.Write(13);
+        w.Write(FeatureSaveRegistry.CurrentVersion);
         FeatureSaveRegistry.Export(w);
     }
 

@@ -27,7 +27,7 @@ public static class StackingManager {
 
     private static readonly int[] ResearchStacks = [6, 8, 12, 16, 20];
 
-    /// <summary>已完成科技允许的最大层数，旧档保留节点也按其当前效果投影。</summary>
+    /// <summary>已完成科技允许的最大层数。</summary>
     public static int ResearchMaxStack {
         get {
             for (int i = ResearchStacks.Length - 1; i >= 0; i--) {
@@ -37,7 +37,7 @@ public static class StackingManager {
         }
     }
 
-    /// <summary>分馏塔的基础层数只取物流集装的已完成科技，不读可能被旧FE覆盖的历史字段。</summary>
+    /// <summary>分馏塔的基础层数取物流集装的已完成科技。</summary>
     public static int StationResearchStack {
         get {
             int stack = LockedMaxStack;
@@ -59,7 +59,7 @@ public static class StackingManager {
         }
     }
 
-    /// <summary>已同步的层数仍须满足实际研究资格，旧存档或延迟快照不能提前授予高堆叠。</summary>
+    /// <summary>已同步的层数仍须满足实际研究资格，延迟快照不能提前授予高堆叠。</summary>
     public static int CurrentMaxStack => IsUnlocked
         ? Math.Min(Math.Max(ResearchStacks[0], configuredMaxStack), ResearchMaxStack)
         : StationResearchStack;
@@ -138,36 +138,6 @@ public static class StackingManager {
     private static bool IsStackOnlyTech(TechProto tech) => tech?.UnlockFunctions?.Length > 0
         && Array.TrueForAll(tech.UnlockFunctions, function => function is 29 or 39 or 40 or 41)
         && tech.UnlockRecipes.Length == 0 && tech.AddItems.Length == 0;
-
-    /// <summary>导入后修复旧FE提前写入的高堆叠；不触碰设备内或传送带上的真实货物。</summary>
-    public static void RestoreVanillaStackFields() {
-        GameHistoryData history = GameMain.history;
-        if (history == null || IsUnlocked) { return; }
-        int input = 2;
-        int output = 1;
-        foreach (int techId in SorterTechs) {
-            if (!history.TechUnlocked(techId)) { continue; }
-            TechProto tech = LDB.techs.Select(techId);
-            for (int i = 0; i < tech.UnlockFunctions.Length; i++) {
-                int value = (int)tech.UnlockValues[i];
-                if (tech.UnlockFunctions[i] == 41) { input = Math.Max(input, value); }
-                if (tech.UnlockFunctions[i] == 39) { output = Math.Max(output, value); }
-            }
-        }
-        bool changed = false;
-        if (history.inserterStackInput > BaseUnlockedMaxStack && history.inserterStackInput != input) {
-            history.inserterStackInput = input;
-            changed = true;
-        }
-        if (history.inserterStackOutput > BaseUnlockedMaxStack && history.inserterStackOutput != output) {
-            history.inserterStackOutput = output;
-            changed = true;
-        }
-        if (changed) { GameMain.data?.OnInserterTechChange(); }
-        if (history.stationPilerLevel > BaseUnlockedMaxStack) {
-            history.stationPilerLevel = StationResearchStack;
-        }
-    }
 
     private static void SyncHistoryStackFields(int stack) {
         GameHistoryData history = GameMain.history;

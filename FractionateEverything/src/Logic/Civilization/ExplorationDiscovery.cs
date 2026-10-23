@@ -87,7 +87,7 @@ public static partial class ExplorationManager {
         return pool.Length > 0 ? pool[NextInt(pool.Length)] : birth;
     }
 
-    /// <summary>保存发现时的完整位置，避免密度调整或几何算法变化使旧地点丢失。</summary>
+    /// <summary>保存发现时的完整位置与实际活动星球，供信号追踪和档案查询。</summary>
     private static void ExportDiscoveries(BinaryWriter writer) {
         writer.Write(DiscoveredMarks.Count);
         foreach (ExplorationMark mark in DiscoveredMarks.Values) { WriteMark(writer, mark); }
@@ -95,30 +95,20 @@ public static partial class ExplorationManager {
         foreach (int planetId in VisitedPlanets) { writer.Write(planetId); }
     }
 
-    /// <summary>旧公开广播视作已发现，旧回收档案保留身份与坐标，不恢复未发现的密集网格。</summary>
-    private static void ImportDiscoveries(BinaryReader reader, int version) {
-        if (version >= 4) {
-            int count = ReadCount(reader);
-            for (int i = 0; i < count; i++) {
-                ExplorationMark mark = ReadMark(reader);
-                if (mark.Id == 0 || mark.PlanetId <= 0 || DiscoveredMarks.ContainsKey(mark.Id)) {
-                    throw new InvalidDataException("探索发现账本身份无效。");
-                }
-                DiscoveredMarks.Add(mark.Id, mark);
+    /// <summary>读取已发现地点与实际活动星球。</summary>
+    private static void ImportDiscoveries(BinaryReader reader) {
+        int count = ReadCount(reader);
+        for (int i = 0; i < count; i++) {
+            ExplorationMark mark = ReadMark(reader);
+            if (mark.Id == 0 || mark.PlanetId <= 0 || DiscoveredMarks.ContainsKey(mark.Id)) {
+                throw new InvalidDataException("探索发现账本身份无效。");
             }
-            count = ReadCount(reader);
-            for (int i = 0; i < count; i++) {
-                int planetId = reader.ReadInt32();
-                if (planetId <= 0 || !VisitedPlanets.Add(planetId)) { throw new InvalidDataException("探索活动星球无效。"); }
-            }
-        } else {
-            foreach (ExplorationMark mark in ActiveMarks.Where(m => !IsKeySignal(m))) {
-                DiscoveredMarks[mark.Id] = CloneMark(mark);
-            }
-            foreach (ExplorationRecord record in Records) {
-                VisitedPlanets.Add(record.Mark.PlanetId);
-                if (!IsKeySignal(record.Mark)) { DiscoveredMarks[record.Mark.Id] = CloneMark(record.Mark); }
-            }
+            DiscoveredMarks.Add(mark.Id, mark);
+        }
+        count = ReadCount(reader);
+        for (int i = 0; i < count; i++) {
+            int planetId = reader.ReadInt32();
+            if (planetId <= 0 || !VisitedPlanets.Add(planetId)) { throw new InvalidDataException("探索活动星球无效。"); }
         }
     }
 }

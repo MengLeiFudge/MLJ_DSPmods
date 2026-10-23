@@ -150,19 +150,11 @@ public static class SubspaceExpansion {
     /// <param name="reader">子块输入流。</param>
     public static void Import(BinaryReader reader) {
         int version = reader.ReadInt32();
-        if (version is not (1 or 2)) { throw new InvalidDataException("亚空间扩容版本无效。"); }
+        if (version != 2) { throw new InvalidDataException("亚空间扩容版本无效。"); }
         double[] gains = new double[Gains.Length];
-        double value = 0d;
-        double converted = 0d;
-        if (version == 1) {
-            double oldScale = ReadFinite(reader, 1d, MaximumScale);
-            int stages = Math.Max(1, Math.Min(gains.Length, ResearchManager.CurrentMatrixStage));
-            for (int i = 0; i < stages; i++) { gains[i] = (oldScale - 1d) / stages; }
-        } else {
-            for (int i = 0; i < gains.Length; i++) { gains[i] = ReadFinite(reader, 0d, MaximumScale); }
-            value = ReadFinite(reader, 0d, double.MaxValue);
-            converted = ReadFinite(reader, 0d, MaximumScale);
-        }
+        for (int i = 0; i < gains.Length; i++) { gains[i] = ReadFinite(reader, 0d, MaximumScale); }
+        double value = ReadFinite(reader, 0d, double.MaxValue);
+        double converted = ReadFinite(reader, 0d, MaximumScale);
         long second = reader.ReadInt64();
         if (second < 0 && second != long.MinValue || second > long.MaxValue / 60L) {
             throw new InvalidDataException("亚空间扩容时钟无效。");

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using FE.Logic.Enhancements.Stacking;
 using FE.Logic.Civilization;
@@ -51,9 +50,6 @@ public static class VanillaRecipeManager {
         return VanillaRecipeDic.TryGetValue(recipeId, out VanillaRecipe recipe) ? recipe : null;
     }
 
-    /// <summary>旧存档保留的占位字段；不再用等级表达连续丰碑加速。</summary>
-    public static int GlobalTimeLimitLevel => 0;
-
     public static double GlobalTimeLimitRatio => StackingManager.CurrentVanillaRecipeTimeRatio / MonumentManager.SpeedFactor;
 
     /// <summary>空配方集不能触发通关，未解锁的有效配方也参与终局判定。</summary>
@@ -67,23 +63,10 @@ public static class VanillaRecipeManager {
         bool changed = false;
         foreach (VanillaRecipe value in VanillaRecipeList) {
             int previous = value.recipe.TimeSpend;
-            value.ClampTimeUpgradeToGlobalLimit();
+            value.ApplyTimeSpend();
             changed |= previous != value.recipe.TimeSpend;
         }
         if (changed) { RefreshRecipeExecuteData(); }
-    }
-
-    public static bool CanUpgradeGlobalTimeLimit() => false;
-
-    public static bool UpgradeGlobalTimeLimit() => false;
-
-    public static double GetTimeRatioForLevel(int level) {
-        return GlobalTimeLimitRatio;
-    }
-
-    public static int GetMaxTimeLimitLevelByCurrentStack() {
-        double ratio = StackingManager.CurrentVanillaRecipeTimeRatio;
-        return Math.Max(0, (int)Math.Round((1.0 - ratio) / 0.05));
     }
 
     public static void RefreshRecipeExecuteData(int recipeId = 0) {
@@ -104,52 +87,6 @@ public static class VanillaRecipeManager {
         }
     }
 
-    public static void Import(BinaryReader r) {
-        int count = r.ReadInt32();
-        int maxImportedTimeLevel = 0;
-        for (int i = 0; i < count; i++) {
-            int recipeID = r.ReadInt32();
-            VanillaRecipe vanillaRecipe = GetVanillaRecipe(recipeID);
-            r.ReadBlocks(
-                ("VanillaData", br => {
-                    vanillaRecipe?.Import(br);
-                    if (vanillaRecipe != null) {
-                        maxImportedTimeLevel = Math.Max(maxImportedTimeLevel, vanillaRecipe.GetTimeUpgradeCount());
-                    }
-                })
-            );
-        }
-
-        bool globalLimitLoaded = false;
-        if (r.BaseStream.Position < r.BaseStream.Length) {
-            r.ReadBlocks(
-                ("GlobalTimeLimitLevel", br => {
-                    br.ReadInt32();
-                    globalLimitLoaded = true;
-                })
-            );
-        }
-
-        if (!globalLimitLoaded && maxImportedTimeLevel > 0) {
-            LogInfo($"Ignored legacy vanilla recipe time level {maxImportedTimeLevel}; now synced by stack.");
-        }
-
-        ClampRecipeTimeLevels();
-    }
-
-    public static void Export(BinaryWriter w) {
-        w.Write(VanillaRecipeList.Count);
-        foreach (VanillaRecipe vanillaRecipe in VanillaRecipeList) {
-            w.Write(vanillaRecipe.recipe.ID);
-            w.WriteBlocks(
-                ("VanillaData", vanillaRecipe.Export)
-            );
-        }
-        w.WriteBlocks(
-            ("GlobalTimeLimitLevel", bw => bw.Write(GlobalTimeLimitLevel))
-        );
-    }
-
     public static void IntoOtherSave() {
         appliedRatio = double.NaN;
         foreach (VanillaRecipe vanillaRecipe in VanillaRecipeList) {
@@ -159,15 +96,13 @@ public static class VanillaRecipeManager {
     }
 
     public static void SyncRuntimeStateAfterImport() {
-        ClampRecipeTimeLevels();
+        ApplyRecipeTimes();
         RefreshRecipeExecuteData();
     }
 
-    internal static void ClampGlobalTimeLimitByStack() { }
-
-    private static void ClampRecipeTimeLevels() {
+    private static void ApplyRecipeTimes() {
         foreach (VanillaRecipe vanillaRecipe in VanillaRecipeList) {
-            vanillaRecipe.ClampTimeUpgradeToGlobalLimit();
+            vanillaRecipe.ApplyTimeSpend();
         }
     }
 
@@ -209,7 +144,7 @@ public static class VanillaRecipeManager {
 }
 
 /// <summary>
-/// 单个原版配方的升级状态。
+/// 单个原版配方的加载基线与实时加速。
 /// </summary>
 public class VanillaRecipe {
     private readonly Dictionary<int, int> inputCounts = [];
@@ -248,111 +183,9 @@ public class VanillaRecipe {
         return I电磁矩阵;
     }
 
-    /// <summary>
-    /// 返回指定物品的索引、当前配方所需数目、升级后配方所需数目。
-    /// 原版配方增强不再修改输入数量，第三项仅为兼容旧 UI 调用保留。
-    /// </summary>
-    public int[] GetIdxCurrAndNextCount(int itemID) {
-        for (int i = 0; i < recipe.Items.Length; i++) {
-            if (recipe.Items[i] == itemID) {
-                int currCount = recipe.ItemCounts[i];
-                return [i, currCount, currCount];
-            }
-        }
-        return [-1, -1, -1];
-    }
-
-    /// <summary>
-    /// 返回能否升级配方的指定输入
-    /// </summary>
-    public bool CanUpgradeInput(int itemID) {
-        return false;
-    }
-
-    /// <summary>
-    /// 升级配方的指定输入
-    /// </summary>
-    public bool UpgradeInput(int itemID) {
-        return false;
-    }
-
-    /// <summary>
-    /// 返回当前配方的花费时间、升级后配方的花费时间
-    /// </summary>
-    public int[] GetCurrAndNextTimeSpend() {
-        int currTimeSpend = recipe.TimeSpend;
-        int nextTimeSpend = GetTimeSpendByUpgrade(VanillaRecipeManager.GlobalTimeLimitLevel);
-        return [currTimeSpend, nextTimeSpend];
-    }
-
-    /// <summary>
-    /// 返回能否升级配方的花费时间
-    /// </summary>
-    public bool CanUpgradeTime() {
-        return false;
-    }
-
-    /// <summary>
-    /// 升级配方的花费时间
-    /// </summary>
-    public bool UpgradeTime() {
-        return false;
-    }
-
-    /// <summary>
-    /// 获取指定物品的升级次数
-    /// </summary>
-    public int GetInputUpgradeCount(int itemID) {
-        return 0;
-    }
-
-    /// <summary>
-    /// 获取时间的升级次数
-    /// </summary>
-    public int GetTimeUpgradeCount() {
-        return VanillaRecipeManager.GlobalTimeLimitLevel;
-    }
-
-    public int GetTimeSpendByUpgrade(int level) {
-        double ratio = level == VanillaRecipeManager.GlobalTimeLimitLevel
-            ? VanillaRecipeManager.GlobalTimeLimitRatio
-            : VanillaRecipeManager.GetTimeRatioForLevel(level);
-        return Math.Max(1, (int)Math.Ceiling(timeSpend * ratio));
-    }
-
-    public void ClampTimeUpgradeToGlobalLimit() {
-        ApplyTimeSpend();
-    }
-
-    private void ApplyTimeSpend() {
-        recipe.TimeSpend = GetTimeSpendByUpgrade(VanillaRecipeManager.GlobalTimeLimitLevel);
-    }
-
-    #region 模组存档接口实现
-
-    public virtual void Import(BinaryReader r) {
-        r.ReadBlocks(
-            ("InputUpgrades", br => {
-                int count = br.ReadInt32();
-                for (int i = 0; i < count; i++) {
-                    br.ReadInt32();
-                    br.ReadInt32();
-                }
-            }),
-            ("TimeUpgrades", br => {
-                br.ReadInt32();
-                ApplyTimeSpend();
-            })
-        );
-    }
-
-    public virtual void Export(BinaryWriter w) {
-        w.WriteBlocks(
-            ("InputUpgrades", bw => {
-                bw.Write(0);
-            }),
-            ("TimeUpgrades", bw => { bw.Write(VanillaRecipeManager.GlobalTimeLimitLevel); })
-        );
+    /// <summary>按当前堆叠与丰碑加速重新计算配方时间。</summary>
+    public void ApplyTimeSpend() {
+        recipe.TimeSpend = Math.Max(1, (int)Math.Ceiling(timeSpend * VanillaRecipeManager.GlobalTimeLimitRatio));
     }
 
     public virtual void IntoOtherSave() {
@@ -367,5 +200,4 @@ public class VanillaRecipe {
         ApplyTimeSpend();
     }
 
-    #endregion
 }

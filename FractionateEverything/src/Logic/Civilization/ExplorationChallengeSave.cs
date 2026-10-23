@@ -19,8 +19,7 @@ public static partial class ExplorationManager {
         }
     }
 
-    private static void ImportChallenges(BinaryReader reader, int version) {
-        if (version < 6) { return; }
+    private static void ImportChallenges(BinaryReader reader) {
         int count = reader.ReadInt32();
         if (count is < 0 or > 2) { throw new InvalidDataException("探索挑战数量无效。"); }
         for (int i = 0; i < count; i++) {

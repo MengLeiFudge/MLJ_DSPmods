@@ -134,8 +134,7 @@ public static partial class ExplorationManager {
         }
     }
 
-    private static void ImportDeliveries(BinaryReader reader, int version) {
-        if (version < 5) { return; }
+    private static void ImportDeliveries(BinaryReader reader) {
         int count = ReadCount(reader);
         for (int i = 0; i < count; i++) {
             string id = reader.ReadString();

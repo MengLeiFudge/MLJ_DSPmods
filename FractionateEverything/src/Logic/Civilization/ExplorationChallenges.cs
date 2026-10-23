@@ -48,7 +48,7 @@ public static partial class ExplorationManager {
     private const float RouteWidth = 18f;
     private const float ChallengeWorkRadius = 120f;
 
-    /// <summary>仅新生成的高质量广播占用挑战名额，普通点及旧存档点保持原有结算。</summary>
+    /// <summary>仅高质量广播占用挑战名额，其他类型地点使用各自结算规则。</summary>
     private static void TryCreateChallenge(ExplorationMark mark) {
         if (mark.Quality < 2 || Challenges.Count >= 2) { return; }
         PlanetData planet = GameMain.galaxy.PlanetById(mark.PlanetId);

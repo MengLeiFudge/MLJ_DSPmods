@@ -286,9 +286,9 @@ public static partial class ResearchManager {
     }
 
     /// <summary>
-    /// 标记存档来自旧格式；这类存档不会写入跨存档完成标记。
+    /// 初始化 2.2 转入的研究状态；这类存档不会写入跨存档完成标记。
     /// </summary>
-    public static void MarkLegacyGeneration() {
+    public static void InitializeVersion22State() {
         lock (Sync) {
             GrowthTechnologyManager.ConfigureStackProgression();
             belongsToGeneration3 = false;
@@ -468,26 +468,6 @@ public static partial class ResearchManager {
                     "发现了以{0}为样本的记录".Translate(), GetItemName(itemId)));
             }
             return true;
-        }
-    }
-
-    /// <summary>
-    /// 为旧探索点选择该物品尚未发现的一项具体内容。
-    /// </summary>
-    public static string GetLegacyExplorationContentId(int itemId, ISet<string> excludedContentIds = null) {
-        lock (Sync) {
-            if (!DirectionPools.TryGetValue(itemId, out List<string> pool)) {
-                return null;
-            }
-            return pool
-                .Where(contentId => !UnlockedContents.Contains(contentId)
-                                    && !ExploredContents.Contains(contentId)
-                                    && (excludedContentIds == null || !excludedContentIds.Contains(contentId))
-                                    && IsExplorationDirectionUnsafe(contentId, itemId)
-                                    && IsContentExplorableUnsafe(contentId))
-                .OrderBy(contentId => ContentDefinitions[contentId].Tier)
-                .ThenBy(contentId => contentId, StringComparer.Ordinal)
-                .FirstOrDefault();
         }
     }
 
@@ -801,7 +781,7 @@ public static partial class ResearchManager {
         lock (Sync) {
             belongsToGeneration3 = false;
             bool localDisqualified = NebulaMultiplayerModAPI.IsClient && completionDisqualified;
-            // 没有资格记录的同格式存档不能证明未使用沙盒；仅保留玩法数据，不补授本地完成标记。
+            // 默认禁止完成资格；只有当前数据明确记录资格时才恢复，防止缺块意外授奖。
             completionDisqualified = true;
             EligibleDirections.Clear();
             ExploredContents.Clear();
