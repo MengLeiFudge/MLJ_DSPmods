@@ -144,10 +144,14 @@ public static class CivilizationModule {
     public static void Import(BinaryReader r) {
         r.ReadBlocks(
             ("Research", ResearchManager.Import),
-            ("Exploration", ExplorationManager.Import),
-            ("Metadata", MetadataExtraction.Import),
-            ("Monument", MonumentManager.Import),
-            ("MonumentReceivers", MonumentReceivers.Import)
+            ("Exploration", ExplorationManager.ImportLegacy),
+            ("ExplorationState", ExplorationManager.Import),
+            ("Metadata", MetadataExtraction.ImportLegacy),
+            ("MetadataState", MetadataExtraction.Import),
+            ("Monument", MonumentManager.ImportLegacy),
+            ("MonumentState", MonumentManager.Import),
+            ("MonumentReceivers", MonumentReceivers.ImportLegacy),
+            ("MonumentReceiversState", MonumentReceivers.Import)
         );
     }
 
@@ -157,10 +161,10 @@ public static class CivilizationModule {
     public static void Export(BinaryWriter w) {
         w.WriteBlocks(
             ("Research", ResearchManager.Export),
-            ("Exploration", ExplorationManager.Export),
-            ("Metadata", MetadataExtraction.Export),
-            ("Monument", MonumentManager.Export),
-            ("MonumentReceivers", MonumentReceivers.Export)
+            ("ExplorationState", ExplorationManager.Export),
+            ("MetadataState", MetadataExtraction.Export),
+            ("MonumentState", MonumentManager.Export),
+            ("MonumentReceiversState", MonumentReceivers.Export)
         );
     }
 

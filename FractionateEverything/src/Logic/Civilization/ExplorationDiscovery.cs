@@ -87,19 +87,11 @@ public static partial class ExplorationManager {
         return pool.Length > 0 ? pool[NextInt(pool.Length)] : birth;
     }
 
-    /// <summary>保存发现时的完整位置与实际活动星球，供信号追踪和档案查询。</summary>
-    private static void ExportDiscoveries(BinaryWriter writer) {
-        writer.Write(DiscoveredMarks.Count);
-        foreach (ExplorationMark mark in DiscoveredMarks.Values) { WriteMark(writer, mark); }
-        writer.Write(VisitedPlanets.Count);
-        foreach (int planetId in VisitedPlanets) { writer.Write(planetId); }
-    }
-
     /// <summary>读取已发现地点与实际活动星球。</summary>
     private static void ImportDiscoveries(BinaryReader reader) {
         int count = ReadCount(reader);
         for (int i = 0; i < count; i++) {
-            ExplorationMark mark = ReadMark(reader);
+            ExplorationMark mark = ReadLegacyMark(reader);
             if (mark.Id == 0 || mark.PlanetId <= 0 || DiscoveredMarks.ContainsKey(mark.Id)) {
                 throw new InvalidDataException("探索发现账本身份无效。");
             }

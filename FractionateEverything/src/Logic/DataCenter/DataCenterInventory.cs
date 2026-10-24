@@ -28,24 +28,21 @@ public static class DataCenterInventory {
     public static void Export(BinaryWriter w) {
         lock (centerItemCount) {
             w.WriteBlocks(
-                ("CenterItems", bw => {
+                ("Inventory", bw => {
                     List<int> activeIds = [];
                     for (int i = 0; i < centerItemCount.Length; i++) {
                         if (centerItemCount[i] > 0) activeIds.Add(i);
                     }
-                    bw.Write(activeIds.Count);
-                    foreach (int itemId in activeIds) {
-                        bw.Write(itemId);
-                        bw.Write(centerItemCount[itemId]);
-                        bw.Write(centerItemInc[itemId]);
-                    }
+                    bw.WriteList(activeIds, (item, itemId) => item.WriteBlocks(
+                        ("Item", field => field.Write(itemId)),
+                        ("Count", field => field.Write(centerItemCount[itemId])),
+                        ("Inc", field => field.Write(centerItemInc[itemId]))
+                    ));
                 }),
-                ("Expansion", SubspaceExpansion.Export),
-                ("ManualInteractionStats", bw => {
-                    bw.Write(Interlocked.Read(ref ManualExtractCount));
-                    bw.Write(Interlocked.Read(ref ManualUploadCount));
-                }),
-                ("MaterialLeases", MaterialLeases.Export)
+                ("ExpansionState", SubspaceExpansion.Export),
+                ("ManualExtractCount", bw => bw.Write(Interlocked.Read(ref ManualExtractCount))),
+                ("ManualUploadCount", bw => bw.Write(Interlocked.Read(ref ManualUploadCount))),
+                ("LeaseBalances", MaterialLeases.Export)
             );
         }
     }
@@ -69,12 +66,31 @@ public static class DataCenterInventory {
                         }
                     }
                 }),
-                ("Expansion", SubspaceExpansion.Import),
+                ("Inventory", br => {
+                    Array.Clear(centerItemCount, 0, centerItemCount.Length);
+                    Array.Clear(centerItemInc, 0, centerItemInc.Length);
+                    br.ReadList(item => {
+                        int id = -1; long count = 0, inc = 0;
+                        item.ReadBlocks(
+                            ("Item", field => id = field.ReadInt32()),
+                            ("Count", field => count = field.ReadInt64()),
+                            ("Inc", field => inc = field.ReadInt64())
+                        );
+                        if (id < 0 || id >= centerItemCount.Length) { return; }
+                        centerItemCount[id] = Math.Max(0L, count);
+                        centerItemInc[id] = Math.Max(0L, Math.Min(inc, MaxIncForCount(centerItemCount[id])));
+                    }, 12000);
+                }),
+                ("Expansion", SubspaceExpansion.ImportLegacy),
+                ("ExpansionState", SubspaceExpansion.Import),
                 ("ManualInteractionStats", br => {
                     ManualExtractCount = Math.Max(0L, br.ReadInt64());
                     ManualUploadCount = Math.Max(0L, br.ReadInt64());
                 }),
-                ("MaterialLeases", MaterialLeases.Import)
+                ("ManualExtractCount", br => ManualExtractCount = Math.Max(0L, br.ReadInt64())),
+                ("ManualUploadCount", br => ManualUploadCount = Math.Max(0L, br.ReadInt64())),
+                ("MaterialLeases", MaterialLeases.ImportLegacy),
+                ("LeaseBalances", MaterialLeases.Import)
             );
         }
     }

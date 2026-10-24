@@ -3,6 +3,7 @@ using System.IO;
 using FE.Compatibility.Nebula;
 using FE.Logic.Civilization;
 using FE.Logic.Items;
+using static FE.Utils.Utils;
 
 namespace FE.Logic.DataCenter;
 
@@ -133,22 +134,56 @@ public static class SubspaceExpansion {
         lock (Sync) { bool dirty = snapshotDirty; snapshotDirty = false; return dirty; }
     }
 
-    /// <summary>写入DataCenter的Expansion子块，存档和联机快照共用。</summary>
+    /// <summary>写入DataCenter的ExpansionState子块，存档和联机快照共用。</summary>
     /// <param name="writer">子块输出流。</param>
     public static void Export(BinaryWriter writer) {
         lock (Sync) {
-            writer.Write(2);
-            foreach (double gain in Gains) { writer.Write(gain); }
-            writer.Write(overflowValue);
-            writer.Write(overflowGain);
-            writer.Write(lastSecond);
-            foreach (int supply in Supplies) { writer.Write(supply); }
+            writer.WriteBlocks(
+                ("Gains", w => w.WriteList(ItemManager.MainProgressMatrixIds, (item, id) => { item.Write(id); item.Write(Gains[Array.IndexOf(ItemManager.MainProgressMatrixIds, id)]); })),
+                ("OverflowValue", w => w.Write(overflowValue)),
+                ("OverflowGain", w => w.Write(overflowGain)),
+                ("LastSecond", w => w.Write(lastSecond)),
+                ("Supplies", w => w.WriteList(ItemManager.MainProgressMatrixIds, (item, id) => { item.Write(id); item.Write(Supplies[Array.IndexOf(ItemManager.MainProgressMatrixIds, id)]); }))
+            );
         }
     }
 
-    /// <summary>校验并导入主机或存档的扩容状态，不在导入时消费供料。</summary>
-    /// <param name="reader">子块输入流。</param>
+    /// <summary>独立恢复扩容字段；按存档数量消费数组条目，以稳定矩阵身份定位，未知身份跳过。</summary>
     public static void Import(BinaryReader reader) {
+        IntoOtherSave();
+        lock (Sync) {
+            reader.ReadBlocks(
+                ("Gains", r => {
+                    r.ReadList(item => {
+                        int index = Array.IndexOf(ItemManager.MainProgressMatrixIds, item.ReadInt32());
+                        double value = ReadFinite(item, 0d, MaximumScale);
+                        if (index >= 0 && index < Gains.Length) { Gains[index] = value; }
+                    }, 12000);
+                }),
+                ("OverflowValue", r => overflowValue = ReadFinite(r, 0d, double.MaxValue)),
+                ("OverflowGain", r => overflowGain = ReadFinite(r, 0d, MaximumScale)),
+                ("LastSecond", r => {
+                    long second = r.ReadInt64();
+                    if (second < 0 && second != long.MinValue || second > long.MaxValue / 60L) {
+                        throw new InvalidDataException("亚空间扩容时钟无效。");
+                    }
+                    lastSecond = second;
+                }),
+                ("Supplies", r => {
+                    r.ReadList(item => {
+                        int index = Array.IndexOf(ItemManager.MainProgressMatrixIds, item.ReadInt32());
+                        int supply = item.ReadInt32();
+                        if (supply < 0 || supply > SupplyLimit) { throw new InvalidDataException("亚空间扩容供料无效。"); }
+                        if (index >= 0 && index < Supplies.Length) { Supplies[index] = supply; }
+                    }, 12000);
+                })
+            );
+        }
+    }
+
+    /// <summary>读取已有的顺序布局扩容块，写入统一使用独立字段块。</summary>
+    /// <param name="reader">旧Expansion块的输入流。</param>
+    public static void ImportLegacy(BinaryReader reader) {
         int version = reader.ReadInt32();
         if (version != 2) { throw new InvalidDataException("亚空间扩容版本无效。"); }
         double[] gains = new double[Gains.Length];

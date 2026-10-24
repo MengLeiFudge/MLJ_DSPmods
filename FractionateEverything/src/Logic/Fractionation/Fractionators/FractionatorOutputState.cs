@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading;
 using HarmonyLib;
 using FE.Logic.Fractionation.Recipes;
+using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Fractionators;
 
@@ -229,6 +230,29 @@ public static class FractionatorOutputState {
     /// 读取分馏塔扩展输出状态。
     /// </summary>
     public static void OutputExtendImport(BinaryReader r) {
+        OutputExtendIntoOtherSave();
+        r.ReadList(item => {
+            (int Planet, int Entity) key = default;
+            FractionatorExtraState state = new();
+            item.ReadBlocks(
+                ("Identity", field => key = (field.ReadInt32(), field.ReadInt32())),
+                ("Products", field => field.ReadList(product => {
+                    bool main = false; int id = 0, count = 0;
+                    product.ReadBlocks(
+                        ("Main", value => main = value.ReadBoolean()),
+                        ("Item", value => id = value.ReadInt32()),
+                        ("Count", value => count = value.ReadInt32())
+                    );
+                    if (count > 0 && LDB.items.Exist(id)) { state.Products.Add(new(main, id, count)); }
+                }, 12000))
+            );
+            if (key.Planet <= 0 || key.Entity <= 0 || key.Entity == int.MaxValue) { return; }
+            outputDic[key] = state;
+            EnsureOutputStateArray(key.Planet, key.Entity)[key.Entity] = state;
+        });
+    }
+
+    public static void OutputExtendImportLegacy(BinaryReader r) {
         outputDic.Clear();
         outputStateArraysByPlanet.Clear();
         Interlocked.Increment(ref outputStateArrayGeneration);
@@ -260,18 +284,14 @@ public static class FractionatorOutputState {
     /// 写入分馏塔扩展输出状态。
     /// </summary>
     public static void OutputExtendExport(BinaryWriter w) {
-        w.Write(outputDic.Count);
-        foreach (var p in outputDic) {
-            w.Write(p.Key.Item1);
-            w.Write(p.Key.Item2);
-            List<ProductOutputInfo> products = p.Value.Products;
-            w.Write(products.Count);
-            foreach (ProductOutputInfo outputItem in products) {
-                w.Write(outputItem.isMainOutput);
-                w.Write(outputItem.itemId);
-                w.Write(outputItem.count);
-            }
-        }
+        w.WriteList(outputDic.ToArray(), (item, pair) => item.WriteBlocks(
+            ("Identity", field => { field.Write(pair.Key.Item1); field.Write(pair.Key.Item2); }),
+            ("Products", field => field.WriteList(pair.Value.Products, (product, output) => product.WriteBlocks(
+                ("Main", value => value.Write(output.isMainOutput)),
+                ("Item", value => value.Write(output.itemId)),
+                ("Count", value => value.Write(output.count))
+            )))
+        ));
     }
 
     /// <summary>

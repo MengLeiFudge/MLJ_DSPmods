@@ -343,25 +343,95 @@ public static partial class ExplorationManager {
     /// <param name="writer">输出流。</param>
     public static void Export(BinaryWriter writer) {
         lock (Sync) {
-            writer.Write(6);
-            writer.Write(nextMarkId); writer.Write(storyCompleted); writer.Write(nextTimedGenerationTick); writer.Write(randomSeed);
-            writer.Write(capacityHintShown);
-            for (int i = 0; i < 2; i++) { writer.Write(UltimateSteps[i]); writer.Write(UltimateInputs[i]); }
-            writer.Write(ActiveMarks.Count);
-            foreach (ExplorationMark mark in ActiveMarks) { WriteMark(writer, mark); }
-            writer.Write(Records.Count);
-            foreach (ExplorationRecord record in Records) { WriteMark(writer, record.Mark); writer.Write(record.Tick); }
-            writer.Write(LastBroadcastTicks.Count);
-            foreach (var pair in LastBroadcastTicks) { writer.Write(pair.Key); writer.Write(pair.Value); }
-            ExportDiscoveries(writer);
-            ExportDeliveries(writer);
-            ExportChallenges(writer);
+            writer.WriteBlocks(
+                ("NextMarkId", w => w.Write(nextMarkId)),
+                ("StoryCompleted", w => w.Write(storyCompleted)),
+                ("NextTimedGenerationTick", w => w.Write(nextTimedGenerationTick)),
+                ("RandomSeed", w => w.Write(randomSeed)),
+                ("CapacityHintShown", w => w.Write(capacityHintShown)),
+                ("UltimateSteps", w => w.WriteList(new[] { 0, 1 }, (item, branch) => { item.Write(branch); item.Write(UltimateSteps[branch]); })),
+                ("UltimateInputs", w => w.WriteList(new[] { 0, 1 }, (item, branch) => { item.Write(branch); item.Write(UltimateInputs[branch]); })),
+                ("ActiveMarks", w => w.WriteList(ActiveMarks, WriteMark)),
+                ("Records", w => w.WriteList(Records, (item, record) => item.WriteBlocks(
+                    ("Mark", field => WriteMark(field, record.Mark)), ("Tick", field => field.Write(record.Tick))))),
+                ("LastBroadcastTicks", w => w.WriteList(LastBroadcastTicks, (item, pair) => { item.Write(pair.Key); item.Write(pair.Value); })),
+                ("DiscoveredMarks", w => w.WriteList(DiscoveredMarks.Values, WriteMark)),
+                ("VisitedPlanets", w => w.WriteList(VisitedPlanets, (item, planet) => item.Write(planet))),
+                ("Deliveries", ExportDeliveries),
+                ("Challenges", ExportChallenges)
+            );
         }
     }
 
-    /// <summary>恢复当前格式状态并重建静默认领集合。</summary>
-    /// <param name="reader">存档或主机快照流。</param>
+    /// <summary>按字段和集合元素独立恢复探索状态，所有引用校验在读完各块后执行。</summary>
     public static void Import(BinaryReader reader) {
+        lock (Sync) {
+            IntoOtherSave();
+            reader.ReadBlocks(
+                ("NextMarkId", r => {
+                    int id = r.ReadInt32();
+                    if (id <= 0) { throw new InvalidDataException("探索身份游标无效。"); }
+                    nextMarkId = id;
+                }),
+                ("StoryCompleted", r => {
+                    int step = r.ReadInt32();
+                    if (step < 0 || step > 18) { throw new InvalidDataException("探索进度无效。"); }
+                    storyCompleted = step;
+                }),
+                ("NextTimedGenerationTick", r => nextTimedGenerationTick = r.ReadInt64()),
+                ("RandomSeed", r => randomSeed = r.ReadUInt32()),
+                ("CapacityHintShown", r => capacityHintShown = r.ReadBoolean()),
+                ("UltimateSteps", r => ReadUltimateArray(r, UltimateSteps, 6)),
+                ("UltimateInputs", r => ReadUltimateArray(r, UltimateInputs, UltimateMemoryCost)),
+                ("ActiveMarks", r => r.ReadList(item => { ActiveMarks.Add(ReadMark(item)); }, MaximumRecords)),
+                ("Records", r => r.ReadList(item => {
+                    ExplorationRecord record = new();
+                    item.ReadBlocks(("Mark", field => record.Mark = ReadMark(field)), ("Tick", field => record.Tick = field.ReadInt64()));
+                    if (record.Mark != null) { Records.Add(record); }
+                }, MaximumRecords)),
+                ("LastBroadcastTicks", r => r.ReadList(item => {
+                    int planetId = item.ReadInt32(); long tick = item.ReadInt64();
+                    if (planetId <= 0 || tick < 0 || LastBroadcastTicks.ContainsKey(planetId)) {
+                        throw new InvalidDataException("广播冷却数据无效。");
+                    }
+                    LastBroadcastTicks.Add(planetId, tick);
+                }, MaximumRecords)),
+                ("DiscoveredMarks", r => r.ReadList(item => {
+                    ExplorationMark mark = ReadMark(item);
+                    if (DiscoveredMarks.ContainsKey(mark.Id)) { throw new InvalidDataException("探索发现账本身份重复。"); }
+                    DiscoveredMarks.Add(mark.Id, mark);
+                }, MaximumRecords)),
+                ("VisitedPlanets", r => r.ReadList(item => {
+                    int planet = item.ReadInt32();
+                    if (planet > 0) { VisitedPlanets.Add(planet); }
+                }, MaximumRecords)),
+                ("Deliveries", ImportDeliveries),
+                ("Challenges", ImportChallenges)
+            );
+            foreach (ExplorationRecord record in Records) {
+                if (record.Mark.Kind == ExplorationMarkKind.SilentCache) { CollectedSilentMarks.Add(record.Mark.Id); }
+            }
+            foreach (int id in Challenges.Keys.ToArray()) {
+                if (FindMark(id) == null) { Challenges.Remove(id); }
+            }
+            int largestId = ActiveMarks.Concat(Records.Select(record => record.Mark)).Concat(DiscoveredMarks.Values)
+                .Select(mark => mark.Id).DefaultIfEmpty(0).Max();
+            if (largestId >= nextMarkId && largestId < int.MaxValue) { nextMarkId = largestId + 1; }
+            MarkDirty();
+        }
+    }
+
+    /// <summary>以稳定分支编号恢复数组；始终消费存档条目，不依赖当前数组长度。</summary>
+    private static void ReadUltimateArray(BinaryReader reader, int[] target, int maximum) {
+        reader.ReadList(item => {
+            int branch = item.ReadInt32();
+            int value = Math.Max(0, Math.Min(maximum, item.ReadInt32()));
+            if (branch >= 0 && branch < target.Length) { target[branch] = value; }
+        }, 12000);
+    }
+
+    /// <summary>读取已有的探索格式6；新写入使用独立字段块。</summary>
+    public static void ImportLegacy(BinaryReader reader) {
         lock (Sync) {
             IntoOtherSave();
             int version = reader.ReadInt32();
@@ -370,10 +440,10 @@ public static partial class ExplorationManager {
             capacityHintShown = reader.ReadBoolean();
             for (int i = 0; i < 2; i++) { UltimateSteps[i] = Math.Max(0, Math.Min(6, reader.ReadInt32())); UltimateInputs[i] = Math.Max(0, Math.Min(UltimateMemoryCost, reader.ReadInt32())); }
             int count = ReadCount(reader);
-            for (int i = 0; i < count; i++) { ActiveMarks.Add(ReadMark(reader)); }
+            for (int i = 0; i < count; i++) { ActiveMarks.Add(ReadLegacyMark(reader)); }
             count = ReadCount(reader);
             for (int i = 0; i < count; i++) {
-                var record = new ExplorationRecord { Mark = ReadMark(reader), Tick = reader.ReadInt64() };
+                var record = new ExplorationRecord { Mark = ReadLegacyMark(reader), Tick = reader.ReadInt64() };
                 Records.Add(record);
                 if (record.Mark.Kind == ExplorationMarkKind.SilentCache) { CollectedSilentMarks.Add(record.Mark.Id); }
             }
@@ -387,8 +457,8 @@ public static partial class ExplorationManager {
                 LastBroadcastTicks.Add(planetId, tick);
             }
             ImportDiscoveries(reader);
-            ImportDeliveries(reader);
-            ImportChallenges(reader);
+            ImportLegacyDeliveries(reader);
+            ImportLegacyChallenges(reader);
             if (nextMarkId <= 0 || storyCompleted < 0 || storyCompleted > 18) { throw new InvalidDataException("探索进度无效。"); }
             MarkDirty();
         }
@@ -760,11 +830,35 @@ public static partial class ExplorationManager {
         if (count < 0 || count > MaximumRecords) { throw new InvalidDataException("探索集合数量无效。"); }
         return count;
     }
+    /// <summary>点位内的独立字段按标签保存，向量作为一个完整值。</summary>
     private static void WriteMark(BinaryWriter w, ExplorationMark m) {
-        w.Write(m.Id); w.Write(m.PlanetId); w.Write(m.LocalPosition.x); w.Write(m.LocalPosition.y); w.Write(m.LocalPosition.z);
-        w.Write((int)m.Kind); w.Write(m.ContentId ?? ""); w.Write(m.ItemId); w.Write(m.Count); w.Write(m.Quality);
+        w.WriteBlocks(
+            ("Id", field => field.Write(m.Id)), ("Planet", field => field.Write(m.PlanetId)),
+            ("Position", field => { field.Write(m.LocalPosition.x); field.Write(m.LocalPosition.y); field.Write(m.LocalPosition.z); }),
+            ("Kind", field => field.Write((int)m.Kind)), ("Content", field => field.Write(m.ContentId ?? "")),
+            ("Item", field => field.Write(m.ItemId)), ("Count", field => field.Write(m.Count)),
+            ("Quality", field => field.Write(m.Quality))
+        );
     }
+
+    /// <summary>只提交身份与位置有效的点位，缺失可选字段保持默认值。</summary>
     private static ExplorationMark ReadMark(BinaryReader r) {
+        ExplorationMark mark = new() { Quality = 1, ContentId = string.Empty };
+        r.ReadBlocks(
+            ("Id", field => mark.Id = field.ReadInt32()), ("Planet", field => mark.PlanetId = field.ReadInt32()),
+            ("Position", field => mark.LocalPosition = new Vector3(field.ReadSingle(), field.ReadSingle(), field.ReadSingle())),
+            ("Kind", field => mark.Kind = (ExplorationMarkKind)field.ReadInt32()),
+            ("Content", field => mark.ContentId = field.ReadString()), ("Item", field => mark.ItemId = field.ReadInt32()),
+            ("Count", field => mark.Count = field.ReadInt32()), ("Quality", field => mark.Quality = field.ReadInt32())
+        );
+        if (mark.Id == 0 || mark.PlanetId <= 0 || !Finite(mark.LocalPosition.x) || !Finite(mark.LocalPosition.y)
+            || !Finite(mark.LocalPosition.z) || mark.Quality < 1 || mark.Quality > 3 || mark.Count < 0
+            || !Enum.IsDefined(typeof(ExplorationMarkKind), mark.Kind)) { throw new InvalidDataException("探索点位数据无效。"); }
+        return mark;
+    }
+
+    /// <summary>读取已有顺序格式中的点位记录。</summary>
+    private static ExplorationMark ReadLegacyMark(BinaryReader r) {
         var mark = new ExplorationMark { Id = r.ReadInt32(), PlanetId = r.ReadInt32(), LocalPosition = new Vector3(r.ReadSingle(), r.ReadSingle(), r.ReadSingle()),
             Kind = (ExplorationMarkKind)r.ReadInt32(), ContentId = r.ReadString(), ItemId = r.ReadInt32(), Count = r.ReadInt32(), Quality = r.ReadInt32() };
         if (!Finite(mark.LocalPosition.x) || !Finite(mark.LocalPosition.y) || !Finite(mark.LocalPosition.z)

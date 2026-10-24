@@ -224,11 +224,27 @@ public static class MaterialLeases {
     public static void Export(BinaryWriter writer) {
         lock (DataCenterInventory.centerItemCount) {
             Lease[] active = host.Values.SelectMany(leases => leases.Values).Where(lease => lease.Remaining > 0).ToArray();
-            writer.Write(1); writer.Write(active.Length);
-            foreach (Lease lease in active) { writer.Write(lease.Item); writer.Write(lease.Remaining); writer.Write(lease.RemainingInc); }
+            writer.WriteList(active, (item, lease) => item.WriteBlocks(
+                ("Item", field => field.Write(lease.Item)),
+                ("Remaining", field => field.Write(lease.Remaining)),
+                ("Inc", field => field.Write(lease.RemainingInc))
+            ));
         }
     }
     public static void Import(BinaryReader reader) {
+        reader.ReadList(entry => {
+            int item = 0, amount = 0, inc = 0;
+            entry.ReadBlocks(
+                ("Item", field => item = field.ReadInt32()),
+                ("Remaining", field => amount = field.ReadInt32()),
+                ("Inc", field => inc = field.ReadInt32())
+            );
+            if (item is <= 0 or >= 12000 || amount is < 1 or > MaximumQuota || inc < 0 || inc > amount * 10L) { throw new InvalidDataException("取料额度余额无效。"); }
+            if (!NebulaMultiplayerModAPI.IsClient) { Restore(item, amount, inc); }
+        }, 65536);
+    }
+
+    public static void ImportLegacy(BinaryReader reader) {
         int version = reader.ReadInt32(), count = reader.ReadInt32();
         if (version != 1 || count is < 0 or > 65536) { throw new InvalidDataException("取料额度快照无效。"); }
         for (int i = 0; i < count; i++) {

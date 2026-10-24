@@ -786,7 +786,8 @@ public static partial class ResearchManager {
                 ("AcquiredAdvancedTowers", br => ReadIntSet(br, AcquiredAdvancedTowers)),
                 ("AdvancedTowerInventoryMilestones", br =>
                     ReadIntSet(br, AdvancedTowerInventoryMilestones)),
-                ("Progression", ReadProgression),
+                ("Progression", ReadLegacyProgression),
+                ("ProgressionState", ReadProgression),
                 ("DiscoveredContentCount", br => discoveredContentCount = Math.Max(0, br.ReadInt32()))
             );
             foreach (string contentId in UnlockedContents.ToArray()) {
@@ -849,7 +850,7 @@ public static partial class ResearchManager {
                 ("AcquiredAdvancedTowers", bw => WriteIntSet(bw, AcquiredAdvancedTowers)),
                 ("AdvancedTowerInventoryMilestones", bw =>
                     WriteIntSet(bw, AdvancedTowerInventoryMilestones)),
-                ("Progression", WriteProgression),
+                ("ProgressionState", WriteProgression),
                 ("DiscoveredContentCount", bw => bw.Write(discoveredContentCount))
             );
         }

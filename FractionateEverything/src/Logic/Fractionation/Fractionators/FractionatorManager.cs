@@ -177,15 +177,17 @@ public static class FractionatorManager {
 
     public static void Import(BinaryReader r) {
         r.ReadBlocks(
-            ("OutputExtend", FractionatorOutputState.OutputExtendImport),
-            ("AdvancedRuntime", AdvancedFractionatorRuntime.Import)
+            ("OutputExtend", FractionatorOutputState.OutputExtendImportLegacy),
+            ("OutputState", FractionatorOutputState.OutputExtendImport),
+            ("AdvancedRuntime", AdvancedFractionatorRuntime.ImportLegacy),
+            ("AdvancedState", AdvancedFractionatorRuntime.Import)
         );
     }
 
     public static void Export(BinaryWriter w) {
         w.WriteBlocks(
-            ("OutputExtend", FractionatorOutputState.OutputExtendExport),
-            ("AdvancedRuntime", AdvancedFractionatorRuntime.Export)
+            ("OutputState", FractionatorOutputState.OutputExtendExport),
+            ("AdvancedState", AdvancedFractionatorRuntime.Export)
         );
     }
 

@@ -139,31 +139,81 @@ internal static class MonumentReceivers {
 
     internal static void Export(BinaryWriter writer) {
         lock (Sync) {
-            writer.Write(1); writer.Write(Credits.Count);
-            foreach (var pair in Credits.OrderBy(pair => pair.Key.Planet).ThenBy(pair => pair.Key.Entity)) {
-                writer.Write(pair.Key.Planet); writer.Write(pair.Key.Entity); writer.Write(pair.Value.Fraction);
-            }
-            writer.Write(share);
-            var receivers = new List<(int Planet, int Entity, float Count, bool Active)>();
-            GameData data = GameMain.data;
-            for (int f = 0; data != null && f < data.factoryCount; f++) {
-                PlanetFactory factory = data.factories[f];
-                if (factory?.powerSystem == null) { continue; }
-                for (int id = 1; id < factory.powerSystem.genCursor; id++) {
-                    ref PowerGeneratorComponent receiver = ref factory.powerSystem.genPool[id];
-                    if (receiver.id == id && receiver.gamma && receiver.productId == IFE丰碑结晶) {
-                        receivers.Add((factory.planetId, receiver.entityId, receiver.productCount, valid.Contains((factory.planetId, receiver.entityId))));
-                    }
-                }
-            }
-            writer.Write(receivers.Count);
-            foreach (var receiver in receivers) {
-                writer.Write(receiver.Planet); writer.Write(receiver.Entity); writer.Write(receiver.Count); writer.Write(receiver.Active);
-            }
+            writer.WriteBlocks(
+                ("Credits", w => w.WriteList(Credits.OrderBy(pair => pair.Key.Planet).ThenBy(pair => pair.Key.Entity).ToArray(), (item, pair) => {
+                    item.WriteBlocks(
+                        ("Identity", field => { field.Write(pair.Key.Planet); field.Write(pair.Key.Entity); }),
+                        ("Fraction", field => field.Write(pair.Value.Fraction))
+                    );
+                })),
+                ("Share", w => w.Write(share)),
+                ("Receivers", ExportReceivers)
+            );
         }
     }
 
+    private static void ExportReceivers(BinaryWriter writer) {
+        var receivers = new List<(int Planet, int Entity, float Count, bool Active)>();
+        GameData data = GameMain.data;
+        for (int f = 0; data != null && f < data.factoryCount; f++) {
+            PlanetFactory factory = data.factories[f];
+            if (factory?.powerSystem == null) { continue; }
+            for (int id = 1; id < factory.powerSystem.genCursor; id++) {
+                ref PowerGeneratorComponent receiver = ref factory.powerSystem.genPool[id];
+                if (receiver.id == id && receiver.gamma && receiver.productId == IFE丰碑结晶) {
+                    receivers.Add((factory.planetId, receiver.entityId, receiver.productCount, valid.Contains((factory.planetId, receiver.entityId))));
+                }
+            }
+        }
+        writer.WriteList(receivers, (item, receiver) => item.WriteBlocks(
+            ("Identity", field => { field.Write(receiver.Planet); field.Write(receiver.Entity); }),
+            ("Count", field => field.Write(receiver.Count)),
+            ("Active", field => field.Write(receiver.Active))
+        ));
+    }
+
     internal static void Import(BinaryReader reader) {
+        IntoOtherSave();
+        lock (Sync) {
+            reader.ReadBlocks(
+                ("Credits", r => r.ReadList(item => {
+                    (int Planet, int Entity) key = default; double fraction = 0d;
+                    item.ReadBlocks(
+                        ("Identity", field => key = (field.ReadInt32(), field.ReadInt32())),
+                        ("Fraction", field => fraction = field.ReadDouble())
+                    );
+                    if (key.Planet <= 0 || key.Entity <= 0 || !(fraction >= 0d && fraction < 1d) || Credits.ContainsKey(key)) {
+                        throw new InvalidDataException("丰碑接收余量无效。");
+                    }
+                    Credits.Add(key, new Credit { Fraction = fraction });
+                })),
+                ("Share", r => {
+                    double value = r.ReadDouble();
+                    if (double.IsNaN(value) || double.IsInfinity(value) || value < 0d) { throw new InvalidDataException("丰碑接收速率无效。"); }
+                    share = value;
+                }),
+                ("Receivers", r => r.ReadList(item => {
+                    (int Planet, int Entity) key = default; float amount = 0f; bool active = false;
+                    item.ReadBlocks(
+                        ("Identity", field => key = (field.ReadInt32(), field.ReadInt32())),
+                        ("Count", field => amount = field.ReadSingle()),
+                        ("Active", field => active = field.ReadBoolean())
+                    );
+                    if (key.Planet <= 0 || key.Entity <= 0 || !(amount >= 0f && amount <= 20f)) { throw new InvalidDataException("丰碑接收库存无效。"); }
+                    if (active) { valid.Add(key); }
+                    if (!NebulaMultiplayerModAPI.IsClient) { return; }
+                    PlanetFactory factory = GameMain.galaxy?.PlanetById(key.Planet)?.factory;
+                    if (factory?.powerSystem == null || key.Entity >= factory.entityCursor || factory.entityPool[key.Entity].id != key.Entity) { return; }
+                    int id = factory.entityPool[key.Entity].powerGenId;
+                    if (id <= 0 || id >= factory.powerSystem.genCursor || !factory.powerSystem.genPool[id].gamma) { return; }
+                    factory.powerSystem.genPool[id].productId = IFE丰碑结晶;
+                    factory.powerSystem.genPool[id].productCount = amount;
+                }))
+            );
+        }
+    }
+
+    internal static void ImportLegacy(BinaryReader reader) {
         if (reader.ReadInt32() != 1) { throw new InvalidDataException("不支持的丰碑接收格式。"); }
         int count = reader.ReadInt32();
         if (count < 0 || count > 1000000) { throw new InvalidDataException("丰碑接收数量越界。"); }

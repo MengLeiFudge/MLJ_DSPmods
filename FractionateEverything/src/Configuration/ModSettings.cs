@@ -91,18 +91,18 @@ public static class ModSettings {
                     DownloadThresholdEntry.Value = downloadThreshold;
                     UploadThresholdEntry.Value = uploadThreshold;
                 }
-            })
+            }),
+            ("DownloadThreshold", br => { float value = br.ReadSingle(); if (NebulaMultiplayerModAPI.IsClient) { DownloadThresholdEntry.Value = value; } }),
+            ("UploadThreshold", br => { float value = br.ReadSingle(); if (NebulaMultiplayerModAPI.IsClient) { UploadThresholdEntry.Value = value; } })
         );
     }
 
-    /// <summary>按原顺序保存下载、上传阈值，保留 Thresholds 子块。</summary>
+    /// <summary>下载和上传阈值分别保存，缺少一个字段不影响另一个。</summary>
     /// <param name="w">当前 Miscellaneous 存档块的写入器。</param>
     public static void Export(BinaryWriter w) {
         w.WriteBlocks(
-            ("Thresholds", bw => {
-                bw.Write(DownloadThreshold);
-                bw.Write(UploadThreshold);
-            })
+            ("DownloadThreshold", bw => bw.Write(DownloadThreshold)),
+            ("UploadThreshold", bw => bw.Write(UploadThreshold))
         );
     }
 }

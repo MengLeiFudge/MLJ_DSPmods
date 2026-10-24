@@ -6,6 +6,7 @@ using System.Threading;
 using FE.Compatibility.Nebula;
 using FE.Logic.Enhancements.VanillaRecipes;
 using FE.Logic.Items;
+using static FE.Utils.Utils;
 
 namespace FE.Logic.Civilization.Monument;
 
@@ -132,26 +133,67 @@ internal static class MonumentManager {
     internal static bool HasConstruction(int starId) { lock (Sync) { return Construction.ContainsKey(starId); } }
     internal static bool TakeDirty() { lock (Sync) { bool result = dirty; dirty = false; return result; } }
 
-    /// <summary>版本1只保存事实；倍率、需求和均衡由当前合法目录重算。</summary>
+    /// <summary>按独立字段保存事实；倍率、需求和均衡由当前合法目录重算。</summary>
     internal static void Export(BinaryWriter writer) {
         lock (Sync) {
-            writer.Write(1);
-            MonumentCatalog.ExportIdentities(writer);
-            writer.Write(analyzed);
-            writer.Write(Construction.Count);
-            foreach (var pair in Construction.OrderBy(pair => pair.Key)) { writer.Write(pair.Key); writer.Write(pair.Value); }
-            writer.Write(Cohorts.Count);
-            foreach (var batch in Cohorts) {
-                writer.Write(batch.Key); writer.Write(batch.Value.Count);
-                foreach (var pair in batch.Value.OrderBy(pair => pair.Key.Star).ThenBy(pair => pair.Key.Matrix)) {
-                    writer.Write(pair.Key.Star); writer.Write(pair.Key.Matrix); writer.Write(pair.Value);
-                }
-            }
+            writer.WriteBlocks(
+                ("Identities", MonumentCatalog.ExportIdentities),
+                ("Analyzed", w => w.Write(analyzed)),
+                ("Construction", w => w.WriteList(Construction.OrderBy(pair => pair.Key).ToArray(), (item, pair) => {
+                    item.Write(pair.Key); item.Write(pair.Value);
+                })),
+                ("Cohorts", w => w.WriteList(Cohorts.ToArray(), (item, batch) => item.WriteBlocks(
+                    ("Expiry", field => field.Write(batch.Key)),
+                    ("Amounts", field => field.WriteList(batch.Value.OrderBy(pair => pair.Key.Star).ThenBy(pair => pair.Key.Matrix).ToArray(), (entry, pair) => {
+                        entry.Write(pair.Key.Star); entry.Write(pair.Key.Matrix); entry.Write(pair.Value);
+                    }))
+                )))
+            );
         }
     }
 
-    /// <summary>完整校验后替换账本，失败不留下部分导入的状态。</summary>
+    /// <summary>恢复独立账本；来源身份未通过校验时只跳过依赖它的帆批次。</summary>
     internal static void Import(BinaryReader reader) {
+        IntoOtherSave();
+        lock (Sync) {
+            bool identitiesValid = false;
+            int entries = 0;
+            reader.ReadBlocks(
+                ("Identities", r => { MonumentCatalog.ValidateIdentities(r); identitiesValid = true; }),
+                ("Analyzed", r => {
+                    long value = r.ReadInt64();
+                    if (value < 0) { throw new InvalidDataException("丰碑解析数量无效。"); }
+                    analyzed = value;
+                }),
+                ("Construction", r => r.ReadList(item => {
+                    int star = item.ReadInt32(); long amount = item.ReadInt64();
+                    if (star <= 0 || amount <= 0 || Construction.ContainsKey(star)) { throw new InvalidDataException("丰碑建设记录无效。"); }
+                    Construction.Add(star, amount);
+                }, 12000)),
+                ("Cohorts", r => {
+                    if (!identitiesValid) { return; }
+                    r.ReadList(item => {
+                        long expiry = -1;
+                        Dictionary<(int Star, int Matrix), long> batch = [];
+                        item.ReadBlocks(
+                            ("Expiry", field => expiry = field.ReadInt64()),
+                            ("Amounts", field => field.ReadList(entry => {
+                                int star = entry.ReadInt32(), matrix = entry.ReadInt32(); long count = entry.ReadInt64();
+                                if (++entries > 1000000 || star <= 0 || matrix <= 0 || matrix >= 12000 || count <= 0 || batch.ContainsKey((star, matrix))) {
+                                    throw new InvalidDataException("丰碑帆来源或数量无效。");
+                                }
+                                batch.Add((star, matrix), count);
+                            }, 1000000 - entries))
+                        );
+                        if (expiry >= 0 && !Cohorts.ContainsKey(expiry)) { Cohorts.Add(expiry, batch); }
+                    }, 601);
+                })
+            );
+        }
+    }
+
+    /// <summary>读取已有顺序布局，完整校验后替换账本。</summary>
+    internal static void ImportLegacy(BinaryReader reader) {
         if (reader.ReadInt32() != 1) { throw new InvalidDataException("不支持的丰碑格式。"); }
         MonumentCatalog.ValidateIdentities(reader);
         long restoredAnalysis = reader.ReadInt64();

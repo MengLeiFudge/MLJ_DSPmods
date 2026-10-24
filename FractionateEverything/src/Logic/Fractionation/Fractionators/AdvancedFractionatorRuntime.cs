@@ -868,10 +868,9 @@ public static partial class AdvancedFractionatorRuntime {
     }
 
     private static void WriteDictionary(BinaryWriter writer, Dictionary<int, int> dictionary) {
-        writer.Write(dictionary.Count);
-        foreach (KeyValuePair<int, int> pair in dictionary.OrderBy(pair => pair.Key)) {
-            writer.Write(pair.Key);
-            writer.Write(pair.Value);
-        }
+        writer.WriteList(dictionary.OrderBy(pair => pair.Key).ToArray(), (item, pair) => {
+            item.Write(pair.Key);
+            item.Write(pair.Value);
+        });
     }
 }

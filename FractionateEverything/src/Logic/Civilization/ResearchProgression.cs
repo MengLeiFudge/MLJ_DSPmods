@@ -171,16 +171,39 @@ public static partial class ResearchManager {
     /// <summary>写入任务资格、阶段累计投入和当前分钟窗口。</summary>
     /// <param name="writer">存档或主机快照输出。</param>
     private static void WriteProgression(BinaryWriter writer) {
-        writer.Write(sacrificeUnlocked);
-        writer.Write(memoryMinute);
-        writer.Write(minuteMemoryCount);
-        writer.Write(memoryBoost);
-        foreach (long count in StageMemoryInputs) { writer.Write(count); }
+        writer.WriteBlocks(
+            ("SacrificeUnlocked", w => w.Write(sacrificeUnlocked)),
+            ("MemoryMinute", w => w.Write(memoryMinute)),
+            ("MinuteMemoryCount", w => w.Write(minuteMemoryCount)),
+            ("MemoryBoost", w => w.Write(memoryBoost)),
+            ("StageMemoryInputs", w => w.WriteList(StageMatrices, (item, id) => {
+                item.Write(id);
+                item.Write(StageMemoryInputs[Array.IndexOf(StageMatrices, id)]);
+            }))
+        );
     }
 
-    /// <summary>恢复当前格式的成长状态，限制非有限和负数输入。</summary>
-    /// <param name="reader">存档或主机快照输入。</param>
+    /// <summary>按独立字段和矩阵身份恢复成长状态，缺项保持默认值。</summary>
     private static void ReadProgression(BinaryReader reader) {
+        ResetProgression();
+        reader.ReadBlocks(
+            ("SacrificeUnlocked", r => sacrificeUnlocked = r.ReadBoolean()),
+            ("MemoryMinute", r => memoryMinute = r.ReadInt64()),
+            ("MinuteMemoryCount", r => minuteMemoryCount = Math.Max(0L, r.ReadInt64())),
+            ("MemoryBoost", r => {
+                float boost = r.ReadSingle();
+                memoryBoost = float.IsNaN(boost) ? 0f : Math.Max(0f, Math.Min(0.75f, boost));
+            }),
+            ("StageMemoryInputs", r => r.ReadList(item => {
+                int index = Array.IndexOf(StageMatrices, item.ReadInt32());
+                long count = Math.Max(0L, item.ReadInt64());
+                if (index >= 0) { StageMemoryInputs[index] = count; }
+            }, 12000))
+        );
+    }
+
+    /// <summary>读取已有的顺序布局成长块。</summary>
+    private static void ReadLegacyProgression(BinaryReader reader) {
         sacrificeUnlocked = reader.ReadBoolean();
         memoryMinute = reader.ReadInt64();
         minuteMemoryCount = Math.Max(0L, reader.ReadInt64());

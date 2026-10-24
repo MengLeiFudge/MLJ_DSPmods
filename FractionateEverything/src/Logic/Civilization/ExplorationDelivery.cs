@@ -126,15 +126,43 @@ public static partial class ExplorationManager {
     }
 
     private static void ExportDeliveries(BinaryWriter writer) {
-        writer.Write(DeliveryResults.Count);
-        foreach (var pair in DeliveryResults) {
-            MemoryDeliveryReceipt r = pair.Value;
-            writer.Write(pair.Key); writer.Write(r.Owner); writer.Write(r.MarkId); writer.Write(r.Fingerprint);
-            writer.Write(r.Offered); writer.Write(r.OfferedInc); writer.Write(r.Accepted); writer.Write(r.AcceptedInc); writer.Write(r.Remaining);
-        }
+        writer.WriteList(DeliveryResults, (item, pair) => {
+            MemoryDeliveryReceipt receipt = pair.Value;
+            item.WriteBlocks(
+                ("Id", w => w.Write(pair.Key)), ("Owner", w => w.Write(receipt.Owner)),
+                ("MarkId", w => w.Write(receipt.MarkId)), ("Fingerprint", w => w.Write(receipt.Fingerprint)),
+                ("Offered", w => w.Write(receipt.Offered)), ("OfferedInc", w => w.Write(receipt.OfferedInc)),
+                ("Accepted", w => w.Write(receipt.Accepted)), ("AcceptedInc", w => w.Write(receipt.AcceptedInc)),
+                ("Remaining", w => w.Write(receipt.Remaining))
+            );
+        });
     }
 
+    /// <summary>逐条恢复有独立边界的交付流水；字段顺序不影响读取。</summary>
     private static void ImportDeliveries(BinaryReader reader) {
+        reader.ReadList(item => {
+            string id = string.Empty;
+            MemoryDeliveryReceipt receipt = new() { Fingerprint = string.Empty };
+            item.ReadBlocks(
+                ("Id", r => id = r.ReadString()), ("Owner", r => receipt.Owner = r.ReadInt32()),
+                ("MarkId", r => receipt.MarkId = r.ReadInt32()), ("Fingerprint", r => receipt.Fingerprint = r.ReadString()),
+                ("Offered", r => receipt.Offered = r.ReadInt32()), ("OfferedInc", r => receipt.OfferedInc = r.ReadInt32()),
+                ("Accepted", r => receipt.Accepted = r.ReadInt32()), ("AcceptedInc", r => receipt.AcceptedInc = r.ReadInt32()),
+                ("Remaining", r => receipt.Remaining = r.ReadInt32())
+            );
+            if (!Guid.TryParseExact(id, "N", out _) || DeliveryResults.ContainsKey(id) || receipt.MarkId <= 0
+                || receipt.Owner is < 0 or > ushort.MaxValue || receipt.Fingerprint.Length > 64
+                || receipt.Offered is <= 0 or > UltimateMemoryCost || receipt.OfferedInc < 0 || receipt.OfferedInc > receipt.Offered * 10
+                || receipt.Accepted < 0 || receipt.Accepted > receipt.Offered || receipt.AcceptedInc < 0
+                || receipt.AcceptedInc > receipt.Accepted * 10 || receipt.Remaining is < 0 or > UltimateMemoryCost) {
+                throw new InvalidDataException("交付流水数据无效。");
+            }
+            DeliveryResults.Add(id, receipt);
+        }, MaximumRecords);
+    }
+
+    /// <summary>读取已有的顺序布局交付流水。</summary>
+    private static void ImportLegacyDeliveries(BinaryReader reader) {
         int count = ReadCount(reader);
         for (int i = 0; i < count; i++) {
             string id = reader.ReadString();

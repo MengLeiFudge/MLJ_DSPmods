@@ -12,6 +12,25 @@ namespace FE.Utils;
 public static partial class Utils {
     private const int MaximumSaveBlockCount = 4096;
 
+    /// <summary>一个读取字段及其历史名称；别名只表示同一载荷的改名。</summary>
+    public readonly struct SaveField {
+        internal readonly string Tag;
+        internal readonly Action<BinaryReader> Action;
+        internal readonly string[] Aliases;
+
+        internal SaveField(string tag, Action<BinaryReader> action, string[] aliases) {
+            Tag = tag;
+            Action = action;
+            Aliases = aliases;
+        }
+    }
+
+    /// <summary>声明读取字段；当前名称优先，别名按声明顺序优先，每个字段只执行一次。</summary>
+    /// <param name="tag">当前稳定名称。</param>
+    /// <param name="action">读取该字段的处理器。</param>
+    /// <param name="aliases">兼容的历史名称，不进行数据类型转换。</param>
+    public static SaveField Field(string tag, Action<BinaryReader> action, params string[] aliases) => new(tag, action, aliases);
+
     /// <summary>
     /// 将一个数据块包装成带 Tag 和长度的格式写入。
     /// </summary>
@@ -41,13 +60,8 @@ public static partial class Utils {
         }
     }
 
-    /// <summary>
-    /// 读取并处理一个带 Tag 和长度的数据块。
-    /// 块内容不兼容时记录警告并继续其他块；块头损坏由外层列表处理，不能猜测下一块位置。
-    /// </summary>
-    /// <param name="r">源 BinaryReader</param>
-    /// <param name="readAction">处理程序，根据 tag 处理 br 里的数据</param>
-    private static void ReadBlock(this BinaryReader r, Action<string, BinaryReader> readAction) {
+    /// <summary>先消费完整块边界；内容处理失败不影响外层流位置。</summary>
+    private static (string Tag, byte[] Data) ReadBlock(BinaryReader r) {
         string tag = r.ReadString();
         int length = r.ReadInt32();
         if (length < 0) {
@@ -62,10 +76,15 @@ public static partial class Utils {
             throw new EndOfStreamException(
                 $"存档块 [{tag}] 需要 {length} 字节，实际只读取到 {data.Length} 字节。");
         }
+        return (tag, data);
+    }
+
+    /// <summary>在独立流内处理一个已选中的块，保留可恢复错误与代码错误的日志区别。</summary>
+    private static void ReadBlockContent(string tag, byte[] data, Action<BinaryReader> action) {
         try {
             using var ms = new MemoryStream(data);
             using var br = new BinaryReader(ms);
-            readAction(tag, br);
+            action(br);
         } catch (Exception ex) when (ex is IOException or InvalidDataException or FormatException
             or DecoderFallbackException or NotSupportedException) {
             LogWarning($"[Save] 存档块 [{tag}] 未能完整恢复，已跳过剩余内容并继续读取其他块：{ex.Message}");
@@ -74,37 +93,59 @@ public static partial class Utils {
         }
     }
 
-    /// <summary>
-    /// 按标签读取独立数据块；块头损坏时停止当前列表，保留已读取数据和外层其他块。
-    /// </summary>
-    /// <param name="r">源 BinaryReader</param>
-    /// <param name="readActions">处理程序，根据 tag 处理 br 里的数据</param>
-    public static void ReadBlocks(this BinaryReader r, params (string tag, Action<BinaryReader> action)[] readActions) {
-        // 转换为字典以便快速匹配（Tag 顺序不一致也能正确处理）
-        var handlerDict = readActions.ToDictionary(h => h.tag, h => h.action);
+    /// <summary>读取无别名的字段声明；未知块跳过，处理顺序由当前声明确定。</summary>
+    public static void ReadBlocks(this BinaryReader r, params (string tag, Action<BinaryReader> action)[] readActions) =>
+        ReadFields(r, readActions.Select(h => Field(h.tag, h.action)).ToArray());
+
+    /// <summary>读取带历史别名的字段声明；与已有二元组入口共用同一选择规则。</summary>
+    public static void ReadBlocks(this BinaryReader r, SaveField first, params SaveField[] remaining) =>
+        ReadFields(r, new[] { first }.Concat(remaining).ToArray());
+
+    /// <summary>收集同名字段的最佳匹配后再处理，确保文件顺序不会改变新旧名称的优先级。</summary>
+    private static void ReadFields(BinaryReader r, SaveField[] fields) {
+        var names = new Dictionary<string, (int Index, int Rank)>(StringComparer.Ordinal);
+        for (int i = 0; i < fields.Length; i++) {
+            if (fields[i].Action == null) { throw new ArgumentException("存档字段读取器不能为空。"); }
+            string[] tags = new[] { fields[i].Tag }.Concat(fields[i].Aliases ?? []).ToArray();
+            for (int rank = 0; rank < tags.Length; rank++) {
+                string tag = tags[rank];
+                if (string.IsNullOrEmpty(tag)) { throw new ArgumentException("存档字段名称不能为空。"); }
+                if (names.TryGetValue(tag, out var previous)) {
+                    if (previous.Index != i) { throw new ArgumentException($"存档字段名称或别名重复：{tag}。"); }
+                    continue;
+                }
+                names.Add(tag, (i, rank));
+            }
+        }
+        byte[][] payloads = new byte[fields.Length][];
+        int[] ranks = Enumerable.Repeat(int.MaxValue, fields.Length).ToArray();
         try {
             int count = r.ReadInt32();
             if (count < 0 || count > MaximumSaveBlockCount) {
                 throw new InvalidDataException($"存档块数量无效：{count}。");
             }
             for (int i = 0; i < count; i++) {
-                r.ReadBlock((tag, br) => {
-                    if (handlerDict.TryGetValue(tag, out var action)) {
-                        action(br);
-                    } else {
-                        LogWarning($"[Save] 跳过未知存档块 [{tag}]。");
-                    }
-                });
+                var block = ReadBlock(r);
+                if (!names.TryGetValue(block.Tag, out var field)) {
+                    LogWarning($"[Save] 跳过未知存档块 [{block.Tag}]。");
+                    continue;
+                }
+                if (field.Rank < ranks[field.Index]) {
+                    payloads[field.Index] = block.Data;
+                    ranks[field.Index] = field.Rank;
+                }
             }
         } catch (Exception ex) when (ex is IOException or InvalidDataException or FormatException
             or DecoderFallbackException) {
-            // 无法可靠定位下一块，只结束当前列表；嵌套块已与外层流隔离。
             LogWarning($"[Save] 当前存档块列表未能完整读取，保留已恢复的数据：{ex.Message}");
+        }
+        for (int i = 0; i < fields.Length; i++) {
+            if (payloads[i] != null) { ReadBlockContent(fields[i].Tag, payloads[i], fields[i].Action); }
         }
     }
 
     /// <summary>
-    /// 写入集合元素数量，再按枚举顺序写入各项；数量和元素布局与手动循环一致。
+    /// 写入集合数量及各元素的独立长度边界；复杂元素内部仍用命名子块保存字段。
     /// </summary>
     /// <typeparam name="T">集合元素类型，由调用方的回调决定其存储结构。</typeparam>
     /// <param name="writer">接收集合数据的写入器。</param>
@@ -124,7 +165,7 @@ public static partial class Utils {
 
         writer.Write(items.Count);
         foreach (T item in items) {
-            writeItem(writer, item);
+            writer.WriteBlock("Item", w => writeItem(w, item));
         }
     }
 
@@ -134,8 +175,9 @@ public static partial class Utils {
     /// <typeparam name="T">回调创建的集合元素类型。</typeparam>
     /// <param name="reader">位于集合数量之前的读取器。</param>
     /// <param name="readItem">完整读取一项并返回其值的回调，可继续读取嵌套块或集合。</param>
-    /// <returns>按存档顺序恢复的新列表；数量为 0 时返回空列表。</returns>
-    public static List<T> ReadList<T>(this BinaryReader reader, Func<BinaryReader, T> readItem) {
+    /// <param name="maximumCount">所属业务允许的最大元素数。</param>
+    /// <returns>按存档顺序恢复的有效元素；无法读取的元素跳过。</returns>
+    public static List<T> ReadList<T>(this BinaryReader reader, Func<BinaryReader, T> readItem, int maximumCount = 1000000) {
         if (readItem == null) {
             throw new ArgumentNullException(nameof(readItem));
         }
@@ -143,17 +185,18 @@ public static partial class Utils {
         List<T> items = [];
         reader.ReadList(r => {
             items.Add(readItem(r));
-        });
+        }, maximumCount);
         return items;
     }
 
     /// <summary>
-    /// 根据存储的元素数量逐项执行读取回调，供调用方直接恢复已有对象而不创建临时列表。
+    /// 按存档数量读取有长度边界的元素；单项失败不改变下一项的读取位置。
     /// </summary>
     /// <param name="reader">位于集合数量之前的读取器。</param>
-    /// <param name="readItem">消费一项完整数据的回调；即使目标对象不存在也必须读完该项。</param>
-    /// <exception cref="InvalidDataException">集合元素数量为负数。</exception>
-    public static void ReadList(this BinaryReader reader, Action<BinaryReader> readItem) {
+    /// <param name="readItem">处理独立元素流；目标已移除时可直接返回，其余字节由元素边界跳过。</param>
+    /// <param name="maximumCount">所属业务允许的最大元素数。</param>
+    /// <exception cref="InvalidDataException">集合元素数量越界。</exception>
+    public static void ReadList(this BinaryReader reader, Action<BinaryReader> readItem, int maximumCount = 1000000) {
         if (reader == null) {
             throw new ArgumentNullException(nameof(reader));
         }
@@ -162,11 +205,12 @@ public static partial class Utils {
         }
 
         int count = reader.ReadInt32();
-        if (count < 0) {
-            throw new InvalidDataException($"集合元素数量不能为负数：{count}。");
+        if (count < 0 || count > maximumCount) {
+            throw new InvalidDataException($"集合元素数量越界：{count}，上限为 {maximumCount}。");
         }
         for (int i = 0; i < count; i++) {
-            readItem(reader);
+            var block = ReadBlock(reader);
+            if (block.Tag == "Item") { ReadBlockContent("Item", block.Data, readItem); }
         }
     }
 }

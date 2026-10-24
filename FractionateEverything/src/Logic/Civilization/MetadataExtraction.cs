@@ -95,16 +95,51 @@ public static class MetadataExtraction {
 
     public static void Export(BinaryWriter writer) {
         lock (DataCenterInventory.centerItemCount) {
-            writer.Write(1);
-            writer.Write(MatrixIds.Length);
-            foreach (int id in MatrixIds) { writer.Write(id); writer.Write(Read(Spent, id)); writer.Write(Read(Peaks, id)); }
-            writer.Write(externalMultiplier);
-            writer.Write(Committed.Count);
-            foreach (string request in Committed) { writer.Write(request); }
+            writer.WriteBlocks(
+                ("Spent", w => w.WriteList(Spent, (item, pair) => { item.Write(pair.Key); item.Write(pair.Value); })),
+                ("Peaks", w => w.WriteList(Peaks, (item, pair) => { item.Write(pair.Key); item.Write(pair.Value); })),
+                ("ExternalMultiplier", w => w.Write(externalMultiplier)),
+                ("Committed", w => w.WriteList(Committed, (item, id) => item.Write(id)))
+            );
         }
     }
 
+    /// <summary>分别恢复额度、峰值、倍率与流水，删除其中一项不影响其余状态。</summary>
     public static void Import(BinaryReader reader) {
+        lock (DataCenterInventory.centerItemCount) {
+            IntoOtherSave();
+            reader.ReadBlocks(
+                ("Spent", r => ReadAmounts(r, Spent)),
+                ("Peaks", r => ReadAmounts(r, Peaks)),
+                ("ExternalMultiplier", r => {
+                    double value = r.ReadDouble();
+                    if (double.IsNaN(value) || double.IsInfinity(value) || value < 1d) {
+                        throw new InvalidDataException("跨档元数据倍率无效。");
+                    }
+                    externalMultiplier = value;
+                }),
+                ("Committed", r => r.ReadList(item => {
+                    string id = item.ReadString();
+                    if (!Guid.TryParseExact(id, "N", out _) || !Committed.Add(id)) {
+                        throw new InvalidDataException("FE元数据流水无效。");
+                    }
+                }))
+            );
+        }
+    }
+
+    /// <summary>按物品身份恢复单项额度，已移除的矩阵不会中断后续记录。</summary>
+    private static void ReadAmounts(BinaryReader reader, Dictionary<int, long> target) {
+        reader.ReadList(item => {
+            int id = item.ReadInt32();
+            long value = item.ReadInt64();
+            if (value < 0 || target.ContainsKey(id)) { throw new InvalidDataException("FE元数据额度无效。"); }
+            if (MatrixIds.Contains(id)) { target.Add(id, value); }
+        }, 12000);
+    }
+
+    /// <summary>读取已有的顺序布局元数据块。</summary>
+    public static void ImportLegacy(BinaryReader reader) {
         lock (DataCenterInventory.centerItemCount) {
             if (reader.ReadInt32() != 1) { throw new InvalidDataException("不支持的FE元数据格式。"); }
             Spent.Clear(); Peaks.Clear(); Committed.Clear();
