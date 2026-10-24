@@ -6,7 +6,6 @@ using FE.Compatibility.Nebula;
 using FE.Logic.Civilization;
 using FE.Logic.Fractionation.Recipes;
 using FE.UI.Foundation;
-using FE.UI.Foundation.Window;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -21,6 +20,7 @@ public static partial class FractionatorWindow {
     private const float WindowWidth = 530f;
     private const float WindowHeight = 560f;
     private const int VisibleSlots = 4;
+    private const float RateDisplayInterval = 0.5f;
     private static RectTransform advancedRoot;
     private static UIFractionatorWindow advancedSlotTemplate;
     private static ProductSlot advancedRecipeSlot;
@@ -48,7 +48,6 @@ public static partial class FractionatorWindow {
     private static readonly Dictionary<int, float> recentProducts = [];
     private static readonly Dictionary<int, int> basicProducts = [];
     private static readonly Dictionary<int, int> basicFlow = [];
-    private static readonly Color PanelColor = new(0.025f, 0.045f, 0.055f, 0.28f);
     private static readonly Color DigestionMaskColor = new(0f, 0f, 0f, 0.62f);
 
     /// <summary>四格固定几何；列表只保留本次显示身份，不持有业务库存。</summary>
@@ -56,8 +55,40 @@ public static partial class FractionatorWindow {
         internal readonly ProductSlot[] Slots = new ProductSlot[VisibleSlots];
         internal readonly Text[] Rates = new Text[VisibleSlots];
         internal readonly Text[] Satisfaction = new Text[VisibleSlots];
+        internal readonly SlotRate[] RateDisplays = new SlotRate[VisibleSlots];
         internal readonly List<int> ItemIds = [];
         internal ProductSlotKind Kind;
+    }
+
+    /// <summary>单槽的短时速率显示；仅平滑界面读数，不参与生产或保存。</summary>
+    private struct SlotRate {
+        private int itemId;
+        private double displayedRate;
+        private double weightedRate;
+        private float duration;
+
+        /// <summary>按帧时长累计半秒平均值；空槽、物品切换和停机立即更新。</summary>
+        /// <param name="id">当前槽位物品，0表示无速率信息。</param>
+        /// <param name="perMinute">当前状态换算的每分钟速率。</param>
+        /// <returns>整数速率文字，空槽返回空字符串。</returns>
+        internal string Update(int id, double perMinute) {
+            if (id <= 0) { this = default; return string.Empty; }
+            if (id != itemId || perMinute <= 0d || displayedRate <= 0d) {
+                this = default;
+                itemId = id;
+                displayedRate = perMinute;
+            } else {
+                float elapsed = Time.unscaledDeltaTime;
+                weightedRate += perMinute * elapsed;
+                duration += elapsed;
+                if (duration >= RateDisplayInterval) {
+                    displayedRate = weightedRate / duration;
+                    weightedRate = 0d;
+                    duration = 0f;
+                }
+            }
+            return FormatRate(displayedRate);
+        }
     }
 
     private static void CreateAdvancedLayout(UIFractionatorWindow window, UIFractionatorWindow vanillaWindow) {
@@ -68,41 +99,33 @@ public static partial class FractionatorWindow {
         advancedRecipeSlot = CreateAdvancedSlot(advancedRoot, 48f, 30f);
         advancedRecipeSlot.button.onClick += _ => OpenAdvancedPicker();
         advancedRecipeSlot.button.onRightClick += _ => ClearAdvancedRecipe();
-        advancedRecipeText = CreateAdvancedLabel(advancedRoot, 84f, 6f, 202f, 48f);
+        advancedRecipeText = CreateAdvancedLabel(vanillaWindow.inputTitleText, advancedRoot, new Rect(84f, 6f, 202f, 48f));
         advancedRecipeText.horizontalOverflow = HorizontalWrapMode.Wrap;
         advancedFoodSlot = CreateAdvancedSlot(advancedRoot, 334f, 30f);
         advancedFoodSlot.button.onClick += TakeAdvancedFood;
         CreateDigestionMask(advancedFoodSlot);
         AttachFoodPressHandlers(advancedFoodSlot);
-        advancedFoodTitle = CreateAdvancedLabel(advancedRoot, 370f, 6f, 142f, 26f);
+        advancedFoodTitle = CreateAdvancedLabel(vanillaWindow.inputTitleText, advancedRoot, new Rect(370f, 6f, 142f, 26f));
         advancedFoodTitle.text = "FE.Advanced.FoodSlot".Translate();
-        advancedDiscardHint = CreateAdvancedLabel(advancedRoot, 370f, 32f, 142f, 26f);
+        advancedDiscardHint = CreateAdvancedLabel(vanillaWindow.speedText, advancedRoot, new Rect(370f, 32f, 142f, 26f));
         advancedDiscardHint.text = "FE.DiscardDigestion".Translate();
-        advancedDiscardHint.fontSize = 11;
-        advancedInputs = CreateAdvancedSection(new Rect(18f, 76f, 208f, 252f), ProductSlotKind.Fluid);
-        advancedFlow = CreateAdvancedSection(new Rect(304f, 76f, 208f, 252f), ProductSlotKind.Side);
+        advancedInputs = CreateAdvancedSection(new Rect(18f, 76f, 208f, 264f), ProductSlotKind.Fluid);
+        advancedFlow = CreateAdvancedSection(new Rect(304f, 76f, 208f, 264f), ProductSlotKind.Side);
         advancedProducts = CreateAdvancedSection(new Rect(18f, 360f, 494f, 142f), ProductSlotKind.Main);
         advancedFlowArrows = CreateAdvancedArrows(vanillaWindow, false, new Vector2(265f, -192f));
         advancedProductArrows = CreateAdvancedArrows(vanillaWindow, true, new Vector2(265f, -344f));
     }
 
     private static AdvancedSection CreateAdvancedSection(Rect bounds, ProductSlotKind kind) {
-        RectTransform root = new GameObject($"cache-{kind}", typeof(RectTransform), typeof(Image)).GetComponent<RectTransform>();
+        RectTransform root = new GameObject($"cache-{kind}", typeof(RectTransform)).GetComponent<RectTransform>();
         RectTransformUtils.NormalizeRectWithTopLeft(root, bounds.x, bounds.y, advancedRoot);
         root.sizeDelta = bounds.size;
-        root.GetComponent<Image>().color = PanelColor;
-        root.GetComponent<Image>().raycastTarget = false;
         string title = kind switch { ProductSlotKind.Fluid => "流动输入", ProductSlotKind.Side => "流动输出", _ => "配方产物" };
-        CreateAdvancedLabel(root, 12f, 6f, bounds.width - 24f, 26f).text = title.Translate();
-        Image divider = new GameObject("header-divider", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
-        RectTransformUtils.NormalizeRectWithTopLeft(divider, 12f, 34f, root);
-        divider.rectTransform.sizeDelta = new Vector2(bounds.width - 24f, 1f);
-        divider.color = new Color(0.65f, 0.8f, 0.85f, 0.12f);
-        divider.raycastTarget = false;
+        CreateAdvancedLabel(advancedSlotTemplate.inputTitleText, root, new Rect(12f, 6f, bounds.width - 24f, 26f)).text = title.Translate();
         AdvancedSection section = new() { Kind = kind };
         for (int i = 0; i < VisibleSlots; i++) {
             float x = kind == ProductSlotKind.Main ? bounds.width / 2f + (i - 1.5f) * 112f : 54f + i % 2 * 100f;
-            float y = kind == ProductSlotKind.Main ? 70f : 68f + i / 2 * 104f;
+            float y = kind == ProductSlotKind.Main ? 70f : 68f + i / 2 * 116f;
             ProductSlot slot = CreateAdvancedSlot(root, x, y);
             section.Slots[i] = slot;
             if (kind == ProductSlotKind.Fluid) { slot.button.onClick += OnAdvancedInputClick; }
@@ -113,10 +136,10 @@ public static partial class FractionatorWindow {
                     recentProducts.Remove(itemId);
                 };
             }
-            Text rate = CreateAdvancedLabel(root, x - 48f, y + 26f, 96f, 24f);
+            Text rate = CreateAdvancedLabel(advancedSlotTemplate.speedText, root, new Rect(x - 48f, y + 34f, 96f, 20f));
             rate.alignment = TextAnchor.MiddleCenter;
             section.Rates[i] = rate;
-            Text satisfaction = CreateAdvancedLabel(root, x - 48f, y + 50f, 96f, 24f);
+            Text satisfaction = CreateAdvancedLabel(advancedSlotTemplate.speedText, root, new Rect(x - 48f, y + 56f, 96f, 20f));
             satisfaction.alignment = TextAnchor.MiddleCenter;
             section.Satisfaction[i] = satisfaction;
         }
@@ -195,16 +218,23 @@ public static partial class FractionatorWindow {
         return total;
     }
 
-    /// <summary>复用正文文字的字体、材质与透明度，槽下单行信息不按库存数字的窄框截断。</summary>
-    private static Text CreateAdvancedLabel(RectTransform parent, float left, float top, float width, float height) {
-        Text label = MyWindow.AddText(left, top, parent, string.Empty, 15, "fractionator-label");
-        RectTransform rect = RectTransformUtils.NormalizeRectWithTopLeft(label, left, top, parent);
+    /// <summary>直接克隆原版对应文字，保留字号、字体材质、颜色与描边；仅调整位置和对齐。</summary>
+    /// <param name="template">原版区域标题或速率文字。</param>
+    /// <param name="parent">目标布局节点。</param>
+    /// <param name="bounds">相对父节点左上角的文字矩形。</param>
+    /// <returns>由本窗口更新内容的文字组件。</returns>
+    private static Text CreateAdvancedLabel(Text template, RectTransform parent, Rect bounds) {
+        Text label = UnityEngine.Object.Instantiate(template, parent, false);
+        label.name = "fractionator-label";
+        Localizer localizer = label.GetComponent<Localizer>();
+        if (localizer != null) { localizer.enabled = false; }
+        label.text = string.Empty;
+        RectTransform rect = RectTransformUtils.NormalizeRectWithTopLeft(label, bounds.x, bounds.y, parent);
         rect.localScale = Vector3.one;
         rect.localRotation = Quaternion.identity;
-        rect.sizeDelta = new Vector2(width, height);
+        rect.sizeDelta = bounds.size;
         label.alignment = TextAnchor.MiddleLeft;
         label.resizeTextForBestFit = false;
-        label.lineSpacing = 1f;
         label.horizontalOverflow = HorizontalWrapMode.Overflow;
         label.verticalOverflow = VerticalWrapMode.Overflow;
         label.raycastTarget = false;
@@ -239,6 +269,8 @@ public static partial class FractionatorWindow {
             previousProducts.Clear();
             recentProducts.Clear();
             cacheSnapshotReady = false;
+            Array.Clear(advancedInputs.RateDisplays, 0, VisibleSlots);
+            Array.Clear(advancedProducts.RateDisplays, 0, VisibleSlots);
         }
         displayedFactory = src.factory;
         displayedFractionatorId = src.fractionatorId;
@@ -492,24 +524,26 @@ public static partial class FractionatorWindow {
             int inc = 0;
             incs?.TryGetValue(itemId, out inc);
             RenderAdvancedSlot(section.Slots[i], itemId, count, inc, section.Kind);
-            Text rate = section.Rates[i];
-            rate.text = string.Empty;
+            double perMinute = 0d;
+            int rateItemId = 0;
             section.Satisfaction[i].text = string.Empty;
-            if (itemId <= 0 || recipe == null) { continue; }
-            if (section.Kind == ProductSlotKind.Fluid && recipe.TryGetInput(itemId, out WorldviewRecipeInput input)) {
+            if (itemId > 0 && recipe != null && section.Kind == ProductSlotKind.Fluid
+                && recipe.TryGetInput(itemId, out WorldviewRecipeInput input)) {
+                rateItemId = itemId;
                 bool catalyst = input.ConsumeProbability < 0.1f;
-                double perMinute = rounds * input.Count;
+                perMinute = rounds * input.Count;
                 if (input.ConsumeProbability < 0.9999f) {
                     perMinute *= success * AdvancedFractionatorRuntime.GetInputConsumeProbability(input, buildingId);
                 }
-                rate.text = FormatRate(perMinute);
                 if (!catalyst) {
                     SetSatisfaction(section.Satisfaction[i], AdvancedFractionatorRuntime.GetInputSatisfaction(state, recipe, input));
                 }
-            } else if (section.Kind == ProductSlotKind.Main) {
+            } else if (itemId > 0 && recipe != null && section.Kind == ProductSlotKind.Main) {
+                rateItemId = itemId;
                 WorldviewRecipeOutput output = recipe.ProductArray.FirstOrDefault(candidate => candidate.ItemId == itemId);
-                rate.text = FormatRate(output == null ? 0d : rounds * success * AdvancedFractionatorRuntime.GetOutputPerSuccess(recipe, output));
+                perMinute = output == null ? 0d : rounds * success * AdvancedFractionatorRuntime.GetOutputPerSuccess(recipe, output);
             }
+            section.Rates[i].text = section.RateDisplays[i].Update(rateItemId, perMinute);
         }
     }
 
@@ -517,10 +551,11 @@ public static partial class FractionatorWindow {
     private static void SetSatisfaction(Text text, double value) {
         float fraction = (float)Math.Max(0d, Math.Min(1d, value));
         text.text = fraction >= 1f ? "100%" : $"{Math.Floor(fraction * 100d):0}%";
-        text.color = new Color(1f, fraction, fraction, text.color.a);
+        Color normal = advancedSlotTemplate.speedText.color;
+        text.color = new Color(normal.r, normal.g * fraction, normal.b * fraction, normal.a);
     }
 
-    private static string FormatRate(double value) => value.ToString("0.#") + "每分钟".Translate();
+    private static string FormatRate(double value) => Math.Round(value).ToString("0") + "每分钟".Translate();
 
     private static bool IsVisibleProduct(int itemId, Dictionary<int, int> counts) =>
         counts.TryGetValue(itemId, out int count) && count > 0
@@ -590,7 +625,7 @@ public static partial class FractionatorWindow {
                 i == 0 ? fractionator.fluidInputInc : 0, ProductSlotKind.Fluid);
             RenderAdvancedSlot(advancedFlow.Slots[i], inputId, i == 0 ? fractionator.fluidOutputCount : 0,
                 i == 0 ? fractionator.fluidOutputInc : 0, ProductSlotKind.Fluid);
-            advancedInputs.Rates[i].text = inputId > 0 ? FormatRate(rate * 60d) : string.Empty;
+            advancedInputs.Rates[i].text = advancedInputs.RateDisplays[i].Update(inputId, rate * 60d);
             advancedInputs.Satisfaction[i].text = string.Empty;
             if (inputId > 0) { SetSatisfaction(advancedInputs.Satisfaction[i], fullRate > 0d ? GetBasicProcessingRate(fractionator) / fullRate : 0d); }
             advancedFlow.Rates[i].text = advancedFlow.Satisfaction[i].text = string.Empty;
@@ -604,7 +639,7 @@ public static partial class FractionatorWindow {
             double ratio = !available || output == null ? 0d : recipe.RecipeType == ERecipe.BasicAnalysis
                 ? ResearchManager.GetAnalysisProductRatio(fractionator.fluidId, productId, analysis) * output.OutputCount
                 : success * output.SuccessRatio * output.OutputCount;
-            advancedProducts.Rates[i].text = productId > 0 ? FormatRate(rate * 60d * ratio) : string.Empty;
+            advancedProducts.Rates[i].text = advancedProducts.RateDisplays[i].Update(productId, rate * 60d * ratio);
         }
         // 基础塔配方由输入决定，只读显示；没有实体产物的解析结果继续由原版状态区说明。
         RenderRecipe(null, (recipe as WorldviewRecipe)?.DisplayName ?? (interactionMode ? "交互模式" : "未选择配方").Translate());
