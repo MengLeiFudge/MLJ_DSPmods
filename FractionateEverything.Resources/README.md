@@ -15,6 +15,8 @@
 
 按仓库根目录规范，用 Windows MSBuild 构建 `MLJ_DSPmods.sln`。主项目构建后将资源 DLL 复制到 `FractionateEverything/bin/Debug/`，发布工具从该目录打包和同步 R2。
 
+丰碑帆以游戏内导出的原版 `monument-sail.png` 为底图。启动时由 `MonumentIcons` 按来源矩阵主色染色，并在右下叠加该矩阵图标，适用于原版和外部矩阵；生成纹理统一为 80×80 ARGB32，物品、配方与图集共享同一 Sprite。
+
 分馏塔等既有物品 PNG 源自 `DSP_FEAssets/Assets/fe`；本目录是后续维护的源文件位置，不再从外部 Unity 项目覆盖。
 
 文明资源图标可运行 `python tools/generate_item_icons.py` 重绘：残片为冷灰断片，源点为蓝色球形核心，实体元数据为紫色层叠晶片，丰碑结晶为金色晶簇；四者同时以轮廓和颜色区分。同一脚本生成丰碑建设火箭的金色载荷、紫色双助推器图标，不再复用原版小型运载火箭。

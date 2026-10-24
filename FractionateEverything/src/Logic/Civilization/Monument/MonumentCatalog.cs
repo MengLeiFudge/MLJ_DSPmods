@@ -64,7 +64,7 @@ internal static class MonumentCatalog {
             if (recipeIds.Contains(id) || allItems.Any(existing => existing.ID == id)) { throw new InvalidOperationException($"丰碑帆物品身份冲突：{id}。"); }
             var item = new ItemProto {
                 ID = id, Name = $"FE.Monument.Sail.{source.ID}", Description = "FE.Monument.SailDescription",
-                Type = EItemType.Product, StackSize = 100, UnlockKey = -1, IconPath = LDB.items.Select(I太阳帆).IconPath,
+                Type = EItemType.Product, StackSize = 100, UnlockKey = -1, IconPath = "Assets/fe/monument-sail",
                 GridIndex = 0, DescFields = [],
             };
             LDBTool.PostAddProto(item);
@@ -108,6 +108,7 @@ internal static class MonumentCatalog {
         foreach (var pair in SailSources) {
             ItemProto item = LDB.items.Select(pair.Key);
             item.Preload(item.index);
+            item._iconSprite = MonumentIcons.GetSailIcon(LDB.items.Select(pair.Value));
         }
         foreach (WorldviewRecipe recipe in Recipes) {
             RecipeProto proto = LDB.recipes.Select(AdvancedRecipeCatalog.GetProtoId(recipe.PersistentId));
