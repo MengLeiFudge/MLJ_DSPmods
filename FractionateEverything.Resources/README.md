@@ -8,6 +8,7 @@
 - 原型使用 `Assets/fe/<文件名>` 虚拟路径，不带扩展名；加载由主项目 `IconResources` 负责。
 - 物品图标使用彩色素材。科技文件名与中文科技系列名一致，等级共用；科技图案为纯白 RGB，通过 alpha 表达透明背景与抗锯齿。
 - 科技图标可用已有 Pillow 环境运行 `python tools/generate_technology_icons.py` 重绘；PNG 是构建输入，正常编译不运行绘图脚本，也不需要 Python 或 Unity。
+- 分馏塔图标可用 `python tools/recolor_tower_icons.py` 重绘；脚本从五塔定义读取材质主色，以 `tools/assets/fractionator-template.png` 为固定源图，只调外壳颜色，保留原版塔形状、玻璃和高光。基础矿物塔与高级矿物塔分别使用绿色和金橙色资源。
 - 新增图标应同时更新原型引用，删除资源前应核对全部引用。资源 DLL 与主 DLL 必须成套安装。
 
 ## 构建与部署

@@ -56,7 +56,7 @@ public static class AdvancedMineralTower {
     /// </summary>
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE高级矿物塔, "高级矿物塔", "I高级矿物塔",
-            "Assets/fe/mineral-copy-tower", tab分馏 * 1000 + 103, 30, EItemType.Production,
+            "Assets/fe/advanced-mineral-tower", tab分馏 * 1000 + 103, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         // 高级塔由高级交互塔培育，制造来源沿用其物品名的本地化键。
         item.ProduceFrom = "培养塔";
