@@ -4,7 +4,7 @@ using BepInEx.Configuration;
 using CommonAPI.Systems;
 using FE.UI.MainPanel.Civilization;
 using FE.UI.MainPanel.ResourceInteraction;
-using FE.UI.MainPanel.Setting;
+using FE.Configuration;
 using FE.UI.MainPanel.Shell.Analysis;
 using FE.UI.MainPanel.Shell.MessageBox;
 using FE.UI.MainPanel.Theme;
@@ -44,7 +44,7 @@ public static class MainWindow {
 
         ItemInteraction.LoadConfig(configFile);
 
-        Miscellaneous.LoadConfig(configFile);
+        ModSettings.LoadConfig(configFile);
     }
 
     public static void Init() {
@@ -431,7 +431,7 @@ public static class MainWindow {
         r.ReadBlocks(
             (MainPanelSelectionBlockTag, ImportMainPanelSelection),
             ("ItemInteraction", ItemInteraction.Import),
-            ("Miscellaneous", Miscellaneous.Import)
+            ("Miscellaneous", ModSettings.Import)
         );
     }
 
@@ -439,7 +439,7 @@ public static class MainWindow {
         w.WriteBlocks(
             (MainPanelSelectionBlockTag, ExportMainPanelSelection),
             ("ItemInteraction", ItemInteraction.Export),
-            ("Miscellaneous", Miscellaneous.Export)
+            ("Miscellaneous", ModSettings.Export)
         );
     }
 
@@ -448,8 +448,6 @@ public static class MainWindow {
         IntoOtherSaveMainPanelSelection();
 
         ItemInteraction.IntoOtherSave();
-
-        Miscellaneous.IntoOtherSave();
     }
 
     #endregion

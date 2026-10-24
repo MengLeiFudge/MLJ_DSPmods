@@ -1,6 +1,6 @@
 ﻿using FE.Logic.DataCenter.Patches;
 using FE.Compatibility.Nebula;
-using FE.UI.MainPanel.Setting;
+using FE.Configuration;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.DataCenterInventory;
 
@@ -165,7 +165,7 @@ public static class PlayerInventoryAccess {
             return;
         }
         //根据玩家设置的顺序拿取物品
-        int[] TakeItemPriority = Miscellaneous.TakeItemPriority;
+        int[] TakeItemPriority = ModSettings.TakeItemPriority;
         for (int i = 0; i < TakeItemPriority.Length; i++) {
             int itemIdTmp = itemId;
             int realCountTemp = needCount;

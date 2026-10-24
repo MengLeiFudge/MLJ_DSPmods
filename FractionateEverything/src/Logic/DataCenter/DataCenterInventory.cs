@@ -5,7 +5,7 @@ using System.Threading;
 using FE.Compatibility.Nebula;
 using FE.Logic.Civilization;
 using FE.Logic.Fractionation.Fractionators;
-using FE.UI.MainPanel.Setting;
+using FE.Configuration;
 using NebulaAPI;
 using static FE.Logic.Items.ItemManager;
 using static FE.Utils.Utils;
@@ -134,8 +134,8 @@ public static class DataCenterInventory {
             return;
         }
         int count = leftClick
-            ? item.StackSize * Miscellaneous.LeftClickTakeCount
-            : item.StackSize * Miscellaneous.RightClickTakeCount;
+            ? item.StackSize * ModSettings.LeftClickTakeCount
+            : item.StackSize * ModSettings.RightClickTakeCount;
         if (NebulaMultiplayerModAPI.IsClient && itemId != I沙土) { MaterialLeases.RequestManual(itemId, count); return; }
         int inc;
         lock (centerItemCount) {
@@ -158,7 +158,7 @@ public static class DataCenterInventory {
             GameMain.mainPlayer.inhandItemId = I沙土;
             GameMain.mainPlayer.inhandItemCount += count;
         } else {
-            if (Miscellaneous.ExtractToHand) {
+            if (ModSettings.ExtractToHand) {
                 if (GameMain.mainPlayer.inhandItemId == 0 || GameMain.mainPlayer.inhandItemCount == 0) {
                     GameMain.mainPlayer.inhandItemId = itemId;
                     GameMain.mainPlayer.inhandItemCount = count;

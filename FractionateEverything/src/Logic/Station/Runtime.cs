@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using FE.Logic.Civilization;
 using FE.Logic.DataCenter;
-using FE.UI.MainPanel.Setting;
+using FE.Configuration;
 using HarmonyLib;
 using UnityEngine;
 using static FE.Logic.Items.ItemManager;
@@ -130,8 +130,8 @@ public static partial class StationManager {
                     (stations[i], stations[j]) = (stations[j], stations[i]);
                 }
 
-                float downloadThreshold = Miscellaneous.DownloadThreshold;
-                float uploadThreshold = Miscellaneous.UploadThreshold;
+                float downloadThreshold = ModSettings.DownloadThreshold;
+                float uploadThreshold = ModSettings.UploadThreshold;
                 var requests = transferBufferDic.GetOrAdd(__instance.stationPool, _ => []);
                 foreach (StationComponent stationComponent in stations) {
                     requests.Clear();

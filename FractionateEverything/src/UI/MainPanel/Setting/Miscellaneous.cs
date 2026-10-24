@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using BepInEx.Configuration;
 using FE.Compatibility.Mods;
+using FE.Configuration;
 using FE.Compatibility.Nebula;
 using FE.Logic.DataCenter;
 using FE.UI.Controls;
@@ -13,6 +14,7 @@ using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.UI.Layout.GridDsl;
+using static FE.Configuration.ModSettings;
 using static FE.Utils.Utils;
 
 namespace FE.UI.MainPanel.Setting;
@@ -24,12 +26,8 @@ public static class Miscellaneous {
     private static RectTransform storageTab;
     private static RectTransform interfaceTab;
 
-    private static int[] ClickTakeCounts = [1, 3, 5, 10, 30, 50, 100];
     private static string[] ClickTakeCountsStr = ClickTakeCounts.Select(count => count.ToString()).ToArray();
-    private static ConfigEntry<int> LeftClickTakeCountEntry;
-    private static ConfigEntry<int> RightClickTakeCountEntry;
     private static readonly string[] ExtractTargetStrs = ["提取到手上", "提取到背包"];
-    private static ConfigEntry<int> ExtractTargetEntry;
 
     private static readonly string[] TakeItemPriorityStrs = [
         "背包 -> 物流背包 -> 分馏亚空间",
@@ -39,81 +37,30 @@ public static class Miscellaneous {
         "分馏亚空间 -> 背包 -> 物流背包",
         "分馏亚空间 -> 物流背包 -> 背包",
     ];
-    private static readonly int[][] TakeItemPriorityArr = [
-        [0, 1, 2],
-        [0, 2, 1],
-        [1, 0, 2],
-        [1, 2, 0],
-        [2, 0, 1],
-        [2, 1, 0],
-    ];
-    private static ConfigEntry<int> TakeItemPriorityEntry;
 
     private static MySlider DownloadThresholdSlider;
     private static UIButton DownloadThresholdTipsButton2;
-    private static ConfigEntry<float> DownloadThresholdEntry;
 
     private static MySlider UploadThresholdSlider;
     private static UIButton UploadThresholdTipsButton2;
-    private static ConfigEntry<float> UploadThresholdEntry;
 
-    private static ConfigEntry<bool> EnableConfirmationDialogEntry;
 
     private static MyCheckBox PackageSortTwiceCheckBox;
     private static MyCheckBox PackageAutoSortTwiceCheckBox;
     private static UIButton SwitchMainPanelButton;
-    private static ConfigEntry<bool> EnablePackageSortTwiceEntry;
-    private static ConfigEntry<bool> EnablePackageAutoSortTwiceEntry;
-    private static ConfigEntry<bool> EnablePackageLogisticEntry;
-    public static int LeftClickTakeCount => ClickTakeCounts[LeftClickTakeCountEntry.Value];
-    public static int RightClickTakeCount => ClickTakeCounts[RightClickTakeCountEntry.Value];
-    public static bool ExtractToHand => ExtractTargetEntry.Value == 0;
-    public static int[] TakeItemPriority => TakeItemPriorityArr[TakeItemPriorityEntry.Value];
-    public static float DownloadThreshold => DownloadThresholdEntry.Value;
-    public static float UploadThreshold => UploadThresholdEntry.Value;
-    public static bool EnableConfirmationDialog => EnableConfirmationDialogEntry.Value;
-    public static bool EnablePackageSortTwice => EnablePackageSortTwiceEntry.Value;
-    public static bool EnablePackageAutoSortTwice => EnablePackageAutoSortTwiceEntry.Value;
-    public static bool EnablePackageLogistic => EnablePackageLogisticEntry.Value;
+    public static int LeftClickTakeCount => ModSettings.LeftClickTakeCount;
+    public static int RightClickTakeCount => ModSettings.RightClickTakeCount;
+    public static bool ExtractToHand => ModSettings.ExtractToHand;
+    public static int[] TakeItemPriority => ModSettings.TakeItemPriority;
+    public static float DownloadThreshold => ModSettings.DownloadThreshold;
+    public static float UploadThreshold => ModSettings.UploadThreshold;
+    public static bool EnableConfirmationDialog => ModSettings.EnableConfirmationDialog;
+    public static bool EnablePackageSortTwice => ModSettings.EnablePackageSortTwice;
+    public static bool EnablePackageAutoSortTwice => ModSettings.EnablePackageAutoSortTwice;
+    public static bool EnablePackageLogistic => ModSettings.EnablePackageLogistic;
 
-    public static void LoadConfig(ConfigFile configFile) {
-        LeftClickTakeCountEntry = configFile.Bind("Miscellaneous", "LeftClickTakeCount", 0, "左键单击时提取几组物品");
-        if (LeftClickTakeCountEntry.Value < 0 || LeftClickTakeCountEntry.Value >= ClickTakeCounts.Length) {
-            LeftClickTakeCountEntry.Value = 0;
-        }
-        RightClickTakeCountEntry = configFile.Bind("Miscellaneous", "RightClickTakeCount", 3, "右键单击时提取几组物品");
-        if (RightClickTakeCountEntry.Value < 0 || RightClickTakeCountEntry.Value >= ClickTakeCounts.Length) {
-            RightClickTakeCountEntry.Value = 3;
-        }
-        ExtractTargetEntry = configFile.Bind("Miscellaneous", "ExtractTarget", 0, "物品提取目标");
-        if (ExtractTargetEntry.Value < 0 || ExtractTargetEntry.Value >= ExtractTargetStrs.Length) {
-            ExtractTargetEntry.Value = 0;
-        }
-
-        TakeItemPriorityEntry = configFile.Bind("Miscellaneous", "TakeItemPriority", 1, "物品消耗顺序");
-        if (TakeItemPriorityEntry.Value < 0 || TakeItemPriorityEntry.Value >= TakeItemPriorityArr.Length) {
-            TakeItemPriorityEntry.Value = 1;
-        }
-
-        DownloadThresholdEntry = configFile.Bind("Miscellaneous", "DownloadThreshold", 0.2f, "物流交互站下载阈值");
-        if (DownloadThresholdEntry.Value < 0 || DownloadThresholdEntry.Value > 0.4f) {
-            DownloadThresholdEntry.Value = 0.2f;
-        }
-        UploadThresholdEntry = configFile.Bind("Miscellaneous", "UploadThreshold", 0.8f, "物流交互站上传阈值");
-        if (UploadThresholdEntry.Value < 0.6f || UploadThresholdEntry.Value > 1) {
-            UploadThresholdEntry.Value = 0.8f;
-        }
-
-        EnableConfirmationDialogEntry =
-            configFile.Bind("Miscellaneous", "EnableConfirmationDialog", true, "启用确认弹窗");
-
-        EnablePackageSortTwiceEntry =
-            configFile.Bind("Miscellaneous", "EnablePackageSortTwice", true, "双击背包排序按钮将多余物品收入分馏亚空间");
-        EnablePackageAutoSortTwiceEntry =
-            configFile.Bind("Miscellaneous", "EnablePackageAutoSortTwice", false, "AutoSorter模组将背包中多余物品收入分馏亚空间");
-        EnablePackageLogisticEntry =
-            configFile.Bind("Miscellaneous", "PackageLogistic", false, "PackageLogistic兼容亚空间");
-    }
+    /// <summary>保留既有公开配置入口；实际配置由 ModSettings 持有。</summary>
+    public static void LoadConfig(ConfigFile configFile) => ModSettings.LoadConfig(configFile);
 
     /// <summary>创建亚空间提取、消耗顺序及站点阈值设置。</summary>
     /// <param name="wnd">面板外壳。</param>
@@ -234,27 +181,11 @@ public static class Miscellaneous {
 
     #region 模组存档接口实现
 
-    public static void Import(BinaryReader r) {
-        r.ReadBlocks(
-            ("Thresholds", br => {
-                float downloadThreshold = br.ReadSingle();
-                float uploadThreshold = br.ReadSingle();
-                if (NebulaMultiplayerModAPI.IsClient) {
-                    DownloadThresholdEntry.Value = downloadThreshold;
-                    UploadThresholdEntry.Value = uploadThreshold;
-                }
-            })
-        );
-    }
+    /// <summary>保留既有公开存档入口和块格式。</summary>
+    public static void Import(BinaryReader r) => ModSettings.Import(r);
 
-    public static void Export(BinaryWriter w) {
-        w.WriteBlocks(
-            ("Thresholds", bw => {
-                bw.Write(DownloadThreshold);
-                bw.Write(UploadThreshold);
-            })
-        );
-    }
+    /// <summary>保留既有公开存档入口和块格式。</summary>
+    public static void Export(BinaryWriter w) => ModSettings.Export(w);
 
     public static void IntoOtherSave() { }
 

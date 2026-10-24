@@ -11,7 +11,7 @@
 | 探索 | 信号追踪、地点档案、终极任务 | ExplorationManager |
 | 工业 | 配方图鉴、生命塔、亚空间仓储 | RecipeGalleryPage、AdvancedFractionatorRuntime、DataCenterInventory |
 | 手记 | 1.x手记、2.x手记、伊卡洛斯手记 | DevelopmentDiary、主线记录 |
-| 设置 | 亚空间存取、界面与兼容 | Miscellaneous已有配置 |
+| 设置 | 亚空间存取、界面与兼容 | Configuration/ModSettings 配置，Miscellaneous 页面负责编辑 |
 
 MainWindowPageRegistry是唯一页面注册表，两种外壳共用。默认当前目标，跨页统一使用MainWindow.NavigateToPage。Shift+F打开，Ctrl+Shift+F切换外壳；通信未建立前不打开。
 

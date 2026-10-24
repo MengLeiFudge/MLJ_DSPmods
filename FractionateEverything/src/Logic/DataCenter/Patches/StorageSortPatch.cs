@@ -1,6 +1,6 @@
 ﻿using System;
 using FE.Logic.Items;
-using FE.UI.MainPanel.Setting;
+using FE.Configuration;
 using HarmonyLib;
 
 namespace FE.Logic.DataCenter.Patches;
@@ -14,7 +14,7 @@ public static class StorageSortPatch {
     [HarmonyPrefix]
     [HarmonyPatch(typeof(UIStorageGrid), nameof(UIStorageGrid.OnSort))]
     private static bool PrefixUIStorageGridOnSort(UIStorageGrid __instance) {
-        if (Miscellaneous.EnablePackageAutoSortTwice) {
+        if (ModSettings.EnablePackageAutoSortTwice) {
             return true;
         }
         if (__instance.storage.type != EStorageType.Default && !__instance.sortableFilter) {
@@ -32,7 +32,7 @@ public static class StorageSortPatch {
     [HarmonyPrefix]
     [HarmonyPatch(typeof(StorageComponent), nameof(StorageComponent.Sort))]
     private static bool StorageComponent_Sort_Prefix(StorageComponent __instance) {
-        if (!Miscellaneous.EnablePackageAutoSortTwice) {
+        if (!ModSettings.EnablePackageAutoSortTwice) {
             return true;
         }
         if (__instance != GameMain.mainPlayer?.package) {
@@ -41,7 +41,7 @@ public static class StorageSortPatch {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return true;
         }
-        return !Miscellaneous.EnablePackageAutoSortTwice || sortUpload();
+        return !ModSettings.EnablePackageAutoSortTwice || sortUpload();
     }
 
     private static bool sortUpload() {
@@ -70,7 +70,7 @@ public static class StorageSortPatch {
             }
         } else {
             //二次排序
-            if (!PackageAccessRules.TechItemInteractionUnlocked || !Miscellaneous.EnablePackageSortTwice) {
+            if (!PackageAccessRules.TechItemInteractionUnlocked || !ModSettings.EnablePackageSortTwice) {
                 return true;
             }
             StorageComponent package = GameMain.mainPlayer.package;
