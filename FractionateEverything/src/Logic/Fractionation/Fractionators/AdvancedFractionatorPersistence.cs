@@ -155,7 +155,7 @@ public static partial class AdvancedFractionatorRuntime {
                         RemoveNonFoodEntries(state.Foods, state.FoodInc);
                         ClampIncDictionary(state.FoodInc, state.Foods);
                         ClampIncDictionary(state.FlowOutputInc, state.FlowOutputs);
-                        if (state.Foods.Count > 1 || SumCounts(state.Foods) > FoodCapacity
+                        if (state.Foods.Count > 1 || SumCounts(state.Foods) > StackingManager.AbsoluteMaxStack
                             || state.DigestingEnergy > 0d && state.Foods.Keys.Any(id => id != state.DigestingItemId)) {
                             state.Foods.Clear(); state.FoodInc.Clear();
                             LogWarning("[Save] 高级塔备用食物不符合当前约束，已跳过该缓存。");
@@ -224,7 +224,7 @@ public static partial class AdvancedFractionatorRuntime {
                 ClampIncDictionary(state.InputInc, state.Inputs);
                 RemoveNonFoodEntries(state.Foods, state.FoodInc);
                 ClampIncDictionary(state.FoodInc, state.Foods);
-                if (state.Foods.Count > 1 || SumCounts(state.Foods) > FoodCapacity
+                if (state.Foods.Count > 1 || SumCounts(state.Foods) > StackingManager.AbsoluteMaxStack
                     || state.DigestingEnergy > 0d && state.Foods.Keys.Any(id => id != state.DigestingItemId)) {
                     throw new InvalidDataException("Invalid advanced fractionator food reserve.");
                 }

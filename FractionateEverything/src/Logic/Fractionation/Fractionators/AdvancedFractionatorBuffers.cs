@@ -8,8 +8,8 @@ namespace FE.Logic.Fractionation.Fractionators;
 
 /// <summary>高级塔按物品阈值接收完整货物并维护手动存取；所有调用共用实例锁。</summary>
 public static partial class AdvancedFractionatorRuntime {
-    /// <summary>备用食物最多保存的未点燃矩阵件数，不随集装科技增长。</summary>
-    public const int FoodCapacity = 5;
+    /// <summary>备用食物硬容量等于当前全局堆叠层数，消化中的一件另计。</summary>
+    public static int FoodCapacity => StackingManager.CurrentMaxStack;
     /// <summary>每种低概率消耗催化剂的储备件数，不占用主料缓存。</summary>
     public const int CatalystCapacity = 5;
     /// <summary>原版参与速度计算的最大真实货物堆数；输入准入另按40乘集装层数件。</summary>
