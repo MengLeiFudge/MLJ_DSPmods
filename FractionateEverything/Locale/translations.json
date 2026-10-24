@@ -1,4 +1,11 @@
 ﻿{
+  "FE.Growth.Summary.Labels": {
+    "zhCN": "货物堆叠上限\n珍奇催化损耗倍率\n成功轮原胚产量\n置换材料回收率\n亚空间存取耗电\n交互站充电与储能",
+    "enUS": "Cargo stack limit\nRare catalyst loss factor\nEmbryos per success\nMaterial recovery\nSubspace energy use\nStation charge / storage",
+    "frFR": "Limite d’empilement\nPertes de catalyseur rare\nEmbryons par réussite\nRécupération de matière\nÉnergie du sous-espace\nCharge / stockage station",
+    "1031": "Stapelgrenze\nSeltener Katalysatorverlust\nEmbryos je Erfolg\nMaterialrückgewinnung\nSubraum-Energiebedarf\nStationsladung / Speicher",
+    "1041": "貨物スタック上限\n希少触媒の損耗倍率\n成功時の原胚産出量\n素材回収率\n亜空間出入庫の消費電力\n交互ステーション充電・蓄電"
+  },
   "等待新信号": {
     "zhCN": "等待新信号",
     "enUS": "Waiting for a new signal",

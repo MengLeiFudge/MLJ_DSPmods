@@ -80,6 +80,12 @@ public static class GrowthTechnologyManager {
     /// <summary>繁育成功轮的平均原胚产量，运行结算与界面共用。</summary>
     public static float EmbryoBreedingOutput => 1.5f + 0.25f * AdvancedInteractionTraitLevel;
 
+    /// <summary>高级矿物特质对催化损耗的剩余倍率，结算与科技汇总共用。</summary>
+    public static float AdvancedMineralCatalystConsumptionRatio => 1f - AdvancedMineralTraitLevel * 0.1f;
+
+    /// <summary>高级转化配方的材料回收比例，结算与科技汇总共用。</summary>
+    public static float AdvancedConversionRecoveryRatio => 0.5f + AdvancedConversionTraitLevel * 0.05f;
+
     /// <summary>获取高级交互塔特质科技等级，范围 0..6。</summary>
     public static int AdvancedInteractionTraitLevel => Volatile.Read(ref interactionTraitLevel);
 

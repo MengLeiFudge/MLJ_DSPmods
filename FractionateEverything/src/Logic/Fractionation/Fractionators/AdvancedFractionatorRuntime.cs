@@ -412,7 +412,7 @@ public static partial class AdvancedFractionatorRuntime {
     public static float GetInputConsumeProbability(WorldviewRecipeInput input, int buildingId) {
         float probability = input.ConsumeProbability;
         if (probability < 0.9999f && buildingId == IFE高级矿物塔) {
-            probability *= 1f - GrowthTechnologyManager.AdvancedMineralTraitLevel * 0.1f;
+            probability *= GrowthTechnologyManager.AdvancedMineralCatalystConsumptionRatio;
         }
         return Math.Max(0f, probability);
     }
@@ -761,7 +761,7 @@ public static partial class AdvancedFractionatorRuntime {
             return GrowthTechnologyManager.EmbryoBreedingOutput;
         }
         if (output.ScalesWithRecovery) {
-            float recoveryRatio = 0.5f + GrowthTechnologyManager.AdvancedConversionTraitLevel * 0.05f;
+            float recoveryRatio = GrowthTechnologyManager.AdvancedConversionRecoveryRatio;
             return output.Count * recoveryRatio;
         }
         return output.Count;

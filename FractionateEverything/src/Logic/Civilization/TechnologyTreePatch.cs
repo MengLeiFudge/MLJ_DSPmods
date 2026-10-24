@@ -32,6 +32,13 @@ public static class TechnologyTreePatch {
     }
     private static readonly ConditionalWeakTable<UITechNode, TechnologyPreview> Previews = new();
 
+    /// <summary>在原版自动化升级数据下方同步FE科技的实际效果。</summary>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UITechTree), nameof(UITechTree.RefreshDataValueText))]
+    [HarmonyPatch(typeof(UITechTree), nameof(UITechTree.RefreshTranslate))]
+    private static void UITechTree_RefreshUpgradeSummary_Postfix(UITechTree __instance) =>
+        TechnologyUpgradeSummary.Refresh(__instance);
+
     /// <summary>启用沙盒工具时立即取消资格，避免短暂启用后关闭绕过按秒检查。</summary>
     /// <param name="value">新的沙盒工具开关。</param>
     [HarmonyPostfix]
