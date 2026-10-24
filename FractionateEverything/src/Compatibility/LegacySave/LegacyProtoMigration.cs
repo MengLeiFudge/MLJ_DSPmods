@@ -161,12 +161,7 @@ public static class LegacyProtoMigration {
                 return false;
             }
             stream.Position = feDataStart;
-            int feSaveVersion = reader.ReadInt32();
-            if (feSaveVersion is 1 or 2) { return true; }
-            if (feSaveVersion != FE.Lifecycle.FeatureSaveRegistry.CurrentVersion) {
-                throw new NotSupportedException($"不支持 FE 存档格式 {feSaveVersion}；只支持当前格式和 2.2 存档，不兼容历史 3.0 存档。");
-            }
-            return false;
+            return reader.ReadInt32() is 1 or 2;
         } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException
             or FormatException or DecoderFallbackException) {
             LogWarning($"[LegacySave] 无法读取 {saveName}.moddsv 的 FE 版本，已禁用 2.2 物理转换：{ex.Message}");
@@ -175,7 +170,7 @@ public static class LegacyProtoMigration {
     }
 
     /// <summary>
-    /// 在原版 GameData 导入前识别 2.2 的格式1/2，并拒绝历史3.0存档。
+    /// 在原版 GameData 导入前识别 2.2 的格式1/2；其他版本交给 FE 标签化读取入口。
     /// </summary>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(GameSave), nameof(GameSave.LoadCurrentGame))]

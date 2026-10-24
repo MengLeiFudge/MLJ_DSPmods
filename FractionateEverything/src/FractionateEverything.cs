@@ -171,9 +171,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
             CivilizationModule.QueueVersion22Notice();
             return;
         }
-        if (version != FeatureSaveRegistry.CurrentVersion) {
-            throw new InvalidDataException($"不支持 FE 存档格式 {version}；只支持当前格式和 2.2 存档，不兼容历史 3.0 存档。");
-        }
+        // 3.0 按标签和块长度恢复可读取的数据，顶层版本差异不阻断加载。
         FeatureSaveRegistry.Import(r);
     }
 

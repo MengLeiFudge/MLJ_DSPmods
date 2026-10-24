@@ -15,8 +15,8 @@ namespace FE.Lifecycle;
 /// FE 功能域存档块注册表，集中维护保存、读取和切档清理顺序。
 /// </summary>
 public static class FeatureSaveRegistry {
-    /// <summary>当前存档格式；只读取此格式，2.2 由独立兼容入口处理。</summary>
-    public const int CurrentVersion = 14;
+    /// <summary>标签化存档的固定顶层版本；业务块增删不升级，2.2 由独立兼容入口处理。</summary>
+    public const int CurrentVersion = 10;
 
     public static void Import(BinaryReader r) {
         r.ReadBlocks(

@@ -43,7 +43,7 @@ public static partial class Utils {
 
     /// <summary>
     /// 读取并处理一个带 Tag 和长度的数据块。
-    /// 如果处理过程中出错，只会影响该块，不会导致流偏移。
+    /// 块内容不兼容时记录警告并继续其他块；块头损坏由外层列表处理，不能猜测下一块位置。
     /// </summary>
     /// <param name="r">源 BinaryReader</param>
     /// <param name="readAction">处理程序，根据 tag 处理 br 里的数据</param>
@@ -66,32 +66,40 @@ public static partial class Utils {
             using var ms = new MemoryStream(data);
             using var br = new BinaryReader(ms);
             readAction(tag, br);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) when (ex is IOException or InvalidDataException or FormatException
+            or DecoderFallbackException or NotSupportedException) {
+            LogWarning($"[Save] 存档块 [{tag}] 未能完整恢复，已跳过剩余内容并继续读取其他块：{ex.Message}");
+        } catch (Exception ex) {
             LogError($"Failed to handle block [{tag}]: {ex.Message}\n{ex.StackTrace}");
         }
     }
 
     /// <summary>
-    /// 尝试按顺序读取多个块，直到数据读取完毕或达到指定数量。
+    /// 按标签读取独立数据块；块头损坏时停止当前列表，保留已读取数据和外层其他块。
     /// </summary>
     /// <param name="r">源 BinaryReader</param>
     /// <param name="readActions">处理程序，根据 tag 处理 br 里的数据</param>
     public static void ReadBlocks(this BinaryReader r, params (string tag, Action<BinaryReader> action)[] readActions) {
         // 转换为字典以便快速匹配（Tag 顺序不一致也能正确处理）
         var handlerDict = readActions.ToDictionary(h => h.tag, h => h.action);
-        int count = r.ReadInt32();
-        if (count < 0 || count > MaximumSaveBlockCount) {
-            throw new InvalidDataException($"存档块数量无效：{count}。");
-        }
-        for (int i = 0; i < count; i++) {
-            r.ReadBlock((tag, br) => {
-                if (handlerDict.TryGetValue(tag, out var action)) {
-                    action(br);
-                } else {
-                    LogWarning($"[Save] Skipping unknown tag: {tag}");
-                }
-            });
+        try {
+            int count = r.ReadInt32();
+            if (count < 0 || count > MaximumSaveBlockCount) {
+                throw new InvalidDataException($"存档块数量无效：{count}。");
+            }
+            for (int i = 0; i < count; i++) {
+                r.ReadBlock((tag, br) => {
+                    if (handlerDict.TryGetValue(tag, out var action)) {
+                        action(br);
+                    } else {
+                        LogWarning($"[Save] 跳过未知存档块 [{tag}]。");
+                    }
+                });
+            }
+        } catch (Exception ex) when (ex is IOException or InvalidDataException or FormatException
+            or DecoderFallbackException) {
+            // 无法可靠定位下一块，只结束当前列表；嵌套块已与外层流隔离。
+            LogWarning($"[Save] 当前存档块列表未能完整读取，保留已恢复的数据：{ex.Message}");
         }
     }
 
