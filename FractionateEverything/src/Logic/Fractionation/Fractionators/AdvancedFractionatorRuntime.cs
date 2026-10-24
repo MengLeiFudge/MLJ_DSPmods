@@ -47,11 +47,19 @@ public sealed class AdvancedFractionatorState {
     /// <summary>实例锁内复用的待排空物品键；跨输入与旧食物缓存复用，不写入存档或联机状态。</summary>
     internal readonly List<int> UnprocessedInputIds = [];
 
-    /// <summary>当前可执行配方轮数/秒，供运行状态和速度显示共用；不包含无关物直通。</summary>
+    /// <summary>最近半秒实际配对轮数/秒，供产物与营养估算使用；不包含未配对回流。</summary>
     public double ProcessingRate;
 
-    /// <summary>不足一个整数进度单位的余量，避免逐帧取整破坏堆叠比例。</summary>
-    public double ProgressRemainder;
+    /// <summary>各主料已推进但尚未结算的件数；实物仍在Inputs中，进度不得超过库存。</summary>
+    public readonly Dictionary<int, double> InputProgress = [];
+
+    /// <summary>最近半秒各主料实际经过件数/秒，包括配对反应和未配对回流。</summary>
+    public readonly Dictionary<int, double> InputRates = [];
+
+    /// <summary>当前半秒窗口的经过件数与配对轮数；仅主机累计，不持久化。</summary>
+    internal readonly Dictionary<int, int> InputFlowCounts = [];
+    internal int FlowSampleTicks;
+    internal int FlowSampleRounds;
 
     /// <summary>反应输入增产点。</summary>
     public readonly Dictionary<int, int> InputInc = [];
@@ -97,7 +105,7 @@ public sealed class AdvancedFractionatorState {
 /// 三类高级塔的多输入反应运行时。
 /// </summary>
 public static partial class AdvancedFractionatorRuntime {
-    /// <summary>与原版一致，每满10000进度结算一轮配方。</summary>
+    /// <summary>原版进度镜像的满轮刻度；高级塔实际按各主料的件数进度结算。</summary>
     private const int ProgressPerRound = 10000;
     /// <summary>每种主料的件数准入阈值为40乘当前集装层数；货物数只参与速度计算。</summary>
     public static int InputCapacity => FractionatorManager.VanillaFluidInputCargoMax * StackingManager.CurrentMaxStack;
@@ -234,8 +242,7 @@ public static partial class AdvancedFractionatorRuntime {
         AdvancedFractionatorState state = GetOrCreateState(factory, fractionatorId);
         lock (state) {
             DrainUnusedInputs(state, recipe, passthrough: false);
-            state.ProcessingRate = 0d;
-            state.ProgressRemainder = 0d;
+            ResetInputFlow(state);
             state.SnapshotDirty = true;
             state.SelectedRecipeId = persistentRecipeId;
             state.OutputCursor = 0;
@@ -259,7 +266,7 @@ public static partial class AdvancedFractionatorRuntime {
         AdvancedFractionatorState state = GetOrCreateState(factory, fractionator.id);
         if (NebulaMultiplayerModAPI.IsClient) {
             lock (state) {
-                fractionator.isWorking = state.ProcessingRate > 0d;
+                fractionator.isWorking = state.ProcessingRate > 0d || state.InputRates.Values.Any(rate => rate > 0d);
                 MirrorVanillaFields(ref fractionator, state, signPool, entityId, buildingId);
             }
             return fractionator.isWorking ? 1U : 0U;
@@ -273,6 +280,7 @@ public static partial class AdvancedFractionatorRuntime {
                 state.SelectedRecipeId = 0;
                 state.OutputCursor = 0;
                 state.FlowOutputCursor = 0;
+                ResetInputFlow(state);
                 recipe = null;
             }
 
@@ -288,35 +296,29 @@ public static partial class AdvancedFractionatorRuntime {
             HandleSidePort(state, recipe, cargoTraffic, fractionator.belt2, fractionator.isOutput2, passthrough);
             EnsureDigestingFood(state, consumeRegister);
 
-            int availableRounds = recipe == null ? 0 : GetAvailableRounds(state, recipe);
             float sacrificeBoost = ResearchManager.GetAdvancedTowerSacrificeBoost(buildingId);
-            int executableRounds = recipe != null && CanProcessOutputs(state, recipe) ? availableRounds : 0;
             float durabilityEfficiency = GetDurabilityEfficiency(factory, entityId, state);
-            bool canWork = recipe != null && executableRounds > 0 && durabilityEfficiency > 0f;
-            float processingRate = 0f;
+            int availableRounds = recipe == null ? 0 : GetAvailableRounds(state, recipe);
+            bool canWork = recipe != null && availableRounds > 0 && durabilityEfficiency > 0f
+                && CanProcessOutputs(state, recipe);
+            int rounds = 0;
             int successfulRounds = 0;
-            if (canWork) {
-                float speed = GetFoodSpeed(state);
-                processingRate = (float)(GetBaseProcessingRate(state, recipe) * speed * durabilityEfficiency);
-                double progress = state.ProgressRemainder + (500d / 3d) * processingRate;
-                double wholeProgress = Math.Floor(progress);
-                state.ProgressRemainder = progress - wholeProgress;
-                // 先以double限制累计进度再转整数，兼容高价值模组矩阵的速度。
-                fractionator.progress = (int)Math.Min(Math.Max(0, fractionator.progress) + wholeProgress,
-                    ProgressPerRound * Math.Max(10, StackingManager.CurrentMaxStack * 2));
-                int rounds = Math.Min(fractionator.progress / ProgressPerRound, executableRounds);
-                if (rounds > 0) {
-                    state.SnapshotDirty = true;
-                    fractionator.progress -= rounds * ProgressPerRound;
-                    successfulRounds = SettleRounds(ref fractionator.seed, state, recipe, rounds, buildingId,
-                        sacrificeBoost, productRegister, consumeRegister);
+            bool flowing = false;
+            if (recipe != null && !passthrough) {
+                int readyRounds = AdvanceInputFlows(state, recipe, GetFoodSpeed(state) * durabilityEfficiency);
+                if (canWork) {
+                    rounds = Math.Min(readyRounds, availableRounds);
+                    if (rounds > 0) {
+                        successfulRounds = SettleRounds(ref fractionator.seed, state, recipe, rounds, buildingId,
+                            sacrificeBoost, productRegister, consumeRegister);
+                        state.SnapshotDirty = true;
+                    }
                 }
+                flowing = DrainUnpairedInputs(state, recipe);
             }
-
-            state.SnapshotDirty |= Math.Abs(state.ProcessingRate - processingRate) >= 0.001d;
-            state.ProcessingRate = processingRate;
+            UpdateFlowRates(state, recipe, rounds);
             fractionator.fractionSuccess = successfulRounds > 0;
-            fractionator.isWorking = canWork;
+            fractionator.isWorking = canWork || flowing;
             if (!canWork) { ConsumeFoodEnergy(state, IdleFoodEnergyPerSecond / 60d, consumeRegister); }
             EnsureDigestingFood(state, consumeRegister);
             ApplyDigestionDurability(factory, entityId, state);
@@ -435,6 +437,7 @@ public static partial class AdvancedFractionatorRuntime {
             if (input.ConsumeProbability >= 0.9999f) {
                 int removed = rounds * input.Count;
                 int removedInc = TakeInput(state, input.ItemId, removed);
+                AddCount(state.InputFlowCounts, input.ItemId, removed);
                 int failedOutput = failedCount * input.Count;
                 if (failedOutput > 0) {
                     AddCount(state.FlowOutputs, input.ItemId, failedOutput);
@@ -478,21 +481,6 @@ public static partial class AdvancedFractionatorRuntime {
         return successCount;
     }
 
-    /// <summary>把各主消耗物的原版件/秒速率换算为配方轮/秒，取最慢的一项；催化剂只检查最低一轮库存。</summary>
-    /// <param name="state">持有真实件数和货物堆数的实例。</param>
-    /// <param name="recipe">当前配方，每轮消耗由输入Count定义。</param>
-    /// <returns>未乘食物和耐久效率的配方轮数/秒。</returns>
-    private static double GetBaseProcessingRate(AdvancedFractionatorState state, WorldviewRecipe recipe) {
-        double rate = double.MaxValue;
-        foreach (WorldviewRecipeInput input in recipe.InputArray) {
-            if (input.ConsumeProbability < 0.9999f) { continue; }
-            double inputRate = GetInputProcessingRate(state, input.ItemId);
-            if (inputRate <= 0d) { return 0d; }
-            rate = Math.Min(rate, inputRate / input.Count);
-        }
-        return rate == double.MaxValue ? 0d : rate;
-    }
-
     /// <summary>将一条当前满堆叠传送带按配方平均消耗配比分摊，食物不计入配方输入。</summary>
     /// <remarks>主料权重为每轮件数；辅料和催化剂权重乘当前生效的消耗概率，不再乘成功率。</remarks>
     /// <param name="recipe">当前配方。</param>
@@ -519,6 +507,10 @@ public static partial class AdvancedFractionatorRuntime {
         int before = GetCount(state.Inputs, itemId);
         int inc = TakeCount(state.Inputs, state.InputInc, itemId, count);
         int remaining = GetCount(state.Inputs, itemId);
+        if (state.InputProgress.TryGetValue(itemId, out double progress)) {
+            if (remaining <= 0) { state.InputProgress.Remove(itemId); }
+            else { state.InputProgress[itemId] = Math.Min(remaining, Math.Max(0d, progress - (before - remaining))); }
+        }
         if (remaining <= 0) { state.InputCargo.Remove(itemId); }
         else if (state.InputCargo.TryGetValue(itemId, out double cargo) && before > 0) {
             state.InputCargo[itemId] = cargo * remaining / before;
@@ -729,6 +721,15 @@ public static partial class AdvancedFractionatorRuntime {
         WorldviewRecipe recipe = RecipeManager.GetRecipe(state.SelectedRecipeId);
         int inputItemId = recipe?.PrimaryInputId ?? 0;
         int productItemId = recipe?.PrimaryProductId ?? 0;
+        double progress = recipe == null ? 0d : 1d;
+        if (recipe != null) {
+            foreach (WorldviewRecipeInput input in recipe.InputArray) {
+                if (input.ConsumeProbability < 0.9999f) { continue; }
+                state.InputProgress.TryGetValue(input.ItemId, out double inputProgress);
+                progress = Math.Min(progress, inputProgress / input.Count);
+            }
+        }
+        fractionator.progress = (int)(progress * ProgressPerRound);
         fractionator.fluidId = inputItemId;
         fractionator.fluidInputCount = GetCount(state.Inputs, inputItemId);
         fractionator.fluidInputInc = GetCount(state.InputInc, inputItemId);

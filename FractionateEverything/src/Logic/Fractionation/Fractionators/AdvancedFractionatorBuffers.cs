@@ -142,6 +142,10 @@ public static partial class AdvancedFractionatorRuntime {
             if (GetCount(state.FlowOutputs, itemId) >= OutputCapacity) { continue; }
             int moved = Math.Min(GetCount(state.Inputs, itemId), stackLimit);
             int inc = TakeInput(state, itemId, moved);
+            if (recipe != null && recipe.TryGetInput(itemId, out WorldviewRecipeInput input)
+                && input.ConsumeProbability >= 0.9999f) {
+                AddCount(state.InputFlowCounts, itemId, moved);
+            }
             AddCount(state.FlowOutputs, itemId, moved);
             AddCount(state.FlowOutputInc, itemId, inc);
             state.SnapshotDirty = true;

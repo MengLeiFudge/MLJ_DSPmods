@@ -110,7 +110,7 @@ public static partial class AdvancedFractionatorRuntime {
                     AdvancedFractionatorState state = States.GetOrAdd(key, _ => new AdvancedFractionatorState());
                     lock (state) {
                         state.SelectedRecipeId = state.OutputCursor = state.FlowOutputCursor = 0;
-                        state.ProcessingRate = state.ProgressRemainder = 0d;
+                        ResetInputFlow(state);
                         ClearDigestion(state);
                         state.Inputs.Clear(); state.InputInc.Clear(); state.InputCargo.Clear();
                         state.Foods.Clear(); state.FoodInc.Clear(); state.Products.Clear();
@@ -144,12 +144,10 @@ public static partial class AdvancedFractionatorRuntime {
                             ("ProcessingRate", field => {
                                 double value = field.ReadDouble();
                                 state.ProcessingRate = double.IsNaN(value) || double.IsInfinity(value) ? 0d
-                                    : Math.Max(0d, Math.Min(30d * StackingManager.AbsoluteMaxStack * MatrixNutrition.MaximumSpeed, value));
+                                    : Math.Max(0d, Math.Min(MaximumBufferCapacity * 60d, value));
                             }),
-                            ("ProgressRemainder", field => {
-                                double value = field.ReadDouble();
-                                state.ProgressRemainder = double.IsNaN(value) || double.IsInfinity(value) ? 0d : Math.Max(0d, Math.Min(1d, value));
-                            })
+                            ("InputProgress", field => ReadFlowDictionary(field, state.InputProgress, MaximumBufferCapacity)),
+                            ("InputRates", field => ReadFlowDictionary(field, state.InputRates, MaximumBufferCapacity * 60d))
                         );
                         ClampIncDictionary(state.InputInc, state.Inputs);
                         RemoveNonFoodEntries(state.Foods, state.FoodInc);
@@ -168,6 +166,19 @@ public static partial class AdvancedFractionatorRuntime {
                             double cargo = state.InputCargo.TryGetValue(input.Key, out double saved) ? saved : input.Value;
                             state.InputCargo[input.Key] = Math.Max(input.Value / (double)StackingManager.AbsoluteMaxStack, Math.Min(input.Value, cargo));
                         }
+                        WorldviewRecipe recipe = RecipeManager.GetRecipe(state.SelectedRecipeId);
+                        foreach (int id in state.InputProgress.Keys.ToArray()) {
+                            if (recipe == null || !recipe.TryGetInput(id, out WorldviewRecipeInput input)
+                                || input.ConsumeProbability < 0.9999f || GetCount(state.Inputs, id) <= 0) {
+                                state.InputProgress.Remove(id);
+                            } else {
+                                state.InputProgress[id] = Math.Min(state.InputProgress[id], GetCount(state.Inputs, id));
+                            }
+                        }
+                        foreach (int id in state.InputRates.Keys.ToArray()) {
+                            if (recipe == null || !recipe.TryGetInput(id, out WorldviewRecipeInput input)
+                                || input.ConsumeProbability < 0.9999f) { state.InputRates.Remove(id); }
+                        }
                         restored = true;
                     }
                 })
@@ -181,6 +192,17 @@ public static partial class AdvancedFractionatorRuntime {
         reader.ReadList(item => {
             int id = item.ReadInt32(), count = item.ReadInt32();
             if (id > 0 && id < 12000 && count > 0) { target[id] = Math.Min(maximum, count); }
+        }, MaximumDictionaryEntryCount);
+    }
+
+    /// <summary>独立读取各主料进度或速率；无效项只跳过该项，不依赖其他字段的读取顺序。</summary>
+    private static void ReadFlowDictionary(BinaryReader reader, Dictionary<int, double> target, double maximum) {
+        reader.ReadList(item => {
+            int id = item.ReadInt32();
+            double value = item.ReadDouble();
+            if (id > 0 && id < 12000 && !double.IsNaN(value) && !double.IsInfinity(value) && value >= 0d) {
+                target[id] = Math.Min(maximum, value);
+            }
         }, MaximumDictionaryEntryCount);
     }
 
@@ -198,6 +220,7 @@ public static partial class AdvancedFractionatorRuntime {
                 ? States.GetOrAdd(key, _ => new AdvancedFractionatorState())
                 : new AdvancedFractionatorState();
             lock (state) {
+                ResetInputFlow(state);
                 int recipeId = reader.ReadInt32();
                 WorldviewRecipe recipe = RecipeManager.GetRecipe(recipeId);
                 state.SelectedRecipeId = recipeId != 0 && recipe?.IsAdvanced != true ? 0 : recipeId;
@@ -246,9 +269,7 @@ public static partial class AdvancedFractionatorRuntime {
                 double rate = reader.ReadDouble();
                 state.ProcessingRate = double.IsNaN(rate) || double.IsInfinity(rate) ? 0d
                     : Math.Max(0d, Math.Min(30d * StackingManager.AbsoluteMaxStack * MatrixNutrition.MaximumSpeed, rate));
-                double remainder = reader.ReadDouble();
-                state.ProgressRemainder = double.IsNaN(remainder) || double.IsInfinity(remainder)
-                    ? 0d : Math.Max(0d, Math.Min(1d, remainder));
+                reader.ReadDouble(); // 跳过旧的整机小数进度；独立主料进度从零开始，实物库存保留。
                 foreach (var pair in state.Inputs) {
                     if (!state.InputCargo.ContainsKey(pair.Key)) {
                         throw new InvalidDataException($"Missing input cargo count: {pair.Key}");
@@ -285,7 +306,10 @@ public static partial class AdvancedFractionatorRuntime {
                 ("FlowOutputInc", field => WriteDictionary(field, state.FlowOutputInc)),
                 ("InputCargo", field => field.WriteList(state.InputCargo.OrderBy(pair => pair.Key).ToArray(), (item, pair) => { item.Write(pair.Key); item.Write(pair.Value); })),
                 ("ProcessingRate", field => field.Write(state.ProcessingRate)),
-                ("ProgressRemainder", field => field.Write(state.ProgressRemainder))
+                ("InputProgress", field => field.WriteList(state.InputProgress.OrderBy(pair => pair.Key).ToArray(),
+                    (item, pair) => { item.Write(pair.Key); item.Write(pair.Value); })),
+                ("InputRates", field => field.WriteList(state.InputRates.OrderBy(pair => pair.Key).ToArray(),
+                    (item, pair) => { item.Write(pair.Key); item.Write(pair.Value); }))
             ))
         );
     }

@@ -444,7 +444,7 @@ public static partial class FractionatorWindow {
         advancedFlow.ItemIds.AddRange(advancedInputs.ItemIds);
         UpdateCacheActivity(state.FlowOutputs, state.Products);
         // 缓存可在连续收发后数量不变，此时沿用原版成功/流回分支的运行指示。
-        if (fractionator.isWorking && state.ProcessingRate > 0d) {
+        if (fractionator.isWorking && (state.ProcessingRate > 0d || state.InputRates.Values.Any(rate => rate > 0d))) {
             SetArrowGroup(fractionator.fractionSuccess ? advancedProductArrows : advancedFlowArrows,
                 true, modWindow.marqueeOnColor);
         }
@@ -538,9 +538,12 @@ public static partial class FractionatorWindow {
                 && recipe.TryGetInput(itemId, out WorldviewRecipeInput input)) {
                 rateItemId = itemId;
                 bool catalyst = input.ConsumeProbability < 0.1f;
-                perMinute = rounds * input.Count;
-                if (input.ConsumeProbability < 0.9999f) {
-                    perMinute *= success * AdvancedFractionatorRuntime.GetInputConsumeProbability(input, buildingId);
+                if (input.ConsumeProbability >= 0.9999f) {
+                    state.InputRates.TryGetValue(itemId, out double rate);
+                    perMinute = rate * 60d;
+                } else {
+                    perMinute = rounds * input.Count * success
+                        * AdvancedFractionatorRuntime.GetInputConsumeProbability(input, buildingId);
                 }
                 if (!catalyst) {
                     fullInputRate = AdvancedFractionatorRuntime.GetInputFullBeltRate(recipe, input, buildingId) * 60d;
