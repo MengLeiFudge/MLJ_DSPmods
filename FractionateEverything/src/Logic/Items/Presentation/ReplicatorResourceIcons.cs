@@ -51,7 +51,8 @@ internal static class ReplicatorResourceIcons {
             // 原版 LateUpdate 直接遍历该数组；无过渡效果也必须提供空数组。
             uiButton.transitions = [];
             uiButton.Init();
-            uiButton.tips.type = UIButton.ItemTipType.Item;
+            // 目录入口没有背包实物的数量与增产点；Other保留原型说明，省略实物增产区。
+            uiButton.tips.type = UIButton.ItemTipType.Other;
             uiButton.tips.itemId = ids[i];
             uiButton.tips.delay = window.showTipsDelay;
             uiButton.tips.corner = window.tipAnchor;

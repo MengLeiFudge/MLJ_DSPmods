@@ -34,6 +34,7 @@ internal static class MonumentCatalog {
             "Assets/fe/monument-crystal", tab分馏 * 1000 + 113, 100, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(new Color(1f, 0.8f, 0.3f), Color.black));
         material.UnlockKey = -1;
+        material.DescFields = [];
         ItemAvailability.RegisterExternalSource(IFE丰碑结晶);
     }
 

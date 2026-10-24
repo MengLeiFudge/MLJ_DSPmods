@@ -69,6 +69,7 @@ public static class ItemManager {
             ProtoRegistry.GetDefaultIconDesc(color, Color.gray));
         item.UnlockKey = -1;
         item.IconTag = iconTag;
+        item.DescFields = [];
         return item;
     }
 
@@ -78,6 +79,7 @@ public static class ItemManager {
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.black));
         item.UnlockKey = -2;
         item.IconTag = "cpfragment";
+        item.DescFields = [];
     }
 
     /// <summary>
@@ -90,6 +92,7 @@ public static class ItemManager {
             ProtoRegistry.GetDefaultIconDesc(iconColor, iconBackgroundColor));
         item.UnlockKey = -1;
         item.IconTag = iconTag;
+        item.DescFields = [];
     }
 
     #endregion
