@@ -9,6 +9,11 @@ namespace FE.Utils;
 /// <summary>
 /// 标签化存档块读写辅助方法。
 /// </summary>
+/// <remarks>
+/// 每个独立保存的变量、数组、集合或字典使用具名块；标签是持久化身份，不必随代码变量改名。
+/// 本工具只负责名称匹配、别名和字节边界，不自动识别载荷类型或推断转换。
+/// Import/Export 显式读写实际类型与布局；所属业务负责默认值、校验、迁移及恢复后的状态一致性。
+/// </remarks>
 public static partial class Utils {
     private const int MaximumSaveBlockCount = 4096;
 
@@ -26,9 +31,10 @@ public static partial class Utils {
     }
 
     /// <summary>声明读取字段；当前名称优先，别名按声明顺序优先，每个字段只执行一次。</summary>
-    /// <param name="tag">当前稳定名称。</param>
+    /// <param name="tag">当前稳定的持久化名称，不要求与代码变量名同步变化。</param>
     /// <param name="action">读取该字段的处理器。</param>
-    /// <param name="aliases">兼容的历史名称，不进行数据类型转换。</param>
+    /// <param name="aliases">含义与载荷相同的历史名称；类型或布局改变时使用新标签，由业务决定转换或跳过旧数据。</param>
+    /// <returns>供 ReadBlocks 按名称选择读取器的字段声明。</returns>
     public static SaveField Field(string tag, Action<BinaryReader> action, params string[] aliases) => new(tag, action, aliases);
 
     /// <summary>
@@ -50,6 +56,10 @@ public static partial class Utils {
     /// <summary>
     /// 将多个数据块包装成带 Tag 和长度的格式并依次写入。
     /// </summary>
+    /// <remarks>
+    /// 每个独立状态各用一个稳定标签；数组或集合整体也需具名，再在其回调内调用 WriteList。
+    /// 同级具名块可换序；回调内的原始 Write 序列仍有顺序，可独立增删的字段须继续拆成子块。
+    /// </remarks>
     /// <param name="w">目标 BinaryWriter</param>
     /// <param name="writeActions">包含多个块的数组，每个块由块标识符和写入逻辑组成</param>
     public static void WriteBlocks(this BinaryWriter w,
@@ -147,6 +157,10 @@ public static partial class Utils {
     /// <summary>
     /// 写入集合数量及各元素的独立长度边界；复杂元素内部仍用命名子块保存字段。
     /// </summary>
+    /// <remarks>
+    /// 调用方在具名业务块内保存集合，本方法的 Item 标签仅表示元素边界，不是业务身份或类型标记。
+    /// 字典键或数组的稳定身份由元素回调读写，无须给每个元素另造字符串名称。
+    /// </remarks>
     /// <typeparam name="T">集合元素类型，由调用方的回调决定其存储结构。</typeparam>
     /// <param name="writer">接收集合数据的写入器。</param>
     /// <param name="items">待写入的集合，不能为 null；空集合只写入数量 0，支持列表和数组。</param>
