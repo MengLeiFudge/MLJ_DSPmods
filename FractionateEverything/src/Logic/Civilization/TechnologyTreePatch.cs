@@ -113,6 +113,19 @@ public static class TechnologyTreePatch {
             || GameMain.history?.TechUnlocked(tech.ID) == true
             || GrowthTechnologyManager.IsTechnologyPreview(tech.ID));
 
+    /// <summary>有限FE节点的等级是原型序号；多级节点继续由原版显示实际研究等级。</summary>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UITechNode), nameof(UITechNode.UpdateInfoComplete))]
+    private static void UITechNode_UpdateLevelText_Postfix(UITechNode __instance) {
+        TechProto tech = __instance.techProto;
+        if (tech == null || tech.Level <= 0 || tech.Level != tech.MaxLevel
+            || !GrowthTechnologyManager.TryGetTechnologyContentId(tech.ID, out _)
+            || GrowthTechnologyManager.IsTechnologyPreview(tech.ID)) { return; }
+        // 有限科技按稳定节点是否解锁生效；显示序号不读取存档中的冗余旧等级。
+        __instance.levelText.text = "等级".Translate() + tech.Level;
+        __instance.titleText2.text = $"{tech.name} ( {tech.Level} )";
+    }
+
     /// <summary>原版刷新信息或布局后重新覆盖匿名展示，恢复资格时完整还原原版节点。</summary>
     /// <param name="__instance">刚完成原版刷新的科技节点。</param>
     [HarmonyPostfix]
