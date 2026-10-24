@@ -6,6 +6,7 @@ using FE.Compatibility.Nebula;
 using FE.Logic.Civilization;
 using FE.Logic.Fractionation.Recipes;
 using FE.UI.Foundation;
+using FE.UI.Foundation.Window;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -47,7 +48,7 @@ public static partial class FractionatorWindow {
     private static readonly Dictionary<int, float> recentProducts = [];
     private static readonly Dictionary<int, int> basicProducts = [];
     private static readonly Dictionary<int, int> basicFlow = [];
-    private static readonly Color PanelColor = new(0f, 0f, 0f, 0.2f);
+    private static readonly Color PanelColor = new(0.025f, 0.045f, 0.055f, 0.28f);
     private static readonly Color DigestionMaskColor = new(0f, 0f, 0f, 0.62f);
 
     /// <summary>四格固定几何；列表只保留本次显示身份，不持有业务库存。</summary>
@@ -64,25 +65,25 @@ public static partial class FractionatorWindow {
         advancedRoot = new GameObject("fe-fractionator-grid", typeof(RectTransform)).GetComponent<RectTransform>();
         RectTransformUtils.NormalizeRectWithTopLeft(advancedRoot, 0f, 40f, window.transform);
         advancedRoot.sizeDelta = new Vector2(WindowWidth, WindowHeight - 40f);
-        advancedRecipeSlot = CreateAdvancedSlot(advancedRoot, 42f, 30f);
+        advancedRecipeSlot = CreateAdvancedSlot(advancedRoot, 48f, 30f);
         advancedRecipeSlot.button.onClick += _ => OpenAdvancedPicker();
         advancedRecipeSlot.button.onRightClick += _ => ClearAdvancedRecipe();
-        advancedRecipeText = CreateAdvancedLabel(advancedRoot, 78f, 6f, 210f, 48f);
-        advancedRecipeText.fontSize = 14;
-        advancedFoodSlot = CreateAdvancedSlot(advancedRoot, 332f, 30f);
+        advancedRecipeText = CreateAdvancedLabel(advancedRoot, 84f, 6f, 202f, 48f);
+        advancedRecipeText.horizontalOverflow = HorizontalWrapMode.Wrap;
+        advancedFoodSlot = CreateAdvancedSlot(advancedRoot, 334f, 30f);
         advancedFoodSlot.button.onClick += TakeAdvancedFood;
         CreateDigestionMask(advancedFoodSlot);
         AttachFoodPressHandlers(advancedFoodSlot);
-        advancedFoodTitle = CreateAdvancedLabel(advancedRoot, 368f, 8f, 62f, 22f);
+        advancedFoodTitle = CreateAdvancedLabel(advancedRoot, 370f, 6f, 142f, 26f);
         advancedFoodTitle.text = "FE.Advanced.FoodSlot".Translate();
-        advancedDiscardHint = CreateAdvancedLabel(advancedRoot, 368f, 30f, 140f, 26f);
+        advancedDiscardHint = CreateAdvancedLabel(advancedRoot, 370f, 32f, 142f, 26f);
         advancedDiscardHint.text = "FE.DiscardDigestion".Translate();
         advancedDiscardHint.fontSize = 11;
-        advancedInputs = CreateAdvancedSection(new Rect(14f, 64f, 210f, 240f), ProductSlotKind.Fluid);
-        advancedFlow = CreateAdvancedSection(new Rect(306f, 64f, 210f, 240f), ProductSlotKind.Side);
-        advancedProducts = CreateAdvancedSection(new Rect(14f, 334f, 502f, 120f), ProductSlotKind.Main);
-        advancedFlowArrows = CreateAdvancedArrows(vanillaWindow, false, new Vector2(265f, -184f));
-        advancedProductArrows = CreateAdvancedArrows(vanillaWindow, true, new Vector2(265f, -319f));
+        advancedInputs = CreateAdvancedSection(new Rect(18f, 76f, 208f, 252f), ProductSlotKind.Fluid);
+        advancedFlow = CreateAdvancedSection(new Rect(304f, 76f, 208f, 252f), ProductSlotKind.Side);
+        advancedProducts = CreateAdvancedSection(new Rect(18f, 360f, 494f, 142f), ProductSlotKind.Main);
+        advancedFlowArrows = CreateAdvancedArrows(vanillaWindow, false, new Vector2(265f, -192f));
+        advancedProductArrows = CreateAdvancedArrows(vanillaWindow, true, new Vector2(265f, -344f));
     }
 
     private static AdvancedSection CreateAdvancedSection(Rect bounds, ProductSlotKind kind) {
@@ -92,11 +93,16 @@ public static partial class FractionatorWindow {
         root.GetComponent<Image>().color = PanelColor;
         root.GetComponent<Image>().raycastTarget = false;
         string title = kind switch { ProductSlotKind.Fluid => "流动输入", ProductSlotKind.Side => "流动输出", _ => "配方产物" };
-        CreateAdvancedLabel(root, 10f, 6f, bounds.width - 20f, 22f).text = title.Translate();
+        CreateAdvancedLabel(root, 12f, 6f, bounds.width - 24f, 26f).text = title.Translate();
+        Image divider = new GameObject("header-divider", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+        RectTransformUtils.NormalizeRectWithTopLeft(divider, 12f, 34f, root);
+        divider.rectTransform.sizeDelta = new Vector2(bounds.width - 24f, 1f);
+        divider.color = new Color(0.65f, 0.8f, 0.85f, 0.12f);
+        divider.raycastTarget = false;
         AdvancedSection section = new() { Kind = kind };
         for (int i = 0; i < VisibleSlots; i++) {
-            float x = kind == ProductSlotKind.Main ? 101f + i * 100f : 55f + i % 2 * 100f;
-            float y = kind == ProductSlotKind.Main ? 50f : 64f + i / 2 * 100f;
+            float x = kind == ProductSlotKind.Main ? bounds.width / 2f + (i - 1.5f) * 112f : 54f + i % 2 * 100f;
+            float y = kind == ProductSlotKind.Main ? 70f : 68f + i / 2 * 104f;
             ProductSlot slot = CreateAdvancedSlot(root, x, y);
             section.Slots[i] = slot;
             if (kind == ProductSlotKind.Fluid) { slot.button.onClick += OnAdvancedInputClick; }
@@ -107,10 +113,10 @@ public static partial class FractionatorWindow {
                     recentProducts.Remove(itemId);
                 };
             }
-            Text rate = CreateAdvancedLabel(root, x - 48f, y + 32f, 96f, 20f);
+            Text rate = CreateAdvancedLabel(root, x - 48f, y + 26f, 96f, 24f);
             rate.alignment = TextAnchor.MiddleCenter;
             section.Rates[i] = rate;
-            Text satisfaction = CreateAdvancedLabel(root, x - 48f, y + 52f, 96f, 20f);
+            Text satisfaction = CreateAdvancedLabel(root, x - 48f, y + 50f, 96f, 24f);
             satisfaction.alignment = TextAnchor.MiddleCenter;
             section.Satisfaction[i] = satisfaction;
         }
@@ -189,14 +195,18 @@ public static partial class FractionatorWindow {
         return total;
     }
 
+    /// <summary>复用正文文字的字体、材质与透明度，槽下单行信息不按库存数字的窄框截断。</summary>
     private static Text CreateAdvancedLabel(RectTransform parent, float left, float top, float width, float height) {
-        Text label = CreateTopLabel(modWindow, advancedSlotTemplate.oriProductCountText, string.Empty, left, top, width);
+        Text label = MyWindow.AddText(left, top, parent, string.Empty, 15, "fractionator-label");
         RectTransform rect = RectTransformUtils.NormalizeRectWithTopLeft(label, left, top, parent);
+        rect.localScale = Vector3.one;
+        rect.localRotation = Quaternion.identity;
         rect.sizeDelta = new Vector2(width, height);
-        label.alignment = TextAnchor.UpperLeft;
-        label.horizontalOverflow = HorizontalWrapMode.Wrap;
-        label.verticalOverflow = VerticalWrapMode.Truncate;
-        label.color = advancedSlotTemplate.oriProductCountText.color;
+        label.alignment = TextAnchor.MiddleLeft;
+        label.resizeTextForBestFit = false;
+        label.lineSpacing = 1f;
+        label.horizontalOverflow = HorizontalWrapMode.Overflow;
+        label.verticalOverflow = VerticalWrapMode.Overflow;
         label.raycastTarget = false;
         label.enabled = true;
         label.gameObject.SetActive(true);
@@ -212,6 +222,9 @@ public static partial class FractionatorWindow {
         rect.anchoredPosition = new Vector2(centerX, -centerY);
         slot.button.onClick -= advancedSlotTemplate.OnProductUIButtonClick;
         slot.button.tips.type = UIButton.ItemTipType.Item;
+        Color countColor = slot.countText.color;
+        countColor.a = Math.Min(countColor.a, 0.4f);
+        slot.countText.color = countColor;
         if (slot.button.tips.corner == 0) { slot.button.tips.corner = 8; }
         return slot;
     }
@@ -504,8 +517,7 @@ public static partial class FractionatorWindow {
     private static void SetSatisfaction(Text text, double value) {
         float fraction = (float)Math.Max(0d, Math.Min(1d, value));
         text.text = fraction >= 1f ? "100%" : $"{Math.Floor(fraction * 100d):0}%";
-        Color color = advancedSlotTemplate.oriProductCountText.color;
-        text.color = new Color(1f, fraction, fraction, color.a);
+        text.color = new Color(1f, fraction, fraction, text.color.a);
     }
 
     private static string FormatRate(double value) => value.ToString("0.#") + "每分钟".Translate();

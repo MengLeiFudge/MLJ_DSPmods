@@ -5,7 +5,6 @@ using System.Text;
 using FE.Logic.Civilization;
 using FE.Logic.DataCenter;
 using FE.Logic.Fractionation.Recipes;
-using FE.UI.Foundation;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
@@ -183,22 +182,6 @@ public static partial class FractionatorWindow {
             inputBox.gameObject.SetActive(false);
         }
         CreateAdvancedLayout(window, vanillaWindow);
-    }
-
-    private static Text CreateTopLabel(UIFractionatorWindow window, Text reference, string text,
-        float left, float top, float width) {
-        GameObject go = Object.Instantiate(reference.gameObject, window.transform);
-        go.name = $"fe-label-{left:0}-{top:0}";
-        Text label = go.GetComponent<Text>();
-        label.text = text;
-        label.fontSize = 14;
-        label.alignment = TextAnchor.MiddleLeft;
-        label.horizontalOverflow = HorizontalWrapMode.Overflow;
-        label.supportRichText = true;
-        RectTransform rect = RectTransformUtils.NormalizeRectWithTopLeft(label, left, top, window.transform);
-        rect.sizeDelta = new Vector2(width, 30f);
-        go.SetActive(false);
-        return label;
     }
 
     private static void InitializeWindowResizeContext(UIFractionatorWindow window) {
