@@ -515,6 +515,15 @@ public static partial class AdvancedFractionatorRuntime {
         return GetInputProcessingRate(state, input.ItemId) / input.Count / fullRate;
     }
 
+    /// <summary>读取单种主料库存能支撑的件/秒速率，不被其他缺料项的瓶颈压低。</summary>
+    /// <param name="state">调用方持有锁的塔状态。</param>
+    /// <param name="factory">所属工厂。</param>
+    /// <param name="entityId">实体身份，用于读取耐久效率。</param>
+    /// <param name="itemId">配方主料。</param>
+    /// <returns>计入当前食物速度和耐久效率的可支撑速率，并非传送带实测流量。</returns>
+    public static double GetInputSupportedRate(AdvancedFractionatorState state, PlanetFactory factory, int entityId, int itemId) =>
+        GetInputProcessingRate(state, itemId) * GetFoodSpeed(state) * GetDurabilityEfficiency(factory, entityId, state);
+
     /// <summary>按真实消耗比例扣减货物堆数及增产点，保留余料的平均堆叠。</summary>
     /// <param name="state">当前实例。</param>
     /// <param name="itemId">被消耗的输入。</param>

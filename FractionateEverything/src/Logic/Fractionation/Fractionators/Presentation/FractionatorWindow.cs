@@ -5,6 +5,7 @@ using System.Text;
 using FE.Logic.Civilization;
 using FE.Logic.DataCenter;
 using FE.Logic.Fractionation.Recipes;
+using FE.UI.Foundation;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
@@ -157,6 +158,11 @@ public static partial class FractionatorWindow {
             FindClonedComponent<Text>(modWindowGo.transform, vanillaWindow.powerText, vanillaWindow.transform);
         _modPowerIcon =
             FindClonedComponent<Image>(modWindowGo.transform, vanillaWindow.powerIcon, vanillaWindow.transform);
+        // 右上信息区止于106；下方流出标题从120开始，与标题栏按钮各自留有空间。
+        RectTransformUtils.NormalizeRectWithTopLeft(_modPowerText, 304f, 56f, modWindow.transform).sizeDelta = new Vector2(208f, 24f);
+        RectTransformUtils.NormalizeRectWithTopLeft(_modPowerIcon, 284f, 60f, modWindow.transform).sizeDelta = new Vector2(16f, 16f);
+        RectTransformUtils.NormalizeRectWithTopLeft(modWindow.stateText, 304f, 82f, modWindow.transform).sizeDelta = new Vector2(208f, 24f);
+        _modPowerText.alignment = modWindow.stateText.alignment = TextAnchor.MiddleRight;
     }
 
     private static void ApplyModLayoutOnce(UIFractionatorWindow window, UIFractionatorWindow vanillaWindow) {
@@ -695,8 +701,10 @@ public static partial class FractionatorWindow {
     #region 渲染更新
 
     private static void UpdateAdvancedPowerDisplay(UIFractionatorWindow src, AdvancedFractionatorState state) {
-        // 高级塔能量由独立消化槽进度条显示，底部不再显示数值。
-        string text = string.Empty;
+        string text = state != null && state.DigestingEnergy > 0d
+            ? string.Format("FE.Advanced.NutritionRemaining".Translate(),
+                Math.Ceiling(AdvancedFractionatorRuntime.GetDigestionProgress(state) * 100d))
+            : "等待供养".Translate();
         src.powerText.text = text;
         src.powerText.color = state != null && state.DigestingEnergy > 0d ? src.powerNormalColor : src.powerOffColor;
         src.powerIcon.color = Color.clear;
@@ -762,7 +770,6 @@ public static partial class FractionatorWindow {
         float consumerRatio;
         if (advanced) {
             consumerRatio = 1f;
-            UpdateAdvancedPowerDisplay(src, advancedState);
         } else {
             PowerConsumerComponent powerConsumer = src.powerSystem.consumerPool[fractionator.pcId];
             int networkId = powerConsumer.networkId;
@@ -773,6 +780,7 @@ public static partial class FractionatorWindow {
 
         if (advanced) {
             lock (advancedState) {
+                UpdateAdvancedPowerDisplay(src, advancedState);
                 WorldviewRecipe advancedRecipe = RecipeManager.GetRecipe(advancedState.SelectedRecipeId);
                 UpdateAdvancedStateText(advancedState, advancedRecipe, fractionator);
                 UpdateAdvancedUI(src, fractionator, advancedRecipe, advancedState);

@@ -419,9 +419,16 @@
     "1031": "Rezept wählen (Rechtsklick zum Leeren)",
     "1041": "クリックしてレシピ選択（右クリックで解除）"
   },
+  "FE.Advanced.NutritionRemaining": {
+    "enUS": "Nutrition: {0}%",
+    "zhCN": "营养剩余：{0}%",
+    "frFR": "Nutrition : {0}%",
+    "1031": "Nährstoffrest: {0}%",
+    "1041": "残り栄養：{0}%"
+  },
   "FE.Advanced.FoodSlot": {
     "enUS": "Food",
-    "zhCN": "供养",
+    "zhCN": "食物",
     "frFR": "Nourriture",
     "1031": "Nahrung",
     "1041": "供給"
