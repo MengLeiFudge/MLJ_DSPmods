@@ -10,7 +10,7 @@ namespace FE.Logic.Enhancements.Stacking;
 /// <summary>
 /// 流速监测器上限和货物容量扩展逻辑。
 /// </summary>
-public static class MonitorStackPatch {
+public static partial class MonitorStackPatch {
     private const int VanillaMonitorMaxStack = 4;
     private const int VanillaMonitorMaxCargoPerSecond = 120;
     private const int VanillaMonitorMaxTargetCargoBytes = 72000;
@@ -54,12 +54,12 @@ public static class MonitorStackPatch {
     [HarmonyPatch(typeof(MonitorComponent), nameof(MonitorComponent.InternalUpdate))]
     public static IEnumerable<CodeInstruction> MonitorComponent_InternalUpdate_Transpiler(
         IEnumerable<CodeInstruction> instructions) {
-        return ReplaceIntConstantWithCall(
+        return WidenSamples(ReplaceIntConstantWithCall(
             instructions,
             VanillaMonitorMaxStack,
             AccessTools.Method(typeof(MonitorStackPatch), nameof(GetMonitorMaxStack)),
             3,
-            "MonitorComponent.InternalUpdate max stack");
+            "MonitorComponent.InternalUpdate max stack"), 6, 1, 2);
     }
 
     [HarmonyTranspiler]
@@ -124,12 +124,12 @@ public static class MonitorStackPatch {
     [HarmonyPatch(typeof(UIMonitorWindow), nameof(UIMonitorWindow._OnUpdate))]
     public static IEnumerable<CodeInstruction> UIMonitorWindow_OnUpdate_Transpiler(
         IEnumerable<CodeInstruction> instructions) {
-        return ReplaceIntConstantWithCall(
+        return WidenSamples(ReplaceIntConstantWithCall(
             instructions,
             VanillaMonitorMaxStack,
             AccessTools.Method(typeof(MonitorStackPatch), nameof(GetMonitorMaxStack)),
             2,
-            "UIMonitorWindow graph max stack");
+            "UIMonitorWindow graph max stack"), 2, 2, 0);
     }
 
     private static IEnumerable<CodeInstruction> ReplaceIntConstantWithCall(
