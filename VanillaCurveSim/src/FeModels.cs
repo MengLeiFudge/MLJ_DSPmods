@@ -1,175 +1,136 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace VanillaCurveSim;
 
-internal enum SimulationMode {
-    BaselineVanilla = 0,
-    FeConventional = 1,
-    FeSpeedrun = 2,
+/// <summary>独立单塔工况；集装和特质均表示已取得的科技效果，不自动授予科技。</summary>
+internal sealed class FeScenarioConfig {
+    public string Name { get; set; } = "蓝矩阵单层";
+    public int Stack { get; set; } = 1;
+    public int FoodItemId { get; set; } = 6001;
+    public int FoodInc { get; set; }
+    public int TraitLevel { get; set; }
+    /// <summary>已有献祭资格且阶段全部恢复时，每秒经过解析塔的源点件数。</summary>
+    public double MemoryPassesPerSecond { get; set; }
 }
 
-internal enum FeGachaFocus {
-    Balanced = 0,
-    MineralExpansion = 1,
-    ConversionLeap = 2,
-    LogisticsInteraction = 3,
-    EmbryoCycle = 4,
-    ProcessOptimization = 5,
-    RectificationEconomy = 6,
+/// <summary>离线计算输入；同一随机种子与输入文件产生相同的数值结果。</summary>
+internal sealed class FeSimulationOptions {
+    public int DurationSeconds { get; set; } = 600;
+    public uint Seed { get; set; } = 97;
+    public List<FeScenarioConfig> Scenarios { get; set; } = [
+        new(),
+        new() { Name = "蓝矩阵四层", Stack = 4 },
+        new() { Name = "紫矩阵八层", Stack = 8, FoodItemId = 6004, FoodInc = 4 },
+        new() { Name = "白矩阵二十层", Stack = 20, FoodItemId = 6006, FoodInc = 10 },
+        new() { Name = "白矩阵二十层·六级特质与献祭", Stack = 20, FoodItemId = 6006,
+            FoodInc = 10, TraitLevel = 6, MemoryPassesPerSecond = 46.875 },
+    ];
 }
 
-internal enum GachaRarity {
-    C = 0,
-    B = 1,
-    A = 2,
-    S = 3,
+/// <summary>游戏导出的当前配方；输入数量为参与量，消耗概率与成功概率分别保存。</summary>
+internal sealed class FeRecipe {
+    public string Id { get; init; }
+    public string Name { get; init; }
+    public int TowerId { get; init; }
+    public bool RequiresFood { get; init; }
+    public float SuccessProbability { get; init; }
+    public int[] Inputs { get; init; }
+    public int[] InputCounts { get; init; }
+    public float[] ConsumeProbabilities { get; init; }
+    public int[] Outputs { get; init; }
+    public float[] OutputCounts { get; init; }
 }
 
-internal enum FragmentEconomyPolicy {
-    CurrentApproximation = 0,
-    ProposedBalanced = 1,
+/// <summary>已验证的导出数据及其来源指纹。</summary>
+internal sealed class FeDataSet {
+    public List<FeRecipe> Recipes { get; } = [];
+    public Dictionary<int, string> Names { get; } = [];
+    public Dictionary<int, double> Values { get; } = [];
+    public HashSet<int> Foods { get; } = [];
+    public Dictionary<string, string> SourceSha256 { get; } = [];
+    public string Name(int id) => Names.TryGetValue(id, out string name) ? name : $"物品{id}";
 }
 
-internal sealed class FractionationConfigSnapshot {
-    public string ScenarioName { get; init; } = string.Empty;
-    public SimulationMode Mode { get; init; }
-    public bool IsSpeedrun { get; init; }
-    public FeGachaFocus Focus { get; init; }
-    public int StageIndex { get; init; }
-    public int RecipeLevel { get; init; }
-    public int SelectedIncLevel { get; init; }
-    public int InteractionTowerLevel { get; init; }
-    public int MineralReplicationTowerLevel { get; init; }
-    public int PointAggregateTowerLevel { get; init; }
-    public int ConversionTowerLevel { get; init; }
-    public int RectificationTowerLevel { get; init; }
-    public float AchievementSuccessBonus { get; init; }
-    public float AchievementDestroyReductionBonus { get; init; }
-    public float AchievementDoubleOutputBonus { get; init; }
-    public float AchievementEnergyReductionBonus { get; init; }
+/// <summary>单个工况、单张配方的批量随机结算与长期期望。</summary>
+internal sealed class FeProductionResult {
+    public string Scenario { get; init; }
+    public string RecipeId { get; init; }
+    public string RecipeName { get; init; }
+    public int TowerId { get; init; }
+    public double RoundsPerSecond { get; init; }
+    public long Attempts { get; set; }
+    public long Successes { get; set; }
+    public double ExpectedSuccesses { get; set; }
+    public Dictionary<int, long> Consumed { get; } = [];
+    public Dictionary<int, long> Returned { get; } = [];
+    public Dictionary<int, long> Produced { get; } = [];
+    public Dictionary<int, int> MinimumHeld { get; } = [];
+    public long WorkNutrition { get; set; }
+    public long FoodIgnited { get; set; }
+    public double FoodEnergyRemaining { get; set; }
+    public double IdleFoodPerMinute { get; init; }
+    /// <summary>仅统计生产反应的净值，食物单列；相同产物与投入自动抵消。</summary>
+    public double MaterialNetValue { get; set; }
 }
 
-internal sealed class FractionationEffectMetrics {
-    public double FractionationImpact { get; set; }
-    public double ResourceGainMultiplier { get; set; }
-    public double EnergyEfficiencyMultiplier { get; set; }
-    public double GachaNetValuePerMatrix { get; set; }
-    public double GrowthExchangeNetValue { get; set; }
-    public double CurrentFragmentNetBalance { get; set; }
-    public double CurrentFragmentSinkCoverageRatio { get; set; }
-    public double CurrentMatrixFeedbackRatio { get; set; }
-    public double CurrentRectificationUtilityScore { get; set; }
-    public double CurrentMemoryFaucetPerStage { get; set; }
-    public double ProposedFragmentNetBalance { get; set; }
-    public double ProposedFragmentSinkCoverageRatio { get; set; }
-    public double ProposedMatrixFeedbackRatio { get; set; }
-    public double ProposedRectificationUtilityScore { get; set; }
-    public double ProposedMemoryFaucetPerStage { get; set; }
-    public double CompositeImpactIndex { get; set; }
+/// <summary>单塔对已知样本线索的解析结果，未完成时保留共享槽进度。</summary>
+internal sealed class FeResearchResult {
+    public string Content { get; init; }
+    public int Stack { get; init; }
+    public double SampleValue { get; init; }
+    public double SuccessProbability { get; init; }
+    public double DestroyProbability { get; init; }
+    public double ExpectedSeconds { get; init; }
+    public long Attempts { get; set; }
+    public long ReturnedSamples { get; set; }
+    public long DestroyedSamples { get; set; }
+    public int CompletedContents { get; set; }
+    public int ContentCount { get; init; }
+    public int Progress { get; set; }
+    public double ElapsedSeconds { get; set; }
 }
 
-internal sealed class PhaseImpactBreakdown {
-    public string PhaseName { get; init; } = string.Empty;
-    public double BaselineSeconds { get; set; }
-    public double TreatmentSeconds { get; set; }
-    public double TimeCompressionRatio { get; set; }
-    public double ResourceGainMultiplier { get; set; }
-    public double EnergyEfficiencyMultiplier { get; set; }
-    public double GachaNetValuePerMatrix { get; set; }
-    public double GrowthExchangeNetValue { get; set; }
-    public double FragmentYieldMultiplier { get; set; }
-    public List<FragmentEconomyEstimate> FragmentEconomies { get; } = [];
-    public List<string> Notes { get; } = [];
+/// <summary>矩阵阶段恢复的独立工况，不自动开放下一阶段。</summary>
+internal sealed class FeRecoveryResult {
+    public int Stage { get; init; }
+    public int Stack { get; init; }
+    public int RequiredMemory { get; init; }
+    public int ConsumedMemory { get; set; }
+    public long Passes { get; set; }
+    public double ExpectedSeconds { get; init; }
+    public double ElapsedSeconds { get; set; }
 }
 
-internal sealed class FractionationScenarioResult {
-    public string ScenarioName { get; init; } = string.Empty;
-    public string BaselineStrategyName { get; init; } = string.Empty;
-    public SimulationMode Mode { get; init; }
-    public FractionationConfigSnapshot FinalConfig { get; set; } = new();
-    public FractionationEffectMetrics Metrics { get; init; } = new();
-    public double BaselineTotalSeconds { get; set; }
-    public double TreatmentTotalSeconds { get; set; }
-    public List<PhaseImpactBreakdown> Phases { get; } = [];
-    public List<string> Findings { get; } = [];
+/// <summary>完整分钟窗口的源点献祭，增益仅在下一分钟生效。</summary>
+internal sealed class FeOfferingMinute {
+    public int Minute { get; init; }
+    public long ConsumedMemory { get; set; }
+    public float AppliedBoost { get; init; }
+    public float NextBoost { get; set; }
+    public bool LegendaryRecoveryEligible { get; set; }
 }
 
+/// <summary>六档矩阵同时供料时各自的独立扩容账本。</summary>
+internal sealed class FeExpansionResult {
+    public int MatrixId { get; init; }
+    public long Processed { get; set; }
+    public long ExpansionConsumed { get; set; }
+    public int Buffered { get; set; }
+    public long MemoryProduced { get; set; }
+    public double CapacityIncrement { get; set; }
+}
+
+/// <summary>现行框架报告；原版时间线只作背景，不输出未经建模的FE通关时间。</summary>
 internal sealed class SimulationComparisonReport {
+    public int SchemaVersion => 2;
     public DateTime GeneratedAt { get; init; } = DateTime.Now;
+    public FeSimulationOptions Options { get; init; }
+    public Dictionary<string, string> SourceSha256 { get; init; }
     public List<StrategySimulationResult> BaselineResults { get; } = [];
-    public List<FractionationScenarioResult> TreatmentResults { get; } = [];
-}
-
-internal sealed class GachaExpectedOutcome {
-    public int DrawCount { get; init; }
-    public double ExpectedCCount { get; init; }
-    public double ExpectedBCount { get; init; }
-    public double ExpectedACount { get; init; }
-    public double ExpectedSCount { get; init; }
-    public double ExpectedUtility { get; init; }
-    public double CostMatrix { get; init; }
-    public double NetValuePerMatrix => CostMatrix <= 0.0001 ? 0.0 : ExpectedUtility / CostMatrix;
-}
-
-internal sealed class GachaPhaseEstimate {
-    public double MatrixSpent { get; init; }
-    public int OpeningDrawCount { get; init; }
-    public int ProtoDrawCount { get; init; }
-    public double PoolPointsGenerated { get; init; }
-    public double DrawNetValuePerMatrix { get; init; }
-    public double OpeningExpectedSCount { get; init; }
-    public double ProtoExpectedSCount { get; init; }
-}
-
-internal sealed class GrowthExchangeEstimate {
-    public double ConsumedPoolPoints { get; init; }
-    public double ConsumedFragments { get; init; }
-    public double GrowthUtility { get; init; }
-    public double NetValuePerPoint => ConsumedPoolPoints <= 0.0001 ? 0.0 : GrowthUtility / ConsumedPoolPoints;
-}
-
-internal sealed class TowerEffectEstimate {
-    public string TowerName { get; init; } = string.Empty;
-    public int TowerLevel { get; init; }
-    public int RecipeLevel { get; init; }
-    public double ResourceGainMultiplier { get; init; }
-    public double EnergyEfficiencyMultiplier { get; init; }
-    public double TimeAccelerationContribution { get; init; }
-    public double FragmentYieldMultiplier { get; init; }
-}
-
-internal sealed class FractionationPhaseEstimate {
-    public double ResourceGainMultiplier { get; init; }
-    public double EnergyEfficiencyMultiplier { get; init; }
-    public double TimeAccelerationBonus { get; init; }
-    public double FragmentYieldMultiplier { get; init; }
-    public double EstimatedFragments { get; init; }
-    public List<TowerEffectEstimate> Towers { get; } = [];
-}
-
-internal sealed class FragmentEconomyEstimate {
-    public FragmentEconomyPolicy Policy { get; init; }
-    public string PolicyName { get; init; } = string.Empty;
-    public double RectificationFaucet { get; init; }
-    public double FractionationSuccessFaucet { get; init; }
-    public double GachaDuplicateFaucet { get; init; }
-    public double PassiveRewardFaucet { get; init; }
-    public double TotalFaucet { get; init; }
-    public double GrowthSink { get; init; }
-    public double MatrixExchangeSink { get; init; }
-    public double ConvenienceSink { get; init; }
-    public double TotalSink { get; init; }
-    public double NetFragments { get; init; }
-    public double SinkCoverageRatio { get; init; }
-    public double RectificationFaucetShare { get; init; }
-    public double SameStageMatrixFeedbackRatio { get; init; }
-    public double RectificationUtilityScore { get; init; }
-    public double InflationRiskScore { get; init; }
-    public double PositiveFeedbackRiskScore { get; init; }
-    public double MemoryMilestoneFaucet { get; init; }
-    public double MemoryAchievementFaucet { get; init; }
-    public double MemoryRectificationFaucet { get; init; }
-    public double TotalMemoryFaucet { get; init; }
-    public List<string> Warnings { get; } = [];
+    public List<FeProductionResult> Production { get; } = [];
+    public List<FeResearchResult> Research { get; } = [];
+    public List<FeRecoveryResult> Recovery { get; } = [];
+    public Dictionary<string, List<FeOfferingMinute>> Offerings { get; } = [];
+    public Dictionary<int, List<FeExpansionResult>> ExpansionByStack { get; } = [];
 }

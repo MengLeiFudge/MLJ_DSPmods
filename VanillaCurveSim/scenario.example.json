@@ -1,0 +1,22 @@
+{
+  "DurationSeconds": 600,
+  "Seed": 97,
+  "Scenarios": [
+    {
+      "Name": "蓝矩阵单层",
+      "Stack": 1,
+      "FoodItemId": 6001,
+      "FoodInc": 0,
+      "TraitLevel": 0,
+      "MemoryPassesPerSecond": 0
+    },
+    {
+      "Name": "白矩阵二十层·六级特质与献祭",
+      "Stack": 20,
+      "FoodItemId": 6006,
+      "FoodInc": 10,
+      "TraitLevel": 6,
+      "MemoryPassesPerSecond": 46.875
+    }
+  ]
+}

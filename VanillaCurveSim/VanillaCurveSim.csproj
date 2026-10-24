@@ -4,10 +4,11 @@
         <RootNamespace>VanillaCurveSim</RootNamespace>
         <AssemblyName>VanillaCurveSim</AssemblyName>
         <OutputType>Exe</OutputType>
-        <Description>DSP vanilla progression curve simulator</Description>
+        <Description>DSP原版进度与FE现行框架供需模拟器</Description>
     </PropertyGroup>
     <ItemGroup>
         <Compile Include="..\FractionateEverything\src\Utils\ProtoID.cs" Link="Shared\ProtoID.cs" />
+        <Compile Include="..\FractionateEverything\src\Utils\RandomUtils.cs" Link="Shared\RandomUtils.cs" />
         <Compile Include="..\FractionateEverything\src\Logic\Fractionation\Recipes\ConversionSpec.cs" Link="Shared\ConversionSpec.cs" />
         <Reference Include="Newtonsoft.Json">
             <HintPath>..\lib\Newtonsoft.Json.dll</HintPath>

@@ -8,7 +8,7 @@ using FE.Logic.Fractionation.Recipes;
 
 namespace VanillaCurveSim;
 
-/// <summary>转化配方的期望物料核算，仅运行显式请求的配方表，不启动旧模拟器自检或游戏。</summary>
+/// <summary>转化配方的期望物料核算，与FE编译同一份配方规格，可独立导出。</summary>
 internal static class ConversionBalance {
     public static string Write(string root) {
         Dictionary<int, string> names = File.ReadLines(Path.Combine(root, "gamedata", "Vanilla", "gameData.csv"))
