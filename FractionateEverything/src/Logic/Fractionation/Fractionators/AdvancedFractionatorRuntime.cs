@@ -52,7 +52,7 @@ public sealed class AdvancedFractionatorState {
     /// <summary>最近半秒实际配对轮数/秒，供产物与营养估算使用；不包含未配对回流。</summary>
     public double ProcessingRate;
 
-    /// <summary>各主料已推进但尚未结算的件数；实物仍在Inputs中，进度不得超过库存。</summary>
+    /// <summary>主料及待排空输入已推进但尚未结算的件数；实物仍在Inputs中，进度不得超过库存。</summary>
     public readonly Dictionary<int, double> InputProgress = [];
 
     /// <summary>最近半秒各主料实际经过件数/秒，包括配对反应和未配对回流。</summary>
@@ -62,6 +62,8 @@ public sealed class AdvancedFractionatorState {
     internal readonly Dictionary<int, int> InputFlowCounts = [];
     internal int FlowSampleTicks;
     internal int FlowSampleRounds;
+    /// <summary>两个侧面流出口共享的货物发送额度，最多积攒一堆；不持久化。</summary>
+    internal double FlowOutputCredit;
 
     /// <summary>反应输入增产点。</summary>
     public readonly Dictionary<int, int> InputInc = [];
@@ -253,7 +255,6 @@ public static partial class AdvancedFractionatorRuntime {
 
         AdvancedFractionatorState state = GetOrCreateState(factory, fractionatorId);
         lock (state) {
-            DrainUnusedInputs(state, recipe, passthrough: false);
             ResetInputFlow(state);
             state.SnapshotDirty = true;
             state.SelectedRecipeId = persistentRecipeId;
@@ -288,22 +289,24 @@ public static partial class AdvancedFractionatorRuntime {
             WorldviewRecipe recipe = RecipeManager.GetRecipe(state.SelectedRecipeId);
             if (recipe == null || recipe.RecipeType != FractionatorTowerCatalog.GetRecipeType(buildingId)
                 || !ResearchManager.IsContentUnlocked(recipe.StableId)) {
-                state.SnapshotDirty |= state.SelectedRecipeId != 0;
-                state.SelectedRecipeId = 0;
-                state.OutputCursor = 0;
-                state.FlowOutputCursor = 0;
-                ResetInputFlow(state);
+                if (state.SelectedRecipeId != 0) {
+                    state.SnapshotDirty = true;
+                    state.SelectedRecipeId = 0;
+                    state.OutputCursor = state.FlowOutputCursor = 0;
+                    ResetInputFlow(state);
+                }
                 recipe = null;
             }
 
             CargoTraffic cargoTraffic = factory.cargoTraffic;
+            double cargoRate = GetInputCargoRate(fractionator, cargoTraffic);
+            state.FlowOutputCredit = Math.Min(1d, state.FlowOutputCredit + cargoRate / 60d);
             // 先排产物，再判断本帧是否只能直通；排出使阈值恢复后立即允许正常进料。
             if (fractionator.belt0 > 0 && fractionator.isOutput0) {
                 state.SnapshotDirty |= TryOutputProducts(state, recipe, cargoTraffic, fractionator.belt0,
                     Math.Max(1, StackingManager.CurrentMaxStack), RequireFullStack(state, recipe));
             }
             bool passthrough = recipe != null && HasBlockedProduct(state, recipe);
-            DrainUnusedInputs(state, recipe, passthrough);
             HandleSidePort(state, recipe, cargoTraffic, fractionator.belt1, fractionator.isOutput1, passthrough);
             HandleSidePort(state, recipe, cargoTraffic, fractionator.belt2, fractionator.isOutput2, passthrough);
             EnsureDigestingFood(state, consumeRegister);
@@ -315,19 +318,16 @@ public static partial class AdvancedFractionatorRuntime {
                 && CanProcessOutputs(state, recipe);
             int rounds = 0;
             int successfulRounds = 0;
-            bool flowing = false;
-            if (recipe != null && !passthrough) {
-                int readyRounds = AdvanceInputFlows(state, recipe, GetFoodSpeed(state) * durabilityEfficiency);
-                if (canWork) {
-                    rounds = Math.Min(readyRounds, availableRounds);
-                    if (rounds > 0) {
-                        successfulRounds = SettleRounds(ref fractionator.seed, state, recipe, rounds, buildingId,
-                            sacrificeBoost, productRegister, consumeRegister);
-                        state.SnapshotDirty = true;
-                    }
+            int readyRounds = AdvanceInputFlows(state, recipe, GetFoodSpeed(state) * durabilityEfficiency, cargoRate, passthrough);
+            if (canWork) {
+                rounds = Math.Min(readyRounds, availableRounds);
+                if (rounds > 0) {
+                    successfulRounds = SettleRounds(ref fractionator.seed, state, recipe, rounds, buildingId,
+                        sacrificeBoost, productRegister, consumeRegister);
+                    state.SnapshotDirty = true;
                 }
-                flowing = DrainUnpairedInputs(state, recipe);
             }
+            bool flowing = DrainUnpairedInputs(state, recipe, passthrough);
             UpdateFlowRates(state, recipe, rounds);
             fractionator.fractionSuccess = successfulRounds > 0;
             fractionator.isWorking = canWork || flowing;
@@ -574,10 +574,13 @@ public static partial class AdvancedFractionatorRuntime {
 
     private static bool TryOutput(AdvancedFractionatorState state, WorldviewRecipe recipe,
         CargoTraffic cargoTraffic, int beltId) {
+        if (state.FlowOutputCredit + 1e-9d < 1d) { return false; }
         int stackLimit = Math.Max(1, StackingManager.CurrentMaxStack);
-        return TryOutputNonTarget(state.FlowOutputs, state.FlowOutputInc, recipe, currentInput: true,
-                   cargoTraffic, beltId, stackLimit)
-               || TryOutputCurrentFlow(state, recipe, cargoTraffic, beltId, stackLimit, RequireFullStack(state, recipe));
+        bool sent = TryOutputNonTarget(state.FlowOutputs, state.FlowOutputInc, recipe, currentInput: true,
+                        cargoTraffic, beltId, stackLimit)
+                    || TryOutputCurrentFlow(state, recipe, cargoTraffic, beltId, stackLimit, RequireFullStack(state, recipe));
+        if (sent) { state.FlowOutputCredit = Math.Max(0d, state.FlowOutputCredit - 1d); }
+        return sent;
     }
 
     private static bool TryOutputCurrentFlow(AdvancedFractionatorState state, WorldviewRecipe recipe,

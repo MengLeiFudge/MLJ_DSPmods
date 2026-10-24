@@ -168,8 +168,7 @@ public static partial class AdvancedFractionatorRuntime {
                         }
                         WorldviewRecipe recipe = RecipeManager.GetRecipe(state.SelectedRecipeId);
                         foreach (int id in state.InputProgress.Keys.ToArray()) {
-                            if (recipe == null || !recipe.TryGetInput(id, out WorldviewRecipeInput input)
-                                || input.ConsumeProbability < 0.9999f || GetCount(state.Inputs, id) <= 0) {
+                            if (GetCount(state.Inputs, id) <= 0) {
                                 state.InputProgress.Remove(id);
                             } else {
                                 state.InputProgress[id] = Math.Min(state.InputProgress[id], GetCount(state.Inputs, id));

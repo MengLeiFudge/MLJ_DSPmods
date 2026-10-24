@@ -12,8 +12,6 @@ public static partial class AdvancedFractionatorRuntime {
     public static int FoodCapacity => StackingManager.CurrentMaxStack;
     /// <summary>每种低概率消耗催化剂的储备件数，不占用主料缓存。</summary>
     public const int CatalystCapacity = 5;
-    /// <summary>原版参与速度计算的最大真实货物堆数；输入准入另按40乘集装层数件。</summary>
-    private const double ProcessingCargoLimit = 30d;
 
     /// <summary>读取一种反应物的独立容量；配方无关物只经过流动输出。</summary>
     /// <param name="recipe">当前选择的配方。</param>
@@ -24,15 +22,9 @@ public static partial class AdvancedFractionatorRuntime {
         return input.ConsumeProbability < 0.1f ? Math.Max(CatalystCapacity, input.Count) : InputCapacity;
     }
 
-    /// <summary>读取一种主料满倍率下的经过件数/秒；运行和界面共用真实平均堆叠。</summary>
-    /// <param name="state">调用方已持有实例锁的输入件数与货物数。</param>
-    /// <param name="itemId">配方主料的物品ID。</param>
-    /// <returns>原版前30堆乘真实平均堆叠的件数/秒，空输入为0。</returns>
-    private static double GetInputProcessingRate(AdvancedFractionatorState state, int itemId) {
-        int count = GetCount(state.Inputs, itemId);
-        double cargo = state.InputCargo.TryGetValue(itemId, out double stored) ? stored : count;
-        return count <= 0 || cargo <= 0d ? 0d : Math.Min(cargo, ProcessingCargoLimit) * count / cargo;
-    }
+    /// <summary>读取缓存中的真实等效货物堆数；缺少货物元数据时按单件一堆处理。</summary>
+    private static double GetInputCargo(AdvancedFractionatorState state, int itemId, int count) =>
+        state.InputCargo.TryGetValue(itemId, out double cargo) && cargo > 0d ? cargo : count;
 
     /// <summary>从真实反应输入取物，同时按比例扣除货物堆数及增产点。</summary>
     /// <param name="factory">目标工厂。</param>
@@ -127,28 +119,4 @@ public static partial class AdvancedFractionatorRuntime {
         }
     }
 
-    /// <summary>逐批侧流切换配方后剩余的输入及产物堵塞时的反应输入；目的槽已到阈值时保留原物。</summary>
-    /// <param name="state">调用方已持有实例锁的缓存。</param>
-    /// <param name="recipe">当前配方，决定需要保留的反应物。</param>
-    /// <param name="passthrough">产物达到阈值时将全部反应物侧流。</param>
-    private static void DrainUnusedInputs(AdvancedFractionatorState state, WorldviewRecipe recipe, bool passthrough) {
-        var pending = state.UnprocessedInputIds;
-        pending.Clear();
-        foreach (var pair in state.Inputs) {
-            if (pair.Value > 0 && (passthrough || GetInputCapacity(recipe, pair.Key) == 0)) { pending.Add(pair.Key); }
-        }
-        int stackLimit = Math.Max(1, StackingManager.CurrentMaxStack);
-        foreach (int itemId in pending) {
-            if (GetCount(state.FlowOutputs, itemId) >= OutputCapacity) { continue; }
-            int moved = Math.Min(GetCount(state.Inputs, itemId), stackLimit);
-            int inc = TakeInput(state, itemId, moved);
-            if (recipe != null && recipe.TryGetInput(itemId, out WorldviewRecipeInput input)
-                && input.ConsumeProbability >= 0.9999f) {
-                AddCount(state.InputFlowCounts, itemId, moved);
-            }
-            AddCount(state.FlowOutputs, itemId, moved);
-            AddCount(state.FlowOutputInc, itemId, inc);
-            state.SnapshotDirty = true;
-        }
-    }
 }
