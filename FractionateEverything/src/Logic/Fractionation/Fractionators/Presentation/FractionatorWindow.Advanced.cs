@@ -64,6 +64,7 @@ public static partial class FractionatorWindow {
     private struct SlotRate {
         private int itemId;
         private double displayedRate;
+        internal double DisplayedRate => displayedRate;
         private double weightedRate;
         private float duration;
 
@@ -530,21 +531,19 @@ public static partial class FractionatorWindow {
             incs?.TryGetValue(itemId, out inc);
             RenderAdvancedSlot(section.Slots[i], itemId, count, inc, section.Kind);
             double perMinute = 0d;
+            double fullInputRate = 0d;
             int rateItemId = 0;
             section.Satisfaction[i].text = string.Empty;
             if (itemId > 0 && recipe != null && section.Kind == ProductSlotKind.Fluid
                 && recipe.TryGetInput(itemId, out WorldviewRecipeInput input)) {
                 rateItemId = itemId;
                 bool catalyst = input.ConsumeProbability < 0.1f;
-                perMinute = input.ConsumeProbability >= 0.9999f
-                    ? AdvancedFractionatorRuntime.GetInputSupportedRate(state, sourceWindow.factory,
-                        sourceWindow.factorySystem.fractionatorPool[sourceWindow.fractionatorId].entityId, itemId) * 60d
-                    : rounds * input.Count;
+                perMinute = rounds * input.Count;
                 if (input.ConsumeProbability < 0.9999f) {
                     perMinute *= success * AdvancedFractionatorRuntime.GetInputConsumeProbability(input, buildingId);
                 }
                 if (!catalyst) {
-                    SetSatisfaction(section.Satisfaction[i], AdvancedFractionatorRuntime.GetInputSatisfaction(state, recipe, input));
+                    fullInputRate = AdvancedFractionatorRuntime.GetInputFullBeltRate(recipe, input, buildingId) * 60d;
                 }
             } else if (itemId > 0 && recipe != null && section.Kind == ProductSlotKind.Main) {
                 rateItemId = itemId;
@@ -552,10 +551,13 @@ public static partial class FractionatorWindow {
                 perMinute = output == null ? 0d : rounds * success * AdvancedFractionatorRuntime.GetOutputPerSuccess(recipe, output);
             }
             section.Rates[i].text = section.RateDisplays[i].Update(rateItemId, perMinute);
+            if (fullInputRate > 0d) {
+                SetSatisfaction(section.Satisfaction[i], section.RateDisplays[i].DisplayedRate / fullInputRate);
+            }
         }
     }
 
-    /// <summary>满足度为该料当前可支撑处理速度占满速的比例，颜色只改RGB，保留原版文字透明度。</summary>
+    /// <summary>满足度按各运行器提供的满速基准显示；颜色只改RGB，保留原版文字透明度。</summary>
     private static void SetSatisfaction(Text text, double value) {
         float fraction = (float)Math.Max(0d, Math.Min(1d, value));
         text.text = fraction >= 1f ? "100%" : $"{Math.Floor(fraction * 100d):0}%";

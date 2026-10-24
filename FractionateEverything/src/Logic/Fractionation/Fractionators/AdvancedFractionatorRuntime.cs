@@ -493,36 +493,22 @@ public static partial class AdvancedFractionatorRuntime {
         return rate == double.MaxValue ? 0d : rate;
     }
 
-    /// <summary>读取一种输入的供料满足度：该料当前缓存可支撑的轮数/秒，除以各主料均满30货物堆时的瓶颈轮数/秒。</summary>
-    /// <remarks>食物速度与耐久同时作用于分子和分母，比值与二者无关，故均不乘入；调用方须持有实例锁。</remarks>
-    /// <param name="state">持有真实件数和货物堆数的实例。</param>
-    /// <param name="recipe">当前配方，只以主料计算满速瓶颈。</param>
-    /// <param name="input">待显示的配方输入。</param>
-    /// <returns>未封顶的比值，饱和时不小于1；空配方或无主料时为0。</returns>
-    public static double GetInputSatisfaction(AdvancedFractionatorState state, WorldviewRecipe recipe,
-        WorldviewRecipeInput input) {
+    /// <summary>将一条当前满堆叠传送带按配方平均消耗配比分摊，食物不计入配方输入。</summary>
+    /// <remarks>主料权重为每轮件数；辅料和催化剂权重乘当前生效的消耗概率，不再乘成功率。</remarks>
+    /// <param name="recipe">当前配方。</param>
+    /// <param name="input">需要分摊速率的配方输入。</param>
+    /// <param name="buildingId">塔型，用于读取特质后的消耗概率。</param>
+    /// <returns>该材料的满带基准件数/秒；无有效消耗时为0。</returns>
+    public static double GetInputFullBeltRate(WorldviewRecipe recipe, WorldviewRecipeInput input, int buildingId) {
         if (recipe == null || input == null) { return 0d; }
-        double fullRate = double.MaxValue;
-        foreach (WorldviewRecipeInput main in recipe.InputArray) {
-            if (main.ConsumeProbability < 0.9999f) { continue; }
-            int count = GetCount(state.Inputs, main.ItemId);
-            double cargo = state.InputCargo.TryGetValue(main.ItemId, out double storedCargo) ? storedCargo : count;
-            // 缺料未形成平均堆叠时按当前全局堆叠估算满速。
-            double stack = count > 0 && cargo > 0d ? count / cargo : StackingManager.CurrentMaxStack;
-            fullRate = Math.Min(fullRate, ProcessingCargoLimit * stack / main.Count);
+        double totalWeight = 0d;
+        foreach (WorldviewRecipeInput material in recipe.InputArray) {
+            totalWeight += material.Count * (double)GetInputConsumeProbability(material, buildingId);
         }
-        if (fullRate == double.MaxValue || fullRate <= 0d) { return 0d; }
-        return GetInputProcessingRate(state, input.ItemId) / input.Count / fullRate;
+        if (totalWeight <= 0d) { return 0d; }
+        double weight = input.Count * (double)GetInputConsumeProbability(input, buildingId);
+        return MaxBeltSpeed * StackingManager.CurrentMaxStack * weight / totalWeight;
     }
-
-    /// <summary>读取单种主料库存能支撑的件/秒速率，不被其他缺料项的瓶颈压低。</summary>
-    /// <param name="state">调用方持有锁的塔状态。</param>
-    /// <param name="factory">所属工厂。</param>
-    /// <param name="entityId">实体身份，用于读取耐久效率。</param>
-    /// <param name="itemId">配方主料。</param>
-    /// <returns>计入当前食物速度和耐久效率的可支撑速率，并非传送带实测流量。</returns>
-    public static double GetInputSupportedRate(AdvancedFractionatorState state, PlanetFactory factory, int entityId, int itemId) =>
-        GetInputProcessingRate(state, itemId) * GetFoodSpeed(state) * GetDurabilityEfficiency(factory, entityId, state);
 
     /// <summary>按真实消耗比例扣减货物堆数及增产点，保留余料的平均堆叠。</summary>
     /// <param name="state">当前实例。</param>
