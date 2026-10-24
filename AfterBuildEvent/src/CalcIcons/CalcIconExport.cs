@@ -4,9 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
-using ICSharpCode.SharpZipLib.Zip;
 using Newtonsoft.Json.Linq;
 using static AfterBuildEvent.Utils;
 using static AfterBuildEvent.PathConfig;
@@ -17,43 +15,13 @@ static partial class AfterBuildEvent {
     #region 提取计算器图标资源
 
     /// <summary>
-    /// 一个计算器图标源组：离线 AssetStudio/嵌入式路径，以及游戏内导出所需的模组集合。
+    /// 游戏内图标导出的目标目录、模组集合与回退顺序。
     /// </summary>
     private sealed class CalcIconExportTarget {
         /// <summary>
         /// 完整图标池和计算器资源树下的输出子目录。
         /// </summary>
         public string TargetMod { get; set; } = "";
-
-        /// <summary>
-        /// 图标匹配前从嵌入式资源文件名中去除的前缀。
-        /// </summary>
-        public string SourcePrefix { get; set; } = "";
-
-        /// <summary>
-        /// 包含 AssetStudio 可读取图标资源包的 R2 插件包。
-        /// </summary>
-        public string AssetStudioPackageName { get; set; } = "";
-
-        /// <summary>
-        /// 相对于 R2 插件包根目录的资源包路径。
-        /// </summary>
-        public List<string> AssetStudioRelativePaths { get; set; } = [];
-
-        /// <summary>
-        /// 相对于 DSP 游戏安装目录的资源包路径。
-        /// </summary>
-        public List<string> AssetStudioGameDataRelativePaths { get; set; } = [];
-
-        /// <summary>
-        /// 在托管 DLL 中嵌入 PNG 资源的 R2 插件包。
-        /// </summary>
-        public string EmbeddedDllPackageName { get; set; } = "";
-
-        /// <summary>
-        /// 相对于嵌入式资源包根目录的 DLL 路径。
-        /// </summary>
-        public string EmbeddedDllRelativePath { get; set; } = "";
 
         /// <summary>
         /// 在游戏内导出该目标时必须启用的 R2 模组。
@@ -208,278 +176,12 @@ static partial class AfterBuildEvent {
         Directory.CreateDirectory(CalcIconWorkDir);
     }
 
-    private static void ExportCalcIconsOffline(IReadOnlyDictionary<string, string> requiredIconNames) {
-        using CmdProcess cmd = new();
-        string assetStudioCli = EnsureAssetStudioCli();
-        foreach (CalcIconExportTarget target in GetCalcIconExportTargets()) {
-            ExportCalcIconsWithAssetStudio(cmd, assetStudioCli, target, requiredIconNames);
-            ExportCalcIconsFromEmbeddedDll(cmd, target, requiredIconNames);
-        }
-    }
-
-    private static string EnsureAssetStudioCli() {
-        if (File.Exists(AssetStudioCliPath)) {
-            return AssetStudioCliPath;
-        }
-
-        Directory.CreateDirectory(Path.GetDirectoryName(AssetStudioZipPath) ?? ".");
-        Console.WriteLine($"下载 AssetStudio CLI：{AssetStudioDownloadUrl}");
-        DownloadAssetStudioZip();
-
-        Console.WriteLine($"解压 AssetStudio CLI：{AssetStudioToolDir}");
-        Directory.CreateDirectory(AssetStudioToolDir);
-        new FastZip().ExtractZip(AssetStudioZipPath, AssetStudioToolDir, null);
-        if (!File.Exists(AssetStudioCliPath)) {
-            throw new FileNotFoundException("AssetStudio CLI 解压后未找到可执行文件", AssetStudioCliPath);
-        }
-
-        return AssetStudioCliPath;
-    }
-
-    private static void DownloadAssetStudioZip() {
-        using Process process = Process.Start(new ProcessStartInfo("curl.exe",
-            $"-L --retry 3 --connect-timeout 20 --max-time 300 --fail -o \"{AssetStudioZipPath}\" \"{AssetStudioDownloadUrl}\"") {
-            UseShellExecute = false,
-            CreateNoWindow = true,
-        });
-        process.WaitForExit();
-        if (process.ExitCode != 0 || !File.Exists(AssetStudioZipPath)) {
-            throw new InvalidOperationException($"curl.exe 下载 AssetStudio 失败，错误码 {process.ExitCode}");
-        }
-    }
-
-    private static void ExportCalcIconsWithAssetStudio(
-        CmdProcess cmd,
-        string assetStudioCli,
-        CalcIconExportTarget target,
-        IReadOnlyDictionary<string, string> requiredIconNames) {
-        List<string> inputPaths = GetAssetStudioInputPaths(target).Distinct().ToList();
-        if (inputPaths.Count == 0) {
-            return;
-        }
-
-        int totalCopied = 0;
-        foreach (string inputPath in inputPaths) {
-            List<string> nameFilters = GetAssetStudioNameFilters(target, requiredIconNames);
-            for (int i = 0; i < nameFilters.Count; i++) {
-                string outputDir = Path.Combine(
-                    CalcIconWorkDir,
-                    "assetstudio",
-                    target.TargetMod,
-                    MakeSafePathSegment(Path.GetFileName(inputPath)),
-                    $"batch-{i + 1}");
-                Directory.CreateDirectory(outputDir);
-                Console.WriteLine($"开始离线提取 Texture2D：{target.TargetMod} <- {inputPath}");
-                string arguments =
-                    $"\"{inputPath}\" \"{outputDir}\" --game Normal --types Texture2D --image_format Png --group_assets ByType";
-                if (!string.IsNullOrWhiteSpace(nameFilters[i])) {
-                    arguments += $" --names \"{nameFilters[i]}\"";
-                }
-
-                int exitCode = cmd.Run(assetStudioCli, arguments, Path.GetDirectoryName(assetStudioCli));
-                if (exitCode != 0) {
-                    Console.WriteLine($"AssetStudio 提取失败：{target.TargetMod}，错误码 {exitCode}");
-                    continue;
-                }
-
-                totalCopied += CopyRequiredPngIcons(outputDir, target, requiredIconNames, require80x80: true);
-            }
-        }
-
-        if (totalCopied > 0) {
-            Console.WriteLine($"{target.TargetMod} AssetStudio 离线图标：复制 {totalCopied}");
-        }
-    }
-
-    private static List<string> GetAssetStudioNameFilters(
-        CalcIconExportTarget target,
-        IReadOnlyDictionary<string, string> requiredIconNames) {
-        // 原版资源会连带扫描 sharedassets，必须按名字过滤，避免每轮导出数千张无关贴图。
-        if (!target.TargetMod.Equals("Vanilla", StringComparison.OrdinalIgnoreCase)) {
-            return [""];
-        }
-
-        const int maxPatternLength = 3000;
-        List<string> result = [];
-        List<string> currentNames = [];
-        int currentLength = 4;
-        foreach (string iconName in requiredIconNames.Values
-                     .Select(Regex.Escape)
-                     .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)) {
-            int nextLength = currentLength + iconName.Length + 1;
-            if (currentNames.Count > 0 && nextLength > maxPatternLength) {
-                result.Add($"^({string.Join("|", currentNames)})$");
-                currentNames.Clear();
-                currentLength = 4;
-            }
-
-            currentNames.Add(iconName);
-            currentLength += iconName.Length + 1;
-        }
-
-        if (currentNames.Count > 0) {
-            result.Add($"^({string.Join("|", currentNames)})$");
-        }
-        return result.Count == 0 ? [""] : result;
-    }
-
-    private static IEnumerable<string> GetAssetStudioInputPaths(CalcIconExportTarget target) {
-        foreach (string relativePath in target.AssetStudioGameDataRelativePaths) {
-            string inputPath = ResolveExistingPathRespectingOld(Path.Combine(DSPGameDir, relativePath));
-            if (inputPath != null) {
-                yield return inputPath;
-            }
-        }
-
-        if (!string.IsNullOrWhiteSpace(target.AssetStudioPackageName)) {
-            string pluginDir = Path.Combine(R2PluginsDir, target.AssetStudioPackageName);
-            foreach (string relativePath in target.AssetStudioRelativePaths) {
-                string inputPath = ResolveExistingPathRespectingOld(Path.Combine(pluginDir, relativePath));
-                if (inputPath != null) {
-                    yield return inputPath;
-                }
-            }
-        }
-    }
-
-    private static void ExportCalcIconsFromEmbeddedDll(
-        CmdProcess cmd,
-        CalcIconExportTarget target,
-        IReadOnlyDictionary<string, string> requiredIconNames) {
-        if (string.IsNullOrWhiteSpace(target.EmbeddedDllPackageName)
-            || string.IsNullOrWhiteSpace(target.EmbeddedDllRelativePath)) {
-            return;
-        }
-
-        string sourceDll = ResolveExistingPathRespectingOld(
-            Path.Combine(R2PluginsDir, target.EmbeddedDllPackageName, target.EmbeddedDllRelativePath));
-        if (sourceDll == null) {
-            Console.WriteLine(
-                $"未找到 {target.TargetMod} embedded PNG DLL：{Path.Combine(R2PluginsDir, target.EmbeddedDllPackageName, target.EmbeddedDllRelativePath)}");
-            return;
-        }
-
-        string workDll = PrepareDllPathForTool(sourceDll, target.TargetMod);
-        string outputDir = Path.Combine(CalcIconWorkDir, "ilspy", target.TargetMod);
-        Directory.CreateDirectory(outputDir);
-        Console.WriteLine($"开始离线提取 embedded PNG：{target.TargetMod} <- {sourceDll}");
-        int exitCode = cmd.Run("ilspycmd", $"-p --nested-directories -o \"{outputDir}\" \"{workDll}\"");
-        if (exitCode != 0) {
-            Console.WriteLine($"ilspycmd 提取 embedded PNG 失败：{target.TargetMod}，错误码 {exitCode}");
-            return;
-        }
-
-        int copied = CopyRequiredPngIcons(outputDir, target, requiredIconNames, require80x80: true);
-        Console.WriteLine($"{target.TargetMod} embedded PNG 离线图标：复制 {copied}");
-    }
-
-    private static string PrepareDllPathForTool(string sourceDll, string targetMod) {
-        if (sourceDll.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)) {
-            return sourceDll;
-        }
-
-        string outputDir = Path.Combine(CalcIconWorkDir, "dll-input", targetMod);
-        Directory.CreateDirectory(outputDir);
-        string fileName = Path.GetFileName(sourceDll);
-        if (fileName.EndsWith(".old", StringComparison.OrdinalIgnoreCase)) {
-            fileName = fileName.Substring(0, fileName.Length - ".old".Length);
-        }
-        if (!fileName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)) {
-            fileName += ".dll";
-        }
-
-        string targetDll = Path.Combine(outputDir, fileName);
-        File.Copy(sourceDll, targetDll, true);
-        return targetDll;
-    }
-
-    private static string ResolveExistingPathRespectingOld(string basePath) {
-        if (File.Exists(basePath)) {
-            return basePath;
-        }
-
-        string oldPath = basePath + ".old";
-        if (File.Exists(oldPath)) {
-            return oldPath;
-        }
-
-        return null;
-    }
-
-    private static int CopyRequiredPngIcons(
-        string sourceDir,
-        CalcIconExportTarget target,
-        IReadOnlyDictionary<string, string> requiredIconNames,
-        bool require80x80) {
-        string outputDir = Path.Combine(DspCalcFullIconDir, target.TargetMod);
-        Directory.CreateDirectory(outputDir);
-
-        int copied = 0;
-        int skippedSize = 0;
-        int skippedExisting = 0;
-        foreach (string sourceFile in Directory.GetFiles(sourceDir, "*.png", SearchOption.AllDirectories)) {
-            if (require80x80 && !IsPng80x80(sourceFile)) {
-                skippedSize++;
-                continue;
-            }
-
-            string sourceIconName = GetSourceIconName(sourceFile, target.SourcePrefix);
-            string key = NormalizeIconNameForMatch(sourceIconName);
-            if (!requiredIconNames.TryGetValue(key, out string requiredIconName)) {
-                continue;
-            }
-
-            string targetFile = Path.Combine(outputDir, $"{SanitizeFileName(requiredIconName)}.png");
-            if (File.Exists(targetFile)) {
-                skippedExisting++;
-                continue;
-            }
-
-            File.Copy(sourceFile, targetFile, false);
-            copied++;
-        }
-
-        if (skippedSize > 0 || skippedExisting > 0) {
-            Console.WriteLine($"{target.TargetMod} 离线图标跳过：非 80x80 {skippedSize}，已有 {skippedExisting}");
-        }
-        return copied;
-    }
-
-    private static bool IsPng80x80(string filePath) {
-        byte[] header = new byte[24];
-        using FileStream stream = File.OpenRead(filePath);
-        if (stream.Read(header, 0, header.Length) < header.Length) {
-            return false;
-        }
-
-        return header[0] == 0x89
-               && header[1] == 0x50
-               && header[2] == 0x4E
-               && header[3] == 0x47
-               && ReadBigEndianInt32(header, 16) == 80
-               && ReadBigEndianInt32(header, 20) == 80;
-    }
-
-    private static int ReadBigEndianInt32(byte[] bytes, int offset) {
-        return (bytes[offset] << 24)
-               | (bytes[offset + 1] << 16)
-               | (bytes[offset + 2] << 8)
-               | bytes[offset + 3];
-    }
-
     private static void DeleteDirectoryIfExists(string dir) {
         if (!Directory.Exists(dir)) {
             return;
         }
 
         Directory.Delete(dir, true);
-    }
-
-    private static string MakeSafePathSegment(string value) {
-        foreach (char invalidChar in Path.GetInvalidFileNameChars()) {
-            value = value.Replace(invalidChar, '_');
-        }
-        return string.IsNullOrWhiteSpace(value) ? "input" : value;
     }
 
     private static void CopyStaticCalcIconFallbacks() {
@@ -508,50 +210,31 @@ static partial class AfterBuildEvent {
         return [
             new() {
                 TargetMod = "Vanilla",
-                AssetStudioGameDataRelativePaths = [
-                    @"DSPGAME_Data\resources.assets",
-                    @"DSPGAME_Data\sharedassets0.assets",
-                ],
                 EnabledMods = [],
                 LowerPriorityMods = [],
             },
             new() {
                 TargetMod = "MoreMegaStructure",
-                AssetStudioPackageName = "jinxOAO-MoreMegaStructure",
-                AssetStudioRelativePaths = ["mmstabicon"],
                 EnabledMods = ["jinxOAO-MoreMegaStructure"],
                 LowerPriorityMods = ["Vanilla"],
             },
             new() {
                 TargetMod = "TheyComeFromVoid",
-                AssetStudioPackageName = "ckcz123-TheyComeFromVoid",
-                AssetStudioRelativePaths = ["dspbattletex"],
                 EnabledMods = ["jinxOAO-MoreMegaStructure", "ckcz123-TheyComeFromVoid"],
                 LowerPriorityMods = ["Vanilla", "MoreMegaStructure"],
             },
             new() {
                 TargetMod = "GenesisBook",
-                AssetStudioPackageName = "HiddenCirno-GenesisBook",
-                EmbeddedDllPackageName = "HiddenCirno-GenesisBook",
-                EmbeddedDllRelativePath = "ProjectGenesis.dll",
-                SourcePrefix = "ProjectGenesis.assets.sprite.",
                 EnabledMods = ["jinxOAO-MoreMegaStructure", "HiddenCirno-GenesisBook"],
                 LowerPriorityMods = ["Vanilla", "MoreMegaStructure"],
             },
             new() {
                 TargetMod = "OrbitalRing",
-                AssetStudioPackageName = "ProfessorCat-OrbitalRing",
-                EmbeddedDllPackageName = "ProfessorCat-OrbitalRing",
-                EmbeddedDllRelativePath = "ProjectOrbitalRing.dll",
-                SourcePrefix = "ProjectOrbitalRing.assets.sprite.",
                 EnabledMods = ["jinxOAO-MoreMegaStructure", "ProfessorCat-OrbitalRing"],
                 LowerPriorityMods = ["Vanilla", "MoreMegaStructure"],
             },
             new() {
                 TargetMod = "FractionateEverything",
-                EmbeddedDllPackageName = "MengLei-FractionateEverything",
-                EmbeddedDllRelativePath = "FractionateEverything.Resources.dll",
-                SourcePrefix = "FE.Icons.",
                 EnabledMods = ["MengLei-FractionateEverything"],
                 LowerPriorityMods = ["Vanilla"],
             },
@@ -1130,14 +813,6 @@ static partial class AfterBuildEvent {
             .Select(target => target.TargetMod)
             .Where(modName => modName != "Vanilla" && jsonFileName.Contains(modName))
             .ToList();
-    }
-
-    private static string GetSourceIconName(string sourceFile, string sourcePrefix) {
-        string fileName = Path.GetFileNameWithoutExtension(sourceFile);
-        if (fileName.StartsWith(sourcePrefix, StringComparison.OrdinalIgnoreCase)) {
-            return fileName.Substring(sourcePrefix.Length);
-        }
-        return fileName;
     }
 
     private static string NormalizeIconNameForMatch(string iconName) {
