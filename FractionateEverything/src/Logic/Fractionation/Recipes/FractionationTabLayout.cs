@@ -43,9 +43,24 @@ internal static class FractionationTabLayout {
             PlaceItem(itemId, Grid(row, 1));
             PlaceRecipe(cultureId, Grid(row, 1));
             PlaceRecipe(cultureId + 10, Grid(row, 2));
+            WorldviewRecipe[] production = recipes.Where(recipe => recipe.RecipeType == type
+                && recipe.Kind is not (WorldviewRecipeKind.TowerCultivation or WorldviewRecipeKind.EmbryoBreeding or WorldviewRecipeKind.Monument)).ToArray();
+            if (type == ERecipe.AdvancedMineral) {
+                // 每种矿物占一列：上行为催化增殖，下行为源点重构；缺失一式时也不移动另一式。
+                var minerals = production.GroupBy(recipe => recipe.PrimaryProductId).OrderBy(group => group.Key).ToArray();
+                int pairsPerRow = columns - 2;
+                for (int i = 0; i < minerals.Length; i++) {
+                    int topRow = row + i / pairsPerRow * 2;
+                    int column = i % pairsPerRow + 3;
+                    foreach (WorldviewRecipe recipe in minerals[i]) {
+                        PlaceRecipe(recipe.PersistentId, Grid(topRow + (recipe.ContainsInput(IFE记忆源点) ? 1 : 0), column));
+                    }
+                }
+                row += Math.Max(1, (minerals.Length + pairsPerRow - 1) / pairsPerRow) * 2;
+                return;
+            }
             int index = 2;
-            foreach (WorldviewRecipe recipe in recipes.Where(recipe => recipe.RecipeType == type
-                         && recipe.Kind is not (WorldviewRecipeKind.TowerCultivation or WorldviewRecipeKind.EmbryoBreeding or WorldviewRecipeKind.Monument))) {
+            foreach (WorldviewRecipe recipe in production) {
                 PlaceRecipe(recipe.PersistentId, Grid(row + index / columns, index % columns + 1));
                 index++;
             }
