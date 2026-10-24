@@ -74,7 +74,7 @@ public static class ItemManager {
 
     private static void RegisterFrag() {
         ItemProto item = ProtoRegistry.RegisterItem(IFE残片, "残片", "I残片",
-            "Assets/fe/copy-essence", tab分馏 * 1000 + 108, 100, EItemType.DarkFog,
+            "Assets/fe/fragment", tab分馏 * 1000 + 108, 100, EItemType.DarkFog,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.black));
         item.UnlockKey = -2;
         item.IconTag = "cpfragment";
@@ -86,7 +86,7 @@ public static class ItemManager {
     private static void RegisterInternalItem(int itemId, string name, string description, int gridOffset,
         int stackSize, Color iconColor, Color iconBackgroundColor, string iconTag) {
         ItemProto item = ProtoRegistry.RegisterItem(itemId, name, description,
-            "Assets/fe/copy-essence", tab分馏 * 1000 + gridOffset, stackSize, EItemType.Material,
+            $"Assets/fe/{iconTag}", tab分馏 * 1000 + gridOffset, stackSize, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(iconColor, iconBackgroundColor));
         item.UnlockKey = -1;
         item.IconTag = iconTag;

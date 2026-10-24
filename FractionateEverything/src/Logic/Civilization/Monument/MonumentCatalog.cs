@@ -31,7 +31,7 @@ internal static class MonumentCatalog {
             ProtoRegistry.GetDefaultIconDesc(new Color(0.8f, 0.65f, 1f), Color.gray));
         rocket.UnlockKey = -1;
         ItemProto material = ProtoRegistry.RegisterItem(IFE丰碑结晶, "FE.Monument.Crystal", "FE.Monument.CrystalDescription",
-            "Assets/fe/copy-essence", tab分馏 * 1000 + 113, 100, EItemType.Material,
+            "Assets/fe/monument-crystal", tab分馏 * 1000 + 113, 100, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(new Color(1f, 0.8f, 0.3f), Color.black));
         material.UnlockKey = -1;
         ItemAvailability.RegisterExternalSource(IFE丰碑结晶);
