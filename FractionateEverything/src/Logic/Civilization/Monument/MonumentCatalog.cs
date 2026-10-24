@@ -27,7 +27,7 @@ internal static class MonumentCatalog {
     /// <summary>固定物品随预注册添加，来源帆等最终外部矩阵进入LDB后再添加。</summary>
     internal static void PreAdd() {
         ItemProto rocket = ProtoRegistry.RegisterItem(IFE丰碑火箭, "FE.Monument.Rocket", "FE.Monument.RocketDescription",
-            "Assets/fe/copy-essence", tab分馏 * 1000 + 112, 100, EItemType.Product,
+            "Assets/fe/monument-rocket", tab分馏 * 1000 + 112, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(new Color(0.8f, 0.65f, 1f), Color.gray));
         rocket.UnlockKey = -1;
         ItemProto material = ProtoRegistry.RegisterItem(IFE丰碑结晶, "FE.Monument.Crystal", "FE.Monument.CrystalDescription",
@@ -109,7 +109,6 @@ internal static class MonumentCatalog {
             ItemProto item = LDB.items.Select(pair.Key);
             item.Preload(item.index);
         }
-        LDB.items.Select(IFE丰碑火箭)._iconSprite = LDB.items.Select(I小型运载火箭).iconSprite;
         foreach (WorldviewRecipe recipe in Recipes) {
             RecipeProto proto = LDB.recipes.Select(AdvancedRecipeCatalog.GetProtoId(recipe.PersistentId));
             proto.Preload(Array.IndexOf(LDB.recipes.dataArray, proto));

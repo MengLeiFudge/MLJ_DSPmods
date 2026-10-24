@@ -1,4 +1,4 @@
-"""重绘四种文明资源图标；透明背景与多面体轮廓适配 80×80 物品格。"""
+"""重绘文明资源与丰碑火箭图标；透明背景与多面体轮廓适配 80×80 物品格。"""
 from pathlib import Path
 import math
 from PIL import Image, ImageDraw
@@ -97,8 +97,28 @@ def monument_crystal():
     icon.save("monument-crystal")
 
 
+def monument_rocket():
+    icon = Icon()
+    # 金色丰碑载荷与紫色双助推器，保持运载火箭的细长轮廓。
+    icon.polygon([(14, 61), (21, 39), (28, 35), (29, 66)], "#57416f")
+    icon.polygon([(52, 35), (59, 39), (66, 61), (51, 66)], "#382c50")
+    for x in (23, 57):
+        icon.polygon([(x, 24), (x + 6, 38), (x + 6, 64), (x - 6, 64), (x - 6, 38)], "#a088bf")
+        icon.polygon([(x, 24), (x, 64), (x - 6, 64), (x - 6, 38)], "#d8c5e6")
+        icon.polygon([(x - 4, 64), (x + 4, 64), (x, 74)], "#7ad7f0")
+    icon.polygon([(40, 4), (49, 20), (49, 60), (45, 67), (35, 67), (31, 60), (31, 20)], "#a46c29")
+    icon.polygon([(40, 4), (40, 67), (35, 67), (31, 60), (31, 20)], "#e5bd6a")
+    icon.polygon([(40, 4), (49, 20), (40, 26), (31, 20)], "#fff0b2")
+    icon.polygon([(34, 30), (46, 30), (46, 49), (34, 49)], "#433653")
+    icon.polygon([(40, 33), (44, 38), (40, 45), (36, 38)], "#e6d0fa")
+    icon.line([(32, 53), (48, 53)], "#f8e4b0", 2)
+    icon.polygon([(35, 67), (45, 67), (40, 77)], "#9ae8ff")
+    icon.save("monument-rocket")
+
+
 if __name__ == "__main__":
     fragment()
     memory_core()
     metadata()
     monument_crystal()
+    monument_rocket()
