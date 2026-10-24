@@ -106,7 +106,7 @@ public static class ItemManager {
     /// </summary>
     private static readonly bool[] uploadableItems = new bool[12000];
 
-    /// <summary>判断物品能否由基础塔正面上传：已注册的实体物品，且不是历史面额包裹。</summary>
+    /// <summary>判断物品能否上传：接受全部已注册实体物品。</summary>
     /// <param name="itemId">带上货物的物品 ID。</param>
     /// <returns>可上传时为 true；越界 ID 为 false。</returns>
     public static bool IsUploadableItem(int itemId) => itemId > 0 && itemId < 12000 && uploadableItems[itemId];
@@ -513,11 +513,11 @@ public static class ItemManager {
         SetCivilizationResourceMatrixStages();
     }
 
-    /// <summary>研究资源的业务身份独立于价值，不参与普通复制、丢弃回收或自动整理。</summary>
+    /// <summary>研究资源的业务身份独立于价值，不参与普通复制；亚空间存取不受此分类限制。</summary>
     public static bool IsProgressionResource(int itemId) => itemId is IFE残片 or IFE记忆源点 or IFE实体元数据;
 
-    /// <summary>保持显式物品资格，避免有限估值使研究资源被自动整理或丢弃回收。</summary>
-    public static bool CanAutoStoreItem(int itemId) => IsUploadableItem(itemId) && !IsProgressionResource(itemId);
+    /// <summary>整理与丢弃回收接受全部可上传实体物品，不排除研究资源。</summary>
+    public static bool CanAutoStoreItem(int itemId) => IsUploadableItem(itemId);
 
     /// <summary>按源点重构的最高净产出定价；残片以原胚掉落价值比计价。</summary>
     private static void SetCivilizationResourceValues() {
