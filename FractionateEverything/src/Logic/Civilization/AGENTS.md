@@ -5,7 +5,8 @@
 ## 归属与入口
 
 - CivilizationManager.cs：主线程tick、提示队列、文明子块与同步调度。Tick 挂在 Unity Update，低帧率时两次调用之间 gameTick 会跳刻；按秒和按 10 刻的逻辑必须按序号变化触发，不得用 `gameTick % N == 0`。
-- ResearchManager.cs：唯一解析样本、共享槽、已探索/解析内容、塔体里程碑。
+- ResearchCatalog.cs：原型加载后构造的只读内容定义、样本索引与方向关系；不持有存档进度。
+- ResearchManager.cs：共享槽、已探索/解析内容、塔体里程碑及运行快照；重建目录后在既有研究锁内刷新候选缓存。
 - ResearchProgression.cs：矩阵阶段资格、实际Memory投入、分钟窗口和献祭开放状态。
 - ExplorationManager.cs：静默几何、动态广播、主线、终极任务、探测候选和实际回收记录。
 - ExplorationDelivery.cs：到地真实背包交付、差额提示和持久流水；联机库存衔接由MemoryDeliverySync负责。

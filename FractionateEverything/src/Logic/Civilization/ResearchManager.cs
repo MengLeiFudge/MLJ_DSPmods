@@ -146,10 +146,11 @@ public static partial class ResearchManager {
     public const string AdvancedConversionTraitId = "trait:advanced-conversion";
 
     private static readonly object Sync = new();
-    private static readonly Dictionary<string, ResearchContentDefinition> ContentDefinitions = [];
-    private static readonly Dictionary<int, List<string>> DirectionPools = [];
+    private static ResearchCatalog catalog = ResearchCatalog.Empty;
+    private static IReadOnlyDictionary<string, ResearchContentDefinition> ContentDefinitions => catalog.Definitions;
+    private static IReadOnlyDictionary<int, IReadOnlyList<string>> DirectionPools => catalog.Directions;
     private static readonly Dictionary<int, List<string>> RemainingDirectionPools = [];
-    private static readonly Dictionary<string, List<int>> ContentDirections = [];
+    private static IReadOnlyDictionary<string, IReadOnlyList<int>> ContentDirections => catalog.ContentDirections;
     private static readonly HashSet<int> EligibleDirections = [];
     private static readonly HashSet<string> ExploredContents = [];
     private static readonly Dictionary<string, int> ExploredContentDirections = [];
@@ -224,32 +225,7 @@ public static partial class ResearchManager {
     /// </summary>
     public static void BuildResearchCatalog() {
         lock (Sync) {
-            ContentDefinitions.Clear();
-            DirectionPools.Clear();
-            RemainingDirectionPools.Clear();
-            ContentDirections.Clear();
-
-            foreach (WorldviewRecipe recipe in RecipeManager.WorldviewRecipes) {
-                if (recipe.Kind == WorldviewRecipeKind.BasicAnalysis) {
-                    continue;
-                }
-
-                int tier = GetRecipeTier(recipe);
-                AddContentDefinition(new ResearchContentDefinition(recipe.StableId, recipe.DisplayName, tier));
-                AddToPool(recipe.AnalysisItemId, recipe.StableId);
-            }
-
-            AddContentDefinition(new ResearchContentDefinition(AdvancedMineralTraitId,
-                "FE高级矿物特质".Translate(), 4));
-            AddContentDefinition(new ResearchContentDefinition(AdvancedInteractionTraitId,
-                "FE高级交互特质".Translate(), 4));
-            AddContentDefinition(new ResearchContentDefinition(AdvancedConversionTraitId,
-                "FE高级转化特质".Translate(), 4));
-            AddToPool(IFE高级矿物塔, AdvancedMineralTraitId);
-            AddToPool(IFE高级交互塔, AdvancedInteractionTraitId);
-            AddToPool(IFE高级转化塔, AdvancedConversionTraitId);
-            AddStageContentDefinitions();
-            BuildUnlockCatalog();
+            catalog = new ResearchCatalog();
             RebuildRemainingDirectionPoolsUnsafe();
             PublishAnalysisRuntimeSnapshotUnsafe();
         }
@@ -430,7 +406,7 @@ public static partial class ResearchManager {
     public static int[] GetContentDirectionItemIds(string contentId) {
         lock (Sync) {
             return contentId != null
-                   && ContentDirections.TryGetValue(contentId, out List<int> directions)
+                   && ContentDirections.TryGetValue(contentId, out IReadOnlyList<int> directions)
                 ? directions
                     .Where(itemId => IsExplorationDirectionUnsafe(contentId, itemId))
                     .OrderBy(itemId => itemId)
@@ -822,7 +798,7 @@ public static partial class ResearchManager {
                 if (!ContentDefinitions.ContainsKey(contentId)
                     || UnlockedContents.Contains(contentId)
                     || !ExploredContentDirections.TryGetValue(contentId, out int itemId)
-                    || !ContentDirections.TryGetValue(contentId, out List<int> directions)
+                    || !ContentDirections.TryGetValue(contentId, out IReadOnlyList<int> directions)
                     || !directions.Contains(itemId)
                     || !IsExplorationDirectionUnsafe(contentId, itemId)) {
                     ExploredContents.Remove(contentId);
@@ -1027,31 +1003,11 @@ public static partial class ResearchManager {
     private static int GetDirectionProgressUnsafe(int itemId) =>
         DirectionProgress.TryGetValue(itemId, out int progress) ? progress : 0;
 
-    private static void AddContentDefinition(ResearchContentDefinition definition) {
-        ContentDefinitions[definition.Id] = definition;
-    }
-
-    private static void AddTechnologyContentDefinitions() {
-        AddTechnologyContent(GrowthTechnologyManager.StackTechnologyContentId,
-            "FE分馏堆叠成长".Translate(), 0);
-        AddTechnologyContent(GrowthTechnologyManager.PlanetaryInteractionTechnologyContentId,
-            "T行星内物流交互".Translate(), 2);
-        AddTechnologyContent(GrowthTechnologyManager.SubspaceEfficiencyTechnologyContentId,
-            "FE亚空间能效".Translate(), 2);
-        AddTechnologyContent(GrowthTechnologyManager.InterstellarInteractionTechnologyContentId,
-            "T星际物流交互".Translate(), 3);
-    }
-
-    private static void AddTechnologyContent(string contentId, string displayName, int tier) {
-        AddContentDefinition(new ResearchContentDefinition(contentId, displayName, tier));
-        AddToPool(IFE记忆源点, contentId);
-    }
-
     private static bool CanDiscoverContentUnsafe(string contentId, int itemId) =>
         contentId != null
         && ContentDefinitions.ContainsKey(contentId)
         && IsSampleContent(contentId)
-        && ContentDirections.TryGetValue(contentId, out List<int> directions)
+        && ContentDirections.TryGetValue(contentId, out IReadOnlyList<int> directions)
         && directions.Contains(itemId)
         && IsExplorationDirectionUnsafe(contentId, itemId)
         && !UnlockedContents.Contains(contentId)
@@ -1075,30 +1031,11 @@ public static partial class ResearchManager {
     }
 
     private static bool IsExplorationDirectionUnsafe(string contentId, int itemId) =>
-        ContentDirections.TryGetValue(contentId, out List<int> directions) && directions.Contains(itemId);
-
-    private static void AddToPool(int itemId, string contentId) {
-        if (itemId <= 0) {
-            return;
-        }
-        if (!DirectionPools.TryGetValue(itemId, out List<string> pool)) {
-            pool = [];
-            DirectionPools[itemId] = pool;
-        }
-        if (pool.Contains(contentId)) {
-            return;
-        }
-        pool.Add(contentId);
-        if (!ContentDirections.TryGetValue(contentId, out List<int> directions)) {
-            directions = [];
-            ContentDirections[contentId] = directions;
-        }
-        directions.Add(itemId);
-    }
+        ContentDirections.TryGetValue(contentId, out IReadOnlyList<int> directions) && directions.Contains(itemId);
 
     private static void RebuildRemainingDirectionPoolsUnsafe() {
         RemainingDirectionPools.Clear();
-        foreach (KeyValuePair<int, List<string>> pair in DirectionPools) {
+        foreach (KeyValuePair<int, IReadOnlyList<string>> pair in DirectionPools) {
             List<string> remaining = [];
             foreach (string contentId in pair.Value) {
                 if (!UnlockedContents.Contains(contentId)) {
@@ -1110,7 +1047,7 @@ public static partial class ResearchManager {
     }
 
     private static void RemoveUnlockedContentFromPoolsUnsafe(string contentId) {
-        if (!ContentDirections.TryGetValue(contentId, out List<int> directions)) {
+        if (!ContentDirections.TryGetValue(contentId, out IReadOnlyList<int> directions)) {
             return;
         }
         foreach (int itemId in directions) {
@@ -1132,8 +1069,6 @@ public static partial class ResearchManager {
             new AnalysisRuntimeSnapshot(unchecked(analysisRuntimeSnapshot.Version + 1),
                 candidatesByItemId, [.. UnlockedContents]));
     }
-
-    private static int GetRecipeTier(WorldviewRecipe recipe) => recipe.ResearchStage;
 
     private static int GetRelatedCommonResource(int itemId) {
         return itemId switch {

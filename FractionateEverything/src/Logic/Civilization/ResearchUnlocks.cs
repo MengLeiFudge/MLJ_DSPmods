@@ -25,9 +25,9 @@ public static partial class ResearchManager {
     /// <summary>研究锁内登记、主线程在锁外入库的原型奖励。</summary>
     private static readonly Queue<int> PendingPrototypeRewards = [];
     /// <summary>按唯一实物样本建立稀有配方目录，供稳定实体产物架构使用。</summary>
-    private static readonly Dictionary<int, WorldviewRecipe[]> SampleRecipes = [];
+    private static IReadOnlyDictionary<int, IReadOnlyList<WorldviewRecipe>> SampleRecipes => catalog.SampleRecipes;
     /// <summary>电路板可制样的置换配方目录；阶段和完成状态在使用时检查。</summary>
-    private static WorldviewRecipe[] preparationRecipes = [];
+    private static IReadOnlyList<WorldviewRecipe> preparationRecipes => catalog.PreparationRecipes;
 
     /// <summary>判断内容是否走共享样本槽；普通和传说配方使用各自的恢复入口。</summary>
     /// <param name="contentId">配方、特质或阶段身份。</param>
@@ -35,23 +35,6 @@ public static partial class ResearchManager {
     private static bool IsSampleContent(string contentId) {
         WorldviewRecipe recipe = RecipeManager.GetRecipe(contentId);
         return recipe == null ? !IsRecoveredPageId(contentId) : recipe.UnlockTier == RecipeUnlockTier.Rare;
-    }
-
-    /// <summary>建立百科残页、实物样本和置换制样目录，不改变任何游玩进度。</summary>
-    private static void BuildUnlockCatalog() {
-        for (int i = 1; i <= 3; i++) {
-            AddContentDefinition(new ResearchContentDefinition($"encyclopedia:{i}", "FE.Encyclopedia.Title".Translate(), 0));
-        }
-        SampleRecipes.Clear();
-        foreach (var group in RecipeManager.WorldviewRecipes
-                     .Where(recipe => recipe.Kind != WorldviewRecipeKind.BasicAnalysis
-                         && recipe.UnlockTier == RecipeUnlockTier.Rare && recipe.AnalysisItemId > 0)
-                     .GroupBy(recipe => recipe.AnalysisItemId)) {
-            SampleRecipes.Add(group.Key, group.OrderBy(recipe => recipe.PersistentId).ToArray());
-        }
-        preparationRecipes = RecipeManager.WorldviewRecipes
-            .Where(recipe => recipe.Kind == WorldviewRecipeKind.Replacement)
-            .OrderBy(recipe => recipe.PersistentId).ToArray();
     }
 
     /// <summary>按已经完成的矩阵科技恢复普通配方；培育还等待第一枚矩阵实际生产。</summary>
@@ -131,7 +114,7 @@ public static partial class ResearchManager {
     /// <param name="stage">已经取得资格的矩阵阶段。</param>
     /// <param name="sampleId">0统计全部，非0只统计指定样本。</param>
     /// <returns>符合阶段、完成状态及样本条件的候选数。</returns>
-    private static int CountPendingRecipes(WorldviewRecipe[] recipes, AnalysisRuntimeSnapshot snapshot,
+    private static int CountPendingRecipes(IReadOnlyList<WorldviewRecipe> recipes, AnalysisRuntimeSnapshot snapshot,
         int stage, int sampleId = 0) {
         int count = 0;
         foreach (WorldviewRecipe recipe in recipes) {

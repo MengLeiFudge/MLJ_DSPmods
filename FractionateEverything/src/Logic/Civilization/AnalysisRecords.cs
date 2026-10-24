@@ -51,7 +51,7 @@ public static partial class ResearchManager {
                 if (!known && (definition.Tier > CurrentMatrixStage || !IsContentExplorableUnsafe(id))) { continue; }
                 int itemId = 0;
                 if (known && !ExploredContentDirections.TryGetValue(id, out itemId)
-                    && ContentDirections.TryGetValue(id, out List<int> directions)) {
+                    && ContentDirections.TryGetValue(id, out IReadOnlyList<int> directions)) {
                     itemId = directions.FirstOrDefault();
                 }
                 AnalysisRecordState state = completed ? AnalysisRecordState.Completed

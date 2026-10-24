@@ -113,15 +113,6 @@ public static partial class ResearchManager {
         }
     }
 
-    /// <summary>将阶段内容注册到目录，物流方向由任务直接恢复。</summary>
-    private static void AddStageContentDefinitions() {
-        AddTechnologyContentDefinitions();
-        for (int stage = 1; stage <= 6; stage++) {
-            AddTechnologyContent(StageContentId(stage),
-                string.Format("{0}文明记录".Translate(), LDB.items.Select(GetStageMatrix(stage))?.name), stage);
-        }
-    }
-
     /// <summary>取得最低未恢复且已开放的源点阶段，与解析窗口共用资格判断。</summary>
     /// <returns>矩阵阶段1～6；没有待恢复阶段时为0。</returns>
     private static int GetPendingMemoryStage() {
