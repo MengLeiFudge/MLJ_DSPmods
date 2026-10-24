@@ -426,12 +426,26 @@
     "1031": "Rezept wählen (Rechtsklick zum Leeren)",
     "1041": "クリックしてレシピ選択（右クリックで解除）"
   },
-  "FE.Advanced.NutritionRemaining": {
-    "enUS": "Nutrition: {0}%",
-    "zhCN": "营养剩余：{0}%",
-    "frFR": "Nutrition : {0}%",
-    "1031": "Nährstoffrest: {0}%",
-    "1041": "残り栄養：{0}%"
+  "FE.Advanced.Feeding": {
+    "enUS": "Feeding",
+    "zhCN": "供养中",
+    "frFR": "Alimentation",
+    "1031": "Versorgung",
+    "1041": "供給中"
+  },
+  "FE.Advanced.FlowOutputBlocked": {
+    "enUS": "Flow output blocked",
+    "zhCN": "流动输出堵塞",
+    "frFR": "Sortie de flux bloquée",
+    "1031": "Flussausgang blockiert",
+    "1041": "流動出力が詰まっています"
+  },
+  "FE.Advanced.ProductOutputBlocked": {
+    "enUS": "Product output blocked",
+    "zhCN": "产物输出堵塞",
+    "frFR": "Sortie de produits bloquée",
+    "1031": "Produktausgang blockiert",
+    "1041": "生成物出力が詰まっています"
   },
   "FE.Advanced.FoodSlot": {
     "enUS": "Food",

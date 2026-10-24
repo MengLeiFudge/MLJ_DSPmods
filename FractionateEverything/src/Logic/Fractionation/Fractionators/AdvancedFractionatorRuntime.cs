@@ -23,8 +23,10 @@ public enum AdvancedTowerStatus {
     AwaitingRecipe,
     /// <summary>配方原料不足。</summary>
     MissingInput,
-    /// <summary>产物或流动输出缓存已满。</summary>
-    OutputBlocked,
+    /// <summary>流动输出缓存已满。</summary>
+    FlowOutputBlocked,
+    /// <summary>产物输出缓存已满。</summary>
+    ProductOutputBlocked,
     /// <summary>正在运行，产物等待凑足整堆。</summary>
     Stacking,
     /// <summary>正常运行。</summary>
@@ -125,9 +127,18 @@ public static partial class AdvancedFractionatorRuntime {
         if (state == null) { return AdvancedTowerStatus.AwaitingNourishment; }
         lock (state) {
             if (state.DigestingEnergy <= 0d) { return AdvancedTowerStatus.MissingMatrix; }
+            return GetProcessingStatus(state);
+        }
+    }
+
+    /// <summary>独立读取配方处理状态；食物供养由窗口另一行显示。</summary>
+    public static AdvancedTowerStatus GetProcessingStatus(AdvancedFractionatorState state) {
+        if (state == null) { return AdvancedTowerStatus.AwaitingRecipe; }
+        lock (state) {
             WorldviewRecipe recipe = RecipeManager.GetRecipe(state.SelectedRecipeId);
             if (recipe == null) { return AdvancedTowerStatus.AwaitingRecipe; }
-            if (!CanProcessOutputs(state, recipe)) { return AdvancedTowerStatus.OutputBlocked; }
+            if (HasBlockedProduct(state, recipe)) { return AdvancedTowerStatus.ProductOutputBlocked; }
+            if (!CanProcessOutputs(state, recipe)) { return AdvancedTowerStatus.FlowOutputBlocked; }
             int rounds = GetAvailableRounds(state, recipe);
             if (rounds <= 0) { return AdvancedTowerStatus.MissingInput; }
             int stack = StackingManager.CurrentMaxStack;
@@ -155,7 +166,8 @@ public static partial class AdvancedFractionatorRuntime {
             switch (GetOperatingStatus(pair.Value)) {
                 case AdvancedTowerStatus.MissingMatrix: counts.Hungry++; break;
                 case AdvancedTowerStatus.MissingInput: counts.Missing++; break;
-                case AdvancedTowerStatus.OutputBlocked: counts.Blocked++; break;
+                case AdvancedTowerStatus.FlowOutputBlocked:
+                case AdvancedTowerStatus.ProductOutputBlocked: counts.Blocked++; break;
             }
             result[key] = counts;
         }

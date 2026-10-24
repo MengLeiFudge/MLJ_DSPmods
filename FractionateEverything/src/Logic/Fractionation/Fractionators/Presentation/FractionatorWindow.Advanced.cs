@@ -27,6 +27,9 @@ public static partial class FractionatorWindow {
     private static ProductSlot advancedFoodSlot;
     private static RectTransform digestionMask;
     private static Text advancedFoodTitle;
+    private static Text advancedFoodRate;
+    private static Text advancedFoodRemaining;
+    private static SlotRate foodRateDisplay;
     private static Text advancedDiscardHint;
     private static Text advancedRecipeText;
     private static Image[] advancedFlowArrows;
@@ -109,15 +112,19 @@ public static partial class FractionatorWindow {
         advancedFoodTitle = CreateAdvancedLabel(vanillaWindow.inputTitleText, advancedRoot, new Rect(222f, 80f, 86f, 26f));
         advancedFoodTitle.text = "FE.Advanced.FoodSlot".Translate();
         advancedFoodTitle.alignment = TextAnchor.MiddleCenter;
-        advancedDiscardHint = CreateAdvancedLabel(vanillaWindow.speedText, advancedRoot, new Rect(222f, 164f, 86f, 40f));
+        advancedFoodRate = CreateAdvancedLabel(vanillaWindow.speedText, advancedRoot, new Rect(217f, 162f, 96f, 18f));
+        advancedFoodRate.alignment = TextAnchor.MiddleCenter;
+        advancedFoodRemaining = CreateAdvancedLabel(vanillaWindow.speedText, advancedRoot, new Rect(217f, 180f, 96f, 18f));
+        advancedFoodRemaining.alignment = TextAnchor.MiddleCenter;
+        advancedDiscardHint = CreateAdvancedLabel(vanillaWindow.speedText, advancedRoot, new Rect(222f, 198f, 86f, 24f));
         advancedDiscardHint.text = "FE.DiscardDigestion".Translate();
         advancedDiscardHint.alignment = TextAnchor.UpperCenter;
         advancedDiscardHint.horizontalOverflow = HorizontalWrapMode.Wrap;
         advancedInputs = CreateAdvancedSection(new Rect(18f, 74f, 208f, 220f), ProductSlotKind.Fluid);
         advancedFlow = CreateAdvancedSection(new Rect(304f, 74f, 208f, 220f), ProductSlotKind.Side);
-        advancedProducts = CreateAdvancedSection(new Rect(18f, 300f, 494f, 110f), ProductSlotKind.Main);
-        advancedFlowArrows = CreateAdvancedArrows(vanillaWindow, false, new Vector2(265f, -220f));
-        advancedProductArrows = CreateAdvancedArrows(vanillaWindow, true, new Vector2(265f, -280f));
+        advancedProducts = CreateAdvancedSection(new Rect(18f, 266f, 494f, 110f), ProductSlotKind.Main);
+        advancedFlowArrows = CreateAdvancedArrows(vanillaWindow, false, new Vector2(265f, -230f));
+        advancedProductArrows = CreateAdvancedArrows(vanillaWindow, true, new Vector2(265f, -258f));
     }
 
     private static AdvancedSection CreateAdvancedSection(Rect bounds, ProductSlotKind kind) {
@@ -277,6 +284,7 @@ public static partial class FractionatorWindow {
             cacheSnapshotReady = false;
             Array.Clear(advancedInputs.RateDisplays, 0, VisibleSlots);
             Array.Clear(advancedProducts.RateDisplays, 0, VisibleSlots);
+            foodRateDisplay = default;
         }
         displayedFactory = src.factory;
         displayedFractionatorId = src.fractionatorId;
@@ -284,6 +292,8 @@ public static partial class FractionatorWindow {
         advancedRoot.gameObject.SetActive(true);
         advancedFoodSlot.go.SetActive(advanced);
         advancedFoodTitle.gameObject.SetActive(advanced);
+        advancedFoodRate.gameObject.SetActive(advanced);
+        advancedFoodRemaining.gameObject.SetActive(advanced);
         advancedDiscardHint.gameObject.SetActive(false);
     }
 
@@ -489,7 +499,11 @@ public static partial class FractionatorWindow {
         advancedFoodSlot.countText.text = reserveCount > 0 ? reserveCount.ToString() : string.Empty;
         advancedFoodSlot.button.tips.itemId = shownId;
         advancedFoodSlot.button.tips.itemCount = reserveCount > 0 ? reserveCount : digesting ? 1 : 0;
-        SetDigestionMask(digesting ? 1f - AdvancedFractionatorRuntime.GetDigestionProgress(state) : 0f);
+        float remaining = digesting ? AdvancedFractionatorRuntime.GetDigestionProgress(state) : 0f;
+        SetDigestionMask(digesting ? 1f - remaining : 0f);
+        double foodRate = AdvancedFractionatorRuntime.GetFoodRates(state, recipe, buildingId).ConsumptionPerMinute;
+        advancedFoodRate.text = foodRateDisplay.Update(shownId, foodRate);
+        advancedFoodRemaining.text = $"{Math.Ceiling(remaining * 100d)}%";
         advancedDiscardHint.gameObject.SetActive(digesting && totalReserve <= 0 && !NebulaMultiplayerModAPI.IsClient);
         UpdateDigestionDiscard(state);
     }

@@ -5,7 +5,6 @@ using System.Text;
 using FE.Logic.Civilization;
 using FE.Logic.DataCenter;
 using FE.Logic.Fractionation.Recipes;
-using FE.UI.Foundation;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
@@ -158,11 +157,22 @@ public static partial class FractionatorWindow {
             FindClonedComponent<Text>(modWindowGo.transform, vanillaWindow.powerText, vanillaWindow.transform);
         _modPowerIcon =
             FindClonedComponent<Image>(modWindowGo.transform, vanillaWindow.powerIcon, vanillaWindow.transform);
-        // 右上信息区止于106；下方流出标题从120开始，与标题栏按钮各自留有空间。
-        RectTransformUtils.NormalizeRectWithTopLeft(_modPowerText, 304f, 56f, modWindow.transform).sizeDelta = new Vector2(208f, 24f);
-        RectTransformUtils.NormalizeRectWithTopLeft(_modPowerIcon, 284f, 60f, modWindow.transform).sizeDelta = new Vector2(16f, 16f);
-        RectTransformUtils.NormalizeRectWithTopLeft(modWindow.stateText, 304f, 82f, modWindow.transform).sizeDelta = new Vector2(208f, 24f);
-        _modPowerText.alignment = modWindow.stateText.alignment = TextAnchor.MiddleRight;
+        AlignLikeVanillaTopRight(_modPowerText.rectTransform, vanillaWindow.powerText.rectTransform, vanillaWindow);
+        AlignLikeVanillaTopRight(_modPowerIcon.rectTransform, vanillaWindow.powerIcon.rectTransform, vanillaWindow);
+        AlignLikeVanillaTopRight(modWindow.stateText.rectTransform, vanillaWindow.stateText.rectTransform, vanillaWindow);
+    }
+
+    /// <summary>复制原版控件相对窗口右上角的偏移，窗口扩展不改变状态区边距与文字样式。</summary>
+    private static void AlignLikeVanillaTopRight(RectTransform target, RectTransform source, UIFractionatorWindow vanillaWindow) {
+        RectTransform root = vanillaWindow.GetComponent<RectTransform>();
+        Vector3 position = root.InverseTransformPoint(source.position);
+        target.SetParent(modWindow.transform, false);
+        target.anchorMin = target.anchorMax = Vector2.one;
+        target.pivot = source.pivot;
+        target.sizeDelta = source.rect.size;
+        target.localScale = source.localScale;
+        target.localRotation = source.localRotation;
+        target.anchoredPosition = new Vector2(position.x - root.rect.xMax, position.y - root.rect.yMax);
     }
 
     private static void ApplyModLayoutOnce(UIFractionatorWindow window, UIFractionatorWindow vanillaWindow) {
@@ -701,12 +711,12 @@ public static partial class FractionatorWindow {
     #region 渲染更新
 
     private static void UpdateAdvancedPowerDisplay(UIFractionatorWindow src, AdvancedFractionatorState state) {
-        string text = state != null && state.DigestingEnergy > 0d
-            ? string.Format("FE.Advanced.NutritionRemaining".Translate(),
-                Math.Ceiling(AdvancedFractionatorRuntime.GetDigestionProgress(state) * 100d))
-            : "等待供养".Translate();
+        bool fed = state != null && state.DigestingEnergy > 0d;
+        AdvancedTowerStatus status = AdvancedFractionatorRuntime.GetProcessingStatus(state);
+        string text = (!fed ? "缺少矩阵"
+            : status is AdvancedTowerStatus.Running or AdvancedTowerStatus.Stacking ? "FE.Advanced.Feeding" : "待机").Translate();
         src.powerText.text = text;
-        src.powerText.color = state != null && state.DigestingEnergy > 0d ? src.powerNormalColor : src.powerOffColor;
+        src.powerText.color = fed ? src.powerNormalColor : src.powerOffColor;
         src.powerIcon.color = Color.clear;
         if (_modPowerText != null) {
             _modPowerText.text = text;
@@ -717,15 +727,13 @@ public static partial class FractionatorWindow {
         }
     }
 
-    private static void UpdateAdvancedStateText(AdvancedFractionatorState state, WorldviewRecipe recipe,
-        FractionatorComponent fractionator) {
-        AdvancedTowerStatus status = AdvancedFractionatorRuntime.GetOperatingStatus(state);
+    private static void UpdateAdvancedStateText(AdvancedFractionatorState state) {
+        AdvancedTowerStatus status = AdvancedFractionatorRuntime.GetProcessingStatus(state);
         string text = status switch {
-            AdvancedTowerStatus.AwaitingNourishment => "等待供养",
-            AdvancedTowerStatus.MissingMatrix => "缺少矩阵",
             AdvancedTowerStatus.AwaitingRecipe => "等待配方",
             AdvancedTowerStatus.MissingInput => "缺少原材料",
-            AdvancedTowerStatus.OutputBlocked => "输出堵塞",
+            AdvancedTowerStatus.FlowOutputBlocked => "FE.Advanced.FlowOutputBlocked",
+            AdvancedTowerStatus.ProductOutputBlocked => "FE.Advanced.ProductOutputBlocked",
             AdvancedTowerStatus.Stacking => "运行中 · 等待集装",
             _ => "正常运转",
         };
@@ -782,7 +790,7 @@ public static partial class FractionatorWindow {
             lock (advancedState) {
                 UpdateAdvancedPowerDisplay(src, advancedState);
                 WorldviewRecipe advancedRecipe = RecipeManager.GetRecipe(advancedState.SelectedRecipeId);
-                UpdateAdvancedStateText(advancedState, advancedRecipe, fractionator);
+                UpdateAdvancedStateText(advancedState);
                 UpdateAdvancedUI(src, fractionator, advancedRecipe, advancedState);
             }
             return;
