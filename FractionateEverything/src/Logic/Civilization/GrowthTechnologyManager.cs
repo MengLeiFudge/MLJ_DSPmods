@@ -96,10 +96,10 @@ public static class GrowthTechnologyManager {
             int increment = 0;
             tech.Level = level;
             tech.MaxLevel = tech.Level;
-            tech.PreTechs = level == 1 ? [3315, 3803, T信息矩阵]
-                : [TFE分馏堆叠成长 + level - 1];
+            tech.PreTechs = level == 1 ? [] : [TFE分馏堆叠成长 + level - 1];
             ResearchCosts[tech.ID] = (stage, budget, increment);
             MatrixResearchCosts.Apply(tech, stage, budget, increment);
+            ApplyGrowthPrerequisites(tech);
             GrowthTechPositions[tech.ID] = (3, level - 1);
             tech.Position = GetGrowthTechPosition(3, level - 1);
             tech.IsHiddenTech = true;
@@ -159,7 +159,7 @@ public static class GrowthTechnologyManager {
 
     /// <summary>预告当前资格下的直接后继；只表示仍有未恢复内容，不授予研究资格。</summary>
     /// <param name="techId">活动FE科技的稳定ID。</param>
-    /// <returns>满足原版物流资格或当前矩阵阶段及已完成显式前置、但尚未恢复的节点为true。</returns>
+    /// <returns>满足原版物流资格或当前矩阵阶段及全部前置、但尚未恢复的节点为true。</returns>
     public static bool IsTechnologyPreview(int techId) {
         GameHistoryData history = GameMain.history;
         if (history == null || !IsTechnologyNodeActive(techId) || !TryGetTechnologyContentId(techId, out string contentId)
@@ -172,7 +172,8 @@ public static class GrowthTechnologyManager {
         TechProto tech = LDB.techs.Select(techId);
         int stage = GetResearchStage(techId);
         return stage > 0 && stage <= ResearchManager.CurrentMatrixStage
-            && (tech.PreTechs == null || tech.PreTechs.All(history.TechUnlocked));
+            && (tech.PreTechs == null || tech.PreTechs.All(history.TechUnlocked))
+            && (tech.PreTechsImplicit == null || tech.PreTechsImplicit.All(history.TechUnlocked));
     }
 
     /// <summary>
@@ -342,6 +343,7 @@ public static class GrowthTechnologyManager {
         tech.MaxLevel = levelDefinition.MaxLevel;
         ResearchCosts[tech.ID] = (stage, matrixCost, levelDefinition.LinearCostIncrement);
         MatrixResearchCosts.Apply(tech, stage, matrixCost, levelDefinition.LinearCostIncrement);
+        ApplyGrowthPrerequisites(tech);
         tech.AddItems = [];
         tech.AddItemCounts = [];
         tech.IsHiddenTech = true;
@@ -349,11 +351,24 @@ public static class GrowthTechnologyManager {
         return tech;
     }
 
+    /// <summary>外部研究资格仅作隐式门槛，避免跨页或跨区域拉线；每次重算矩阵成本后重新合入。</summary>
+    private static void ApplyGrowthPrerequisites(TechProto tech) {
+        int[] required = tech.ID switch {
+            TFE分馏堆叠成长 + 1 => [3315, 3803, T信息矩阵],
+            TFE亚空间能效 + 2 or TFE交互站电力 + 1 => [TFE行星内物流交互],
+            _ => [],
+        };
+        if (required.Length == 0) { return; }
+        tech.PreTechs = [];
+        tech.PreTechsImplicit = (tech.PreTechsImplicit ?? []).Concat(required).Distinct().ToArray();
+    }
+
     /// <summary>在其他模组改表结束后刷新成本、矩阵前置和物流科技的依赖关系。</summary>
     public static void FinalizeResearchCosts() {
         foreach (var entry in ResearchCosts) {
             TechProto tech = LDB.techs.Select(entry.Key);
             MatrixResearchCosts.Apply(tech, entry.Value.Stage, entry.Value.Budget, entry.Value.Increment);
+            ApplyGrowthPrerequisites(tech);
             tech.Preload2();
         }
         foreach (var pair in new[] { (TFE行星内物流交互, T行星物流系统), (TFE星际物流交互, T星际物流系统) }) {
@@ -391,7 +406,7 @@ public static class GrowthTechnologyManager {
         }
 
         int[] affectedTechIds = [
-            3315, 3801, 3802, 3803, T信息矩阵, 3508, 3509, 3510,
+            3315, 3801, 3802, 3803, T信息矩阵, 3508, 3509, 3510, TFE行星内物流交互,
             TFE分馏堆叠成长 + 1,
             TFE分馏堆叠成长 + 2,
             TFE分馏堆叠成长 + 3,

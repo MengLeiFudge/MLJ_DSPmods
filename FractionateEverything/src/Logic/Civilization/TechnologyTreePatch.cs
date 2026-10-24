@@ -219,10 +219,12 @@ public static class TechnologyTreePatch {
         for (int i = 0; i < targets.Length && i < __instance.arrows.Length; i++) {
             var arrow = __instance.arrows[i];
             if (arrow == null) { continue; }
-            bool visible = __instance.tree.nodes.TryGetValue(targets[i].ID, out UITechNode targetNode)
+            bool visible = targets[i].page == tech.page
+                && __instance.tree.nodes.TryGetValue(targets[i].ID, out UITechNode targetNode)
+                && targetNode.active
                 && (GrowthTechnologyManager.TryGetTechnologyContentId(targets[i].ID, out _)
                     ? IsTechnologyVisible(targets[i])
-                    : targetNode.active && arrow.gameObject.activeSelf);
+                    : arrow.gameObject.activeSelf);
             arrow.gameObject.SetActive(visible);
             if (!visible) { continue; }
             anyVisible = true;
