@@ -11,145 +11,95 @@ public readonly struct DetectorReading(bool visible, float strength, string name
     public readonly float Strength = strength;
     /// <summary>首遗物为空，其他地点使用已公开的名称或挑战状态。</summary>
     public readonly string Name = name;
-    /// <summary>可操作的已发现地点，0表示不提供指引按钮。</summary>
+    /// <summary>可操作的已发现地点，0表示没有可选地点。</summary>
     public readonly int MarkId = markId;
     /// <summary>超出局部感知范围时保留取消入口，但不显示虚假的强度。</summary>
     public readonly bool ShowStrength = showStrength;
 }
 
-/// <summary>拥有本端选定地点，在天体指引和地表位置追踪之间切换，不创建移动命令。</summary>
+/// <summary>拥有本端连续指引的开启态与目标，只投影位置，不创建移动命令。</summary>
 public static class ExplorationDetector {
     private static GalaxyData galaxy;
-    // 0表示未选择；静默遗迹使用负数编号，剧情与动态广播使用正数编号。
+    // 0表示暂时没有目标；静默遗迹使用负数编号，剧情与动态广播使用正数编号。
     private static int targetId;
-    private static int indicatorPlanetId;
-    private static int locationPlanetId;
-    private static int warningId;
-    private static Vector3 lastRouteTarget;
+    private static bool trackingEnabled;
 
-    /// <summary>切档丢弃旧世界引用，不操作新世界的原版导航。</summary>
+    public static bool TrackingEnabled {
+        get { EnsureSession(); return trackingEnabled; }
+    }
+
+    /// <summary>切档丢弃旧世界引用与本端指引。</summary>
     public static void Reset() {
         galaxy = null;
-        targetId = indicatorPlanetId = locationPlanetId = warningId = 0;
-        lastRouteTarget = default;
+        targetId = 0;
+        trackingEnabled = false;
     }
 
     /// <summary>查询地点是否为本端当前选择，面板和HUD共用同一状态。</summary>
-    /// <param name="markId">地点身份。</param>
-    /// <returns>该地点正在接受指引时为true。</returns>
     public static bool IsTracking(int markId) {
         EnsureSession();
-        return markId != 0 && targetId == markId;
+        return trackingEnabled && markId != 0 && targetId == markId;
     }
 
-    /// <summary>同地点取消，其他已发现地点替换当前指引；首遗物不可标注。</summary>
-    /// <param name="markId">页面或HUD当前显示的地点身份。</param>
+    /// <summary>同地点或等待状态下点击关闭；其他已发现地点替换当前目标。</summary>
     public static void ToggleTracking(int markId) {
         EnsureSession();
-        if (markId == 0) { return; }
-        if (targetId == markId) { CancelTracking(); return; }
+        if (trackingEnabled && (markId == 0 || targetId == markId)) {
+            trackingEnabled = false;
+            targetId = 0;
+            return;
+        }
         ExplorationMark mark = ExplorationManager.GetActiveMarks().FirstOrDefault(m => m.Id == markId);
-        if (mark == null || mark.Kind == ExplorationMarkKind.FirstRelic || GameMain.mainPlayer?.navigation == null
-            || GameMain.data?.warningSystem == null) { return; }
-        CancelTracking();
-        // 显式选择新地点取代原版指引；自动刷新和取消只处理自己仍持有的连线。
-        GameMain.mainPlayer.navigation.indicatorAstroId = 0;
-        GameMain.data.warningSystem.RemoveAllLocationTracking();
+        if (mark == null || mark.Kind == ExplorationMarkKind.FirstRelic) { return; }
         targetId = mark.Id;
-        UpdateNavigation();
+        trackingEnabled = true;
     }
 
-    /// <summary>与HUD显隐独立刷新，进出目标星球切换连线，回收后清理选择。</summary>
+    /// <summary>当前地点回收后续接已发现目标，无候选时保持开启并等待。</summary>
     public static void UpdateNavigation() {
         EnsureSession();
         Player player = GameMain.mainPlayer;
-        if (targetId == 0 || player?.navigation == null || GameMain.data?.warningSystem == null) { return; }
-        ExplorationMark mark = ExplorationManager.GetActiveMarks().FirstOrDefault(m => m.Id == targetId);
-        if (mark == null) { CancelTracking(); return; }
-        if (player.planetId != mark.PlanetId) {
-            if (locationPlanetId != 0) { ClearNavigation(); }
-            if (indicatorPlanetId == 0) {
-                indicatorPlanetId = mark.PlanetId;
-                player.navigation.indicatorAstroId = indicatorPlanetId;
-            } else if (player.navigation.indicatorAstroId != indicatorPlanetId) {
-                // 玩家从原版入口取消或选择了其他天体，不抢回导航。
-                CancelTracking();
-            }
-            return;
-        }
+        if (!trackingEnabled || player == null) { return; }
+        ExplorationMark[] known = ExplorationManager.GetActiveMarks();
+        if (known.Any(mark => mark.Id == targetId)) { return; }
+        ExplorationMark next = known.Where(mark => mark.Kind != ExplorationMarkKind.FirstRelic
+                && GameMain.galaxy.PlanetById(mark.PlanetId) != null)
+            .OrderBy(mark => mark.PlanetId == player.planetId ? 0 : 1)
+            .ThenBy(mark => (GetWorldPosition(mark) - player.uPosition).sqrMagnitude)
+            .ThenBy(mark => mark.Id).FirstOrDefault();
+        targetId = next?.Id ?? 0;
+    }
 
+    /// <summary>同星球指向地点或下一航迹节点，跨星球先指向目标星球。</summary>
+    public static bool TryGetGuidePosition(out VectorLF3 position) {
+        EnsureSession();
+        position = default;
+        if (!trackingEnabled || targetId == 0 || GameMain.mainPlayer == null) { return false; }
+        ExplorationMark mark = ExplorationManager.GetActiveMarks().FirstOrDefault(m => m.Id == targetId);
+        PlanetData planet = GameMain.galaxy?.PlanetById(mark?.PlanetId ?? 0);
+        if (planet == null) { return false; }
+        position = planet.uPosition;
+        if (GameMain.mainPlayer.planetId == mark.PlanetId) { position = GetWorldPosition(mark); }
+        return true;
+    }
+
+    private static VectorLF3 GetWorldPosition(ExplorationMark mark) {
+        PlanetData planet = GameMain.galaxy.PlanetById(mark.PlanetId);
         SignalChallengeView challenge = ExplorationManager.GetChallenge(mark.Id);
         Vector3 point = challenge?.Kind == SignalChallengeKind.Route
             ? challenge.Route[Mathf.Clamp(challenge.Started ? challenge.Progress + 1 : 0, 0, challenge.Route.Length - 1)]
             : mark.LocalPosition;
-        if (locationPlanetId == mark.PlanetId) {
-            bool replaced = player.navigation.indicatorAstroId > 0
-                || !HasLocationTracking() && GameMain.data.warningSystem.warningPool
-                    .Any(w => w.id > 0 && w.factoryId == -6 && w.signalId == 519);
-            if (replaced || !HasLocationTracking() && !IsAtLocation(player)) {
-                // 原版右键取消或其他标注替换了地表线，同步取消FE选择。
-                CancelTracking();
-                return;
-            }
-            if (point == lastRouteTarget) { return; }
-        }
-        ClearNavigation();
-        // 同星球不保留旧版FE或原版指向脚下星球的天体线。
-        if (player.navigation.indicatorAstroId == mark.PlanetId) { player.navigation.indicatorAstroId = 0; }
-        WarningSystem warnings = GameMain.data.warningSystem;
-        // 沿用原版SetLocationTracking的标记结构，并保存本次标记身份以便定向清理。
-        warnings.RemoveAllLocationTracking();
-        ref WarningData warning = ref warnings.NewWarningData(-6, 0, 519);
-        warning.state = 1;
-        warning.astroId = locationPlanetId = mark.PlanetId;
-        warning.localPos = lastRouteTarget = point;
-        warning.detailId1 = 519;
-        warningId = warning.id;
+        return planet.uPosition + Maths.QRotateLF(planet.runtimeRotation, point);
     }
 
-    /// <summary>确认池中仍是自己创建的标记，避免删除已回收编号上的其他标记。</summary>
-    /// <returns>身份、目标星球与坐标均匹配时为true。</returns>
-    private static bool HasLocationTracking() {
-        WarningSystem warnings = GameMain.data?.warningSystem;
-        if (warnings == null || warningId <= 0 || warningId >= warnings.warningCursor) { return false; }
-        ref WarningData warning = ref warnings.warningPool[warningId];
-        return warning.id == warningId && warning.factoryId == -6 && warning.signalId == 519
-            && warning.astroId == locationPlanetId && warning.localPos == lastRouteTarget;
-    }
-
-    /// <summary>原版到达后会自动移除地表线；此时保留航迹选择，等待下一个节点。</summary>
-    /// <param name="player">本端玩家。</param>
-    /// <returns>是否处于原版自动清线的表面投影范围内。</returns>
-    private static bool IsAtLocation(Player player) {
-        float radius = player.planetData?.realRadius ?? 0f;
-        float distance = Mathf.Max(5f, player.speed * (player.movementState >= EMovementState.Fly ? 0.15f : 0.1f));
-        return radius > 0f && (((Vector3)player.position).normalized * radius
-            - lastRouteTarget.normalized * radius).sqrMagnitude < distance * distance;
-    }
-
-    /// <summary>仅释放FE仍持有的连线，不清除玩家后来设置的其他目标。</summary>
-    private static void ClearNavigation() {
-        PlayerNavigation navigation = GameMain.mainPlayer?.navigation;
-        if (indicatorPlanetId != 0 && navigation?.indicatorAstroId == indicatorPlanetId) { navigation.indicatorAstroId = 0; }
-        if (HasLocationTracking()) { GameMain.data.warningSystem.RemoveWarningData(warningId); }
-        indicatorPlanetId = locationPlanetId = warningId = 0;
-        lastRouteTarget = default;
-    }
-
-    /// <summary>取消目标与显示，后续航迹节点变化也不会重新创建指引。</summary>
-    private static void CancelTracking() {
-        ClearNavigation();
-        targetId = 0;
-    }
-
-    /// <summary>已选目标优先显示；超出感知范围仍可取消，未选择时展示附近信号。</summary>
-    /// <returns>标题、连续强度及可操作的已发现地点身份。</returns>
+    /// <summary>已选目标优先；等待新目标时仍提供关闭入口，未开启时展示附近信号。</summary>
     public static DetectorReading Read() {
         EnsureSession();
         Player player = GameMain.mainPlayer;
         if (player == null) { return default; }
         ExplorationMark[] known = ExplorationManager.GetActiveMarks();
         ExplorationMark target = known.FirstOrDefault(m => m.Id == targetId);
+        if (target == null && trackingEnabled) { return new(true, 0f, "等待新信号".Translate(), 0, false); }
         if (target == null) {
             target = known.FirstOrDefault(m => m.PlanetId == player.planetId
                 && ExplorationManager.GetChallenge(m.Id) is { Started: true } c

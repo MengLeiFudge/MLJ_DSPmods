@@ -4,123 +4,49 @@ using UnityEngine.UI;
 
 namespace FE.UI.MainPanel.Civilization;
 
-/// <summary>
-/// 呈现连续图形信号条，沿用原版HUD隐藏和避让规则。
-/// </summary>
+/// <summary>复用原版黑雾监视条目，并从条目向目标绘制蓝色指引线。</summary>
 internal static class ExplorationSignalHud {
-    private const float HudWidth = 180f;
-    private const float RowHeight = 24f;
-    private static readonly Text[] RowTexts = new Text[1];
     private static GameObject root;
-    /// <summary>HUD所在层的局部矩形。</summary>
     private static RectTransform rootRect;
-    /// <summary>复用原版面板四角，避免动态布局每帧分配数组。</summary>
+    private static UIDarkFogMonitorEntry entry;
+    private static LineGizmo guideLine;
+    private static GalaxyData lineGalaxy;
+    private static float HudWidth => rootRect.rect.width;
+    private static float RowHeight => rootRect.rect.height;
     private static readonly Vector3[] PanelCorners = new Vector3[4];
-    /// <summary>教学、黑雾、手动研究、研究队列与科技提示的可见边界。</summary>
     private static readonly Rect[] PanelBounds = new Rect[5];
     private static int panelCount;
-    private static RectTransform strengthFill;
-    private static GameObject strengthBar;
-    private static Button navigationButton;
-    private static Text navigationText;
     private static int displayedMarkId;
 
-    /// <summary>
-    /// 创建 HUD；重复调用不会创建多个实例。
-    /// </summary>
+    /// <summary>复制原版条目预制体，保留视觉组件，不注册黑雾业务事件。</summary>
     public static void EnsureCreated() {
         UIGame uiGame = UIRoot.instance?.uiGame;
-        if (root || UIRoot.instance?.overlayCanvas == null || uiGame == null) { return; }
-        Text source = uiGame.generalTips?.buildCursorTextComp ?? uiGame.generalTips?.promptText
-                      ?? uiGame.assemblerWindow?.stateText;
-        if (source == null) { return; }
-
-        root = new GameObject("fe-exploration-signal-hud", typeof(RectTransform));
-        rootRect = root.GetComponent<RectTransform>();
-        rootRect.SetParent(uiGame.dfMonitor != null
-            ? uiGame.dfMonitor.transform.parent : UIRoot.instance.overlayCanvas.transform, false);
-        rootRect.anchorMin = new Vector2(0f, 1f);
-        rootRect.anchorMax = new Vector2(0f, 1f);
-        rootRect.pivot = new Vector2(0f, 1f);
-        rootRect.sizeDelta = new Vector2(HudWidth, RowHeight * 2f + 14f);
-
-        for (int index = 0; index < RowTexts.Length; index++) {
-            // 提示模板可能使用独立描边材质，不能只复制font后换成font.material。
-            Text row = Object.Instantiate(source, rootRect, false);
-            row.name = $"signal-row-{index + 1}";
-            row.enabled = true;
-            Localizer localizer = row.GetComponent<Localizer>();
-            if (localizer != null) { localizer.enabled = false; }
-            RectTransform rowRect = row.rectTransform;
-            rowRect.localScale = Vector3.one;
-            rowRect.localRotation = Quaternion.identity;
-            row.text = string.Empty;
-            row.fontSize = 16;
-            row.fontStyle = FontStyle.Normal;
-            row.resizeTextForBestFit = false;
-            row.alignment = TextAnchor.MiddleLeft;
-            row.supportRichText = false;
-            row.horizontalOverflow = HorizontalWrapMode.Overflow;
-            row.verticalOverflow = VerticalWrapMode.Truncate;
-            row.raycastTarget = false;
-            row.gameObject.SetActive(true);
-            row.color = Color.white;
-            Outline outline = row.GetComponent<Outline>() ?? row.gameObject.AddComponent<Outline>();
-            outline.enabled = true;
-            outline.effectColor = Color.black;
-            outline.effectDistance = new Vector2(1f, -1f);
-            outline.useGraphicAlpha = true;
-            rowRect.anchorMin = new Vector2(0f, 1f);
-            rowRect.anchorMax = new Vector2(0f, 1f);
-            rowRect.pivot = new Vector2(0f, 1f);
-            rowRect.anchoredPosition = new Vector2(0f, -index * RowHeight);
-            rowRect.sizeDelta = new Vector2(HudWidth, RowHeight);
-            RowTexts[index] = row;
+        UIDarkFogMonitor monitor = uiGame?.dfMonitor;
+        if (root || monitor?.baseEntryPrefab == null || UIRoot.instance.overlayCanvas == null) { return; }
+        entry = Object.Instantiate(monitor.baseEntryPrefab, monitor.transform.parent, false);
+        entry.enabled = false;
+        entry.monitor = monitor;
+        root = entry.gameObject;
+        root.name = "fe-exploration-signal-hud";
+        rootRect = entry.rectTrans;
+        Vector2 size = monitor.baseEntryPrefab.rectTrans.rect.size;
+        rootRect.anchorMin = rootRect.anchorMax = rootRect.pivot = new Vector2(0f, 1f);
+        rootRect.sizeDelta = size;
+        foreach (Localizer localizer in root.GetComponentsInChildren<Localizer>(true)) { localizer.enabled = false; }
+        entry.idText.gameObject.SetActive(false);
+        entry.levelText.gameObject.SetActive(false);
+        entry.expBar.gameObject.SetActive(false);
+        entry.alertImage.gameObject.SetActive(false);
+        entry.alertToggle.gameObject.SetActive(false);
+        entry.iconImage.gameObject.SetActive(false);
+        entry.iconTintImage.gameObject.SetActive(false);
+        foreach (UIButton button in new[] { entry.entryButton, entry.thrtButton, entry.expButton }) {
+            button.onClick -= entry.OnEntryClick;
+            button.onClick += _ => { ExplorationDetector.ToggleTracking(displayedMarkId); Update(); };
+            button.tips.tipTitle = button.tips.tipText = string.Empty;
+            if (button.button != null) { button.button.onClick = new Button.ButtonClickedEvent(); }
         }
-        CreateSignalBar();
-        Image buttonBackground = new GameObject("signal-navigation", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
-        buttonBackground.transform.SetParent(rootRect, false);
-        buttonBackground.color = new Color(0f, 0f, 0f, 0.65f);
-        buttonBackground.rectTransform.anchorMin = buttonBackground.rectTransform.anchorMax
-            = buttonBackground.rectTransform.pivot = new Vector2(0f, 1f);
-        buttonBackground.rectTransform.anchoredPosition = new Vector2(0f, -RowHeight - 14f);
-        buttonBackground.rectTransform.sizeDelta = new Vector2(HudWidth, RowHeight);
-        navigationButton = buttonBackground.gameObject.AddComponent<Button>();
-        navigationButton.targetGraphic = buttonBackground;
-        navigationText = Object.Instantiate(RowTexts[0], buttonBackground.transform, false);
-        navigationText.name = "navigation-label";
-        navigationText.rectTransform.anchoredPosition = Vector2.zero;
-        navigationText.alignment = TextAnchor.MiddleCenter;
-        navigationText.horizontalOverflow = HorizontalWrapMode.Wrap;
-        navigationText.resizeTextForBestFit = true;
-        navigationText.resizeTextMinSize = 10;
-        navigationText.resizeTextMaxSize = 16;
-        navigationButton.onClick.AddListener(() => {
-            ExplorationDetector.ToggleTracking(displayedMarkId);
-            Update();
-        });
         root.SetActive(false);
-    }
-
-    /// <summary>纯图形背景与填充共用固定宽度，条本身不拦截鼠标。</summary>
-    private static void CreateSignalBar() {
-        Image background = new GameObject("signal-bar", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
-        background.transform.SetParent(rootRect, false);
-        strengthBar = background.gameObject;
-        background.color = new Color(0f, 0f, 0f, 0.75f);
-        background.raycastTarget = false;
-        RectTransform bar = background.rectTransform;
-        bar.anchorMin = bar.anchorMax = bar.pivot = new Vector2(0f, 1f);
-        bar.anchoredPosition = new Vector2(0f, -RowHeight);
-        bar.sizeDelta = new Vector2(HudWidth, 12f);
-        Image fill = new GameObject("signal-strength", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
-        fill.transform.SetParent(bar, false);
-        fill.color = new Color(0.4f, 0.85f, 1f, 0.95f);
-        fill.raycastTarget = false;
-        strengthFill = fill.rectTransform;
-        strengthFill.anchorMin = strengthFill.anchorMax = strengthFill.pivot = new Vector2(0f, 1f);
-        strengthFill.anchoredPosition = new Vector2(2f, -2f);
-        strengthFill.sizeDelta = new Vector2(0f, 8f);
     }
 
     /// <summary>优先排在原版面板下方或右侧，再在屏幕安全区内寻找空位。</summary>
@@ -184,7 +110,7 @@ internal static class ExplorationSignalHud {
     /// <returns>0表示没有空位，1表示能够使用原尺寸。</returns>
     private static float GetAvailableScale(Vector2 position, Rect safe) {
         if (position.x < safe.xMin || position.y > safe.yMax) { return 0f; }
-        float height = RowHeight * 2f + 14f;
+        float height = RowHeight;
         float scale = Mathf.Min(1f, Mathf.Min((safe.xMax - position.x) / HudWidth,
             (position.y - safe.yMin) / height));
         for (int i = 0; i < panelCount; i++) {
@@ -244,6 +170,7 @@ internal static class ExplorationSignalHud {
         EnsureCreated();
         if (!root) {
             ExplorationRouteView.Update(false);
+            CloseGuideLine();
             return;
         }
         UIGame uiGame = UIRoot.instance?.uiGame;
@@ -259,13 +186,50 @@ internal static class ExplorationSignalHud {
         ExplorationRouteView.Update(visible);
         DetectorReading reading = visible ? ExplorationDetector.Read() : default;
         root.SetActive(visible && reading.Visible);
-        if (!visible || !reading.Visible) { return; }
+        if (!visible || !reading.Visible) { CloseGuideLine(); return; }
         UpdatePosition(uiGame);
-        RowTexts[0].text = reading.Name;
-        strengthFill.sizeDelta = new Vector2((HudWidth - 4f) * reading.Strength, 8f);
-        strengthBar.SetActive(reading.ShowStrength);
         displayedMarkId = reading.MarkId;
-        navigationButton.gameObject.SetActive(displayedMarkId != 0);
-        navigationText.text = (ExplorationDetector.IsTracking(displayedMarkId) ? "取消指引" : "开启指引").Translate();
+        bool tracking = ExplorationDetector.TrackingEnabled;
+        bool canNavigate = displayedMarkId != 0 || tracking;
+        entry.SetColorTheme0(reading.ShowStrength);
+        entry.locationText.text = reading.Name;
+        entry.locationText.gameObject.SetActive(!string.IsNullOrEmpty(reading.Name));
+        entry.threatValueText.text = canNavigate ? (tracking ? "取消指引" : "开启指引").Translate() : string.Empty;
+        entry.threatBar.rectTransform.anchoredPosition = new Vector2(-130f + Mathf.Round(reading.Strength * 100f),
+            entry.threatBar.rectTransform.anchoredPosition.y);
+        entry.entryButton.enabled = entry.thrtButton.enabled = entry.expButton.enabled = canNavigate;
+        entry.trackImage.gameObject.SetActive(tracking && displayedMarkId != 0);
+        UpdateGuideLine();
+    }
+
+    /// <summary>沿用黑雾条目OpenGuideLine的投影和线条参数，仅替换目标位置与颜色。</summary>
+    private static void UpdateGuideLine() {
+        if (!ReferenceEquals(lineGalaxy, GameMain.galaxy)) { CloseGuideLine(); lineGalaxy = GameMain.galaxy; }
+        if (!ExplorationDetector.TryGetGuidePosition(out VectorLF3 target) || GameCamera.main == null
+            || GameCamera.instance.hdScreenshot.preparing) { CloseGuideLine(); return; }
+        Vector3 screen = UIRoot.instance.overlayCanvas.worldCamera.WorldToScreenPoint(entry.trackImage.transform.position);
+        Vector3 start = GameCamera.main.ScreenPointToRay(screen).GetPoint(4.5f);
+        VectorLF3 relative = Maths.QInvRotateLF(GameMain.data.relativeRot, target - GameMain.data.relativePos);
+        UniverseSimulator.VirtualMapping(relative.x, relative.y, relative.z, GameCamera.main.transform.position,
+            out Vector3 end, out _);
+        if (!guideLine) {
+            guideLine = LineGizmo.Create(1, start, end);
+            guideLine.autoRefresh = false;
+            guideLine.multiplier = 1.5f;
+            guideLine.alphaMultiplier = 0.4f;
+            guideLine.width = 0.15f;
+            guideLine.color = new Color(0.3f, 0.65f, 1f, 1f);
+            guideLine.spherical = false;
+            guideLine.Open();
+        } else {
+            guideLine.startPoint = start;
+            guideLine.endPoint = end;
+            guideLine.ManualRefresh();
+        }
+    }
+
+    private static void CloseGuideLine() {
+        if (guideLine) { guideLine.Close(); }
+        guideLine = null;
     }
 }

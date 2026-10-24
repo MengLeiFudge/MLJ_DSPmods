@@ -1,4 +1,11 @@
 ﻿{
+  "等待新信号": {
+    "zhCN": "等待新信号",
+    "enUS": "Waiting for a new signal",
+    "frFR": "En attente d’un nouveau signal",
+    "1031": "Warten auf ein neues Signal",
+    "1041": "新しい信号を待機中"
+  },
   "FE.Save.Version22Notice.Title": {
     "zhCN": "旧存档游玩建议",
     "enUS": "Playing an older save",
