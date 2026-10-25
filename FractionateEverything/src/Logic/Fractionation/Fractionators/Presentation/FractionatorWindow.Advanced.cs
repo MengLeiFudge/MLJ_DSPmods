@@ -21,6 +21,7 @@ public static partial class FractionatorWindow {
     private const float WindowHeight = 448f;
     private const int VisibleSlots = 4;
     private const float RateDisplayInterval = 0.5f;
+    private const int RateSampleCount = 4;
     private static RectTransform advancedRoot;
     private static UIFractionatorWindow advancedSlotTemplate;
     private static ProductSlot advancedRecipeSlot;
@@ -70,27 +71,37 @@ public static partial class FractionatorWindow {
         internal double DisplayedRate => displayedRate;
         private double weightedRate;
         private float duration;
+        private (double WeightedRate, float Duration)[] samples;
+        private int sampleIndex;
 
-        /// <summary>按帧时长累计半秒平均值；空槽、物品切换和停机立即更新。</summary>
+        /// <summary>四个半秒样本形成约两秒滑动平均；零流量正常参与平均，空槽和物品切换立即重置。</summary>
         /// <param name="id">当前槽位物品，0表示无速率信息。</param>
         /// <param name="perMinute">当前状态换算的每分钟速率。</param>
         /// <param name="finePrecision">食物与辅料低速显示两位有效数字，10及以上截取整数部分。</param>
         /// <returns>速率文字，空槽返回空字符串。</returns>
         internal string Update(int id, double perMinute, bool finePrecision = false) {
             if (id <= 0) { this = default; return string.Empty; }
-            if (id != itemId || perMinute <= 0d || displayedRate <= 0d) {
+            if (id != itemId) {
                 this = default;
                 itemId = id;
                 displayedRate = perMinute;
-            } else {
-                float elapsed = Time.unscaledDeltaTime;
-                weightedRate += perMinute * elapsed;
-                duration += elapsed;
-                if (duration >= RateDisplayInterval) {
-                    displayedRate = weightedRate / duration;
-                    weightedRate = 0d;
-                    duration = 0f;
+                samples = new (double, float)[RateSampleCount];
+            }
+            float elapsed = Time.unscaledDeltaTime;
+            weightedRate += perMinute * elapsed;
+            duration += elapsed;
+            if (duration >= RateDisplayInterval) {
+                samples[sampleIndex] = (weightedRate, duration);
+                sampleIndex = (sampleIndex + 1) % RateSampleCount;
+                double totalRate = 0d;
+                float totalDuration = 0f;
+                foreach (var sample in samples) {
+                    totalRate += sample.WeightedRate;
+                    totalDuration += sample.Duration;
                 }
+                displayedRate = totalRate / totalDuration;
+                weightedRate = 0d;
+                duration = 0f;
             }
             return FormatRate(displayedRate, finePrecision);
         }
