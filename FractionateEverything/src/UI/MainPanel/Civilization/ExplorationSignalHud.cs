@@ -1,86 +1,39 @@
-﻿using FE.Logic.Civilization;
+﻿using System.Collections.Generic;
+using FE.Logic.Civilization;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace FE.UI.MainPanel.Civilization;
 
-/// <summary>复用原版黑雾监视条目，并从条目向目标绘制蓝色指引线。</summary>
+/// <summary>按信号槽复用原版黑雾监视条目，每条独立显示定位图标与蓝色指引线。</summary>
 internal static class ExplorationSignalHud {
     private static GameObject root;
     private static RectTransform rootRect;
-    private static UIDarkFogMonitorEntry entry;
-    private static RectTransform titleRect;
-    private static Text title;
-    private static LineGizmo guideLine;
+    private static readonly List<SignalRow> Rows = [];
+    private static readonly List<DetectorReading> Readings = [];
+    private static int activeRows;
     private static GalaxyData lineGalaxy;
     private static float HudWidth => rootRect.rect.width;
-    private static float RowHeight => rootRect.rect.height;
+    private static float HudHeight => rootRect.rect.height;
     private static readonly Vector3[] PanelCorners = new Vector3[4];
     private static readonly Rect[] PanelBounds = new Rect[5];
     private static int panelCount;
-    private static int displayedMarkId;
-    private static bool suppressHoverGuide;
-    private static Color trackIconColor;
 
-    /// <summary>复制原版条目预制体，保留视觉组件，不注册黑雾业务事件。</summary>
+    /// <summary>创建共用布局根节点；条目按实际需要增加并复用，不注册黑雾业务事件。</summary>
     public static void EnsureCreated() {
         UIGame uiGame = UIRoot.instance?.uiGame;
         UIDarkFogMonitor monitor = uiGame?.dfMonitor;
         if (root || monitor?.baseEntryPrefab == null || monitor.baseGroupLabel == null
             || UIRoot.instance.overlayCanvas == null) { return; }
+        CloseGuideLines();
+        Rows.Clear();
+        activeRows = 0;
         root = new GameObject("fe-exploration-signal-hud", typeof(RectTransform));
         rootRect = (RectTransform)root.transform;
         rootRect.SetParent(monitor.transform.parent, false);
         rootRect.anchorMin = rootRect.anchorMax = rootRect.pivot = new Vector2(0f, 1f);
-        rootRect.sizeDelta = new Vector2(monitor.contentRect.rect.width,
-            monitor.groupLabelHeight + monitor.entryHeight);
-        titleRect = Object.Instantiate(monitor.baseGroupLabel, rootRect, false);
-        titleRect.anchoredPosition = new Vector2(titleRect.anchoredPosition.x, -1f);
-        title = titleRect.GetComponentInChildren<Text>(true);
-        entry = Object.Instantiate(monitor.baseEntryPrefab, rootRect, false);
-        entry.enabled = false;
-        entry.monitor = monitor;
-        entry.gameObject.SetActive(true);
-        foreach (Localizer localizer in root.GetComponentsInChildren<Localizer>(true)) { localizer.enabled = false; }
-        entry.idText.gameObject.SetActive(false);
-        entry.levelText.gameObject.SetActive(false);
-        entry.locationText.gameObject.SetActive(false);
-        entry.expBar.gameObject.SetActive(false);
-        entry.alertImage.gameObject.SetActive(false);
-        entry.alertToggle.gameObject.SetActive(false);
-        // 条框带有Mask；定位图标必须挂在条目根节点，才能显示在条框外侧。
-        entry.locationText.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 0f);
-        entry.trackImage.rectTransform.SetParent(entry.rectTrans, false);
-        entry.trackImage.rectTransform.anchorMin = entry.trackImage.rectTransform.anchorMax = new Vector2(1f, 0.5f);
-        entry.trackImage.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-        entry.trackImage.rectTransform.localScale = Vector3.one;
-        entry.trackImage.enabled = true;
-        entry.trackImage.raycastTarget = false;
-        entry.trackImage.gameObject.SetActive(false);
-        entry.iconImage.gameObject.SetActive(false);
-        entry.iconTintImage.gameObject.SetActive(false);
-        trackIconColor = entry.trackImage.color;
-        foreach (UIButton button in new[] { entry.entryButton, entry.thrtButton, entry.expButton }) {
-            button.onClick -= entry.OnEntryClick;
-            button.onClick += _ => {
-                ExplorationDetector.ToggleTracking(displayedMarkId);
-                suppressHoverGuide = !ExplorationDetector.TrackingEnabled;
-                Update();
-            };
-            // 追踪图标由固定/悬停指引状态控制，不跟随按钮普通态淡出。
-            foreach (UIButton.Transition transition in button.transitions ?? []) {
-                if (transition.target == entry.trackImage && transition.mouseoverColor.a > trackIconColor.a) {
-                    trackIconColor = transition.mouseoverColor;
-                }
-            }
-            if (button.transitions != null) {
-                button.transitions = System.Array.FindAll(button.transitions, transition => transition.target != entry.trackImage);
-            }
-            button.tips.tipTitle = button.tips.tipText = string.Empty;
-            if (button.button != null) { button.button.onClick = new Button.ButtonClickedEvent(); }
-        }
-        if (trackIconColor.a <= 0f) { trackIconColor = monitor.frameColor0; }
+        rootRect.sizeDelta = new Vector2(monitor.contentRect.rect.width, 0f);
         Camera.onPreCull -= OnCameraPreCull;
         Camera.onPreCull += OnCameraPreCull;
         root.SetActive(false);
@@ -112,7 +65,7 @@ internal static class ExplorationSignalHud {
             right = Mathf.Max(right, PanelBounds[i].xMax);
         }
         float left = monitor?.baseGroupLabel != null
-            ? GetPanelBounds(monitor.baseGroupLabel, parent).xMin - GetPanelBounds(titleRect, rootRect).xMin
+            ? GetPanelBounds(monitor.baseGroupLabel, parent).xMin - GetPanelBounds(Rows[0].TitleRect, rootRect).xMin
             : screen.xMin + 22f;
         Vector2 position = new(Mathf.Max(safe.xMin, left), Mathf.Min(safe.yMax, bottom - 10f));
         float scale = GetAvailableScale(position, safe);
@@ -136,7 +89,8 @@ internal static class ExplorationSignalHud {
         Vector2 current = new(screen.xMin + rootRect.anchoredPosition.x,
             screen.yMax + rootRect.anchoredPosition.y);
         // 只保留纵向缓动余量，横向必须跟随原版标题，不能因距离小而锁在旧的左侧位置。
-        if (Mathf.Abs(position.x - current.x) < 0.5f && Mathf.Abs(position.y - current.y) <= RowHeight
+        if (Mathf.Abs(position.x - current.x) < 0.5f
+            && Mathf.Abs(position.y - current.y) <= monitor.groupLabelHeight + monitor.entryHeight
             && GetAvailableScale(current, safe) >= scale) {
             position = current;
         }
@@ -150,7 +104,7 @@ internal static class ExplorationSignalHud {
     /// <returns>0表示没有空位，1表示能够使用原尺寸。</returns>
     private static float GetAvailableScale(Vector2 position, Rect safe) {
         if (position.x < safe.xMin || position.y > safe.yMax) { return 0f; }
-        float height = RowHeight;
+        float height = HudHeight;
         float scale = Mathf.Min(1f, Mathf.Min((safe.xMax - position.x) / HudWidth,
             (position.y - safe.yMin) / height));
         for (int i = 0; i < panelCount; i++) {
@@ -202,20 +156,22 @@ internal static class ExplorationSignalHud {
         return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
     }
 
-    /// <summary>
-    /// 刷新附近信号及百分比；首遗物不公开名称和坐标。
-    /// </summary>
+    /// <summary>刷新主线、独立任务和质量槽，按全部可见条目的实际高度参与避让。</summary>
     public static void Update() {
         if (GameMain.isRunning && GameMain.mainPlayer != null) { ExplorationDetector.UpdateNavigation(); }
         EnsureCreated();
         if (!root) {
             ExplorationRouteView.Update(false);
-            CloseGuideLine();
+            CloseGuideLines();
             return;
+        }
+        if (!ReferenceEquals(lineGalaxy, GameMain.galaxy)) {
+            HideRows();
+            lineGalaxy = GameMain.galaxy;
         }
         UIGame uiGame = UIRoot.instance?.uiGame;
         Player player = GameMain.mainPlayer;
-        // 与原版黑雾监视器共用所在 UI 层，保留无黑雾模式下的探索显示。
+        // 与原版黑雾监视器共用所在UI层，保留无黑雾模式下的探索显示。
         bool visible = uiGame?.active == true && GameMain.isRunning && GameMain.gameTick > 0
             && !GameMain.isPaused && !GameMain.isFullscreenPaused && !VFInput.inFullscreenGUI
             && !uiGame.hideAllUI0 && !uiGame.hideAllUI1
@@ -224,46 +180,39 @@ internal static class ExplorationSignalHud {
             && !uiGame.techTree.active && !uiGame.dashboard.active && !uiGame.dysonEditor.active
             && !uiGame.starmap.active;
         ExplorationRouteView.Update(visible);
-        DetectorReading reading = visible ? ExplorationDetector.Read() : default;
-        root.SetActive(visible && reading.Visible);
-        if (!visible || !reading.Visible) { suppressHoverGuide = false; CloseGuideLine(); return; }
-        if (displayedMarkId != reading.MarkId) { suppressHoverGuide = false; }
-        displayedMarkId = reading.MarkId;
-        bool tracking = ExplorationDetector.TrackingEnabled;
-        bool canNavigate = displayedMarkId != 0 || tracking;
-        entry.SetColorTheme0(reading.ShowStrength);
-        bool hasName = !string.IsNullOrEmpty(reading.Name);
-        title.text = reading.Name;
-        titleRect.gameObject.SetActive(hasName);
-        entry.levelText.text = reading.TaskStage > 0 ? reading.TaskStage.ToString() : string.Empty;
-        entry.levelText.gameObject.SetActive(reading.TaskStage > 0);
-        float titleHeight = hasName ? uiGame.dfMonitor.groupLabelHeight : 0f;
-        rootRect.sizeDelta = new Vector2(rootRect.sizeDelta.x, titleHeight + uiGame.dfMonitor.entryHeight);
-        entry.rectTrans.anchoredPosition = new Vector2(entry.rectTrans.anchoredPosition.x, -titleHeight);
-        float strength = Mathf.Clamp01(reading.Strength);
-        // 未满的强度不能四舍五入显示100%，避免把接近误当成已经到达。
-        float percent = strength >= 1f ? 100f : Mathf.Min(99.9f, Mathf.Floor(strength * 1000f) / 10f);
-        entry.threatValueText.text = reading.ShowStrength ? $"{percent:0.0}%" : string.Empty;
-        entry.threatBar.rectTransform.anchoredPosition = new Vector2(-130f + Mathf.Round(strength * 100f),
-            entry.threatBar.rectTransform.anchoredPosition.y);
-        entry.entryButton.enabled = entry.thrtButton.enabled = entry.expButton.enabled = canNavigate;
+        if (!visible) {
+            root.SetActive(false);
+            HideRows();
+            return;
+        }
+        ExplorationDetector.Read(Readings);
+        root.SetActive(Readings.Count > 0);
+        UIDarkFogMonitor monitor = uiGame.dfMonitor;
+        while (Rows.Count < Readings.Count) { Rows.Add(new SignalRow(monitor, rootRect)); }
+        float height = 0f;
+        activeRows = Readings.Count;
+        for (int i = 0; i < Rows.Count; i++) {
+            if (i < activeRows) { height += Rows[i].SetReading(Readings[i], height, monitor); }
+            else { Rows[i].Hide(); }
+        }
+        rootRect.sizeDelta = new Vector2(rootRect.sizeDelta.x, height);
     }
 
-    /// <summary>原版监测器完成布局后，为探索条目计算避让位置。</summary>
+    /// <summary>原版监测器完成布局后，为整组探索条目计算避让位置。</summary>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UIGame), nameof(UIGame._OnLateUpdate))]
     public static void UIGame_OnLateUpdate_Postfix(UIGame __instance) {
         if (!root || !root.activeInHierarchy || !__instance.active || GameMain.isPaused
             || __instance.hideAllUI0 || __instance.hideAllUI1) {
-            CloseGuideLine();
+            CloseGuideLines();
             return;
         }
         UpdatePosition(__instance);
         UpdateTrackIconLayout(__instance.dfMonitor);
-        UpdateGuideVisibility();
+        for (int i = 0; i < activeRows; i++) { Rows[i].UpdateGuideVisibility(); }
     }
 
-    /// <summary>保留原版追踪图标相对条框的位置，扣除本HUD不显示的右侧地点名占位。</summary>
+    /// <summary>所有条目保留原版图标相对条框的位置，扣除本HUD隐藏的地点名宽度。</summary>
     private static void UpdateTrackIconLayout(UIDarkFogMonitor monitor) {
         UIDarkFogMonitorEntry template = monitor.baseEntryPrefab;
         foreach (UIDarkFogMonitorEntry candidate in monitor.baseEntries) {
@@ -273,67 +222,182 @@ internal static class ExplorationSignalHud {
         Vector3 center = template.trackImage.rectTransform.TransformPoint(template.trackImage.rectTransform.rect.center);
         Vector3 local = frame.InverseTransformPoint(center);
         float locationWidth = template.locationText.rectTransform.rect.width;
-        entry.trackImage.rectTransform.anchoredPosition = new Vector2(
-            local.x - frame.rect.xMax - locationWidth, local.y - frame.rect.center.y);
-        entry.trackImage.rectTransform.sizeDelta = template.trackImage.rectTransform.rect.size;
-        entry.trackImage.color = trackIconColor;
+        Vector2 position = new(local.x - frame.rect.xMax - locationWidth, local.y - frame.rect.center.y);
+        Vector2 size = template.trackImage.rectTransform.rect.size;
+        for (int i = 0; i < activeRows; i++) { Rows[i].UpdateTrackIconLayout(position, size); }
     }
 
-    /// <summary>图标与蓝线共用可见条件；图标在UI布局阶段启用，避免相机渲染时才激活而错过画布刷新。</summary>
-    private static bool UpdateGuideVisibility() {
-        bool hovering = entry.entryButton._isPointerEnter || entry.thrtButton._isPointerEnter
-            || entry.expButton._isPointerEnter;
-        if (!hovering) { suppressHoverGuide = false; }
-        bool visible = displayedMarkId != 0 && (ExplorationDetector.TrackingEnabled || hovering && !suppressHoverGuide);
-        entry.trackImage.gameObject.SetActive(visible);
-        if (!visible) { CloseGuideLine(); }
-        return visible;
-    }
-
-    /// <summary>在主相机实际渲染前投影，避免不同组件的LateUpdate顺序使起点与当前画面错开。</summary>
+    /// <summary>在主相机实际渲染前投影每条蓝线，使起点跟随各自图标的最终屏幕位置。</summary>
     private static void OnCameraPreCull(Camera camera) {
         if (camera != GameCamera.main) { return; }
         UIGame uiGame = UIRoot.instance?.uiGame;
         if (!root || !root.activeInHierarchy || uiGame?.active != true || GameMain.isPaused
             || uiGame.hideAllUI0 || uiGame.hideAllUI1 || GameCamera.instance.hdScreenshot.preparing) {
-            CloseGuideLine();
+            CloseGuideLines();
             return;
         }
-        if (!UpdateGuideVisibility()) { return; }
-        entry.rectTrans.ForceUpdateRectTransforms();
-        UpdateGuideLine();
-    }
-
-    /// <summary>沿用黑雾条目OpenGuideLine的投影和线条参数，仅替换目标位置与颜色。</summary>
-    private static void UpdateGuideLine() {
-        if (!ReferenceEquals(lineGalaxy, GameMain.galaxy)) { CloseGuideLine(); lineGalaxy = GameMain.galaxy; }
-        if (!ExplorationDetector.TryGetGuidePosition(displayedMarkId, out VectorLF3 target) || GameCamera.main == null
-            || GameCamera.instance.hdScreenshot.preparing) { CloseGuideLine(); return; }
-        RectTransform track = entry.trackImage.rectTransform;
-        Vector3 center = track.TransformPoint(track.rect.center);
-        Vector3 screen = UIRoot.instance.overlayCanvas.worldCamera.WorldToScreenPoint(center);
-        Vector3 start = GameCamera.main.ScreenPointToRay(screen).GetPoint(4.5f);
-        VectorLF3 relative = Maths.QInvRotateLF(GameMain.data.relativeRot, target - GameMain.data.relativePos);
-        UniverseSimulator.VirtualMapping(relative.x, relative.y, relative.z, GameCamera.main.transform.position,
-            out Vector3 end, out _);
-        if (!guideLine) {
-            guideLine = LineGizmo.Create(1, start, end);
-            guideLine.autoRefresh = false;
-            guideLine.multiplier = 1.5f;
-            guideLine.alphaMultiplier = 0.4f;
-            guideLine.width = 0.15f;
-            guideLine.color = new Color(0.3f, 0.65f, 1f, 1f);
-            guideLine.spherical = false;
-            guideLine.Open();
-        } else {
-            guideLine.startPoint = start;
-            guideLine.endPoint = end;
-            guideLine.ManualRefresh();
+        for (int i = 0; i < activeRows; i++) {
+            if (Rows[i].UpdateGuideVisibility()) { Rows[i].UpdateGuideLine(); }
         }
     }
 
-    private static void CloseGuideLine() {
-        if (guideLine) { guideLine.Close(); }
-        guideLine = null;
+    /// <summary>关闭所有可见或回收到池中的条目连线。</summary>
+    private static void CloseGuideLines() {
+        foreach (SignalRow row in Rows) { row.CloseGuideLine(); }
+    }
+
+    /// <summary>界面隐藏或切档时回收条目，清除悬停预览但保留逻辑域的固定选择。</summary>
+    private static void HideRows() {
+        foreach (SignalRow row in Rows) { row.Hide(); }
+        activeRows = 0;
+    }
+
+    /// <summary>一条信号的原版控件、悬停抑制和连线，复用时不携带前一目标的预览状态。</summary>
+    private sealed class SignalRow {
+        public readonly RectTransform TitleRect;
+        private readonly UIDarkFogMonitorEntry entry;
+        private readonly Text title;
+        private readonly Color trackIconColor;
+        private LineGizmo guideLine;
+        private int markId;
+        private bool suppressHoverGuide;
+
+        /// <summary>复制原版视觉组件，将交互绑定到本条当前目标。</summary>
+        public SignalRow(UIDarkFogMonitor monitor, RectTransform parent) {
+            TitleRect = Object.Instantiate(monitor.baseGroupLabel, parent, false);
+            title = TitleRect.GetComponentInChildren<Text>(true);
+            entry = Object.Instantiate(monitor.baseEntryPrefab, parent, false);
+            entry.enabled = false;
+            entry.monitor = monitor;
+            foreach (Localizer localizer in TitleRect.GetComponentsInChildren<Localizer>(true)) { localizer.enabled = false; }
+            foreach (Localizer localizer in entry.GetComponentsInChildren<Localizer>(true)) { localizer.enabled = false; }
+            entry.idText.gameObject.SetActive(false);
+            entry.levelText.gameObject.SetActive(false);
+            entry.locationText.gameObject.SetActive(false);
+            entry.expBar.gameObject.SetActive(false);
+            entry.alertImage.gameObject.SetActive(false);
+            entry.alertToggle.gameObject.SetActive(false);
+            // 条框带有Mask；定位图标必须挂在条目根节点，才能显示在条框外侧。
+            entry.locationText.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 0f);
+            entry.trackImage.rectTransform.SetParent(entry.rectTrans, false);
+            entry.trackImage.rectTransform.anchorMin = entry.trackImage.rectTransform.anchorMax = new Vector2(1f, 0.5f);
+            entry.trackImage.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            entry.trackImage.rectTransform.localScale = Vector3.one;
+            entry.trackImage.enabled = true;
+            entry.trackImage.raycastTarget = false;
+            entry.trackImage.gameObject.SetActive(false);
+            entry.iconImage.gameObject.SetActive(false);
+            entry.iconTintImage.gameObject.SetActive(false);
+            trackIconColor = entry.trackImage.color;
+            foreach (UIButton button in new[] { entry.entryButton, entry.thrtButton, entry.expButton }) {
+                button.onClick -= entry.OnEntryClick;
+                button.onClick += _ => {
+                    ExplorationDetector.ToggleTracking(markId);
+                    suppressHoverGuide = !ExplorationDetector.IsTracking(markId);
+                    Update();
+                };
+                // 图标由本条固定/悬停状态控制，不跟随按钮普通态淡出。
+                foreach (UIButton.Transition transition in button.transitions ?? []) {
+                    if (transition.target == entry.trackImage && transition.mouseoverColor.a > trackIconColor.a) {
+                        trackIconColor = transition.mouseoverColor;
+                    }
+                }
+                if (button.transitions != null) {
+                    button.transitions = System.Array.FindAll(button.transitions, transition => transition.target != entry.trackImage);
+                }
+                button.tips.tipTitle = button.tips.tipText = string.Empty;
+                if (button.button != null) { button.button.onClick = new Button.ButtonClickedEvent(); }
+            }
+            if (trackIconColor.a <= 0f) { trackIconColor = monitor.frameColor0; }
+            Hide();
+        }
+
+        /// <summary>刷新内容及纵向位置，返回本条标题和信号行占用的总高度。</summary>
+        public float SetReading(DetectorReading reading, float offset, UIDarkFogMonitor monitor) {
+            if (markId != reading.MarkId) {
+                entry.gameObject.SetActive(false);
+                suppressHoverGuide = false;
+                CloseGuideLine();
+            }
+            markId = reading.MarkId;
+            entry.gameObject.SetActive(true);
+            entry.SetColorTheme0(reading.ShowStrength);
+            bool hasName = !string.IsNullOrEmpty(reading.Name);
+            title.text = reading.Name;
+            TitleRect.gameObject.SetActive(hasName);
+            TitleRect.anchoredPosition = new Vector2(TitleRect.anchoredPosition.x, -offset - 1f);
+            entry.levelText.text = reading.Level > 0 ? reading.Level.ToString() : string.Empty;
+            entry.levelText.gameObject.SetActive(reading.Level > 0);
+            float titleHeight = hasName ? monitor.groupLabelHeight : 0f;
+            entry.rectTrans.anchoredPosition = new Vector2(entry.rectTrans.anchoredPosition.x, -offset - titleHeight);
+            float strength = Mathf.Clamp01(reading.Strength);
+            // 未满的强度不能四舍五入显示100%，避免把接近误当成已经到达。
+            float percent = strength >= 1f ? 100f : Mathf.Min(99.9f, Mathf.Floor(strength * 1000f) / 10f);
+            entry.threatValueText.text = reading.ShowStrength ? $"{percent:0.0}%" : string.Empty;
+            entry.threatBar.rectTransform.anchoredPosition = new Vector2(-130f + Mathf.Round(strength * 100f),
+                entry.threatBar.rectTransform.anchoredPosition.y);
+            entry.entryButton.enabled = entry.thrtButton.enabled = entry.expButton.enabled = markId != 0 || reading.Level > 0;
+            return titleHeight + monitor.entryHeight;
+        }
+
+        /// <summary>对齐本条定位图标，并保持独立保存的可见主题色。</summary>
+        public void UpdateTrackIconLayout(Vector2 position, Vector2 size) {
+            entry.trackImage.rectTransform.anchoredPosition = position;
+            entry.trackImage.rectTransform.sizeDelta = size;
+            entry.trackImage.color = trackIconColor;
+        }
+
+        /// <summary>图标与蓝线共用本条可见条件，取消后移出本条才恢复悬停预览。</summary>
+        public bool UpdateGuideVisibility() {
+            bool hovering = entry.entryButton._isPointerEnter || entry.thrtButton._isPointerEnter
+                || entry.expButton._isPointerEnter;
+            if (!hovering) { suppressHoverGuide = false; }
+            bool visible = markId != 0 && (ExplorationDetector.IsTracking(markId) || hovering && !suppressHoverGuide);
+            entry.trackImage.gameObject.SetActive(visible);
+            if (!visible) { CloseGuideLine(); }
+            return visible;
+        }
+
+        /// <summary>沿用黑雾条目的线条参数，从本条定位图标中心投影到自己的目标。</summary>
+        public void UpdateGuideLine() {
+            if (!ExplorationDetector.TryGetGuidePosition(markId, out VectorLF3 target)) { CloseGuideLine(); return; }
+            entry.rectTrans.ForceUpdateRectTransforms();
+            RectTransform track = entry.trackImage.rectTransform;
+            Vector3 center = track.TransformPoint(track.rect.center);
+            Vector3 screen = UIRoot.instance.overlayCanvas.worldCamera.WorldToScreenPoint(center);
+            Vector3 start = GameCamera.main.ScreenPointToRay(screen).GetPoint(4.5f);
+            VectorLF3 relative = Maths.QInvRotateLF(GameMain.data.relativeRot, target - GameMain.data.relativePos);
+            UniverseSimulator.VirtualMapping(relative.x, relative.y, relative.z, GameCamera.main.transform.position,
+                out Vector3 end, out _);
+            if (!guideLine) {
+                guideLine = LineGizmo.Create(1, start, end);
+                guideLine.autoRefresh = false;
+                guideLine.multiplier = 1.5f;
+                guideLine.alphaMultiplier = 0.4f;
+                guideLine.width = 0.15f;
+                guideLine.color = new Color(0.3f, 0.65f, 1f, 1f);
+                guideLine.spherical = false;
+                guideLine.Open();
+            } else {
+                guideLine.startPoint = start;
+                guideLine.endPoint = end;
+                guideLine.ManualRefresh();
+            }
+        }
+
+        /// <summary>条目暂时不用时隐藏控件并清除前一目标的瞬时状态。</summary>
+        public void Hide() {
+            TitleRect.gameObject.SetActive(false);
+            entry.gameObject.SetActive(false);
+            markId = 0;
+            suppressHoverGuide = false;
+            CloseGuideLine();
+        }
+
+        /// <summary>释放本条连线，不影响其他信号。</summary>
+        public void CloseGuideLine() {
+            if (guideLine) { guideLine.Close(); }
+            guideLine = null;
+        }
     }
 }

@@ -11,7 +11,7 @@
 - ExplorationManager.cs：静默几何、动态广播、主线、终极任务、探测候选和实际回收记录。
 - ExplorationDelivery.cs：到地统一库存交付、差额提示和持久流水；联机库存衔接由MemoryDeliverySync负责。
 - ExplorationDiscovery.cs：主机发现账本、活动范围及连续信号强度；已发现地点保存完整坐标。
-- ExplorationDetector.cs：本地邻近信号投影及玩家发起的原版导航，首遗物不公开坐标。
+- ExplorationDetector.cs：本端分槽指引与HUD投影；主线独立，普通信号按质量共槽，首遗物不公开坐标。
 - GrowthTechnologyManager.cs：两页科技定义、唯一堆叠路线、阶段身份、等级与效果投影。
 - MatrixResearchCosts.cs：从最终参考科技读取材料比例与成本，阶段身份不从材料反推。
 - TechnologyTreePatch.cs：FE科技显示、解锁文本及原版科技树接线。

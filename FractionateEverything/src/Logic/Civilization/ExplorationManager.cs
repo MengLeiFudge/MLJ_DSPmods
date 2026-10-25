@@ -93,6 +93,8 @@ public static partial class ExplorationManager {
     public static bool PlanetDetectorUnlocked => FirstRelicClaimed;
     /// <summary>已经完成的主线节点数。</summary>
     public static int StoryCompleted { get { lock (Sync) { return storyCompleted; } } }
+    /// <summary>当前待完成的主线序号；全部完成时为0，等待阶段资格时仍保留该序号。</summary>
+    public static int PendingStoryNumber { get { lock (Sync) { return storyCompleted < StoryNodeCount ? storyCompleted + 1 : 0; } } }
     /// <summary>首遗物恢复后均可发现，质量决定奖励而非地点可见门槛。</summary>
     public static int DetectableQuality => FirstRelicClaimed ? 3 : 0;
 
