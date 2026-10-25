@@ -144,7 +144,7 @@ public static partial class FractionatorWindow {
         RectTransform root = new GameObject($"cache-{kind}", typeof(RectTransform)).GetComponent<RectTransform>();
         RectTransformUtils.NormalizeRectWithTopLeft(root, bounds.x, bounds.y, advancedRoot);
         root.sizeDelta = bounds.size;
-        string title = kind switch { ProductSlotKind.Fluid => "流动输入", ProductSlotKind.Side => "流动输出", _ => "配方产物" };
+        string title = kind switch { ProductSlotKind.Fluid => "流动输入", ProductSlotKind.Side => "流动输出", _ => "产物输出" };
         Text titleText = CreateAdvancedLabel(advancedSlotTemplate.inputTitleText, root, new Rect(12f, 6f, bounds.width - 24f, 26f));
         titleText.text = title.Translate();
         titleText.alignment = TextAnchor.MiddleCenter;

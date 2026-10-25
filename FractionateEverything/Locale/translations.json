@@ -27,27 +27,6 @@
     "1031": "Fractionate Everything 3.0 verändert Spielmechaniken und Fortschritt erheblich. Wir empfehlen einen neuen Spielstand, um den gesamten Spielverlauf zu erleben.",
     "1041": "万物分馏 3.0 ではゲームの仕組みと進行が大きく変わりました。一連の流れを体験するため、新しいセーブデータでのプレイをおすすめします。"
   },
-  "FE.AdvancedRecipe.AverageQuantities": {
-    "zhCN": "每次成功：平均消耗与产出",
-    "enUS": "Per success: average consumption and yield",
-    "frFR": "Par réussite : consommation et production moyennes",
-    "1031": "Je Erfolg: mittlerer Verbrauch und Ertrag",
-    "1041": "成功時の平均消費量・産出量"
-  },
-  "FE.AdvancedRecipe.MinimumAuxiliary": {
-    "zhCN": "辅料与催化剂最低持有量",
-    "enUS": "Minimum auxiliary and catalyst stock",
-    "frFR": "Réserve minimale d’auxiliaires et de catalyseurs",
-    "1031": "Mindestbestand an Hilfsstoffen und Katalysatoren",
-    "1041": "補助材・触媒の最低保持量"
-  },
-  "FE.AdvancedRecipe.AuxiliaryRequirement": {
-    "zhCN": "{0} × {1}（成功时消耗概率 {2:P1}）",
-    "enUS": "{0} × {1} ({2:P1} consumption chance on success)",
-    "frFR": "{0} × {1} ({2:P1} de consommation en cas de réussite)",
-    "1031": "{0} × {1} ({2:P1} Verbrauchschance bei Erfolg)",
-    "1041": "{0} × {1}（成功時の消費確率 {2:P1}）"
-  },
   "开启下载": {
     "zhCN": "开启下载",
     "enUS": "Download on",
@@ -1119,12 +1098,12 @@
     "1031": "Lebende Reaktion aktiv",
     "1041": "生命反応中"
   },
-  "配方产物": {
-    "enUS": "Recipe products",
-    "zhCN": "配方产物",
-    "frFR": "Produits de la recette",
-    "1031": "Rezeptprodukte",
-    "1041": "レシピ生産物"
+  "产物输出": {
+    "enUS": "Product output",
+    "zhCN": "产物输出",
+    "frFR": "Sortie de produits",
+    "1031": "Produktausgang",
+    "1041": "生成物出力"
   },
   "高级塔客户端手动取出受限": {
     "enUS": "Clients cannot manually extract advanced-tower outputs; use belts.",
