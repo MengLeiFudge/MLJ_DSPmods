@@ -51,9 +51,8 @@ public static class FeatureBootstrap {
         PreloadAndInitAll();
         // 获取部分数据，例如传送带最大速度等
         ProcessManager.Init();
-        // 计算物品价值
+        // 每次启动只在最终原型加载后计算一次统一价值，包含丰碑弹药的投入估值。
         ItemManager.CalculateItemValues();
-        MonumentCatalog.ApplyValues();
         MatrixNutrition.Initialize();
         // 将物品分类到各个矩阵层级中
         ItemManager.ClassifyItemsToMatrix();

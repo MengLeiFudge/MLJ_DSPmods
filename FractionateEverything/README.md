@@ -45,7 +45,7 @@ The starting relic appears in the birth hemisphere, away from dark-fog bases. Re
 
 基础塔独立制造、接入电网，正面接口还能上传到亚空间。高级塔在窗口选择已解析配方，使用矩阵作为营养。正常产物和失败物等待当前集装规格输出；主消耗物不足一轮后释放尾料，剩余催化剂不会让尾料永久滞留。
 
-所有可估值的矩阵（包括黑雾及模组矩阵）都能供养生命塔，价值越高，每件营养越多、处理越快。工作和待机都会消耗营养；断粮损失耐久，充分供养可恢复。无人机不能维修生命塔，主动拆除返还缓存，损毁丢失缓存。基础输入按20堆、高级主料及辅料按40堆、流出及产物按5堆设置接收阈值；达到阈值才停收，本次完整货物或批次允许越过。
+所有已注册的矩阵（包括黑雾及模组矩阵）都能供养生命塔，价值越高，每件营养越多、处理越快。工作和待机都会消耗营养；断粮损失耐久，充分供养可恢复。无人机不能维修生命塔，主动拆除返还缓存，损毁丢失缓存。基础输入按20堆、高级主料及辅料按40堆、流出及产物按5堆设置接收阈值；达到阈值才停收，本次完整货物或批次允许越过。
 
 Basic towers use electricity. Advanced towers consume any supported matrix as nutrition, including Dark Fog matrices. Dismantling returns cached items; destruction does not. Buffers use admission thresholds: a complete incoming stack or reaction batch may exceed a threshold before further processing stops.
 

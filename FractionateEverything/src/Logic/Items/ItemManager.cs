@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CommonAPI.Systems;
 using FE.Compatibility.Mods;
+using FE.Logic.Civilization.Monument;
 using FE.Logic.Fractionation.Recipes;
 using UnityEngine;
 using static FE.FractionateEverything;
@@ -115,7 +116,7 @@ public static class ItemManager {
     public static bool IsUploadableItem(int itemId) => itemId > 0 && itemId < 12000 && uploadableItems[itemId];
 
     /// <summary>
-    /// 计算所有物品的价值
+    /// 在全部模组原型加载后计算统一价值；外部未解项最后取1，FE物品使用明确来源定价。
     /// </summary>
     public static void CalculateItemValues() {
         Array.Clear(itemValue, 0, itemValue.Length);
@@ -124,21 +125,6 @@ public static class ItemManager {
         itemValue[I木材] = 1.0f;
         itemValue[I植物燃料] = 1.0f;
         itemValue[I沙土] = 1.0f;
-        //设置气巨、冰巨、可直接抽取的物品价值
-        itemValue[I氢] = 2.0f;
-        itemValue[I重氢] = 5.0f;
-        itemValue[I水] = 1.0f;
-        itemValue[I硫酸] = 5.0f;
-        if (GenesisBook.Enable) {
-            itemValue[IGB氦] = 20.0f;
-            itemValue[IGB海水] = 2.0f;
-            itemValue[IGB盐酸] = 5.0f;
-            itemValue[IGB硝酸] = 5.0f;
-            itemValue[IGB氨] = 5.0f;
-            itemValue[IGB二氧化硫] = 5.0f;
-            itemValue[IGB二氧化碳] = 5.0f;
-            itemValue[IGB氮] = 3.0f;
-        }
         //设置黑雾掉落价值
         itemValue[I能量碎片] = 2f;
         itemValue[I黑雾矩阵] = 2.5f;
@@ -165,8 +151,7 @@ public static class ItemManager {
                 itemValue[i] = maxValue;
             }
         }
-        CalculateItemValue:
-        //获取所有配方（排除含有多功能集成组件的配方、GridIndex超限配方）
+        // 隐藏配方同样可以提供真实生产来源；FE高级展示原型不参与普通成本推导。
         var iEnumerable = LDB.recipes.dataArray.Where(r =>
             !AdvancedRecipeCatalog.IsAdvancedProto(r.ID)
             && !r.Items.Contains(IMS多功能集成组件)
@@ -174,10 +159,13 @@ public static class ItemManager {
             && !r.Items.Contains(IFE通用原胚)
             && !r.Results.Contains(IFE通用原胚)
             && !r.Items.Any(IsProgressionResource) && !r.Results.Any(IsProgressionResource)
-            && r.GridIndexValid());
+            && r.Type != ERecipeType.None
+            && r.Items.Length == r.ItemCounts.Length && r.Results.Length == r.ResultCounts.Length
+            && r.Items.All(id => id > 0 && id < itemValue.Length && LDB.items.Exist(id))
+            && r.Results.All(id => id > 0 && id < itemValue.Length && LDB.items.Exist(id)));
         var recipes = iEnumerable.ToArray();
 
-        //迭代计算价值
+        // 按依赖传播至不再变化；最多按物品数遍历，避免循环配方让启动计算无法结束。
         bool changed;
         int iteration = 0;
 
@@ -225,7 +213,7 @@ public static class ItemManager {
                 // 检查输入物品是否都有已知价值
                 bool canProcess = true;
                 foreach (int itemId in inputIDs) {
-                    if (Math.Abs(itemValue[itemId] - maxValue) < 0.0001f) {
+                    if (!(itemValue[itemId] > 0f && itemValue[itemId] < maxValue)) {
                         canProcess = false;
                         break;
                     }
@@ -248,18 +236,10 @@ public static class ItemManager {
                 } else {
                     int outputUnits = outputCounts.Sum();
                     if (outputUnits <= 0) continue;
-                    // 计算原材料总价值
-                    float inputValue = 0;
-                    for (int i = 0; i < inputIDs.Count; i++) {
-                        inputValue += inputCounts[i] * itemValue[inputIDs[i]];
-                    }
-                    // 计算配方时间成本，原料价值越高则单位时间的价值越高
-                    // 别问为什么参数是 0.03 和 1.5，问就是经验
-                    float adjustedTimeValue = recipe.TimeSpend / 60.0f * (0.03f * inputValue + 1.5f);
-                    // 计算单位价值
-                    unitValue = (inputValue + adjustedTimeValue) / outputUnits;
+                    unitValue = GetManufacturingValue(recipe, inputIDs, inputCounts, outputUnits);
                 }
 
+                if (!(unitValue > 0f && unitValue < maxValue)) { continue; }
                 // 更新输出物品价值（取最小值）
                 foreach (int itemId in outputIDs) {
                     if (!MineralValues.HasNaturalValue(itemId) && unitValue < itemValue[itemId]) {
@@ -279,59 +259,7 @@ public static class ItemManager {
                     }
                 }
             }
-        } while (changed && iteration < 10);
-
-        //根据分馏配方计算未知价值物品的价值
-        iEnumerable = LDB.recipes.dataArray.Where(r => r.Type == ERecipeType.Fractionate && r.GridIndexValid()
-            && !r.Items.Any(IsProgressionResource) && !r.Results.Any(IsProgressionResource));
-        recipes = iEnumerable.ToArray();
-        foreach (var recipe in recipes) {
-            // 复制配方数据
-            List<int> inputIDs = recipe.Items.ToList();
-            List<int> outputIDs = recipe.Results.ToList();
-            List<int> inputCounts = recipe.ItemCounts.ToList();
-            List<int> outputCounts = recipe.ResultCounts.ToList();
-
-            // 检查输入物品是否都有已知价值
-            bool canProcess = true;
-            foreach (int itemId in inputIDs) {
-                if (Math.Abs(itemValue[itemId] - maxValue) < 0.0001f) {
-                    canProcess = false;
-                    break;
-                }
-            }
-            if (!canProcess) continue;
-
-            // 计算输入总价值和输出总单位数
-            float inputValue = 0;
-            for (int i = 0; i < inputIDs.Count; i++) {
-                inputValue += inputCounts[i] * itemValue[inputIDs[i]];
-            }
-
-            int outputUnits = outputCounts.Sum();
-
-            // 如果输出总单位数为0，则跳过（没有净产出）
-            if (outputUnits <= 0) continue;
-
-            // 计算时间成本
-            // 分馏成功率为p时，时间成本为 inputValue*0.01/p
-            float adjustedTimeValue = inputValue * 0.01f / (recipe.ResultCounts[0] / (float)recipe.ItemCounts[0]);
-
-            // 计算单位价值
-            float unitValue = (inputValue + adjustedTimeValue) / outputUnits;
-
-            // 更新输出物品价值（取最小值）
-            foreach (int itemId in outputIDs) {
-                if (!MineralValues.HasNaturalValue(itemId) && unitValue < itemValue[itemId]) {
-                    itemValue[itemId] = unitValue;
-                    changed = true;
-                }
-            }
-        }
-        if (changed) {
-            goto CalculateItemValue;
-        }
-
+        } while (changed && iteration < LDB.items.dataArray.Length);
 
         //设置多功能集成组件的价值
         iEnumerable = LDB.recipes.dataArray.Where(r => r.Items.Length == 1
@@ -370,6 +298,32 @@ public static class ItemManager {
             itemValue[IMS多功能集成组件] = maxCalculatedValue;
         }
 
+        HashSet<int> ownItems = [IFE基础矿物塔, IFE基础解析塔, IFE高级矿物塔, IFE高级交互塔, IFE高级转化塔,
+            IFE行星内物流交互站, IFE星际物流交互站, IFE通用原胚, IFE残片, IFE记忆源点, IFE实体元数据];
+        ownItems.UnionWith(LDB.items.dataArray.Where(item => MonumentCatalog.IsMonumentItem(item.ID)).Select(item => item.ID));
+        // 推导全部结束后才对外部物品兜底，避免初始值1阻止配方成本更新。
+        foreach (ItemProto item in LDB.items.dataArray) {
+            if (item.ID <= 0 || item.ID >= itemValue.Length || ownItems.Contains(item.ID)) { continue; }
+            float value = itemValue[item.ID];
+            if (!(value > 0f && value < maxValue)) { itemValue[item.ID] = 1f; }
+        }
+        // 外部材料兜底后，仍未解出的FE普通建筑按实际制造投入补算，不能直接取1。
+        foreach (int id in ownItems) {
+            if (MonumentCatalog.IsMonumentItem(id) || itemValue[id] > 0f && itemValue[id] < maxValue) { continue; }
+            RecipeProto recipe = LDB.items.Select(id)?.maincraft;
+            if (recipe == null || recipe.Type == ERecipeType.Fractionate
+                || recipe.Items.Any(input => input <= 0 || input >= itemValue.Length
+                    || !(itemValue[input] > 0f && itemValue[input] < maxValue))) { continue; }
+            itemValue[id] = GetManufacturingValue(recipe, recipe.Items, recipe.ItemCounts, recipe.ResultCounts.Sum());
+        }
+        // 丰碑弹药按最终投入估值；FE物品缺少来源属于定义错误，不能混入外部兜底。
+        MonumentCatalog.ApplyValues();
+        foreach (int id in ownItems) {
+            if (!(itemValue[id] > 1f && itemValue[id] < maxValue)) {
+                throw new InvalidOperationException($"分馏物品{id}缺少独立估值，请补充基础来源或制造成本。");
+            }
+        }
+
         // 基础塔正面上传可接收全部已注册实体物品，上传路由负责容量。
         Array.Clear(uploadableItems, 0, uploadableItems.Length);
         foreach (ItemProto item in LDB.items.dataArray) {
@@ -377,6 +331,20 @@ public static class ItemManager {
                 uploadableItems[item.ID] = true;
             }
         }
+    }
+
+    /// <summary>将普通制造的原料与时间成本按净产物件数均摊；时间成本沿用统一经验系数。</summary>
+    /// <param name="recipe">提供加工时间的生产配方。</param>
+    /// <param name="inputIds">已抵消同物料回流后的原料身份。</param>
+    /// <param name="inputCounts">与原料身份一一对应的数量。</param>
+    /// <param name="outputUnits">净产物总件数。</param>
+    /// <returns>每件平均价值；没有净产物时保留未解标记。</returns>
+    private static float GetManufacturingValue(RecipeProto recipe, IReadOnlyList<int> inputIds, IReadOnlyList<int> inputCounts, int outputUnits) {
+        if (outputUnits <= 0) { return maxValue; }
+        float inputValue = 0f;
+        for (int i = 0; i < inputIds.Count; i++) { inputValue += inputCounts[i] * itemValue[inputIds[i]]; }
+        float timeValue = recipe.TimeSpend / 60f * (0.03f * inputValue + 1.5f);
+        return (inputValue + timeValue) / outputUnits;
     }
 
     #endregion

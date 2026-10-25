@@ -27,13 +27,12 @@ public static partial class StationManager {
     public static void CalculateItemModSaveCount() {
         // 遍历所有物品，计算每种物品在数据中心的目标存储数量
         foreach (var item in LDB.items.dataArray) {
-            float value = itemValue[item.ID];
-            if (item.BuildMode != 0 || !(value > 0f && value < maxValue)) {
-                // 建筑及未知估值沿用亚空间容量的十组底线，估值不能决定实体存取资格。
+            if (item.BuildMode != 0) {
+                // 建筑沿用十组目标；普通物品统一读取启动时完成的估值表。
                 itemModSaveCount[item.ID] = Math.Max(1, item.StackSize) * 10;
             } else {
                 // 非建筑物品：按价值对数压低有限上传目标，避免高价值物品目标数过低。
-                itemModSaveCount[item.ID] = CalculateLimitedUploadTarget(value);
+                itemModSaveCount[item.ID] = CalculateLimitedUploadTarget(itemValue[item.ID]);
             }
         }
     }
@@ -183,10 +182,7 @@ public static partial class StationManager {
         ItemProto itemProto = LDB.items.Select(IFE行星内物流交互站);
         // 单件耗电（J）为物品价值的平方根乘以 10000 和交互耗电倍率。
         double efficiencyMultiplier = GrowthTechnologyManager.SubspaceEnergyRatio;
-        // 未知估值只按最低基础价值计交互电费，不写回估值表，也不允许折算扩容。
-        float value = itemValue[store.itemId];
-        if (!(value > 0f && value < maxValue)) { value = 1f; }
-        double cost = Math.Sqrt(value) * 10000
+        double cost = Math.Sqrt(itemValue[store.itemId]) * 10000
                       * itemProto.InteractEnergyRatio() * efficiencyMultiplier;
         if (cost < 0 || double.IsNaN(cost) || double.IsInfinity(cost)) {
             return;
