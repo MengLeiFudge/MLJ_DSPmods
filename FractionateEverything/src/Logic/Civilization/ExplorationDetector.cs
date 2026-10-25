@@ -71,11 +71,12 @@ public static class ExplorationDetector {
     }
 
     /// <summary>同星球指向地点或下一航迹节点，跨星球先指向目标星球。</summary>
-    public static bool TryGetGuidePosition(out VectorLF3 position) {
+    public static bool TryGetGuidePosition(int markId, out VectorLF3 position) {
         EnsureSession();
         position = default;
-        if (!trackingEnabled || targetId == 0 || GameMain.mainPlayer == null) { return false; }
-        ExplorationMark mark = ExplorationManager.GetActiveMarks().FirstOrDefault(m => m.Id == targetId);
+        if (markId == 0 || GameMain.mainPlayer == null) { return false; }
+        ExplorationMark mark = ExplorationManager.GetActiveMarks().FirstOrDefault(m => m.Id == markId);
+        if (mark == null || mark.Kind == ExplorationMarkKind.FirstRelic) { return false; }
         PlanetData planet = GameMain.galaxy?.PlanetById(mark?.PlanetId ?? 0);
         if (planet == null) { return false; }
         position = planet.uPosition;

@@ -20,6 +20,7 @@ internal static class ExplorationSignalHud {
     private static readonly Rect[] PanelBounds = new Rect[5];
     private static int panelCount;
     private static int displayedMarkId;
+    private static bool suppressHoverGuide;
 
     /// <summary>复制原版条目预制体，保留视觉组件，不注册黑雾业务事件。</summary>
     public static void EnsureCreated() {
@@ -51,10 +52,16 @@ internal static class ExplorationSignalHud {
         entry.iconTintImage.gameObject.SetActive(false);
         foreach (UIButton button in new[] { entry.entryButton, entry.thrtButton, entry.expButton }) {
             button.onClick -= entry.OnEntryClick;
-            button.onClick += _ => { ExplorationDetector.ToggleTracking(displayedMarkId); Update(); };
+            button.onClick += _ => {
+                ExplorationDetector.ToggleTracking(displayedMarkId);
+                suppressHoverGuide = !ExplorationDetector.TrackingEnabled;
+                Update();
+            };
             button.tips.tipTitle = button.tips.tipText = string.Empty;
             if (button.button != null) { button.button.onClick = new Button.ButtonClickedEvent(); }
         }
+        Camera.onPreCull -= OnCameraPreCull;
+        Camera.onPreCull += OnCameraPreCull;
         root.SetActive(false);
     }
 
@@ -197,7 +204,8 @@ internal static class ExplorationSignalHud {
         ExplorationRouteView.Update(visible);
         DetectorReading reading = visible ? ExplorationDetector.Read() : default;
         root.SetActive(visible && reading.Visible);
-        if (!visible || !reading.Visible) { CloseGuideLine(); return; }
+        if (!visible || !reading.Visible) { suppressHoverGuide = false; CloseGuideLine(); return; }
+        if (displayedMarkId != reading.MarkId) { suppressHoverGuide = false; }
         displayedMarkId = reading.MarkId;
         bool tracking = ExplorationDetector.TrackingEnabled;
         bool canNavigate = displayedMarkId != 0 || tracking;
@@ -213,10 +221,9 @@ internal static class ExplorationSignalHud {
         entry.threatBar.rectTransform.anchoredPosition = new Vector2(-130f + Mathf.Round(strength * 100f),
             entry.threatBar.rectTransform.anchoredPosition.y);
         entry.entryButton.enabled = entry.thrtButton.enabled = entry.expButton.enabled = canNavigate;
-        entry.trackImage.gameObject.SetActive(tracking && displayedMarkId != 0);
     }
 
-    /// <summary>与原版监测器同在UI晚更新阶段，使用相机更新后的坐标绘制连线。</summary>
+    /// <summary>原版监测器完成布局后，为探索条目计算避让位置。</summary>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UIGame), nameof(UIGame._OnLateUpdate))]
     public static void UIGame_OnLateUpdate_Postfix(UIGame __instance) {
@@ -226,13 +233,31 @@ internal static class ExplorationSignalHud {
             return;
         }
         UpdatePosition(__instance);
+    }
+
+    /// <summary>在主相机实际渲染前投影，避免不同组件的LateUpdate顺序使起点与当前画面错开。</summary>
+    private static void OnCameraPreCull(Camera camera) {
+        if (camera != GameCamera.main) { return; }
+        UIGame uiGame = UIRoot.instance?.uiGame;
+        if (!root || !root.activeInHierarchy || uiGame?.active != true || GameMain.isPaused
+            || uiGame.hideAllUI0 || uiGame.hideAllUI1 || GameCamera.instance.hdScreenshot.preparing) {
+            CloseGuideLine();
+            return;
+        }
+        bool hovering = entry.entryButton._isPointerEnter || entry.thrtButton._isPointerEnter
+            || entry.expButton._isPointerEnter;
+        if (!hovering) { suppressHoverGuide = false; }
+        bool visible = displayedMarkId != 0 && (ExplorationDetector.TrackingEnabled || hovering && !suppressHoverGuide);
+        entry.trackImage.gameObject.SetActive(visible);
+        if (!visible) { CloseGuideLine(); return; }
+        entry.rectTrans.ForceUpdateRectTransforms();
         UpdateGuideLine();
     }
 
     /// <summary>沿用黑雾条目OpenGuideLine的投影和线条参数，仅替换目标位置与颜色。</summary>
     private static void UpdateGuideLine() {
         if (!ReferenceEquals(lineGalaxy, GameMain.galaxy)) { CloseGuideLine(); lineGalaxy = GameMain.galaxy; }
-        if (!ExplorationDetector.TryGetGuidePosition(out VectorLF3 target) || GameCamera.main == null
+        if (!ExplorationDetector.TryGetGuidePosition(displayedMarkId, out VectorLF3 target) || GameCamera.main == null
             || GameCamera.instance.hdScreenshot.preparing) { CloseGuideLine(); return; }
         Vector3 screen = UIRoot.instance.overlayCanvas.worldCamera.WorldToScreenPoint(entry.trackImage.transform.position);
         Vector3 start = GameCamera.main.ScreenPointToRay(screen).GetPoint(4.5f);
