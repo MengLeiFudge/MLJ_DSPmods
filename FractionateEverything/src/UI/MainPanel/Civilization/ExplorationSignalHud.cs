@@ -48,6 +48,15 @@ internal static class ExplorationSignalHud {
         entry.expBar.gameObject.SetActive(false);
         entry.alertImage.gameObject.SetActive(false);
         entry.alertToggle.gameObject.SetActive(false);
+        // 右侧位置文字的宽度不能继续占位；追踪图标独立挂在可见条框下，避免被隐藏父节点连带关闭。
+        entry.locationText.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 0f);
+        entry.trackImage.rectTransform.SetParent(entry.frameImage.rectTransform, false);
+        entry.trackImage.rectTransform.anchorMin = entry.trackImage.rectTransform.anchorMax = new Vector2(1f, 0.5f);
+        entry.trackImage.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        entry.trackImage.rectTransform.localScale = Vector3.one;
+        entry.trackImage.enabled = true;
+        entry.trackImage.raycastTarget = false;
+        entry.trackImage.gameObject.SetActive(false);
         entry.iconImage.gameObject.SetActive(false);
         entry.iconTintImage.gameObject.SetActive(false);
         foreach (UIButton button in new[] { entry.entryButton, entry.thrtButton, entry.expButton }) {
@@ -90,8 +99,9 @@ internal static class ExplorationSignalHud {
             bottom = Mathf.Min(bottom, PanelBounds[i].yMin);
             right = Mathf.Max(right, PanelBounds[i].xMax);
         }
-        float left = monitor?.contentRect != null
-            ? GetPanelBounds(monitor.contentRect, parent).xMin : screen.xMin + 22f;
+        float left = monitor?.baseGroupLabel != null
+            ? GetPanelBounds(monitor.baseGroupLabel, parent).xMin - GetPanelBounds(titleRect, rootRect).xMin
+            : screen.xMin + 22f;
         Vector2 position = new(Mathf.Max(safe.xMin, left), Mathf.Min(safe.yMax, bottom - 10f));
         float scale = GetAvailableScale(position, safe);
         if (scale < 1f) {
@@ -113,8 +123,8 @@ internal static class ExplorationSignalHud {
         if (scale <= 0f) { return; }
         Vector2 current = new(screen.xMin + rootRect.anchoredPosition.x,
             screen.yMax + rootRect.anchoredPosition.y);
-        // 小幅收缩仍能容纳当前HUD时保留位置，避免面板缓动产生反复跳动。
-        if ((position - current).sqrMagnitude <= RowHeight * RowHeight
+        // 只保留纵向缓动余量，横向必须跟随原版标题，不能因距离小而锁在旧的左侧位置。
+        if (Mathf.Abs(position.x - current.x) < 0.5f && Mathf.Abs(position.y - current.y) <= RowHeight
             && GetAvailableScale(current, safe) >= scale) {
             position = current;
         }
@@ -233,6 +243,35 @@ internal static class ExplorationSignalHud {
             return;
         }
         UpdatePosition(__instance);
+        UpdateTrackIconLayout(__instance.dfMonitor);
+        UpdateGuideVisibility();
+    }
+
+    /// <summary>保留原版追踪图标相对条框的位置，扣除本HUD不显示的右侧地点名占位。</summary>
+    private static void UpdateTrackIconLayout(UIDarkFogMonitor monitor) {
+        UIDarkFogMonitorEntry template = monitor.baseEntryPrefab;
+        foreach (UIDarkFogMonitorEntry candidate in monitor.baseEntries) {
+            if (candidate != null && candidate.gameObject.activeInHierarchy) { template = candidate; break; }
+        }
+        RectTransform frame = template.frameImage.rectTransform;
+        Vector3 center = template.trackImage.rectTransform.TransformPoint(template.trackImage.rectTransform.rect.center);
+        Vector3 local = frame.InverseTransformPoint(center);
+        float locationWidth = template.locationText.rectTransform.rect.width;
+        entry.trackImage.rectTransform.anchoredPosition = new Vector2(
+            local.x - frame.rect.xMax - locationWidth, local.y - frame.rect.center.y);
+        entry.trackImage.rectTransform.sizeDelta = template.trackImage.rectTransform.rect.size;
+        entry.trackImage.color = template.trackImage.color;
+    }
+
+    /// <summary>图标与蓝线共用可见条件；图标在UI布局阶段启用，避免相机渲染时才激活而错过画布刷新。</summary>
+    private static bool UpdateGuideVisibility() {
+        bool hovering = entry.entryButton._isPointerEnter || entry.thrtButton._isPointerEnter
+            || entry.expButton._isPointerEnter;
+        if (!hovering) { suppressHoverGuide = false; }
+        bool visible = displayedMarkId != 0 && (ExplorationDetector.TrackingEnabled || hovering && !suppressHoverGuide);
+        entry.trackImage.gameObject.SetActive(visible);
+        if (!visible) { CloseGuideLine(); }
+        return visible;
     }
 
     /// <summary>在主相机实际渲染前投影，避免不同组件的LateUpdate顺序使起点与当前画面错开。</summary>
@@ -244,12 +283,7 @@ internal static class ExplorationSignalHud {
             CloseGuideLine();
             return;
         }
-        bool hovering = entry.entryButton._isPointerEnter || entry.thrtButton._isPointerEnter
-            || entry.expButton._isPointerEnter;
-        if (!hovering) { suppressHoverGuide = false; }
-        bool visible = displayedMarkId != 0 && (ExplorationDetector.TrackingEnabled || hovering && !suppressHoverGuide);
-        entry.trackImage.gameObject.SetActive(visible);
-        if (!visible) { CloseGuideLine(); return; }
+        if (!UpdateGuideVisibility()) { return; }
         entry.rectTrans.ForceUpdateRectTransforms();
         UpdateGuideLine();
     }
@@ -259,7 +293,9 @@ internal static class ExplorationSignalHud {
         if (!ReferenceEquals(lineGalaxy, GameMain.galaxy)) { CloseGuideLine(); lineGalaxy = GameMain.galaxy; }
         if (!ExplorationDetector.TryGetGuidePosition(displayedMarkId, out VectorLF3 target) || GameCamera.main == null
             || GameCamera.instance.hdScreenshot.preparing) { CloseGuideLine(); return; }
-        Vector3 screen = UIRoot.instance.overlayCanvas.worldCamera.WorldToScreenPoint(entry.trackImage.transform.position);
+        RectTransform track = entry.trackImage.rectTransform;
+        Vector3 center = track.TransformPoint(track.rect.center);
+        Vector3 screen = UIRoot.instance.overlayCanvas.worldCamera.WorldToScreenPoint(center);
         Vector3 start = GameCamera.main.ScreenPointToRay(screen).GetPoint(4.5f);
         VectorLF3 relative = Maths.QInvRotateLF(GameMain.data.relativeRot, target - GameMain.data.relativePos);
         UniverseSimulator.VirtualMapping(relative.x, relative.y, relative.z, GameCamera.main.transform.position,
