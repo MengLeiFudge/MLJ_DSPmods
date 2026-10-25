@@ -304,6 +304,13 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
 - Model IDs: `M` prefix + Chinese name
 - Mod-added IDs: `IFE`, `RFE`, `MFE` prefixes for this mod's additions
 
+## 物品取放统一入口（强制）
+
+- 所有玩家侧物品消耗、任务交付、购买及兼容模组取料，沿用2.x封装并统一调用`PlayerInventoryAccess`：数量查询用`GetItemTotalCount`，整笔扣除用`TakeItemWithTip`，允许分批时用`TakeItemInternal`。必须遵守设置中的`ModSettings.TakeItemPriority`，覆盖背包、物流背包和已开放的亚空间。不得在业务代码中直接扣玩家背包、直接扣亚空间或重写取物顺序。
+- 玩家侧物品返还使用`AddItemToPackage`或既有`TryAddItemToPackage`接线；上传与明确下载亚空间的操作继续使用`DataCenterUploadRouter`及`DataCenterInventory`的既有入口。不得复制容量、增产点拆分、取放顺序或联机额度算法。
+- 机器内部原料、食物和产物缓存、传送带搬运、手持实物转移、库存封装底层及远端快照重放有明确的实体来源，仍扣对应实体，不得改成从玩家库存补料。联机远端重放复用同一取物顺序执行器，不得访问主机玩家背包；亚空间已核销额度不能再次扣除。
+- 新增或修改消耗时核对实际数量与增产点、部分交付、失败返还和唯一流水，数量展示与实际取物使用同一库存范围。
+
 ## Error Handling
 
 - Minimal try-catch (Unity/BepInEx catches unhandled exceptions at the game level)

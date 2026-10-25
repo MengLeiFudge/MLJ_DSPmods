@@ -166,6 +166,12 @@ public static class MaterialLeases {
         }
         closed.Add(lease.Id);
     }
+    /// <summary>交付未接收的已核销额度退回自由库存；调用方须先以交付流水去重。</summary>
+    internal static void ReturnConsumed(int item, int count, int inc) {
+        if (count <= 0) { return; }
+        lock (DataCenterInventory.centerItemCount) { Restore(item, count, inc); }
+    }
+
     private static void Restore(int item, int count, int inc) {
         if (DataCenterInventory.centerItemCount[item] > long.MaxValue - count || DataCenterInventory.centerItemInc[item] > long.MaxValue - inc) {
             throw new InvalidDataException("取料额度返还超过数值边界。");

@@ -2926,25 +2926,25 @@
     "1041": "新たな応答が届きつつある。しばらくしたら信号追跡を確認しよう。"
   },
   "FE.Exploration.DeliveryRemaining": {
-    "enUS": "The record still needs {0} Memory. Bring more in Icarus’s backpack.",
-    "zhCN": "记录还缺 {0} 份源点，带在机甲背包中即可继续交付。",
-    "frFR": "Il manque encore {0} mémoires. Apportez-les dans le sac d’Icarus.",
-    "1031": "Der Aufzeichnung fehlen noch {0} Erinnerungen. Bringe sie in Ikarus’ Rucksack mit.",
-    "1041": "記録の復元には記憶コアがあと{0}個必要。機甲のバックパックに入れて持参できる。"
+    "enUS": "The record still needs {0} Memory. Delivery follows your configured inventory order, including subspace.",
+    "zhCN": "记录还缺 {0} 份源点；交付会按设置中的取物顺序使用背包、物流背包和亚空间。",
+    "frFR": "Il manque encore {0} mémoires. La livraison suit votre ordre de prélèvement, sous-espace compris.",
+    "1031": "Der Aufzeichnung fehlen noch {0} Erinnerungen. Die Abgabe folgt deiner Entnahmereihenfolge, einschließlich Subraum.",
+    "1041": "記録には記憶コアがあと{0}個必要。設定した取り出し順に従い、バックパック・物流バックパック・亜空間から納入する。"
   },
   "FE.Exploration.DeliveryUnavailable": {
-    "enUS": "Backpack delivery synchronization is unavailable. No Memory was taken; check the Nebula compatibility log.",
-    "zhCN": "背包交付同步暂不可用，尚未扣除源点；请查看Nebula兼容日志。",
+    "enUS": "Inventory delivery synchronization is unavailable. No Memory was taken; check the Nebula compatibility log.",
+    "zhCN": "物品交付同步暂不可用，尚未扣除源点；请查看Nebula兼容日志。",
     "frFR": "La synchronisation de livraison est indisponible. Aucune mémoire prélevée ; consultez le journal de compatibilité Nebula.",
-    "1031": "Die Rucksackabgabe kann derzeit nicht synchronisiert werden. Keine Erinnerungen entnommen; prüfe das Nebula-Kompatibilitätsprotokoll.",
-    "1041": "バックパック納入の同期を利用できません。記憶コアは未消費です。Nebula互換ログを確認してください。"
+    "1031": "Die Gegenstandsabgabe kann derzeit nicht synchronisiert werden. Keine Erinnerungen entnommen; prüfe das Nebula-Kompatibilitätsprotokoll.",
+    "1041": "アイテム納入の同期を利用できません。記憶コアは未消費です。Nebula互換ログを確認してください。"
   },
   "FE.UltimateTasksPage.Delivery": {
-    "enUS": "\n\nMemory delivered: {0}/2400\nWithin the recovery area, Memory is transferred automatically from Icarus’s backpack. Partial deliveries are kept; subspace inventory is untouched.",
-    "zhCN": "\n\n源点交付：{0}/2400\n进入回收范围后，自动从机甲背包交付源点，可以分批。亚空间库存不参与扣除。",
-    "frFR": "\n\nMémoires livrées : {0}/2400\nDans la zone de récupération, les mémoires du sac d’Icarus sont livrées automatiquement, même en plusieurs fois. Le stock sous-spatial reste intact.",
-    "1031": "\n\nAbgegebene Erinnerungen: {0}/2400\nIm Bergungsbereich werden Erinnerungen automatisch aus Ikarus’ Rucksack abgegeben. Teillieferungen bleiben erhalten; der Subraumvorrat bleibt unberührt.",
-    "1041": "\n\n記憶コア納入：{0}/2400\n回収範囲に入ると機甲のバックパックから自動納入される。分割納入が可能で、亜空間の在庫は消費しない。"
+    "enUS": "\n\nMemory delivered: {0}/2400\nWithin the recovery area, Memory is delivered automatically in your configured inventory order, including subspace. Partial deliveries are kept.",
+    "zhCN": "\n\n源点交付：{0}/2400\n进入回收范围后，按设置中的取物顺序自动交付源点，可以分批。背包、物流背包和亚空间均参与。",
+    "frFR": "\n\nMémoires livrées : {0}/2400\nDans la zone de récupération, la livraison est automatique selon votre ordre de prélèvement, sous-espace compris. Les livraisons partielles sont conservées.",
+    "1031": "\n\nAbgegebene Erinnerungen: {0}/2400\nIm Bergungsbereich erfolgt die Abgabe automatisch gemäß deiner Entnahmereihenfolge, einschließlich Subraum. Teillieferungen bleiben erhalten.",
+    "1041": "\n\n記憶コア納入：{0}/2400\n回収範囲内では設定した取り出し順に従って自動納入する。分割納入が可能で、バックパック・物流バックパック・亜空間を利用する。"
   },
   "使用指南": {
     "enUS": "Field Guide",
@@ -3374,11 +3374,11 @@
     "1041": "復元した記録は、別の途絶えた中継点を指している。放送の間隔は前回と同じで、かすかな応答が続く。見つければ、切れたつながりをもう一つ戻せるかもしれない。"
   },
   "FE.ExplorationManager.UltimateDeliveryHint": {
-    "enUS": "The nodes are connected, but the central record still has gaps. Its interface requests more Memory. When Icarus approaches with Memory in the backpack, the interface draws in only what the record still needs.",
-    "zhCN": "节点已经连通，中央记录仍有空白，接口正在等待更多源点。伊卡洛斯带着背包中的源点接近时，接口会自行收取尚缺的部分。",
-    "frFR": "Les nœuds sont reliés, mais l’archive centrale reste incomplète. À l’approche d’Icarus, l’interface prélève dans son sac uniquement les mémoires encore nécessaires.",
-    "1031": "Die Knoten sind verbunden, doch die zentrale Aufzeichnung hat noch Lücken. Bei Ikarus’ Annäherung entnimmt die Schnittstelle seinem Rucksack nur die noch benötigten Erinnerungen.",
-    "1041": "中継点はつながったが、中央記録には空白が残る。記憶コアをバックパックに入れて近づくと、インターフェースが不足分だけを自動で受け取る。"
+    "enUS": "The nodes are connected, but the central record still has gaps. When Icarus approaches, the interface draws only the Memory still needed, following the configured inventory order, including subspace.",
+    "zhCN": "节点已经连通，中央记录仍有空白，接口正在等待更多源点。伊卡洛斯接近时，接口会按设置中的取物顺序，从背包、物流背包和亚空间收取尚缺的部分。",
+    "frFR": "Les nœuds sont reliés, mais l’archive centrale reste incomplète. À l’approche d’Icarus, l’interface prélève seulement les mémoires manquantes selon votre ordre configuré, sous-espace compris.",
+    "1031": "Die Knoten sind verbunden, doch die zentrale Aufzeichnung hat noch Lücken. Bei Ikarus’ Annäherung entnimmt die Schnittstelle nur die fehlenden Erinnerungen gemäß deiner Reihenfolge, einschließlich Subraum.",
+    "1041": "中継点はつながったが、中央記録には空白が残る。近づくと、設定した取り出し順に従い、バックパック・物流バックパック・亜空間から不足分の記憶コアだけを受け取る。"
   },
   "FE.ExplorationManager.UltimateCoreHint": {
     "enUS": "The final coordinates are complete at last. For the first time, the distant core sends a clear response, patiently repeating the same address. This time, Icarus knows where to go.",

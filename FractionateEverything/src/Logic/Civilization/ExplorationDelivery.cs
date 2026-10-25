@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FE.Compatibility.Nebula;
+using FE.Logic.DataCenter;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Civilization;
 
-/// <summary>一次背包交付的不可重复结算结果；增产点随实际扣除件数一同离开背包。</summary>
+/// <summary>一次交付的不可重复结算结果；增产点随实际扣除件数一同结算。</summary>
 public sealed class MemoryDeliveryReceipt {
     /// <summary>主机连接玩家身份，本地主机为0。</summary>
     public int Owner;
@@ -20,11 +21,14 @@ public sealed class MemoryDeliveryReceipt {
     /// <summary>主机实际接收的数量与增产点，差额退还。</summary>
     public int Accepted;
     public int AcceptedInc;
+    /// <summary>主机已经返还亚空间的未接收部分，客户端不得再次退款。</summary>
+    public int ReturnedSubspace;
+    public int ReturnedSubspaceInc;
     /// <summary>本次处理后该节点的剩余需求。</summary>
     public int Remaining;
 }
 
-/// <summary>终极任务的到地背包交付及持久流水账本；不调用亚空间取物接口。</summary>
+/// <summary>终极任务的到地交付及持久流水；取物顺序统一由PlayerInventoryAccess执行。</summary>
 public static partial class ExplorationManager {
     private static readonly Dictionary<string, MemoryDeliveryReceipt> DeliveryResults = new(StringComparer.Ordinal);
     private static GalaxyData deliveryGalaxy;
@@ -44,14 +48,14 @@ public static partial class ExplorationManager {
     /// <param name="markId">交付点身份。</param>
     /// <param name="position">主机确认的宇宙位置。</param>
     /// <param name="planetId">主机确认的星球。</param>
-    /// <param name="package">本地主机真实背包，或客户端交付前的真实背包快照。</param>
     /// <param name="offered">愿意提交的件数，不得超过节点总需求。</param>
     /// <param name="offeredInc">已暂存件数的增产点，仅用于回执。</param>
-    /// <param name="persistPackage">远端库存持有者的写回入口，在推进节点前完成。</param>
+    /// <param name="takeItems">统一库存入口；远端交付重放客户端已暂存的库存。</param>
+    /// <param name="commit">推进节点前持久化远端库存并返还未接收的亚空间额度。</param>
     public static MemoryDeliveryReceipt DeliverMemory(string requestId, int owner, string fingerprint,
-        int markId, VectorLF3 position, int planetId, StorageComponent package, int offered, int offeredInc,
-        Action<StorageComponent> persistPackage = null) {
-        if (NebulaMultiplayerModAPI.IsClient || package == null || offered <= 0 || offered > UltimateMemoryCost
+        int markId, VectorLF3 position, int planetId, int offered, int offeredInc,
+        Func<int, (int Count, int Inc)> takeItems, Action<MemoryDeliveryReceipt> commit = null) {
+        if (NebulaMultiplayerModAPI.IsClient || takeItems == null || offered <= 0 || offered > UltimateMemoryCost
             || offeredInc < 0 || offeredInc > offered * 10 || !Guid.TryParseExact(requestId, "N", out _)
             || !Finite(position.x) || !Finite(position.y) || !Finite(position.z)) { return null; }
         lock (Sync) {
@@ -64,14 +68,13 @@ public static partial class ExplorationManager {
             int branch = mark?.ContentId == "exploration" ? 0 : 1;
             int remaining = mark == null ? 0 : UltimateMemoryCost - UltimateInputs[branch];
             int accepted = mark != null && IsWithinArrival(mark, position, planetId) ? Math.Min(offered, remaining) : 0;
-            int itemId = IFE记忆源点;
             int inc = 0;
-            if (accepted > 0) { package.TakeTailItems(ref itemId, ref accepted, out inc); }
+            if (accepted > 0) { (accepted, inc) = takeItems(accepted); }
             var receipt = new MemoryDeliveryReceipt {
-                Owner = owner, MarkId = markId, Fingerprint = fingerprint, Offered = offered, OfferedInc = persistPackage == null ? inc : offeredInc,
+                Owner = owner, MarkId = markId, Fingerprint = fingerprint, Offered = offered, OfferedInc = commit == null ? inc : offeredInc,
                 Accepted = accepted, AcceptedInc = inc, Remaining = remaining - accepted,
             };
-            persistPackage?.Invoke(package);
+            commit?.Invoke(receipt);
             DeliveryResults.Add(requestId, receipt);
             if (mark != null && accepted > 0) {
                 UltimateInputs[branch] += accepted;
@@ -102,13 +105,17 @@ public static partial class ExplorationManager {
         }
         if (mark == null) { notifiedDeliveryMark = 0; notifiedDeliveryRemaining = -1; return; }
         if (mark.Id == completedLocalDeliveryMark) { return; }
-        int count = Math.Min(remaining, player.package.GetItemCount(IFE记忆源点));
+        MaterialLeases.Ensure(IFE记忆源点, remaining);
+        int count = (int)Math.Min(remaining, PlayerInventoryAccess.GetItemTotalCount(IFE记忆源点));
         if (count > 0) {
             if (NebulaMultiplayerModAPI.IsClient) {
                 if (MemoryDeliverySync.Request(mark.Id, count)) { return; }
             } else {
                 MemoryDeliveryReceipt receipt = DeliverMemory(Guid.NewGuid().ToString("N"), 0, "local",
-                    mark.Id, player.uPosition, player.planetId, player.package, count, 0);
+                    mark.Id, player.uPosition, player.planetId, count, 0, requested => {
+                        player.package.TakeItemInternal(IFE记忆源点, requested, out int taken, out int inc);
+                        return (taken, inc);
+                    });
                 if (receipt != null) { remaining = receipt.Remaining; }
             }
         }
@@ -133,7 +140,9 @@ public static partial class ExplorationManager {
                 ("MarkId", w => w.Write(receipt.MarkId)), ("Fingerprint", w => w.Write(receipt.Fingerprint)),
                 ("Offered", w => w.Write(receipt.Offered)), ("OfferedInc", w => w.Write(receipt.OfferedInc)),
                 ("Accepted", w => w.Write(receipt.Accepted)), ("AcceptedInc", w => w.Write(receipt.AcceptedInc)),
-                ("Remaining", w => w.Write(receipt.Remaining))
+                ("Remaining", w => w.Write(receipt.Remaining)),
+                ("ReturnedSubspace", w => w.Write(receipt.ReturnedSubspace)),
+                ("ReturnedSubspaceInc", w => w.Write(receipt.ReturnedSubspaceInc))
             );
         });
     }
@@ -148,13 +157,17 @@ public static partial class ExplorationManager {
                 ("MarkId", r => receipt.MarkId = r.ReadInt32()), ("Fingerprint", r => receipt.Fingerprint = r.ReadString()),
                 ("Offered", r => receipt.Offered = r.ReadInt32()), ("OfferedInc", r => receipt.OfferedInc = r.ReadInt32()),
                 ("Accepted", r => receipt.Accepted = r.ReadInt32()), ("AcceptedInc", r => receipt.AcceptedInc = r.ReadInt32()),
-                ("Remaining", r => receipt.Remaining = r.ReadInt32())
+                ("Remaining", r => receipt.Remaining = r.ReadInt32()),
+                ("ReturnedSubspace", r => receipt.ReturnedSubspace = r.ReadInt32()),
+                ("ReturnedSubspaceInc", r => receipt.ReturnedSubspaceInc = r.ReadInt32())
             );
             if (!Guid.TryParseExact(id, "N", out _) || DeliveryResults.ContainsKey(id) || receipt.MarkId <= 0
                 || receipt.Owner is < 0 or > ushort.MaxValue || receipt.Fingerprint.Length > 64
                 || receipt.Offered is <= 0 or > UltimateMemoryCost || receipt.OfferedInc < 0 || receipt.OfferedInc > receipt.Offered * 10
                 || receipt.Accepted < 0 || receipt.Accepted > receipt.Offered || receipt.AcceptedInc < 0
-                || receipt.AcceptedInc > receipt.Accepted * 10 || receipt.Remaining is < 0 or > UltimateMemoryCost) {
+                || receipt.AcceptedInc > receipt.Accepted * 10 || receipt.Remaining is < 0 or > UltimateMemoryCost
+                || receipt.ReturnedSubspace < 0 || receipt.ReturnedSubspace > receipt.Offered - receipt.Accepted
+                || receipt.ReturnedSubspaceInc < 0 || receipt.ReturnedSubspaceInc > receipt.ReturnedSubspace * 10) {
                 throw new InvalidDataException("交付流水数据无效。");
             }
             DeliveryResults.Add(id, receipt);

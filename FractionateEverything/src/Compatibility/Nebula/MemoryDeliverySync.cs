@@ -5,7 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
+using FE.Configuration;
 using FE.Logic.Civilization;
+using FE.Logic.DataCenter;
 using HarmonyLib;
 using NebulaAPI;
 using NebulaAPI.DataStructures;
@@ -16,7 +18,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Compatibility.Nebula;
 
-/// <summary>真实背包交付事务；主机在扣物与奖励提交后等待客户端应用回执，再恢复普通背包覆盖。</summary>
+/// <summary>统一库存交付事务；主机保存两个实体背包与实际接收结果，等待客户端确认后恢复普通库存同步。</summary>
 public static class MemoryDeliverySync {
     private static readonly Dictionary<INebulaConnection, (string RequestId, IPlayerData Player)> AwaitingConfirmation = [];
     private static MemoryDeliveryPacket pending;
@@ -58,6 +60,7 @@ public static class MemoryDeliverySync {
         if (conn is not INebulaConnection connection || !AwaitingConfirmation.TryGetValue(connection, out var waiting)) { return; }
         if ((mechaDataField?.GetValue(packet) ?? mechaDataProperty?.GetValue(packet)) is IMechaData incoming) {
             incoming.Inventory = waiting.Player.Mecha.Inventory;
+            incoming.DeliveryPackage = waiting.Player.Mecha.DeliveryPackage;
         }
     }
 
@@ -83,7 +86,7 @@ public static class MemoryDeliverySync {
         return true;
     }
 
-    /// <summary>暂存真实背包中的源点，并携带交付前库存供主机原子结算；不读取亚空间。</summary>
+    /// <summary>按统一顺序暂存源点；实体背包快照与亚空间已核销数量共同供主机重放结算。</summary>
     public static bool Request(int markId, int count) {
         if (!NebulaMultiplayerModAPI.IsClient || pending != null || count <= 0 || count > 2400) { return false; }
         if (!guardInstalled) {
@@ -93,31 +96,29 @@ public static class MemoryDeliverySync {
             }
             return false;
         }
-        StorageComponent package = GameMain.mainPlayer?.package;
-        if (package == null) { return false; }
-        byte[] before;
-        using (var stream = new MemoryStream()) {
-            using (var writer = new BinaryWriter(stream, System.Text.Encoding.UTF8, true)) { package.Export(writer); }
-            before = stream.ToArray();
-        }
-        StorageComponent check = ReadInventory(before);
-        if (check == null) {
+        Player player = GameMain.mainPlayer;
+        StorageComponent package = player?.package;
+        if (package == null || player.deliveryPackage == null) { return false; }
+        byte[] before = ExportInventory(package.Export);
+        byte[] deliveryBefore = ExportInventory(player.deliveryPackage.Export);
+        if (ReadInventory(before) == null || ReadDelivery(deliveryBefore) == null) {
             if (!unavailableShown) {
                 unavailableShown = true;
-                LogWarning("真实背包格式不符合交付协议，未扣除源点。");
+                LogWarning("玩家库存格式不符合交付协议，未扣除源点。");
                 CivilizationModule.QueueNotification("FE.Exploration.DeliveryUnavailable".Translate());
             }
             return false;
         }
-        int itemId = IFE记忆源点;
-        int expected = count;
-        check.TakeTailItems(ref itemId, ref expected, out int expectedInc);
-        if (expected != count || expectedInc < 0 || expectedInc > count * 10) { return false; }
-        package.TakeTailItems(ref itemId, ref count, out int inc);
-        if (count <= 0) { return false; }
+        long subspaceBefore = MaterialLeases.Count(IFE记忆源点, out long subspaceIncBefore);
+        package.TakeItemInternal(IFE记忆源点, count, out int taken, out int inc);
+        if (taken <= 0) { return false; }
+        long subspaceAfter = MaterialLeases.Count(IFE记忆源点, out long subspaceIncAfter);
         pending = new MemoryDeliveryPacket {
             World = WorldId, RequestId = Guid.NewGuid().ToString("N"), MarkId = markId,
-            Count = count, Inc = inc, InventoryBefore = before,
+            Count = taken, Inc = inc, InventoryBefore = before, DeliveryBefore = deliveryBefore,
+            TakePriority = (int[])ModSettings.TakeItemPriority.Clone(),
+            SubspaceCount = (int)(subspaceBefore - subspaceAfter),
+            SubspaceInc = (int)(subspaceIncBefore - subspaceIncAfter),
         };
         SendPending();
         return true;
@@ -139,7 +140,11 @@ public static class MemoryDeliverySync {
         }
         if (!guardInstalled || packet.MarkId <= 0 || packet.Count is <= 0 or > 2400
             || packet.Inc < 0 || packet.Inc > packet.Count * 10 || packet.InventoryBefore == null
-            || packet.InventoryBefore.Length > 200040) { return; }
+            || packet.InventoryBefore.Length > 200040 || packet.DeliveryBefore == null
+            || packet.DeliveryBefore.Length > 2822 || packet.TakePriority == null || packet.TakePriority.Length != 3
+            || packet.TakePriority.Distinct().Count() != 3 || packet.TakePriority.Any(source => source is < 0 or > 2)
+            || packet.SubspaceCount < 0 || packet.SubspaceCount > packet.Count
+            || packet.SubspaceInc < 0 || packet.SubspaceInc > packet.SubspaceCount * 10) { return; }
         IPlayerData player = GetConnectedPlayer(connection);
         if (player?.Mecha == null || !NebulaMultiplayerModAPI.TryGetAuthoritativePlayerState(connection,
                 out VectorLF3 position, out int planetId)) { return; }
@@ -152,15 +157,24 @@ public static class MemoryDeliverySync {
         }
         if (AwaitingConfirmation.ContainsKey(connection)) { return; }
         StorageComponent inventory = ReadInventory(packet.InventoryBefore);
-        if (inventory == null) { return; }
-        // 在独立副本上复现客户端暂存，确认件数和增产点都对应该背包。
-        StorageComponent offeredInventory = ReadInventory(packet.InventoryBefore);
-        int itemId = IFE记忆源点;
-        int offered = packet.Count;
-        offeredInventory.TakeTailItems(ref itemId, ref offered, out int offeredInc);
-        if (offered != packet.Count || offeredInc != packet.Inc) { return; }
+        DeliveryPackage delivery = ReadDelivery(packet.DeliveryBefore);
+        if (inventory == null || delivery == null) { return; }
+        var offered = TakeOfferedItems(packet, ReadInventory(packet.InventoryBefore),
+            ReadDelivery(packet.DeliveryBefore), packet.Count);
+        if (offered.Count != packet.Count || offered.Inc != packet.Inc
+            || offered.Subspace != packet.SubspaceCount || offered.SubspaceInc != packet.SubspaceInc) { return; }
+        (int Count, int Inc, int Subspace, int SubspaceInc) taken = default;
         MemoryDeliveryReceipt receipt = ExplorationManager.DeliverMemory(packet.RequestId, player.PlayerId, fingerprint,
-            packet.MarkId, position, planetId, inventory, packet.Count, packet.Inc, updated => player.Mecha.Inventory = updated);
+            packet.MarkId, position, planetId, packet.Count, packet.Inc, requested => {
+                taken = TakeOfferedItems(packet, inventory, delivery, requested);
+                return (taken.Count, taken.Inc);
+            }, result => {
+                result.ReturnedSubspace = packet.SubspaceCount - taken.Subspace;
+                result.ReturnedSubspaceInc = packet.SubspaceInc - taken.SubspaceInc;
+                MaterialLeases.ReturnConsumed(IFE记忆源点, result.ReturnedSubspace, result.ReturnedSubspaceInc);
+                player.Mecha.Inventory = inventory;
+                player.Mecha.DeliveryPackage = delivery;
+            });
         if (receipt == null) { return; }
         AwaitingConfirmation[connection] = (packet.RequestId, player);
         SendReceipt(connection, packet, receipt);
@@ -170,6 +184,52 @@ public static class MemoryDeliverySync {
         object network = NebulaModAPI.MultiplayerSession?.Network;
         PropertyInfo property = network?.GetType().GetProperty("Players", BindingFlags.Instance | BindingFlags.Public);
         return property?.GetValue(network) is ConcurrentPlayerCollection players ? players.Get(connection)?.Data : null;
+    }
+
+    private static byte[] ExportInventory(Action<BinaryWriter> export) {
+        using var stream = new MemoryStream();
+        using (var writer = new BinaryWriter(stream, System.Text.Encoding.UTF8, true)) { export(writer); }
+        return stream.ToArray();
+    }
+
+    /// <summary>重放统一扣物规则；亚空间部分已由额度协议核销，不能在主机再次扣除自由库存。</summary>
+    private static (int Count, int Inc, int Subspace, int SubspaceInc) TakeOfferedItems(
+        MemoryDeliveryPacket packet, StorageComponent inventory, DeliveryPackage delivery, int requested) {
+        int subspace = packet.SubspaceCount, points = packet.SubspaceInc;
+        PlayerInventoryAccess.TakeItemFromInventories(inventory, delivery, packet.TakePriority,
+            IFE记忆源点, requested, out int count, out int inc, wanted => {
+                int taken = Math.Min(wanted, subspace);
+                int takenInc = taken > 0 ? split_inc(ref subspace, ref points, taken) : 0;
+                return (taken, takenInc);
+            });
+        return (count, inc, packet.SubspaceCount - subspace, packet.SubspaceInc - points);
+    }
+
+    /// <summary>物流背包只接受原版固定100格布局，先校验长度和物品边界再导入。</summary>
+    private static DeliveryPackage ReadDelivery(byte[] bytes) {
+        if (bytes == null || bytes.Length is < 422 or > 2822) { return null; }
+        using var stream = new MemoryStream(bytes, false);
+        using var reader = new BinaryReader(stream);
+        try {
+            if (reader.ReadInt32() != 0 || reader.ReadInt32() != 100) { return null; }
+            reader.ReadInt32();
+            for (int i = 0; i < 100; i++) {
+                int item = reader.ReadInt32();
+                if (item < 0 || item >= StorageComponent.itemStackCount.Length
+                    || item > 0 && LDB.items.Select(item) == null) { return null; }
+                if (item == 0) { continue; }
+                int count = reader.ReadInt32(), inc = reader.ReadInt32();
+                if (count < 0 || inc < 0 || inc > (long)count * 10) { return null; }
+                for (int field = 0; field < 4; field++) { reader.ReadInt32(); }
+            }
+            reader.ReadBoolean(); reader.ReadBoolean();
+            int rows = reader.ReadInt32(), columns = reader.ReadInt32();
+            if (rows is < 0 or > 20 || columns is < 0 or > 5 || stream.Position != stream.Length) { return null; }
+            stream.Position = 0;
+            var delivery = new DeliveryPackage();
+            delivery.Import(reader);
+            return delivery;
+        } catch (EndOfStreamException) { return null; }
     }
 
     /// <summary>先校验原版格式的固定长度与数组上限，再调用其导入器，避免不可信长度分配。</summary>
@@ -197,6 +257,9 @@ public static class MemoryDeliverySync {
         using var stream = new MemoryStream();
         using (var writer = new BinaryWriter(stream, System.Text.Encoding.UTF8, true)) {
             writer.Write(packet.MarkId); writer.Write(packet.Count); writer.Write(packet.Inc); writer.Write(packet.InventoryBefore);
+            writer.Write(packet.DeliveryBefore);
+            foreach (int source in packet.TakePriority) { writer.Write(source); }
+            writer.Write(packet.SubspaceCount); writer.Write(packet.SubspaceInc);
         }
         return BitConverter.ToString(hash.ComputeHash(stream.ToArray())).Replace("-", "");
     }
@@ -205,6 +268,7 @@ public static class MemoryDeliverySync {
         connection.SendPacket(new MemoryDeliveryResultPacket {
             World = packet.World, RequestId = packet.RequestId, MarkId = receipt.MarkId,
             Accepted = receipt.Accepted, AcceptedInc = receipt.AcceptedInc, Remaining = receipt.Remaining,
+            ReturnedSubspace = receipt.ReturnedSubspace, ReturnedSubspaceInc = receipt.ReturnedSubspaceInc,
         });
     }
 
@@ -217,11 +281,14 @@ public static class MemoryDeliverySync {
         }
         if (packet.RequestId != pending.RequestId || packet.MarkId != pending.MarkId
             || packet.Accepted < 0 || packet.Accepted > pending.Count || packet.AcceptedInc < 0
-            || packet.AcceptedInc > pending.Inc || packet.Remaining is < 0 or > 2400) { return; }
-        int refund = pending.Count - packet.Accepted;
-        int refundInc = pending.Inc - packet.AcceptedInc;
-        if (refundInc > refund * 10) { return; }
-        if (refund > 0) { GameMain.mainPlayer.TryAddItemToPackage(IFE记忆源点, refund, refundInc, throwTrash: true); }
+            || packet.AcceptedInc > pending.Inc || packet.Remaining is < 0 or > 2400
+            || packet.ReturnedSubspace < 0 || packet.ReturnedSubspace > pending.SubspaceCount
+            || packet.ReturnedSubspaceInc < 0 || packet.ReturnedSubspaceInc > pending.SubspaceInc
+            || packet.ReturnedSubspaceInc > packet.ReturnedSubspace * 10) { return; }
+        int refund = pending.Count - packet.Accepted - packet.ReturnedSubspace;
+        int refundInc = pending.Inc - packet.AcceptedInc - packet.ReturnedSubspaceInc;
+        if (refund < 0 || refundInc < 0 || refundInc > refund * 10) { return; }
+        if (refund > 0) { PlayerInventoryAccess.AddItemToPackage(IFE记忆源点, refund, refundInc); }
         lastConfirmed = pending.RequestId;
         pending = null;
         ExplorationManager.NotifyDeliveryRemaining(packet.MarkId, packet.Remaining);
@@ -232,7 +299,7 @@ public static class MemoryDeliverySync {
         new MemoryDeliveryPacket { World = WorldId, RequestId = requestId, Confirm = true });
 }
 
-/// <summary>客户端真实背包暂存请求或回执确认；重发使用同一流水和同一库存快照。</summary>
+/// <summary>客户端统一库存暂存请求或回执确认；重发使用同一流水、实体库存快照及取物顺序。</summary>
 public sealed class MemoryDeliveryPacket {
     public string World { get; set; }
     public string RequestId { get; set; }
@@ -241,6 +308,10 @@ public sealed class MemoryDeliveryPacket {
     public int Count { get; set; }
     public int Inc { get; set; }
     public byte[] InventoryBefore { get; set; }
+    public byte[] DeliveryBefore { get; set; }
+    public int[] TakePriority { get; set; }
+    public int SubspaceCount { get; set; }
+    public int SubspaceInc { get; set; }
 }
 
 /// <summary>主机已提交的交付结果，不允许客户端据此再次推进任务。</summary>
@@ -251,6 +322,8 @@ public sealed class MemoryDeliveryResultPacket {
     public int Accepted { get; set; }
     public int AcceptedInc { get; set; }
     public int Remaining { get; set; }
+    public int ReturnedSubspace { get; set; }
+    public int ReturnedSubspaceInc { get; set; }
 }
 
 [RegisterPacketProcessor]

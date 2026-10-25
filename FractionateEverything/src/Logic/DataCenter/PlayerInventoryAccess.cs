@@ -1,4 +1,5 @@
-﻿using FE.Logic.DataCenter.Patches;
+﻿using System;
+using FE.Logic.DataCenter.Patches;
 using FE.Compatibility.Nebula;
 using FE.Configuration;
 using static FE.Utils.Utils;
@@ -164,24 +165,30 @@ public static class PlayerInventoryAccess {
             realCount = needCount;
             return;
         }
-        //根据玩家设置的顺序拿取物品
-        int[] TakeItemPriority = ModSettings.TakeItemPriority;
-        for (int i = 0; i < TakeItemPriority.Length; i++) {
+        TakeItemFromInventories(storage, GameMain.mainPlayer.deliveryPackage, ModSettings.TakeItemPriority,
+            itemId, needCount, out realCount, out inc, useBan: useBan);
+    }
+
+    /// <summary>统一执行取物顺序；联机交付以库存快照和已核销额度重放同一规则，不访问主机玩家的背包。</summary>
+    internal static void TakeItemFromInventories(StorageComponent storage, DeliveryPackage delivery, int[] priority,
+        int itemId, int needCount, out int realCount, out int inc,
+        Func<int, (int Count, int Inc)> takeSubspace = null, bool useBan = false) {
+        realCount = inc = 0;
+        if (needCount <= 0) { return; }
+        for (int i = 0; i < priority.Length; i++) {
             int itemIdTmp = itemId;
             int realCountTemp = needCount;
             int incTemp;
-            if (TakeItemPriority[i] == 0) {
-                //背包
+            if (priority[i] == 0) {
                 storage.TakeTailItems(ref itemIdTmp, ref realCountTemp, out incTemp, useBan);
-            } else if (TakeItemPriority[i] == 1) {
-                //物流背包
-                GameMain.mainPlayer.deliveryPackage.TakeItems(ref itemIdTmp, ref realCountTemp, out incTemp);
-            } else {
-                // 亚空间物品交互需要先由首遗物建立通信。
-                if (!PackageAccessRules.TechItemInteractionUnlocked) {
-                    continue;
-                }
+            } else if (priority[i] == 1) {
+                delivery.TakeItems(ref itemIdTmp, ref realCountTemp, out incTemp);
+            } else if (takeSubspace != null) {
+                (realCountTemp, incTemp) = takeSubspace(needCount);
+            } else if (PackageAccessRules.TechItemInteractionUnlocked) {
                 realCountTemp = TakeItemFromModData(itemIdTmp, realCountTemp, out incTemp, true);
+            } else {
+                continue;
             }
             needCount -= realCountTemp;
             realCount += realCountTemp;

@@ -27,4 +27,4 @@ DataCenter/
 - 下载按真实数量拆分增产点；增产点始终满足非负且不超过数量的 10 倍。
 - 实际库存变化设置 `snapshotDirty`，由主机文明快照广播；UI 刷新不得直接改数组。
 - 通信门禁使用 `CivilizationRecoveryManager.HasDataCenterCommunication`。
-- 玩家包裹访问只放 `PlayerInventoryAccess`；库存重定向 patch 只做边界接线，不复制容量或业务判断。
+- 所有玩家物品消耗（包括任务及兼容模组）通过`PlayerInventoryAccess`查询和扣除，遵守`ModSettings.TakeItemPriority`。联机重放复用`TakeItemFromInventories`，已核销额度只重放不重复扣除；不得在业务层另写顺序或直接扣单一库存。玩家包裹访问只放 `PlayerInventoryAccess`；库存重定向 patch 只做边界接线，不复制容量或业务判断。
