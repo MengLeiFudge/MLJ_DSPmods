@@ -315,6 +315,8 @@ public static class MainWindow {
             return;
         }
 
+        // X、Esc与游戏统一关窗只触发Close，不一定触发Free；丢弃打开状态前保存旧窗口路由。
+        CaptureCurrentPageRouteFromOpenedPanel();
         OpenedMainPanelType = FEMainPanelType.None;
     }
 
@@ -323,8 +325,7 @@ public static class MainWindow {
             return;
         }
 
-        // 右上角 X、Esc、游戏统一关窗都可能绕过 CloseAllMainPanels，
-        // 这里统一补上关闭前的页面路由保存。
+        // 销毁窗口时在页面控件释放前补存路由。
         CaptureCurrentPageRouteFromOpenedPanel();
         OpenedMainPanelType = FEMainPanelType.None;
     }
@@ -430,14 +431,21 @@ public static class MainWindow {
     public static void Import(BinaryReader r) {
         r.ReadBlocks(
             (MainPanelSelectionBlockTag, ImportMainPanelSelection),
+            ("MainPanelPage", page => page.ReadBlocks(
+                ("Category", field => currentPageCategoryName = field.ReadString()),
+                ("Subpage", field => currentPageSubpageName = field.ReadString()))),
             ("ItemInteraction", ItemInteraction.Import),
             ("Miscellaneous", ModSettings.Import)
         );
     }
 
     public static void Export(BinaryWriter w) {
+        CaptureCurrentPageRouteFromOpenedPanel();
         w.WriteBlocks(
             (MainPanelSelectionBlockTag, ExportMainPanelSelection),
+            ("MainPanelPage", page => page.WriteBlocks(
+                ("Category", field => field.Write(currentPageCategoryName ?? string.Empty)),
+                ("Subpage", field => field.Write(currentPageSubpageName ?? string.Empty)))),
             ("ItemInteraction", ItemInteraction.Export),
             ("Miscellaneous", ModSettings.Export)
         );
