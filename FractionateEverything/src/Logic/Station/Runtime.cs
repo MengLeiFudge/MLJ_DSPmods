@@ -27,12 +27,13 @@ public static partial class StationManager {
     public static void CalculateItemModSaveCount() {
         // 遍历所有物品，计算每种物品在数据中心的目标存储数量
         foreach (var item in LDB.items.dataArray) {
-            if (item.BuildMode != 0) {
-                // 建筑类物品：限制为10组（防止建筑占用过多空间）
-                itemModSaveCount[item.ID] = item.StackSize * 10;
+            float value = itemValue[item.ID];
+            if (item.BuildMode != 0 || !(value > 0f && value < maxValue)) {
+                // 建筑及未知估值沿用亚空间容量的十组底线，估值不能决定实体存取资格。
+                itemModSaveCount[item.ID] = Math.Max(1, item.StackSize) * 10;
             } else {
                 // 非建筑物品：按价值对数压低有限上传目标，避免高价值物品目标数过低。
-                itemModSaveCount[item.ID] = CalculateLimitedUploadTarget(itemValue[item.ID]);
+                itemModSaveCount[item.ID] = CalculateLimitedUploadTarget(value);
             }
         }
     }
@@ -140,7 +141,7 @@ public static partial class StationManager {
                     var capacityDictionary = slotCapacityMode.GetOrAdd(entityId, _ => []);
                     for (int i = 0; i < stationComponent.storage.Length; i++) {
                         ref StationStore store = ref stationComponent.storage[i];
-                        if (store.itemId <= 0 || store.itemId >= itemValue.Length || itemValue[store.itemId] >= maxValue) { continue; }
+                        if (!IsUploadableItem(store.itemId)) { continue; }
                         ETransferMode mode = transferDictionary.GetOrAdd(i, ETransferMode.Sync);
                         ECapacityMode capacity = capacityDictionary.GetOrAdd(i, ECapacityMode.Limited);
                         int target = store.count;
@@ -175,14 +176,17 @@ public static partial class StationManager {
     private static void SetTargetCount(this StationComponent stationComponent, int index, int targetCount,
         long maxSlotEnergy, ECapacityMode capacityMode = ECapacityMode.Limited) {
         ref StationStore store = ref stationComponent.storage[index];
-        if (store.count == targetCount || itemValue[store.itemId] == float.MaxValue) {
+        if (store.count == targetCount || !IsUploadableItem(store.itemId)) {
             return;
         }
 
         ItemProto itemProto = LDB.items.Select(IFE行星内物流交互站);
         // 单件耗电（J）为物品价值的平方根乘以 10000 和交互耗电倍率。
         double efficiencyMultiplier = GrowthTechnologyManager.SubspaceEnergyRatio;
-        double cost = Math.Sqrt(itemValue[store.itemId]) * 10000
+        // 未知估值只按最低基础价值计交互电费，不写回估值表，也不允许折算扩容。
+        float value = itemValue[store.itemId];
+        if (!(value > 0f && value < maxValue)) { value = 1f; }
+        double cost = Math.Sqrt(value) * 10000
                       * itemProto.InteractEnergyRatio() * efficiencyMultiplier;
         if (cost < 0 || double.IsNaN(cost) || double.IsInfinity(cost)) {
             return;
