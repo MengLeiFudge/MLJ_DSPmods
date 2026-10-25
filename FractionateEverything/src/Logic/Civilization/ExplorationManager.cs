@@ -656,10 +656,19 @@ public static partial class ExplorationManager {
             double radius = Math.Sqrt(1d - y * y);
             double angle = spatialIndex * 2.399963229728653d;
             Vector3 direction = rotation * new Vector3((float)(radius * Math.Cos(angle)), (float)y, (float)(radius * Math.Sin(angle)));
-            marks[i] = new ExplorationMark { Id = -(planetId * 100 + i + 1), PlanetId = planetId,
-                LocalPosition = direction * MarkRadius(planet), Kind = ExplorationMarkKind.SilentCache,
-                Quality = i < counts[0] ? 1 : i < counts[0] + counts[1] ? 2 : 3 };
+            int id = -(planetId * 100 + i + 1);
+            // 已发现地点的完整坐标是存档事实，指引与认领必须使用同一位置。
+            marks[i] = DiscoveredMarks.TryGetValue(id, out ExplorationMark discovered)
+                && discovered.Kind == ExplorationMarkKind.SilentCache && discovered.PlanetId == planetId
+                ? CloneMark(discovered)
+                : new ExplorationMark { Id = id, PlanetId = planetId,
+                    LocalPosition = direction * MarkRadius(planet), Kind = ExplorationMarkKind.SilentCache,
+                    Quality = i < counts[0] ? 1 : i < counts[0] + counts[1] ? 2 : 3 };
         }
+        // 已发现点不随未发现点目录缩减而删除，保留其可认领身份。
+        marks = marks.Concat(DiscoveredMarks.Values.Where(mark => mark.Id < 0
+            && mark.PlanetId == planetId && mark.Kind == ExplorationMarkKind.SilentCache
+            && !marks.Any(candidate => candidate.Id == mark.Id)).Select(CloneMark)).ToArray();
         SilentMarks[planetId] = marks;
         return marks;
     }

@@ -21,6 +21,7 @@ internal static class ExplorationSignalHud {
     private static int panelCount;
     private static int displayedMarkId;
     private static bool suppressHoverGuide;
+    private static Color trackIconColor;
 
     /// <summary>复制原版条目预制体，保留视觉组件，不注册黑雾业务事件。</summary>
     public static void EnsureCreated() {
@@ -59,6 +60,7 @@ internal static class ExplorationSignalHud {
         entry.trackImage.gameObject.SetActive(false);
         entry.iconImage.gameObject.SetActive(false);
         entry.iconTintImage.gameObject.SetActive(false);
+        trackIconColor = entry.trackImage.color;
         foreach (UIButton button in new[] { entry.entryButton, entry.thrtButton, entry.expButton }) {
             button.onClick -= entry.OnEntryClick;
             button.onClick += _ => {
@@ -66,9 +68,19 @@ internal static class ExplorationSignalHud {
                 suppressHoverGuide = !ExplorationDetector.TrackingEnabled;
                 Update();
             };
+            // 追踪图标由固定/悬停指引状态控制，不跟随按钮普通态淡出。
+            foreach (UIButton.Transition transition in button.transitions ?? []) {
+                if (transition.target == entry.trackImage && transition.mouseoverColor.a > trackIconColor.a) {
+                    trackIconColor = transition.mouseoverColor;
+                }
+            }
+            if (button.transitions != null) {
+                button.transitions = System.Array.FindAll(button.transitions, transition => transition.target != entry.trackImage);
+            }
             button.tips.tipTitle = button.tips.tipText = string.Empty;
             if (button.button != null) { button.button.onClick = new Button.ButtonClickedEvent(); }
         }
+        if (trackIconColor.a <= 0f) { trackIconColor = monitor.frameColor0; }
         Camera.onPreCull -= OnCameraPreCull;
         Camera.onPreCull += OnCameraPreCull;
         root.SetActive(false);
@@ -227,7 +239,9 @@ internal static class ExplorationSignalHud {
         rootRect.sizeDelta = new Vector2(rootRect.sizeDelta.x, titleHeight + uiGame.dfMonitor.entryHeight);
         entry.rectTrans.anchoredPosition = new Vector2(entry.rectTrans.anchoredPosition.x, -titleHeight);
         float strength = Mathf.Clamp01(reading.Strength);
-        entry.threatValueText.text = reading.ShowStrength ? $"{strength * 100f:0.0}%" : string.Empty;
+        // 未满的强度不能四舍五入显示100%，避免把接近误当成已经到达。
+        float percent = strength >= 1f ? 100f : Mathf.Min(99.9f, Mathf.Floor(strength * 1000f) / 10f);
+        entry.threatValueText.text = reading.ShowStrength ? $"{percent:0.0}%" : string.Empty;
         entry.threatBar.rectTransform.anchoredPosition = new Vector2(-130f + Mathf.Round(strength * 100f),
             entry.threatBar.rectTransform.anchoredPosition.y);
         entry.entryButton.enabled = entry.thrtButton.enabled = entry.expButton.enabled = canNavigate;
@@ -260,7 +274,7 @@ internal static class ExplorationSignalHud {
         entry.trackImage.rectTransform.anchoredPosition = new Vector2(
             local.x - frame.rect.xMax - locationWidth, local.y - frame.rect.center.y);
         entry.trackImage.rectTransform.sizeDelta = template.trackImage.rectTransform.rect.size;
-        entry.trackImage.color = template.trackImage.color;
+        entry.trackImage.color = trackIconColor;
     }
 
     /// <summary>图标与蓝线共用可见条件；图标在UI布局阶段启用，避免相机渲染时才激活而错过画布刷新。</summary>
