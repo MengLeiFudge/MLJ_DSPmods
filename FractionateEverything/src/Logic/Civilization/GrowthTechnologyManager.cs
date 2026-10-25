@@ -203,7 +203,8 @@ public static class GrowthTechnologyManager {
             > TFE交互站电力 and <= TFE交互站电力 + 5 =>
                 string.Format("FE.Growth.StationPower".Translate(), techId == TFE交互站电力 + 5 ? 10 : (techId - TFE交互站电力) * 10),
             > TFE亚空间能效 + 1 and <= TFE亚空间能效 + 5 =>
-                string.Format("FE.Growth.SubspaceEnergyRatio".Translate(), SubspaceEnergyRatios[techId - TFE亚空间能效 - 1]),
+                string.Format("FE.Growth.SubspaceEnergyReduction".Translate(),
+                    SubspaceEnergyRatios[techId - TFE亚空间能效 - 2] - SubspaceEnergyRatios[techId - TFE亚空间能效 - 1]),
             > TFE高级矿物特质 and <= TFE高级矿物特质 + FiniteGrowthLevelCount => "珍奇矿物产量 +25%".Translate(),
             > TFE高级交互特质 and <= TFE高级交互特质 + FiniteGrowthLevelCount => "繁育平均产出 +0.25".Translate(),
             > TFE高级转化特质 and <= TFE高级转化特质 + FiniteGrowthLevelCount => "部件回收倍率 +5%".Translate(),
@@ -403,8 +404,9 @@ public static class GrowthTechnologyManager {
         for (int id = 3801; id <= 3803; id++) {
             TechProto tech = LDB.techs.Select(id);
             MatrixResearchCosts.Retier(tech, 2);
-            tech.PreTechs = (tech.PreTechs ?? []).Where(value => value is < 3508 or > 3510)
-                .Append(3315).Distinct().ToArray();
+            // 分拣器资格只控制研究，不跨行绘制到运输站集装系列的长线。
+            tech.PreTechs = (tech.PreTechs ?? []).Where(value => value != 3315 && (value is < 3508 or > 3510)).ToArray();
+            tech.PreTechsImplicit = (tech.PreTechsImplicit ?? []).Append(3315).Distinct().ToArray();
             tech.Preload2();
         }
         RefreshStackTechLinks();

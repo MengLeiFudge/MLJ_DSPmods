@@ -686,11 +686,11 @@
     "1041": "スタック上限を6、8、12、16、20へ引き上げます。集積機、集積ソーターの入力と出力、物流・交互ステーション、分留塔の両出力に適用。通常の生産レシピの所要時間は4÷スタック数となり、整数ティックに切り上げます。"
   },
   "FE.Growth.StationStack": {
-    "enUS": "FE fractionator output stack limit +1",
-    "zhCN": "FE分馏塔输出堆叠上限 +1",
-    "frFR": "Limite d’empilement en sortie des fractionneurs FE +1",
-    "1031": "Ausgabestapelgrenze der FE-Fraktionierer +1",
-    "1041": "FE分留塔の出力スタック上限 +1"
+    "enUS": "+1 Fractionator output stack limit",
+    "zhCN": "+1 分馏塔输出货物集装数量",
+    "frFR": "+1 Limite d’empilement en sortie des fractionneurs",
+    "1031": "+1 Ausgabestapelgrenze der Fraktionierer",
+    "1041": "+1 分留塔の出力スタック上限"
   },
   "FE亚空间能效描述": {
     "enUS": "Research after unlocking the planetary interaction station. Red, yellow, purple and green matrix upgrades reduce transfer energy to 70%, 45%, 30% and 20% of its base value. The minimum is 20%.",
@@ -735,18 +735,18 @@
     "1041": "交互ステーション電力"
   },
   "FE交互站电力描述": {
-    "enUS": "Increases charging power and energy capacity of FE planetary and interstellar interaction stations. Red, yellow, purple and green upgrades add 10%, 20%, 30% and 40% of base values. Each white matrix upgrade adds another 10% of base values. More capacity does not supply free energy; charging still depends on the grid and station settings.",
-    "zhCN": "提高FE行星内、星际物流交互站的充电功率与储能上限。红、黄、紫、绿阶段分别增加基础值的10%、20%、30%、40%；白矩阵每级再增加基础值的10%。提高上限不会补充电量，实际充电仍受电网与站内设置限制。",
-    "frFR": "Augmente la puissance de charge et la capacité énergétique des stations d’interaction FE planétaires et interstellaires. Les améliorations rouges, jaunes, violettes et vertes ajoutent 10 %, 20 %, 30 % et 40 % des valeurs de base. Chaque niveau blanc ajoute 10 % de base. La capacité accrue ne fournit pas d’énergie gratuite ; la charge dépend du réseau et des réglages de la station.",
-    "1031": "Erhöht Ladeleistung und Energiespeicher der planetaren und interstellaren FE-Interaktionsstationen. Rote, gelbe, violette und grüne Stufen addieren 10 %, 20 %, 30 % und 40 % der Grundwerte. Jede weiße Stufe addiert weitere 10 % der Grundwerte. Mehr Kapazität liefert keine kostenlose Energie; das Laden hängt weiter vom Netz und den Stationseinstellungen ab.",
-    "1041": "FEの惑星内・星間交互ステーションの充電電力と蓄電上限を強化します。赤・黄・紫・緑段階で基準値の10%、20%、30%、40%を加算。白段階は研究ごとに基準値の10%を加算します。上限の増加で電力は補充されず、実際の充電は電力網とステーション設定に制限されます。"
+    "enUS": "Increases charging power and energy capacity of planetary and interstellar interaction stations. Red, yellow, purple and green upgrades add 10%, 20%, 30% and 40% of base values. Each white matrix upgrade adds another 10% of base values. More capacity does not supply free energy; charging still depends on the grid and station settings.",
+    "zhCN": "提高行星内、星际物流交互站的充电功率与储能上限。红、黄、紫、绿阶段分别增加基础值的10%、20%、30%、40%；白矩阵每级再增加基础值的10%。提高上限不会补充电量，实际充电仍受电网与站内设置限制。",
+    "frFR": "Augmente la puissance de charge et la capacité énergétique des stations d’interaction planétaires et interstellaires. Les améliorations rouges, jaunes, violettes et vertes ajoutent 10 %, 20 %, 30 % et 40 % des valeurs de base. Chaque niveau blanc ajoute 10 % de base. La capacité accrue ne fournit pas d’énergie gratuite ; la charge dépend du réseau et des réglages de la station.",
+    "1031": "Erhöht Ladeleistung und Energiespeicher der planetaren und interstellaren Interaktionsstationen. Rote, gelbe, violette und grüne Stufen addieren 10 %, 20 %, 30 % und 40 % der Grundwerte. Jede weiße Stufe addiert weitere 10 % der Grundwerte. Mehr Kapazität liefert keine kostenlose Energie; das Laden hängt weiter vom Netz und den Stationseinstellungen ab.",
+    "1041": "惑星内・星間交互ステーションの充電電力と蓄電上限を強化します。赤・黄・紫・緑段階で基準値の10%、20%、30%、40%を加算。白段階は研究ごとに基準値の10%を加算します。上限の増加で電力は補充されず、実際の充電は電力網とステーション設定に制限されます。"
   },
   "FE.Growth.StationPower": {
-    "enUS": "Charging power and energy capacity +{0}% of base",
-    "zhCN": "充电功率与储能上限 +基础值的{0}%",
-    "frFR": "Puissance de charge et capacité énergétique +{0} % de base",
-    "1031": "Ladeleistung und Energiespeicher +{0}% der Grundwerte",
-    "1041": "充電電力・蓄電上限 +基準値の{0}%"
+    "enUS": "+{0}% Interaction station charging power\n+{0}% Interaction station energy capacity",
+    "zhCN": "+{0}% 物流交互站充电功率\n+{0}% 物流交互站储能上限",
+    "frFR": "+{0} % Puissance de charge des stations d’interaction\n+{0} % Capacité énergétique des stations d’interaction",
+    "1031": "+{0}% Ladeleistung der Interaktionsstationen\n+{0}% Energiespeicher der Interaktionsstationen",
+    "1041": "+{0}% 交互ステーション充電電力\n+{0}% 交互ステーション蓄電上限"
   },
   "FE高级矿物特质描述": {
     "zhCN": "提高全部高级矿物塔每次成功的矿物产量，与原版矿物利用的产量倍率相乘。",
@@ -784,46 +784,46 @@
     "1041": "古代放送の継続応答"
   },
   "货物堆叠上限 +{0}": {
-    "enUS": "Cargo stack limit +{0}",
-    "zhCN": "货物堆叠上限 +{0}",
-    "frFR": "Limite d'empilement des cargaisons +{0}",
-    "1031": "Frachtstapelgrenze +{0}",
-    "1041": "貨物スタック上限 +{0}"
+    "enUS": "+{0} Cargo stack limit",
+    "zhCN": "+{0} 货物堆叠上限",
+    "frFR": "+{0} Limite d’empilement des cargaisons",
+    "1031": "+{0} Frachtstapelgrenze",
+    "1041": "+{0} 貨物スタック上限"
   },
-  "FE.Growth.SubspaceEnergyRatio": {
-    "enUS": "Subspace transfer energy: {0:P0} of base",
-    "zhCN": "亚空间存取耗电降至基础值的{0:P0}",
-    "frFR": "Énergie des transferts sous-spatiaux : {0:P0} de base",
-    "1031": "Energie für Subraumtransfers: {0:P0} des Grundwerts",
-    "1041": "亜空間転送消費電力：基準値の{0:P0}"
+  "FE.Growth.SubspaceEnergyReduction": {
+    "enUS": "-{0:0%} Subspace transfer energy use",
+    "zhCN": "-{0:0%} 亚空间存取耗电",
+    "frFR": "-{0:0%} Consommation d’énergie des transferts sous-spatiaux",
+    "1031": "-{0:0%} Energiebedarf für Subraumtransfers",
+    "1041": "-{0:0%} 亜空間転送消費電力"
   },
   "亚空间存取耗电-10%": {
-    "enUS": "Subspace transfer energy -10%",
-    "zhCN": "亚空间存取耗电-10%",
-    "frFR": "Énergie des transferts sous-spatiaux -10 %",
-    "1031": "Energie für Subraumtransfers -10 %",
-    "1041": "亜空間転送消費電力-10%"
+    "enUS": "-10% Subspace transfer energy use",
+    "zhCN": "-10% 亚空间存取耗电",
+    "frFR": "-10 % Consommation d’énergie des transferts sous-spatiaux",
+    "1031": "-10 % Energiebedarf für Subraumtransfers",
+    "1041": "-10% 亜空間転送消費電力"
   },
   "珍奇矿物产量 +25%": {
-    "zhCN": "珍奇矿物产量 +25%",
-    "enUS": "Rare mineral yield +25%",
-    "frFR": "Production de minerais rares +25 %",
-    "1031": "Ertrag seltener Mineralien +25 %",
-    "1041": "希少鉱物産出量 +25%"
+    "zhCN": "+25% 珍奇矿物产量",
+    "enUS": "+25% Rare mineral yield",
+    "frFR": "+25 % Production de minerais rares",
+    "1031": "+25 % Ertrag seltener Mineralien",
+    "1041": "+25% 希少鉱物産出量"
   },
   "繁育平均产出 +0.25": {
-    "enUS": "Average breeding output +0.25",
-    "zhCN": "繁育平均产出 +0.25",
-    "frFR": "Production moyenne par reproduction +0,25",
-    "1031": "Durchschnittlicher Zuchtertrag +0,25",
-    "1041": "繁殖平均産出量 +0.25"
+    "enUS": "+0.25 Average breeding output",
+    "zhCN": "+0.25 繁育平均产出",
+    "frFR": "+0,25 Production moyenne par reproduction",
+    "1031": "+0,25 Durchschnittlicher Zuchtertrag",
+    "1041": "+0.25 繁殖平均産出量"
   },
   "部件回收倍率 +5%": {
-    "enUS": "Component recovery +5%",
-    "zhCN": "部件回收倍率 +5%",
-    "frFR": "Récupération de composants +5 %",
-    "1031": "Komponentenrückgewinnung +5 %",
-    "1041": "部品回収倍率 +5%"
+    "enUS": "+5% Component recovery",
+    "zhCN": "+5% 部件回收倍率",
+    "frFR": "+5 % Récupération de composants",
+    "1031": "+5 % Komponentenrückgewinnung",
+    "1041": "+5% 部品回収倍率"
   },
   "T行星内物流交互": {
     "enUS": "Planetary Subspace Interaction",
