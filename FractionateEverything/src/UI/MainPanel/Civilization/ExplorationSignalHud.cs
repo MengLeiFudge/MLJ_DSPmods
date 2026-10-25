@@ -1,4 +1,5 @@
 ﻿using FE.Logic.Civilization;
+using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,6 +10,8 @@ internal static class ExplorationSignalHud {
     private static GameObject root;
     private static RectTransform rootRect;
     private static UIDarkFogMonitorEntry entry;
+    private static RectTransform titleRect;
+    private static Text title;
     private static LineGizmo guideLine;
     private static GalaxyData lineGalaxy;
     private static float HudWidth => rootRect.rect.width;
@@ -22,19 +25,25 @@ internal static class ExplorationSignalHud {
     public static void EnsureCreated() {
         UIGame uiGame = UIRoot.instance?.uiGame;
         UIDarkFogMonitor monitor = uiGame?.dfMonitor;
-        if (root || monitor?.baseEntryPrefab == null || UIRoot.instance.overlayCanvas == null) { return; }
-        entry = Object.Instantiate(monitor.baseEntryPrefab, monitor.transform.parent, false);
+        if (root || monitor?.baseEntryPrefab == null || monitor.baseGroupLabel == null
+            || UIRoot.instance.overlayCanvas == null) { return; }
+        root = new GameObject("fe-exploration-signal-hud", typeof(RectTransform));
+        rootRect = (RectTransform)root.transform;
+        rootRect.SetParent(monitor.transform.parent, false);
+        rootRect.anchorMin = rootRect.anchorMax = rootRect.pivot = new Vector2(0f, 1f);
+        rootRect.sizeDelta = new Vector2(monitor.contentRect.rect.width,
+            monitor.groupLabelHeight + monitor.entryHeight);
+        titleRect = Object.Instantiate(monitor.baseGroupLabel, rootRect, false);
+        titleRect.anchoredPosition = new Vector2(titleRect.anchoredPosition.x, -1f);
+        title = titleRect.GetComponentInChildren<Text>(true);
+        entry = Object.Instantiate(monitor.baseEntryPrefab, rootRect, false);
         entry.enabled = false;
         entry.monitor = monitor;
-        root = entry.gameObject;
-        root.name = "fe-exploration-signal-hud";
-        rootRect = entry.rectTrans;
-        Vector2 size = monitor.baseEntryPrefab.rectTrans.rect.size;
-        rootRect.anchorMin = rootRect.anchorMax = rootRect.pivot = new Vector2(0f, 1f);
-        rootRect.sizeDelta = size;
+        entry.gameObject.SetActive(true);
         foreach (Localizer localizer in root.GetComponentsInChildren<Localizer>(true)) { localizer.enabled = false; }
         entry.idText.gameObject.SetActive(false);
         entry.levelText.gameObject.SetActive(false);
+        entry.locationText.gameObject.SetActive(false);
         entry.expBar.gameObject.SetActive(false);
         entry.alertImage.gameObject.SetActive(false);
         entry.alertToggle.gameObject.SetActive(false);
@@ -74,7 +83,9 @@ internal static class ExplorationSignalHud {
             bottom = Mathf.Min(bottom, PanelBounds[i].yMin);
             right = Mathf.Max(right, PanelBounds[i].xMax);
         }
-        Vector2 position = new(screen.xMin + 22f, Mathf.Min(safe.yMax, bottom - 10f));
+        float left = monitor?.contentRect != null
+            ? GetPanelBounds(monitor.contentRect, parent).xMin : screen.xMin + 22f;
+        Vector2 position = new(Mathf.Max(safe.xMin, left), Mathf.Min(safe.yMax, bottom - 10f));
         float scale = GetAvailableScale(position, safe);
         if (scale < 1f) {
             position = new Vector2(right + 10f, safe.yMax);
@@ -163,7 +174,7 @@ internal static class ExplorationSignalHud {
     }
 
     /// <summary>
-    /// 刷新附近信号，首遗物仅显示图形，不输出坐标和百分比。
+    /// 刷新附近信号及百分比；首遗物不公开名称和坐标。
     /// </summary>
     public static void Update() {
         if (GameMain.isRunning && GameMain.mainPlayer != null) { ExplorationDetector.UpdateNavigation(); }
@@ -187,18 +198,34 @@ internal static class ExplorationSignalHud {
         DetectorReading reading = visible ? ExplorationDetector.Read() : default;
         root.SetActive(visible && reading.Visible);
         if (!visible || !reading.Visible) { CloseGuideLine(); return; }
-        UpdatePosition(uiGame);
         displayedMarkId = reading.MarkId;
         bool tracking = ExplorationDetector.TrackingEnabled;
         bool canNavigate = displayedMarkId != 0 || tracking;
         entry.SetColorTheme0(reading.ShowStrength);
-        entry.locationText.text = reading.Name;
-        entry.locationText.gameObject.SetActive(!string.IsNullOrEmpty(reading.Name));
-        entry.threatValueText.text = canNavigate ? (tracking ? "取消指引" : "开启指引").Translate() : string.Empty;
-        entry.threatBar.rectTransform.anchoredPosition = new Vector2(-130f + Mathf.Round(reading.Strength * 100f),
+        bool hasName = !string.IsNullOrEmpty(reading.Name);
+        title.text = reading.Name;
+        titleRect.gameObject.SetActive(hasName);
+        float titleHeight = hasName ? uiGame.dfMonitor.groupLabelHeight : 0f;
+        rootRect.sizeDelta = new Vector2(rootRect.sizeDelta.x, titleHeight + uiGame.dfMonitor.entryHeight);
+        entry.rectTrans.anchoredPosition = new Vector2(entry.rectTrans.anchoredPosition.x, -titleHeight);
+        float strength = Mathf.Clamp01(reading.Strength);
+        entry.threatValueText.text = reading.ShowStrength ? $"{strength * 100f:0.0}%" : string.Empty;
+        entry.threatBar.rectTransform.anchoredPosition = new Vector2(-130f + Mathf.Round(strength * 100f),
             entry.threatBar.rectTransform.anchoredPosition.y);
         entry.entryButton.enabled = entry.thrtButton.enabled = entry.expButton.enabled = canNavigate;
         entry.trackImage.gameObject.SetActive(tracking && displayedMarkId != 0);
+    }
+
+    /// <summary>与原版监测器同在UI晚更新阶段，使用相机更新后的坐标绘制连线。</summary>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UIGame), nameof(UIGame._OnLateUpdate))]
+    public static void UIGame_OnLateUpdate_Postfix(UIGame __instance) {
+        if (!root || !root.activeInHierarchy || !__instance.active || GameMain.isPaused
+            || __instance.hideAllUI0 || __instance.hideAllUI1) {
+            CloseGuideLine();
+            return;
+        }
+        UpdatePosition(__instance);
         UpdateGuideLine();
     }
 
