@@ -138,7 +138,9 @@ public static partial class AdvancedFractionatorRuntime {
         if (state == null) { return AdvancedTowerStatus.AwaitingRecipe; }
         lock (state) {
             WorldviewRecipe recipe = RecipeManager.GetRecipe(state.SelectedRecipeId);
-            if (recipe == null) { return AdvancedTowerStatus.AwaitingRecipe; }
+            if (recipe == null || !ResearchManager.IsContentUnlocked(recipe.StableId)) {
+                return AdvancedTowerStatus.AwaitingRecipe;
+            }
             if (HasBlockedProduct(state, recipe)) { return AdvancedTowerStatus.ProductOutputBlocked; }
             if (!CanProcessOutputs(state, recipe)) { return AdvancedTowerStatus.FlowOutputBlocked; }
             int rounds = GetAvailableRounds(state, recipe);
@@ -285,12 +287,7 @@ public static partial class AdvancedFractionatorRuntime {
             WorldviewRecipe recipe = RecipeManager.GetRecipe(state.SelectedRecipeId);
             if (recipe == null || recipe.RecipeType != FractionatorTowerCatalog.GetRecipeType(buildingId)
                 || !ResearchManager.IsContentUnlocked(recipe.StableId)) {
-                if (state.SelectedRecipeId != 0) {
-                    state.SnapshotDirty = true;
-                    state.SelectedRecipeId = 0;
-                    state.OutputCursor = state.FlowOutputCursor = 0;
-                    ResetInputFlow(state);
-                }
+                // 暂时不可运行不能抹去玩家选择；恢复目录或研究状态后仍使用同一配方。
                 recipe = null;
             }
 

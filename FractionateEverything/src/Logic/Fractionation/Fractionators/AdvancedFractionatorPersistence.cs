@@ -109,7 +109,7 @@ public static partial class AdvancedFractionatorRuntime {
                     if (key.planetId <= 0 || key.fractionatorId <= 0) { return; }
                     AdvancedFractionatorState state = States.GetOrAdd(key, _ => new AdvancedFractionatorState());
                     lock (state) {
-                        state.SelectedRecipeId = state.OutputCursor = state.FlowOutputCursor = 0;
+                        state.OutputCursor = state.FlowOutputCursor = 0;
                         ResetInputFlow(state);
                         state.CirculationIntakePending = false;
                         ClearDigestion(state);
@@ -117,10 +117,8 @@ public static partial class AdvancedFractionatorRuntime {
                         state.Foods.Clear(); state.FoodInc.Clear(); state.Products.Clear();
                         state.FlowOutputs.Clear(); state.FlowOutputInc.Clear();
                         r.ReadBlocks(
-                            ("Recipe", field => {
-                                int id = field.ReadInt32();
-                                state.SelectedRecipeId = RecipeManager.GetRecipe(id)?.IsAdvanced == true ? id : 0;
-                            }),
+                            // 稳定选择独立于目录加载时机；缺少此块的增量不能擦除已有选择。
+                            ("Recipe", field => state.SelectedRecipeId = Math.Max(0, field.ReadInt32())),
                             ("Digestion", field => {
                                 int id = field.ReadInt32(); double energy = field.ReadDouble();
                                 int inc = Math.Max(0, Math.Min(10, field.ReadInt32()));
@@ -225,7 +223,7 @@ public static partial class AdvancedFractionatorRuntime {
                 state.CirculationIntakePending = false;
                 int recipeId = reader.ReadInt32();
                 WorldviewRecipe recipe = RecipeManager.GetRecipe(recipeId);
-                state.SelectedRecipeId = recipeId != 0 && recipe?.IsAdvanced != true ? 0 : recipeId;
+                state.SelectedRecipeId = Math.Max(0, recipeId);
                 int itemId = reader.ReadInt32();
                 double energy = reader.ReadDouble();
                 int inc = Math.Max(0, Math.Min(10, reader.ReadInt32()));
