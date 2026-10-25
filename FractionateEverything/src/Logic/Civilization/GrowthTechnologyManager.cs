@@ -80,8 +80,16 @@ public static class GrowthTechnologyManager {
     /// <summary>繁育成功轮的平均原胚产量，运行结算与界面共用。</summary>
     public static float EmbryoBreedingOutput => 1.5f + 0.25f * AdvancedInteractionTraitLevel;
 
-    /// <summary>高级矿物特质对催化损耗的剩余倍率，结算与科技汇总共用。</summary>
-    public static float AdvancedMineralCatalystConsumptionRatio => 1f - AdvancedMineralTraitLevel * 0.1f;
+    /// <summary>原版矿物利用的采矿速度转为矿物成功轮产量倍率，不改变原料消耗。</summary>
+    public static float MineralOutputRatio {
+        get {
+            float ratio = GameMain.history?.miningSpeedScale ?? 1f;
+            return float.IsNaN(ratio) || float.IsInfinity(ratio) ? 1f : Math.Max(1f, ratio);
+        }
+    }
+
+    /// <summary>高级矿物特质提供有限的额外产量倍率，与原版矿物利用相乘。</summary>
+    public static float AdvancedMineralOutputRatio => 1f + AdvancedMineralTraitLevel * 0.25f;
 
     /// <summary>高级转化配方的材料回收比例，结算与科技汇总共用。</summary>
     public static float AdvancedConversionRecoveryRatio => 0.5f + AdvancedConversionTraitLevel * 0.05f;
@@ -196,7 +204,7 @@ public static class GrowthTechnologyManager {
                 string.Format("FE.Growth.StationPower".Translate(), techId == TFE交互站电力 + 5 ? 10 : (techId - TFE交互站电力) * 10),
             > TFE亚空间能效 + 1 and <= TFE亚空间能效 + 5 =>
                 string.Format("FE.Growth.SubspaceEnergyRatio".Translate(), SubspaceEnergyRatios[techId - TFE亚空间能效 - 1]),
-            > TFE高级矿物特质 and <= TFE高级矿物特质 + FiniteGrowthLevelCount => "珍奇催化物损耗 -10%".Translate(),
+            > TFE高级矿物特质 and <= TFE高级矿物特质 + FiniteGrowthLevelCount => "珍奇矿物产量 +25%".Translate(),
             > TFE高级交互特质 and <= TFE高级交互特质 + FiniteGrowthLevelCount => "繁育平均产出 +0.25".Translate(),
             > TFE高级转化特质 and <= TFE高级转化特质 + FiniteGrowthLevelCount => "部件回收倍率 +5%".Translate(),
             _ => null,
@@ -215,7 +223,7 @@ public static class GrowthTechnologyManager {
         AddUltimateTech(TFE终极探索, "终极探索");
         AddUltimateTech(TFE终极仓储, "终极仓储");
         AddFiniteSeries(TFE高级矿物特质, "FE高级矿物特质", "FE高级矿物特质描述",
-            "Assets/fe/珍奇催化稳定性", 0);
+            "Assets/fe/珍奇矿物增殖", 0);
         AddFiniteSeries(TFE高级交互特质, "FE高级交互特质", "FE高级交互特质描述",
             "Assets/fe/原胚繁育活性", 1);
         AddFiniteSeries(TFE高级转化特质, "FE高级转化特质", "FE高级转化特质描述",

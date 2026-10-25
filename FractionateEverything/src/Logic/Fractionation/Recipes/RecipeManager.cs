@@ -241,20 +241,20 @@ public static class RecipeManager {
                 continue;
             }
             AddRecipe(new WorldviewRecipe($"mineral-basic:{itemId}", 200000 + itemId,
-                string.Format("{0}自身复制".Translate(), item.name), ERecipe.BasicMineral, WorldviewRecipeKind.BasicMineral, 0.05f,
-                [new WorldviewRecipeInput(itemId, 1)], [new WorldviewRecipeOutput(itemId, 2f)]));
+                string.Format("{0}自身复制".Translate(), item.name), ERecipe.BasicMineral, WorldviewRecipeKind.BasicMineral, 0.04f,
+                [new WorldviewRecipeInput(itemId, 1)], [new WorldviewRecipeOutput(itemId, 3f)]));
         }
     }
 
     /// <summary>注册珍奇催化增殖及对应的源点重构配方，保留已发布的稳定身份。</summary>
     private static void AddRareCatalysisRecipes() {
-        AddRareRecipe(30101, I光栅石, [new(I石矿, 3)]);
-        AddRareRecipe(30102, I分形硅石, [new(I硅石, 3), new(I石矿, 3)]);
-        AddRareRecipe(30103, I金伯利矿石, [new(I煤矿, 3)]);
-        AddRareRecipe(30104, I可燃冰, [new(I原油, 3)]);
-        AddRareRecipe(30105, I刺笋结晶, [new(I植物燃料, 3), new(I煤矿, 3)]);
-        AddRareRecipe(30106, I单极磁石, [new(I分形硅石, 1), new(I有机晶体, 1), new(I刺笋结晶, 1)]);
-        AddRareRecipe(30108, I有机晶体, [new(I原油, 3), new(I水, 3)]);
+        AddRareRecipe(30101, I光栅石, 0.02f, 6, [new(I石矿, 3)]);
+        AddRareRecipe(30102, I分形硅石, 0.04f, 6, [new(I硅石, 3), new(I石矿, 3)]);
+        AddRareRecipe(30103, I金伯利矿石, 0.02f, 6, [new(I煤矿, 3)]);
+        AddRareRecipe(30104, I可燃冰, 0.02f, 6, [new(I原油, 3)]);
+        AddRareRecipe(30105, I刺笋结晶, 0.04f, 6, [new(I植物燃料, 3), new(I煤矿, 3)]);
+        AddRareRecipe(30106, I单极磁石, 0.04f, 3, [new(I分形硅石, 1), new(I有机晶体, 1), new(I刺笋结晶, 1)]);
+        AddRareRecipe(30108, I有机晶体, 0.04f, 6, [new(I原油, 3), new(I水, 3)]);
 
         AddRareMemoryRecipe(30107, I单极磁石, 20);
         AddRareMemoryRecipe(30109, I分形硅石, 60);
@@ -268,8 +268,10 @@ public static class RecipeManager {
     /// <summary>以指定原料和同种珍奇催化剂注册稀有增殖配方。</summary>
     /// <param name="persistentId">配方跨存档和联机稳定的整数身份。</param>
     /// <param name="rareItemId">兼作催化剂、解析样本和产物的珍奇物品。</param>
+    /// <param name="successProbability">配方基础概率，只控制周转，不承担科技产量成长。</param>
+    /// <param name="productCount">每成功轮基础产量。</param>
     /// <param name="rawInputs">成功轮消耗、失败轮回流的主原料。</param>
-    private static void AddRareRecipe(int persistentId, int rareItemId,
+    private static void AddRareRecipe(int persistentId, int rareItemId, float successProbability, int productCount,
         IReadOnlyList<WorldviewRecipeInput> rawInputs) {
         ItemProto rare = LDB.items.Select(rareItemId);
         if (rare == null) {
@@ -277,8 +279,8 @@ public static class RecipeManager {
         }
         List<WorldviewRecipeInput> inputs = [..rawInputs, new(rareItemId, 1, 0.05f)];
         AddRecipe(new WorldviewRecipe($"mineral-rare:{rareItemId}", persistentId,
-            string.Format("{0}催化增殖".Translate(), rare.name), ERecipe.AdvancedMineral, WorldviewRecipeKind.RareCatalysis, 0.08f,
-            inputs, [new WorldviewRecipeOutput(rareItemId, 1f)]) {
+            string.Format("{0}催化增殖".Translate(), rare.name), ERecipe.AdvancedMineral, WorldviewRecipeKind.RareCatalysis, successProbability,
+            inputs, [new WorldviewRecipeOutput(rareItemId, productCount)]) {
                 AnalysisItemId = rareItemId,
                 ResearchStage = rareItemId == I单极磁石 ? 5 : 3,
             });

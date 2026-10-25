@@ -739,9 +739,11 @@ public static partial class FractionatorWindow {
                 cached?.isMainOutput == false ? ProductSlotKind.Side : ProductSlotKind.Main);
             advancedProducts.Satisfaction[i].text = string.Empty;
             OutputInfo output = recipe?.OutputMain.FirstOrDefault(candidate => candidate.OutputID == productId);
+            float outputPerSuccess = recipe is WorldviewRecipe { Kind: WorldviewRecipeKind.BasicMineral } mineral
+                ? mineral.GetOutputPerSuccess(mineral.ProductArray[0]) : output?.OutputCount ?? 0f;
             double ratio = !available || output == null ? 0d : recipe.RecipeType == ERecipe.BasicAnalysis
-                ? ResearchManager.GetAnalysisProductRatio(fractionator.fluidId, productId, analysis) * output.OutputCount
-                : success * output.SuccessRatio * output.OutputCount;
+                ? ResearchManager.GetAnalysisProductRatio(fractionator.fluidId, productId, analysis) * outputPerSuccess
+                : success * output.SuccessRatio * outputPerSuccess;
             advancedProducts.Rates[i].text = advancedProducts.RateDisplays[i].Update(productId, rate * 60d * ratio);
         }
         // 基础塔配方由输入决定，只读显示；没有实体产物的解析结果继续由原版状态区说明。

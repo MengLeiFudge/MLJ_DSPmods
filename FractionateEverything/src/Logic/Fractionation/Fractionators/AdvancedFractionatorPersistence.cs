@@ -134,8 +134,8 @@ public static partial class AdvancedFractionatorRuntime {
                             ("InputInc", field => ReadInventory(field, state.InputInc, MaximumBufferCapacity * 10)),
                             ("Foods", field => ReadInventory(field, state.Foods, MaximumBufferCapacity)),
                             ("FoodInc", field => ReadInventory(field, state.FoodInc, MaximumBufferCapacity * 10)),
-                            ("Products", field => ReadInventory(field, state.Products, MaximumBufferCapacity)),
-                            ("ProductInc", field => ReadInventory(field, state.ProductInc, MaximumBufferCapacity * 10)),
+                            ("Products", field => ReadInventory(field, state.Products, WorldviewRecipe.MaximumProductCount)),
+                            ("ProductInc", field => ReadInventory(field, state.ProductInc, WorldviewRecipe.MaximumProductCount * 10)),
                             ("FlowOutputs", field => ReadInventory(field, state.FlowOutputs, MaximumBufferCapacity)),
                             ("FlowOutputInc", field => ReadInventory(field, state.FlowOutputInc, MaximumBufferCapacity * 10)),
                             ("InputCargo", field => field.ReadList(cargoReader => {
@@ -243,7 +243,7 @@ public static partial class AdvancedFractionatorRuntime {
                 ReadDictionary(reader, state.InputInc, MaximumBufferCapacity * 10);
                 ReadDictionary(reader, state.Foods, MaximumBufferCapacity);
                 ReadDictionary(reader, state.FoodInc, MaximumBufferCapacity * 10);
-                ReadDictionary(reader, state.Products, MaximumBufferCapacity);
+                ReadDictionary(reader, state.Products, WorldviewRecipe.MaximumProductCount);
                 ReadDictionary(reader, state.FlowOutputs, MaximumBufferCapacity);
                 ReadDictionary(reader, state.FlowOutputInc, MaximumBufferCapacity * 10);
                 ClampIncDictionary(state.InputInc, state.Inputs);

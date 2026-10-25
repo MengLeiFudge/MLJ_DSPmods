@@ -26,7 +26,8 @@ internal static class TechnologyUpgradeSummary {
         panel.Title.text = "万物分馏".Translate();
         panel.Labels.text = "FE.Growth.Summary.Labels".Translate();
         panel.Values.text = $"{StackingManager.CurrentMaxStack}\n"
-            + $"{GrowthTechnologyManager.AdvancedMineralCatalystConsumptionRatio:0%}\n"
+            + $"{GrowthTechnologyManager.MineralOutputRatio:0%}\n"
+            + $"{GrowthTechnologyManager.AdvancedMineralOutputRatio:0%}\n"
             + $"{GrowthTechnologyManager.EmbryoBreedingOutput:0.##}\n"
             + $"{GrowthTechnologyManager.AdvancedConversionRecoveryRatio:0%}\n"
             + $"{GrowthTechnologyManager.SubspaceEnergyRatio:0%}\n"

@@ -1,10 +1,10 @@
 ﻿{
   "FE.Growth.Summary.Labels": {
-    "zhCN": "货物堆叠上限\n珍奇催化损耗倍率\n成功轮原胚产量\n置换材料回收率\n亚空间存取耗电\n交互站充电与储能",
-    "enUS": "Cargo stack limit\nRare catalyst loss factor\nEmbryos per success\nMaterial recovery\nSubspace energy use\nStation charge / storage",
-    "frFR": "Limite d’empilement\nPertes de catalyseur rare\nEmbryons par réussite\nRécupération de matière\nÉnergie du sous-espace\nCharge / stockage station",
-    "1031": "Stapelgrenze\nSeltener Katalysatorverlust\nEmbryos je Erfolg\nMaterialrückgewinnung\nSubraum-Energiebedarf\nStationsladung / Speicher",
-    "1041": "貨物スタック上限\n希少触媒の損耗倍率\n成功時の原胚産出量\n素材回収率\n亜空間出入庫の消費電力\n交互ステーション充電・蓄電"
+    "zhCN": "货物堆叠上限\n矿物利用产量倍率\n高级矿物特质倍率\n成功轮原胚产量\n置换材料回收率\n亚空间存取耗电\n交互站充电与储能",
+    "enUS": "Cargo stack limit\nVeins Utilization yield\nAdvanced mineral trait yield\nEmbryos per success\nMaterial recovery\nSubspace energy use\nStation charge / storage",
+    "frFR": "Limite d’empilement\nProduction : utilisation des filons\nProduction : trait minéral avancé\nEmbryons par réussite\nRécupération de matière\nÉnergie du sous-espace\nCharge / stockage station",
+    "1031": "Stapelgrenze\nErtrag durch Adernutzung\nErtrag durch Mineralturm-Merkmal\nEmbryos je Erfolg\nMaterialrückgewinnung\nSubraum-Energiebedarf\nStationsladung / Speicher",
+    "1041": "貨物スタック上限\n鉱脈利用の産出倍率\n上級鉱物特性の産出倍率\n成功時の原胚産出量\n素材回収率\n亜空間出入庫の消費電力\n交互ステーション充電・蓄電"
   },
   "等待新信号": {
     "zhCN": "等待新信号",
@@ -749,11 +749,11 @@
     "1041": "充電電力・蓄電上限 +基準値の{0}%"
   },
   "FE高级矿物特质描述": {
-    "enUS": "Reduces rare-catalyst consumption in every advanced mineral tower.",
-    "zhCN": "降低全部高级矿物塔的珍奇催化物损耗。",
-    "frFR": "Réduit la consommation de catalyseurs rares dans toutes les tours minérales avancées.",
-    "1031": "Verringert den Verbrauch seltener Katalysatoren in allen verbesserten Mineraltürmen.",
-    "1041": "すべての上級鉱物塔で希少触媒の損耗を減らします。"
+    "zhCN": "提高全部高级矿物塔每次成功的矿物产量，与原版矿物利用的产量倍率相乘。",
+    "enUS": "Increases mineral yield per success in all advanced mineral towers, multiplying the yield bonus from Veins Utilization.",
+    "frFR": "Augmente la production par réussite de toutes les tours minérales avancées, en multipliant le bonus d’utilisation des filons.",
+    "1031": "Erhöht den Mineralertrag je Erfolg aller verbesserten Mineraltürme und multipliziert den Ertragsbonus der Adernutzung.",
+    "1041": "すべての上級鉱物塔の成功時産出量を増加させ、鉱脈利用の産出倍率と乗算します。"
   },
   "FE高级交互特质描述": {
     "enUS": "Increases average embryo output per successful breeding cycle in all advanced interaction towers.",
@@ -804,12 +804,12 @@
     "1031": "Energie für Subraumtransfers -10 %",
     "1041": "亜空間転送消費電力-10%"
   },
-  "珍奇催化物损耗 -10%": {
-    "enUS": "Rare catalyst loss -10%",
-    "zhCN": "珍奇催化物损耗 -10%",
-    "frFR": "Perte de catalyseur rare -10 %",
-    "1031": "Verlust seltener Katalysatoren -10 %",
-    "1041": "希少触媒の損耗 -10%"
+  "珍奇矿物产量 +25%": {
+    "zhCN": "珍奇矿物产量 +25%",
+    "enUS": "Rare mineral yield +25%",
+    "frFR": "Production de minerais rares +25 %",
+    "1031": "Ertrag seltener Mineralien +25 %",
+    "1041": "希少鉱物産出量 +25%"
   },
   "繁育平均产出 +0.25": {
     "enUS": "Average breeding output +0.25",
@@ -3808,11 +3808,11 @@
     "1041": "亜空間転送効率"
   },
   "FE高级矿物特质": {
-    "enUS": "Rare Catalyst Stability",
-    "zhCN": "珍奇催化稳定性",
-    "frFR": "Stabilité des catalyseurs rares",
-    "1031": "Stabilität seltener Katalysatoren",
-    "1041": "希少触媒の安定性"
+    "zhCN": "珍奇矿物增殖",
+    "enUS": "Rare Mineral Proliferation",
+    "frFR": "Multiplication des minerais rares",
+    "1031": "Vermehrung seltener Mineralien",
+    "1041": "希少鉱物の増殖"
   },
   "FE高级交互特质": {
     "enUS": "Embryo Breeding Activity",
@@ -4116,46 +4116,46 @@
     "1041": "亜空間転送効率"
   },
   "FE高级矿物特质 1": {
-    "enUS": "Rare Catalyst Stability",
-    "zhCN": "珍奇催化稳定性",
-    "frFR": "Stabilité des catalyseurs rares",
-    "1031": "Stabilität seltener Katalysatoren",
-    "1041": "希少触媒の安定性"
+    "zhCN": "珍奇矿物增殖",
+    "enUS": "Rare Mineral Proliferation",
+    "frFR": "Multiplication des minerais rares",
+    "1031": "Vermehrung seltener Mineralien",
+    "1041": "希少鉱物の増殖"
   },
   "FE高级矿物特质 2": {
-    "enUS": "Rare Catalyst Stability",
-    "zhCN": "珍奇催化稳定性",
-    "frFR": "Stabilité des catalyseurs rares",
-    "1031": "Stabilität seltener Katalysatoren",
-    "1041": "希少触媒の安定性"
+    "zhCN": "珍奇矿物增殖",
+    "enUS": "Rare Mineral Proliferation",
+    "frFR": "Multiplication des minerais rares",
+    "1031": "Vermehrung seltener Mineralien",
+    "1041": "希少鉱物の増殖"
   },
   "FE高级矿物特质 3": {
-    "enUS": "Rare Catalyst Stability",
-    "zhCN": "珍奇催化稳定性",
-    "frFR": "Stabilité des catalyseurs rares",
-    "1031": "Stabilität seltener Katalysatoren",
-    "1041": "希少触媒の安定性"
+    "zhCN": "珍奇矿物增殖",
+    "enUS": "Rare Mineral Proliferation",
+    "frFR": "Multiplication des minerais rares",
+    "1031": "Vermehrung seltener Mineralien",
+    "1041": "希少鉱物の増殖"
   },
   "FE高级矿物特质 4": {
-    "enUS": "Rare Catalyst Stability",
-    "zhCN": "珍奇催化稳定性",
-    "frFR": "Stabilité des catalyseurs rares",
-    "1031": "Stabilität seltener Katalysatoren",
-    "1041": "希少触媒の安定性"
+    "zhCN": "珍奇矿物增殖",
+    "enUS": "Rare Mineral Proliferation",
+    "frFR": "Multiplication des minerais rares",
+    "1031": "Vermehrung seltener Mineralien",
+    "1041": "希少鉱物の増殖"
   },
   "FE高级矿物特质 5": {
-    "enUS": "Rare Catalyst Stability",
-    "zhCN": "珍奇催化稳定性",
-    "frFR": "Stabilité des catalyseurs rares",
-    "1031": "Stabilität seltener Katalysatoren",
-    "1041": "希少触媒の安定性"
+    "zhCN": "珍奇矿物增殖",
+    "enUS": "Rare Mineral Proliferation",
+    "frFR": "Multiplication des minerais rares",
+    "1031": "Vermehrung seltener Mineralien",
+    "1041": "希少鉱物の増殖"
   },
   "FE高级矿物特质 6": {
-    "enUS": "Rare Catalyst Stability",
-    "zhCN": "珍奇催化稳定性",
-    "frFR": "Stabilité des catalyseurs rares",
-    "1031": "Stabilität seltener Katalysatoren",
-    "1041": "希少触媒の安定性"
+    "zhCN": "珍奇矿物增殖",
+    "enUS": "Rare Mineral Proliferation",
+    "frFR": "Multiplication des minerais rares",
+    "1031": "Vermehrung seltener Mineralien",
+    "1041": "希少鉱物の増殖"
   },
   "FE高级交互特质 1": {
     "enUS": "Embryo Breeding Activity",

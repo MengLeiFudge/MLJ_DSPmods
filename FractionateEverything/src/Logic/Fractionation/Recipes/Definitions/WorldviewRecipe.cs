@@ -61,6 +61,9 @@ public sealed class WorldviewRecipeOutput(int itemId, float count, bool scalesWi
 /// 使用稳定身份的多输入、多输出配方。
 /// </summary>
 public sealed class WorldviewRecipe : BaseRecipe {
+    /// <summary>产物保存安全边界，为每件最多十点增产点预留整数空间；不是运行准入阈值。</summary>
+    internal const int MaximumProductCount = int.MaxValue / 10;
+
     /// <summary>跨存档、蓝图和联机稳定的配方字符串 ID。</summary>
     public string StableId { get; }
 
@@ -161,6 +164,19 @@ public sealed class WorldviewRecipe : BaseRecipe {
     /// </summary>
     internal bool ContainsProduct(int itemId) => productItemIds.Contains(itemId);
 
+    /// <summary>成功轮实际产量；基础定义保持不变，运行与所有数值展示实时读取科技倍率。</summary>
+    public float GetOutputPerSuccess(WorldviewRecipeOutput output) {
+        if (Kind is WorldviewRecipeKind.BasicMineral or WorldviewRecipeKind.RareCatalysis) {
+            float ratio = GrowthTechnologyManager.MineralOutputRatio;
+            if (Kind == WorldviewRecipeKind.RareCatalysis) { ratio *= GrowthTechnologyManager.AdvancedMineralOutputRatio; }
+            return output.Count * ratio;
+        }
+        if (Kind == WorldviewRecipeKind.EmbryoBreeding && output.ItemId == IFE通用原胚) {
+            return GrowthTechnologyManager.EmbryoBreedingOutput;
+        }
+        return output.ScalesWithRecovery ? output.Count * GrowthTechnologyManager.AdvancedConversionRecoveryRatio : output.Count;
+    }
+
     /// <inheritdoc />
     public override FractionationBatchResult GetOutputsBatchFast(ref uint seed, float pointsBonus,
         float successBoost, int batchCount, int fluidInputIncAvg, ref int fluidInputInc,
@@ -190,9 +206,12 @@ public sealed class WorldviewRecipe : BaseRecipe {
         if (successCount > batchCount) {
             successCount = batchCount;
         }
+        double perSuccess = GetOutputPerSuccess(ProductArray[0]);
+        // 只限制极端科技下的整数表示范围；正常产物准入仍由塔在批次开始前判断。
+        if (perSuccess > 0d) { successCount = (int)Math.Min(successCount, Math.Floor(MaximumProductCount / perSuccess)); }
         int passThroughCount = batchCount - successCount;
         if (successCount > 0) {
-            outputs.Add(true, InputID, successCount * 2);
+            outputs.Add(true, InputID, RollExpected(ref seed, successCount * perSuccess));
         }
 
         fluidInputInc -= fluidInputIncAvg * batchCount;

@@ -425,17 +425,12 @@ public static partial class AdvancedFractionatorRuntime {
         return Math.Min(1f, recipe.CycleSuccessProbability * (1f + sacrificeBoost) * multiplier);
     }
 
-    /// <summary>读取成功轮中每件输入的实际消耗概率，包括高级矿物特质。</summary>
+    /// <summary>读取成功轮的输入消耗概率；矿物科技只增加产量，不减少原料或催化消耗。</summary>
     /// <param name="input">当前配方输入。</param>
     /// <param name="buildingId">塔体物品ID。</param>
-    /// <returns>主料为1，催化剂使用特质减损后的概率。</returns>
-    public static float GetInputConsumeProbability(WorldviewRecipeInput input, int buildingId) {
-        float probability = input.ConsumeProbability;
-        if (probability < 0.9999f && buildingId == IFE高级矿物塔) {
-            probability *= GrowthTechnologyManager.AdvancedMineralCatalystConsumptionRatio;
-        }
-        return Math.Max(0f, probability);
-    }
+    /// <returns>配方定义的消耗概率，主料为1。</returns>
+    public static float GetInputConsumeProbability(WorldviewRecipeInput input, int buildingId) =>
+        Math.Max(0f, input.ConsumeProbability);
 
     private static int SettleRounds(ref uint seed, AdvancedFractionatorState state, WorldviewRecipe recipe,
         int rounds, int buildingId, float sacrificeBoost, int[] productRegister, int[] consumeRegister) {
@@ -449,6 +444,13 @@ public static partial class AdvancedFractionatorRuntime {
             if (perSuccess <= 0d) { continue; }
             int stock = GetCount(state.Inputs, input.ItemId);
             successCount = (int)Math.Min(successCount, Math.Floor(stock / perSuccess));
+        }
+        // 科技可让一批产物超过旧缓存边界；扣料前只按可保存的整数范围限制成功数。
+        foreach (WorldviewRecipeOutput output in recipe.ProductArray) {
+            double perSuccess = GetOutputPerSuccess(recipe, output);
+            if (perSuccess <= 0d) { continue; }
+            int room = Math.Max(0, WorldviewRecipe.MaximumProductCount - GetCount(state.Products, output.ItemId));
+            successCount = (int)Math.Min(successCount, Math.Floor(room / perSuccess));
         }
         int failedCount = rounds - successCount;
         int consumedMain = 0;
@@ -488,7 +490,7 @@ public static partial class AdvancedFractionatorRuntime {
 
         foreach (WorldviewRecipeOutput output in recipe.ProductArray) {
             float outputPerSuccess = GetOutputPerSuccess(recipe, output);
-            int outputCount = WorldviewRecipe.RollExpected(ref seed, successCount * outputPerSuccess);
+            int outputCount = WorldviewRecipe.RollExpected(ref seed, successCount * (double)outputPerSuccess);
             if (outputCount <= 0) {
                 continue;
             }
@@ -505,7 +507,7 @@ public static partial class AdvancedFractionatorRuntime {
     /// <remarks>主料权重为每轮件数；辅料和催化剂权重乘当前生效的消耗概率，不再乘成功率。</remarks>
     /// <param name="recipe">当前配方。</param>
     /// <param name="input">需要分摊速率的配方输入。</param>
-    /// <param name="buildingId">塔型，用于读取特质后的消耗概率。</param>
+    /// <param name="buildingId">塔型标识，保留与窗口调用一致的接口。</param>
     /// <returns>该材料的满带基准件数/秒；无有效消耗时为0。</returns>
     public static double GetInputFullBeltRate(WorldviewRecipe recipe, WorldviewRecipeInput input, int buildingId) {
         if (recipe == null || input == null) { return 0d; }
@@ -675,7 +677,7 @@ public static partial class AdvancedFractionatorRuntime {
             return false;
         }
         int outputCount = stackLimit;
-        int outputInc = GetCount(incs, itemId) * outputCount / count;
+        int outputInc = (int)((long)GetCount(incs, itemId) * outputCount / count);
         if (!cargoTraffic.TryInsertItemAtHead(
                 beltId, itemId, (byte)outputCount, (byte)Math.Min(byte.MaxValue, outputInc))) {
             return false;
@@ -765,8 +767,7 @@ public static partial class AdvancedFractionatorRuntime {
             recipe != null && recipe.ProductArray.Length > 0 ? recipe.ProductArray[0] : null);
         fractionator.produceProb = recipe == null
             ? 0f
-            : Math.Min(1f, recipe.CycleSuccessProbability
-                           * (1f + ResearchManager.GetAdvancedTowerSacrificeBoost(buildingId)));
+            : GetSuccessProbability(recipe, ResearchManager.GetAdvancedTowerSacrificeBoost(buildingId), state);
         if (entityId > 0 && entityId < signPool.Length) {
             int recipeId = recipe == null ? 0 : AdvancedRecipeCatalog.GetProtoId(recipe.PersistentId);
             signPool[entityId].iconId0 = (uint)recipeId;
@@ -774,20 +775,9 @@ public static partial class AdvancedFractionatorRuntime {
         }
     }
 
-    /// <summary>读取成功轮的平均实物产量，包括繁育与回收特质；结算与窗口共用。</summary>
-    /// <param name="recipe">当前生产配方。</param>
-    /// <param name="output">当前产物定义。</param>
-    /// <returns>每个成功轮次的平均产出件数。</returns>
-    public static float GetOutputPerSuccess(WorldviewRecipe recipe, WorldviewRecipeOutput output) {
-        if (recipe.Kind == WorldviewRecipeKind.EmbryoBreeding && output.ItemId == IFE通用原胚) {
-            return GrowthTechnologyManager.EmbryoBreedingOutput;
-        }
-        if (output.ScalesWithRecovery) {
-            float recoveryRatio = GrowthTechnologyManager.AdvancedConversionRecoveryRatio;
-            return output.Count * recoveryRatio;
-        }
-        return output.Count;
-    }
+    /// <summary>结算与窗口共用配方的成功轮产量，包括矿物利用、有限特质和置换回收。</summary>
+    public static float GetOutputPerSuccess(WorldviewRecipe recipe, WorldviewRecipeOutput output) =>
+        recipe.GetOutputPerSuccess(output);
 
     /// <summary>读取每种产物的停止阈值，完整本批产量可超过此值。</summary>
     /// <param name="recipe">窗口当前配方；保留调用接口，阈值不取决于配方。</param>
@@ -826,7 +816,7 @@ public static partial class AdvancedFractionatorRuntime {
         int current = GetCount(counts, itemId);
         int taken = Math.Min(Math.Max(0, requested), current);
         int currentInc = GetCount(incs, itemId);
-        int takenInc = current <= 0 ? 0 : currentInc * taken / current;
+        int takenInc = current <= 0 ? 0 : (int)((long)currentInc * taken / current);
         AddCount(counts, itemId, -taken);
         AddCount(incs, itemId, -takenInc);
         return takenInc;
