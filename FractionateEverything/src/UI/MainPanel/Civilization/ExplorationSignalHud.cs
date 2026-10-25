@@ -49,9 +49,9 @@ internal static class ExplorationSignalHud {
         entry.expBar.gameObject.SetActive(false);
         entry.alertImage.gameObject.SetActive(false);
         entry.alertToggle.gameObject.SetActive(false);
-        // 右侧位置文字的宽度不能继续占位；追踪图标独立挂在可见条框下，避免被隐藏父节点连带关闭。
+        // 条框带有Mask；定位图标必须挂在条目根节点，才能显示在条框外侧。
         entry.locationText.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 0f);
-        entry.trackImage.rectTransform.SetParent(entry.frameImage.rectTransform, false);
+        entry.trackImage.rectTransform.SetParent(entry.rectTrans, false);
         entry.trackImage.rectTransform.anchorMin = entry.trackImage.rectTransform.anchorMax = new Vector2(1f, 0.5f);
         entry.trackImage.rectTransform.pivot = new Vector2(0.5f, 0.5f);
         entry.trackImage.rectTransform.localScale = Vector3.one;
@@ -235,6 +235,8 @@ internal static class ExplorationSignalHud {
         bool hasName = !string.IsNullOrEmpty(reading.Name);
         title.text = reading.Name;
         titleRect.gameObject.SetActive(hasName);
+        entry.levelText.text = reading.TaskStage > 0 ? reading.TaskStage.ToString() : string.Empty;
+        entry.levelText.gameObject.SetActive(reading.TaskStage > 0);
         float titleHeight = hasName ? uiGame.dfMonitor.groupLabelHeight : 0f;
         rootRect.sizeDelta = new Vector2(rootRect.sizeDelta.x, titleHeight + uiGame.dfMonitor.entryHeight);
         entry.rectTrans.anchoredPosition = new Vector2(entry.rectTrans.anchoredPosition.x, -titleHeight);

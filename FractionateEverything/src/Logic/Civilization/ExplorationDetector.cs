@@ -4,7 +4,7 @@ using UnityEngine;
 namespace FE.Logic.Civilization;
 
 /// <summary>信号HUD的只读投影；首遗物不公开地点身份或精确指引。</summary>
-public readonly struct DetectorReading(bool visible, float strength, string name, int markId = 0, bool showStrength = true) {
+public readonly struct DetectorReading(bool visible, float strength, string name, int markId = 0, bool showStrength = true, int taskStage = 0) {
     /// <summary>是否显示信号HUD，包含感知范围外的已选目标。</summary>
     public readonly bool Visible = visible;
     /// <summary>连续信号强度或挑战进度，不参与认领判定。</summary>
@@ -15,6 +15,8 @@ public readonly struct DetectorReading(bool visible, float strength, string name
     public readonly int MarkId = markId;
     /// <summary>超出局部感知范围时保留取消入口，但不显示虚假的强度。</summary>
     public readonly bool ShowStrength = showStrength;
+    /// <summary>当前主线或终极任务从1起的阶段序号，0表示不显示；不使用内部点位ID。</summary>
+    public readonly int TaskStage = taskStage;
 }
 
 /// <summary>拥有本端连续指引的开启态与目标，只投影位置，不创建移动命令。</summary>
@@ -109,17 +111,24 @@ public static class ExplorationDetector {
         }
         if (target == null) { return default; }
         int actionId = target.Kind != ExplorationMarkKind.FirstRelic && known.Any(m => m.Id == target.Id) ? target.Id : 0;
+        int taskStage = target.Kind switch {
+            ExplorationMarkKind.Story or ExplorationMarkKind.PlanetDetector => target.ItemId,
+            ExplorationMarkKind.Ultimate => target.ItemId + 1,
+            _ => 0,
+        };
         SignalChallengeView challenge = ExplorationManager.GetChallenge(target.Id);
         if (target.PlanetId == player.planetId && challenge is { Started: true }) {
             float progress = challenge.Progress / (float)challenge.Required;
             if (challenge.Kind == SignalChallengeKind.Production) {
                 progress = Mathf.Min(progress, challenge.Machines / (float)challenge.RequiredMachines);
             }
-            return new(true, progress, string.Format("FE.Challenge.Status".Translate(), challenge.Progress, challenge.Required), actionId);
+            return new(true, progress, string.Format("FE.Challenge.Status".Translate(), challenge.Progress, challenge.Required),
+                actionId, taskStage: taskStage);
         }
         bool sensed = ExplorationManager.TryGetSignalStrength(target, player.uPosition, player.planetId, out float strength);
         return new(sensed || target.Id == targetId, strength,
-            target.Kind == ExplorationMarkKind.FirstRelic ? string.Empty : ExplorationManager.GetSignalName(target), actionId, sensed);
+            target.Kind == ExplorationMarkKind.FirstRelic ? string.Empty : ExplorationManager.GetSignalName(target),
+            actionId, sensed, taskStage);
     }
 
     /// <summary>跨世界丢弃旧选择；普通主机快照保持本地选择。</summary>
