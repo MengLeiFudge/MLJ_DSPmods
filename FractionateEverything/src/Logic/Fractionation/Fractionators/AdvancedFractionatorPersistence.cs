@@ -114,7 +114,7 @@ public static partial class AdvancedFractionatorRuntime {
                         state.CirculationIntakePending = false;
                         ClearDigestion(state);
                         state.Inputs.Clear(); state.InputInc.Clear(); state.InputCargo.Clear();
-                        state.Foods.Clear(); state.FoodInc.Clear(); state.Products.Clear();
+                        state.Foods.Clear(); state.FoodInc.Clear(); state.Products.Clear(); state.ProductInc.Clear();
                         state.FlowOutputs.Clear(); state.FlowOutputInc.Clear();
                         r.ReadBlocks(
                             // 稳定选择独立于目录加载时机；缺少此块的增量不能擦除已有选择。
@@ -135,6 +135,7 @@ public static partial class AdvancedFractionatorRuntime {
                             ("Foods", field => ReadInventory(field, state.Foods, MaximumBufferCapacity)),
                             ("FoodInc", field => ReadInventory(field, state.FoodInc, MaximumBufferCapacity * 10)),
                             ("Products", field => ReadInventory(field, state.Products, MaximumBufferCapacity)),
+                            ("ProductInc", field => ReadInventory(field, state.ProductInc, MaximumBufferCapacity * 10)),
                             ("FlowOutputs", field => ReadInventory(field, state.FlowOutputs, MaximumBufferCapacity)),
                             ("FlowOutputInc", field => ReadInventory(field, state.FlowOutputInc, MaximumBufferCapacity * 10)),
                             ("InputCargo", field => field.ReadList(cargoReader => {
@@ -153,6 +154,7 @@ public static partial class AdvancedFractionatorRuntime {
                         RemoveNonFoodEntries(state.Foods, state.FoodInc);
                         ClampIncDictionary(state.FoodInc, state.Foods);
                         ClampIncDictionary(state.FlowOutputInc, state.FlowOutputs);
+                        ClampIncDictionary(state.ProductInc, state.Products);
                         if (state.Foods.Count > 1 || SumCounts(state.Foods) > StackingManager.AbsoluteMaxStack
                             || state.DigestingEnergy > 0d && state.Foods.Keys.Any(id => id != state.DigestingItemId)) {
                             state.Foods.Clear(); state.FoodInc.Clear();
@@ -303,6 +305,7 @@ public static partial class AdvancedFractionatorRuntime {
                 ("Foods", field => WriteDictionary(field, state.Foods)),
                 ("FoodInc", field => WriteDictionary(field, state.FoodInc)),
                 ("Products", field => WriteDictionary(field, state.Products)),
+                ("ProductInc", field => WriteDictionary(field, state.ProductInc)),
                 ("FlowOutputs", field => WriteDictionary(field, state.FlowOutputs)),
                 ("FlowOutputInc", field => WriteDictionary(field, state.FlowOutputInc)),
                 ("InputCargo", field => field.WriteList(state.InputCargo.OrderBy(pair => pair.Key).ToArray(), (item, pair) => { item.Write(pair.Key); item.Write(pair.Value); })),

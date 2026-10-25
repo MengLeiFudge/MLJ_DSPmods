@@ -21,10 +21,10 @@ public static partial class AdvancedFractionatorRuntime {
         return capacity <= 0d ? 0f : (float)Math.Max(0d, Math.Min(1d, state.DigestingEnergy / capacity));
     }
 
-    /// <summary>读取当前正在消化的矩阵速度倍率，供运行器与窗口共用。</summary>
+    /// <summary>读取当前矩阵的成功率倍率；供养增益不占用额外带速。</summary>
     /// <param name="state">调用方已持有实例锁的消化状态。</param>
-    /// <returns>当前矩阵对应的速度；没有消化物时为1。</returns>
-    public static float GetFoodSpeed(AdvancedFractionatorState state) => state.DigestingEnergy > 0d
+    /// <returns>当前矩阵对应的成功率倍率；没有消化物时为1。</returns>
+    public static float GetFoodSuccessMultiplier(AdvancedFractionatorState state) => state.DigestingEnergy > 0d
         ? MatrixNutrition.GetSpeed(state.DigestingItemId) : 1f;
 
     /// <summary>读取当前矩阵的预计消耗与工作配比，不将失败回流计入供养消耗。</summary>
@@ -42,7 +42,7 @@ public static partial class AdvancedFractionatorRuntime {
             foreach (WorldviewRecipeInput input in recipe.InputArray) {
                 if (input.ConsumeProbability >= 0.9999f) { mainPerRound += input.Count; }
             }
-            float success = GetSuccessProbability(recipe, ResearchManager.GetAdvancedTowerSacrificeBoost(buildingId));
+            float success = GetSuccessProbability(recipe, ResearchManager.GetAdvancedTowerSacrificeBoost(buildingId), state);
             consumption = state.ProcessingRate * 60d * success * mainPerRound;
         }
         return (consumption / energy, 1d / (1d + energy));

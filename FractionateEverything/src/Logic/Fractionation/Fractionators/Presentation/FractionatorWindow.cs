@@ -97,7 +97,7 @@ public static partial class FractionatorWindow {
 
     private static void OnSlotClick(ProductSlot slot, int itemId) {
         UIFractionatorWindow target = sourceWindow ?? modWindow;
-        if (target == null || itemId <= 0) return;
+        if (target == null) return;
         HandleProductSlotClick(target, itemId, slot);
     }
 
@@ -596,6 +596,8 @@ public static partial class FractionatorWindow {
             return HandleAdvancedOutputSlotClick(__instance, itemId, slot);
         }
 
+        if (itemId <= 0) { return false; }
+
         // 额外主产物/副产物复用了原版回调；如果不在这里完全接管，
         // 原版会把“非第一主产物”错误走到流体输出分支，导致错取和无限取。
         // 自定义槽位需要额外带上槽位身份，避免主路目标只靠 itemId 反查到错误缓存。
@@ -671,7 +673,8 @@ public static partial class FractionatorWindow {
     }
 
     private static bool HandleAdvancedOutputSlotClick(UIFractionatorWindow window, int itemId, ProductSlot slot) {
-        if (slot == null || itemId <= 0 || window?.player == null || window.factory == null) {
+        if (slot == null || window?.player == null || window.factory == null || !window.active
+            || window.factory != displayedFactory || window.fractionatorId != displayedFractionatorId) {
             return false;
         }
         if (FE.Compatibility.Nebula.NebulaMultiplayerModAPI.IsClient) {
@@ -680,14 +683,23 @@ public static partial class FractionatorWindow {
         }
 
         Player player = window.player;
-        if (player.inhandItemId > 0 || player.inhandItemCount > 0) {
+        bool flowOutput = slot.kind != ProductSlotKind.Main;
+        if (player.inhandItemCount > 0) {
+            if (itemId > 0 && player.inhandItemId != itemId) { return false; }
+            int added = AdvancedFractionatorRuntime.AddOutput(window.factory, window.fractionatorId,
+                player.inhandItemId, player.inhandItemCount, player.inhandItemInc, flowOutput, out int addedInc);
+            RemoveTransferredHandItems(player, added, addedInc);
+            return false;
+        }
+        SetTransferredHandItems(player, 0, 0, 0);
+        if (itemId <= 0) {
             return false;
         }
         AdvancedFractionatorState state = AdvancedFractionatorRuntime.GetState(window.factory, window.fractionatorId);
         if (state == null) {
             return false;
         }
-        bool flowOutput = slot.kind != ProductSlotKind.Main;
+
         int count;
         lock (state) {
             Dictionary<int, int> source = flowOutput ? state.FlowOutputs : state.Products;
@@ -697,20 +709,9 @@ public static partial class FractionatorWindow {
             return false;
         }
 
-        bool quickMove = VFInput.control || VFInput.shift;
         int taken = AdvancedFractionatorRuntime.TakeOutput(
             window.factory, window.fractionatorId, itemId, count, flowOutput, out int takenInc);
-        if (taken <= 0) {
-            return false;
-        }
-        if (quickMove) {
-            int addedToPackage = player.TryAddItemToPackage(itemId, taken, takenInc, throwTrash: true);
-            if (addedToPackage > 0) {
-                UIItemup.Up(itemId, addedToPackage);
-            }
-        } else {
-            player.SetHandItems(itemId, taken, takenInc);
-        }
+        TransferAdvancedItems(player, itemId, taken, takenInc);
         return false;
     }
 

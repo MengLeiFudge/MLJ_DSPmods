@@ -77,6 +77,9 @@ public sealed class AdvancedFractionatorState {
     /// <summary>配方产物数量。</summary>
     public readonly Dictionary<int, int> Products = [];
 
+    /// <summary>手动放入产物缓存的增产点；反应生成的新产物不附带增产点。</summary>
+    public readonly Dictionary<int, int> ProductInc = [];
+
     /// <summary>非目标物品和失败轮流动输出数量。</summary>
     public readonly Dictionary<int, int> FlowOutputs = [];
 
@@ -200,7 +203,7 @@ public static partial class AdvancedFractionatorRuntime {
     public static int TakeOutput(PlanetFactory factory, int fractionatorId, int itemId, int count,
         bool flowOutput, out int takenInc) {
         takenInc = 0;
-        if (factory == null || count <= 0 || itemId <= 0) {
+        if (NebulaMultiplayerModAPI.IsClient || factory == null || count <= 0 || itemId <= 0) {
             return 0;
         }
         AdvancedFractionatorState state = GetState(factory, fractionatorId);
@@ -213,14 +216,7 @@ public static partial class AdvancedFractionatorRuntime {
                 return 0;
             }
             int taken = Math.Min(stored, count);
-            AddCount(source, itemId, -taken);
-            if (flowOutput) {
-                int inc = GetCount(state.FlowOutputInc, itemId);
-                if (inc > 0) {
-                    takenInc = split_inc(ref stored, ref inc, taken);
-                    AddCount(state.FlowOutputInc, itemId, -takenInc);
-                }
-            }
+            takenInc = TakeCount(source, flowOutput ? state.FlowOutputInc : state.ProductInc, itemId, taken);
             state.SnapshotDirty = true;
             return taken;
         }
@@ -313,7 +309,7 @@ public static partial class AdvancedFractionatorRuntime {
                 && CanProcessOutputs(state, recipe);
             int rounds = 0;
             int successfulRounds = 0;
-            int readyRounds = AdvanceInputFlows(state, recipe, GetFoodSpeed(state) * durabilityEfficiency, cargoRate, passthrough);
+            int readyRounds = AdvanceInputFlows(state, recipe, durabilityEfficiency, cargoRate, passthrough);
             if (canWork) {
                 rounds = Math.Min(readyRounds, availableRounds);
                 if (rounds > 0) {
@@ -354,7 +350,7 @@ public static partial class AdvancedFractionatorRuntime {
         lock (state) {
             ReturnDictionary(player ?? GameMain.mainPlayer, state.Inputs, state.InputInc);
             ReturnDictionary(player ?? GameMain.mainPlayer, state.Foods, state.FoodInc);
-            ReturnDictionary(player ?? GameMain.mainPlayer, state.Products, null);
+            ReturnDictionary(player ?? GameMain.mainPlayer, state.Products, state.ProductInc);
             ReturnDictionary(player ?? GameMain.mainPlayer, state.FlowOutputs, state.FlowOutputInc);
         }
     }
@@ -381,7 +377,7 @@ public static partial class AdvancedFractionatorRuntime {
         if (moved <= 0) {
             return;
         }
-        int movedInc = remainingCount <= 0 ? 0 : remainingInc * moved / remainingCount;
+        int movedInc = remainingCount <= 0 ? 0 : (int)((long)remainingInc * moved / remainingCount);
         AddCount(targetCounts, itemId, moved);
         AddCount(targetIncs, itemId, movedInc);
         remainingCount -= moved;
@@ -405,12 +401,29 @@ public static partial class AdvancedFractionatorRuntime {
 
     private static bool IsFoodItem(int itemId) => FE.Logic.Items.MatrixNutrition.IsFood(itemId);
 
-    /// <summary>读取献祭增益后的成功概率，供结算与界面共用。</summary>
+    /// <summary>献祭、主料增产剂加速及当前食物共同提高成功率；不改变主料流动速度。</summary>
     /// <param name="recipe">当前生产配方。</param>
     /// <param name="sacrificeBoost">本塔的相对成功率增益。</param>
+    /// <param name="state">调用方持有锁的实例；目录提示无实例时只计全局献祭。</param>
     /// <returns>不超过1的成功概率。</returns>
-    public static float GetSuccessProbability(WorldviewRecipe recipe, float sacrificeBoost) =>
-        Math.Min(1f, recipe.CycleSuccessProbability * (1f + sacrificeBoost));
+    public static float GetSuccessProbability(WorldviewRecipe recipe, float sacrificeBoost,
+        AdvancedFractionatorState state = null) {
+        float multiplier = 1f;
+        if (state != null) {
+            int minInc = 10;
+            bool hasMain = false;
+            foreach (WorldviewRecipeInput input in recipe.InputArray) {
+                if (input.ConsumeProbability < 0.9999f) { continue; }
+                int count = GetCount(state.Inputs, input.ItemId);
+                int avgInc = count > 0 ? GetCount(state.InputInc, input.ItemId) / count : 0;
+                minInc = Math.Min(minInc, Math.Max(0, avgInc));
+                hasMain = true;
+            }
+            multiplier = GetFoodSuccessMultiplier(state)
+                * (1f + (hasMain ? (float)Cargo.accTableMilli[minInc] : 0f));
+        }
+        return Math.Min(1f, recipe.CycleSuccessProbability * (1f + sacrificeBoost) * multiplier);
+    }
 
     /// <summary>读取成功轮中每件输入的实际消耗概率，包括高级矿物特质。</summary>
     /// <param name="input">当前配方输入。</param>
@@ -426,7 +439,7 @@ public static partial class AdvancedFractionatorRuntime {
 
     private static int SettleRounds(ref uint seed, AdvancedFractionatorState state, WorldviewRecipe recipe,
         int rounds, int buildingId, float sacrificeBoost, int[] productRegister, int[] consumeRegister) {
-        float successProbability = GetSuccessProbability(recipe, sacrificeBoost);
+        float successProbability = GetSuccessProbability(recipe, sacrificeBoost, state);
         int successCount = WorldviewRecipe.RollExpected(ref seed, rounds * successProbability);
         successCount = Math.Min(successCount, rounds);
         // 先限制可支付的成功轮，再统一扣料和产出；未支付部分保留为失败回流。
@@ -598,7 +611,7 @@ public static partial class AdvancedFractionatorRuntime {
 
     private static bool TryOutputProducts(AdvancedFractionatorState state, WorldviewRecipe recipe,
         CargoTraffic cargoTraffic, int beltId, int stackLimit) {
-        if (TryOutputNonTarget(state.Products, null, recipe, currentInput: false, cargoTraffic, beltId, stackLimit)) {
+        if (TryOutputNonTarget(state.Products, state.ProductInc, recipe, currentInput: false, cargoTraffic, beltId, stackLimit)) {
             return true;
         }
         if (recipe == null || recipe.ProductArray.Length == 0 || state.Products.Count == 0) {
@@ -633,7 +646,7 @@ public static partial class AdvancedFractionatorRuntime {
             ticket -= itemWeight;
         }
         return selectedItemId > 0
-               && TryOutputItem(state.Products, null, selectedItemId,
+               && TryOutputItem(state.Products, state.ProductInc, selectedItemId,
                    cargoTraffic, beltId, stackLimit);
     }
 

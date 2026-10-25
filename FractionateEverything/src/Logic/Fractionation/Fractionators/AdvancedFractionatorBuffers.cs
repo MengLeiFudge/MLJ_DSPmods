@@ -47,22 +47,23 @@ public static partial class AdvancedFractionatorRuntime {
         }
     }
 
-    /// <summary>向低于阈值的配方输入补入一批手持物，批量最多等于该槽阈值，完整本批可越界。</summary>
+    /// <summary>向输入补入手持物；配方外物品沿既有旁路侧流，保留增产点。</summary>
     /// <param name="factory">目标工厂。</param>
     /// <param name="fractionatorId">目标分馏组件ID。</param>
     /// <param name="itemId">手持反应物ID。</param>
     /// <param name="count">手持件数。</param>
     /// <param name="inc">手持增产点。</param>
     /// <param name="addedInc">实际转入塔内的增产点。</param>
-    /// <returns>实际转入件数；不属于当前配方、槽满或客户端时为0。</returns>
+    /// <returns>实际转入件数；槽满、无效物品或客户端时为0。</returns>
     public static int AddInput(PlanetFactory factory, int fractionatorId, int itemId, int count, int inc, out int addedInc) {
         addedInc = 0;
-        if (NebulaMultiplayerModAPI.IsClient || itemId <= 0 || count <= 0) { return 0; }
+        if (NebulaMultiplayerModAPI.IsClient || itemId <= 0 || count <= 0 || !LDB.items.Exist(itemId)) { return 0; }
         AdvancedFractionatorState state = GetState(factory, fractionatorId);
         if (state == null) { return 0; }
         lock (state) {
             WorldviewRecipe recipe = RecipeManager.GetRecipe(state.SelectedRecipeId);
             int capacity = GetInputCapacity(recipe, itemId);
+            if (capacity <= 0) { capacity = InputCapacity; }
             int added = GetCount(state.Inputs, itemId) < capacity ? Math.Min(count, capacity) : 0;
             if (added <= 0) { return 0; }
             long validInc = Math.Max(0L, Math.Min(inc, (long)count * 10));
@@ -72,6 +73,48 @@ public static partial class AdvancedFractionatorRuntime {
             // 手持库存没有带上货物元数据，人工补料按当前集装上限分堆。
             state.InputCargo.TryGetValue(itemId, out double cargo);
             state.InputCargo[itemId] = cargo + added / (double)Math.Max(1, StackingManager.CurrentMaxStack);
+            state.SnapshotDirty = true;
+            return added;
+        }
+    }
+
+    /// <summary>手持物补入流出或产物缓存，不登记生产量；正常输出及拆除返还保留增产点。</summary>
+    public static int AddOutput(PlanetFactory factory, int fractionatorId, int itemId, int count, int inc,
+        bool flowOutput, out int addedInc) {
+        addedInc = 0;
+        if (NebulaMultiplayerModAPI.IsClient || itemId <= 0 || count <= 0 || !LDB.items.Exist(itemId)) { return 0; }
+        AdvancedFractionatorState state = GetState(factory, fractionatorId);
+        if (state == null) { return 0; }
+        lock (state) {
+            var counts = flowOutput ? state.FlowOutputs : state.Products;
+            var incs = flowOutput ? state.FlowOutputInc : state.ProductInc;
+            int added = Math.Min(count, Math.Max(0, OutputCapacity - GetCount(counts, itemId)));
+            if (added <= 0) { return 0; }
+            int remaining = count;
+            int remainingInc = Math.Max(0, (int)Math.Min(inc, (long)count * 10));
+            int validInc = remainingInc;
+            MoveIncoming(ref remaining, ref remainingInc, counts, incs, itemId, added);
+            addedInc = validInc - remainingInc;
+            state.SnapshotDirty = true;
+            return added;
+        }
+    }
+
+    /// <summary>手动补入同种备用矩阵，遵守食物硬容量，不提前点燃或扣除手持之外的库存。</summary>
+    public static int AddFood(PlanetFactory factory, int fractionatorId, int itemId, int count, int inc, out int addedInc) {
+        addedInc = 0;
+        if (NebulaMultiplayerModAPI.IsClient || count <= 0) { return 0; }
+        AdvancedFractionatorState state = GetState(factory, fractionatorId);
+        if (state == null) { return 0; }
+        lock (state) {
+            if (!CanTakeFood(state, itemId)) { return 0; }
+            int added = Math.Min(count, Math.Max(0, FoodCapacity - SumCounts(state.Foods)));
+            if (added <= 0) { return 0; }
+            int remaining = count;
+            int remainingInc = Math.Max(0, (int)Math.Min(inc, (long)count * 10));
+            int validInc = remainingInc;
+            MoveIncoming(ref remaining, ref remainingInc, state.Foods, state.FoodInc, itemId, added);
+            addedInc = validInc - remainingInc;
             state.SnapshotDirty = true;
             return added;
         }

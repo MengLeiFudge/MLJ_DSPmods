@@ -12,6 +12,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using static FE.FractionateEverything;
 using static FE.Logic.Fractionation.Fractionators.ProcessManager;
+using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Fractionators.Presentation;
 
@@ -118,7 +119,7 @@ public static partial class FractionatorWindow {
         advancedRecipeText = CreateAdvancedLabel(vanillaWindow.inputTitleText, advancedRoot, new Rect(108f, 30f, 178f, 48f));
         advancedRecipeText.horizontalOverflow = HorizontalWrapMode.Wrap;
         advancedFoodSlot = CreateAdvancedSlot(advancedRoot, WindowWidth / 2f, 134f);
-        advancedFoodSlot.button.onClick += TakeAdvancedFood;
+        advancedFoodSlot.button.onClick += OnAdvancedFoodClick;
         CreateDigestionMask(advancedFoodSlot);
         AttachFoodPressHandlers(advancedFoodSlot);
         advancedFoodTitle = CreateAdvancedLabel(vanillaWindow.inputTitleText, advancedRoot, new Rect(WindowWidth / 2f - 43f, 80f, 86f, 26f));
@@ -365,16 +366,20 @@ public static partial class FractionatorWindow {
     /// <summary>空手从真实输入取物，手持同物品时补料；操作只针对仍在显示的主机实例。</summary>
     private static void OnAdvancedInputClick(int itemId) {
         UIFractionatorWindow window = sourceWindow;
-        if (window?.factory == null || window.player == null || !window.active || itemId <= 0
+        if (window?.factory == null || window.player == null || !window.active
             || window.factory != displayedFactory || window.fractionatorId != displayedFractionatorId) { return; }
         if (!FractionatorTowerCatalog.IsAdvancedTower(window.factory.entityPool[
-            window.factorySystem.fractionatorPool[window.fractionatorId].entityId].protoId)) { return; }
+            window.factorySystem.fractionatorPool[window.fractionatorId].entityId].protoId)) {
+            HandleBasicInputClick(window, itemId);
+            return;
+        }
         if (NebulaMultiplayerModAPI.IsClient) {
             UIRealtimeTip.Popup("高级塔客户端手动取出受限".Translate());
             return;
         }
         Player player = window.player;
-        if (player.inhandItemCount <= 0) { player.SetHandItems(0, 0); }
+        if (player.inhandItemCount <= 0) { SetTransferredHandItems(player, 0, 0, 0); }
+        if (itemId <= 0) { itemId = player.inhandItemId; }
         if (player.inhandItemCount > 0) {
             if (player.inhandItemId != itemId) { return; }
             int added = AdvancedFractionatorRuntime.AddInput(window.factory, window.fractionatorId, itemId,
@@ -383,17 +388,15 @@ public static partial class FractionatorWindow {
                 UIRealtimeTip.Popup("栏位已满".Translate());
                 return;
             }
-            int remaining = player.inhandItemCount - added;
-            player.SetHandItems(remaining > 0 ? itemId : 0, remaining, remaining > 0 ? player.inhandItemInc - inc : 0);
+            RemoveTransferredHandItems(player, added, inc);
             return;
         }
         int taken = AdvancedFractionatorRuntime.TakeInput(window.factory, window.fractionatorId, itemId, int.MaxValue, out int takenInc);
         TransferAdvancedItems(player, itemId, taken, takenInc);
     }
 
-    /// <summary>食物格点击只取出备用；按下时备用为空的这次点击属于长按销毁流程，不取物。</summary>
-    private static void TakeAdvancedFood(int itemId) {
-        if (!foodPressHadReserve) { return; }
+    /// <summary>手持矩阵时补入备用，空手取备用；消化中的一件仍由独立长按流程处理。</summary>
+    private static void OnAdvancedFoodClick(int itemId) {
         UIFractionatorWindow window = sourceWindow;
         if (window?.factory == null || window.player == null || !window.active
             || window.factory != displayedFactory || window.fractionatorId != displayedFractionatorId) { return; }
@@ -402,7 +405,15 @@ public static partial class FractionatorWindow {
             return;
         }
         Player player = window.player;
-        if (player.inhandItemId > 0 || player.inhandItemCount > 0) { return; }
+        if (player.inhandItemCount > 0) {
+            CancelDigestionDiscard();
+            int added = AdvancedFractionatorRuntime.AddFood(window.factory, window.fractionatorId,
+                player.inhandItemId, player.inhandItemCount, player.inhandItemInc, out int addedInc);
+            RemoveTransferredHandItems(player, added, addedInc);
+            return;
+        }
+        if (!foodPressHadReserve) { return; }
+        SetTransferredHandItems(player, 0, 0, 0);
         int taken = AdvancedFractionatorRuntime.TakeFood(window.factory, window.fractionatorId, itemId, out int inc);
         TransferAdvancedItems(player, itemId, taken, inc);
     }
@@ -414,15 +425,55 @@ public static partial class FractionatorWindow {
             int added = player.TryAddItemToPackage(itemId, count, inc, throwTrash: true);
             if (added > 0) { UIItemup.Up(itemId, added); }
         } else {
-            player.SetHandItems(itemId, count, inc);
+            SetTransferredHandItems(player, itemId, count, inc);
         }
     }
 
-    /// <summary>食物格按下：有备用时本次按下只用于取出；空备用且正在消化时才开始一秒长按销毁。</summary>
+    /// <summary>库存已经由来源扣除，只赋值手持状态；SetHandItems的第三参是背包格号，不能传增产点。</summary>
+    private static void SetTransferredHandItems(Player player, int itemId, int count, int inc) {
+        player.SetHandItemId_Unsafe(count > 0 ? itemId : 0);
+        player.SetHandItemCount_Unsafe(count);
+        player.SetHandItemInc_Unsafe(count > 0 ? inc : 0);
+    }
+
+    private static void RemoveTransferredHandItems(Player player, int count, int inc) {
+        if (count <= 0) { return; }
+        SetTransferredHandItems(player, player.inhandItemId, player.inhandItemCount - count, player.inhandItemInc - inc);
+    }
+
+    /// <summary>基础塔输入直接转移实际输入缓存，保留货物比例；空缓存可以手工建立输入身份。</summary>
+    private static void HandleBasicInputClick(UIFractionatorWindow window, int itemId) {
+        if (NebulaMultiplayerModAPI.IsClient) { return; }
+        Player player = window.player;
+        ref FractionatorComponent fractionator = ref window.factorySystem.fractionatorPool[window.fractionatorId];
+        if (fractionator.id != window.fractionatorId) { return; }
+        if (player.inhandItemCount > 0) {
+            if (itemId > 0 && player.inhandItemId != itemId) { return; }
+            if (fractionator.fluidId > 0 && fractionator.fluidId != player.inhandItemId) { return; }
+            int added = Math.Min(player.inhandItemCount, Math.Max(0, BufferCapacity - fractionator.fluidInputCount));
+            if (added <= 0) { return; }
+            int count = player.inhandItemCount;
+            int inc = player.inhandItemInc;
+            int addedInc = split_inc(ref count, ref inc, added);
+            fractionator.fluidId = player.inhandItemId;
+            fractionator.fluidInputCount += added;
+            fractionator.fluidInputInc += addedInc;
+            fractionator.fluidInputCargoCount += added / (float)Math.Max(1, FE.Logic.Enhancements.Stacking.StackingManager.CurrentMaxStack);
+            RemoveTransferredHandItems(player, added, addedInc);
+        } else {
+            int taken = fractionator.fluidInputCount;
+            int inc = fractionator.fluidInputInc;
+            fractionator.fluidInputCount = fractionator.fluidInputInc = 0;
+            fractionator.fluidInputCargoCount = 0f;
+            TransferAdvancedItems(player, fractionator.fluidId, taken, inc);
+        }
+    }
+
+    /// <summary>食物格按下：手持时只补料，有备用时只取出；空手且无备用时才开始长按销毁。</summary>
     private static void OnFoodPointerDown() {
         CancelDigestionDiscard();
         foodPressHadReserve = true;
-        if (NebulaMultiplayerModAPI.IsClient) { return; }
+        if (NebulaMultiplayerModAPI.IsClient || sourceWindow?.player?.inhandItemCount > 0) { return; }
         if (sourceWindow?.active != true || sourceWindow.factory != displayedFactory
             || sourceWindow.fractionatorId != displayedFractionatorId) { return; }
         AdvancedFractionatorState state = AdvancedFractionatorRuntime.GetState(displayedFactory, displayedFractionatorId);
@@ -545,11 +596,11 @@ public static partial class FractionatorWindow {
             ProductSlotKind.Fluid => state.Inputs, ProductSlotKind.Main => state.Products, _ => state.FlowOutputs,
         };
         Dictionary<int, int> incs = section.Kind switch {
-            ProductSlotKind.Fluid => state.InputInc, ProductSlotKind.Side => state.FlowOutputInc, _ => null,
+            ProductSlotKind.Fluid => state.InputInc, ProductSlotKind.Side => state.FlowOutputInc, _ => state.ProductInc,
         };
         double rounds = state.ProcessingRate * 60d;
         float success = recipe == null ? 0f : AdvancedFractionatorRuntime.GetSuccessProbability(recipe,
-            ResearchManager.GetAdvancedTowerSacrificeBoost(buildingId));
+            ResearchManager.GetAdvancedTowerSacrificeBoost(buildingId), state);
         for (int i = 0; i < VisibleSlots; i++) {
             int itemId = i < section.ItemIds.Count ? section.ItemIds[i] : 0;
             counts.TryGetValue(itemId, out int count);
@@ -568,11 +619,12 @@ public static partial class FractionatorWindow {
                 if (input.ConsumeProbability >= 0.9999f) {
                     state.InputRates.TryGetValue(itemId, out double rate);
                     perMinute = rate * 60d;
+                    fullInputRate = AdvancedFractionatorRuntime.GetInputFullBeltRate(recipe, input, buildingId) * 60d;
                 } else {
                     perMinute = rounds * input.Count * success
                         * AdvancedFractionatorRuntime.GetInputConsumeProbability(input, buildingId);
+                    SetSatisfaction(section.Satisfaction[i], count / (double)Math.Max(1, input.Count));
                 }
-                fullInputRate = AdvancedFractionatorRuntime.GetInputFullBeltRate(recipe, input, buildingId) * 60d;
             } else if (itemId > 0 && recipe != null && section.Kind == ProductSlotKind.Main) {
                 rateItemId = itemId;
                 WorldviewRecipeOutput output = recipe.ProductArray.FirstOrDefault(candidate => candidate.ItemId == itemId);
