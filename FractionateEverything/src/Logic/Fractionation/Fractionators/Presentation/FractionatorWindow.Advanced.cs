@@ -17,8 +17,8 @@ namespace FE.Logic.Fractionation.Fractionators.Presentation;
 
 /// <summary>基础塔与高级塔共用固定网格，按真实缓存展示输入、流出与产物。</summary>
 public static partial class FractionatorWindow {
-    private const float WindowWidth = 530f;
-    private const float WindowHeight = 464f;
+    private const float WindowWidth = 510f;
+    private const float WindowHeight = 448f;
     private const int VisibleSlots = 4;
     private const float RateDisplayInterval = 0.5f;
     private static RectTransform advancedRoot;
@@ -74,8 +74,9 @@ public static partial class FractionatorWindow {
         /// <summary>按帧时长累计半秒平均值；空槽、物品切换和停机立即更新。</summary>
         /// <param name="id">当前槽位物品，0表示无速率信息。</param>
         /// <param name="perMinute">当前状态换算的每分钟速率。</param>
-        /// <returns>整数速率文字，空槽返回空字符串。</returns>
-        internal string Update(int id, double perMinute) {
+        /// <param name="finePrecision">食物与辅料低速显示两位有效数字，10及以上截取整数部分。</param>
+        /// <returns>速率文字，空槽返回空字符串。</returns>
+        internal string Update(int id, double perMinute, bool finePrecision = false) {
             if (id <= 0) { this = default; return string.Empty; }
             if (id != itemId || perMinute <= 0d || displayedRate <= 0d) {
                 this = default;
@@ -91,7 +92,7 @@ public static partial class FractionatorWindow {
                     duration = 0f;
                 }
             }
-            return FormatRate(displayedRate);
+            return FormatRate(displayedRate, finePrecision);
         }
     }
 
@@ -105,26 +106,26 @@ public static partial class FractionatorWindow {
         advancedRecipeSlot.button.onRightClick += _ => ClearAdvancedRecipe();
         advancedRecipeText = CreateAdvancedLabel(vanillaWindow.inputTitleText, advancedRoot, new Rect(108f, 30f, 178f, 48f));
         advancedRecipeText.horizontalOverflow = HorizontalWrapMode.Wrap;
-        advancedFoodSlot = CreateAdvancedSlot(advancedRoot, 265f, 134f);
+        advancedFoodSlot = CreateAdvancedSlot(advancedRoot, WindowWidth / 2f, 134f);
         advancedFoodSlot.button.onClick += TakeAdvancedFood;
         CreateDigestionMask(advancedFoodSlot);
         AttachFoodPressHandlers(advancedFoodSlot);
-        advancedFoodTitle = CreateAdvancedLabel(vanillaWindow.inputTitleText, advancedRoot, new Rect(222f, 80f, 86f, 26f));
+        advancedFoodTitle = CreateAdvancedLabel(vanillaWindow.inputTitleText, advancedRoot, new Rect(WindowWidth / 2f - 43f, 80f, 86f, 26f));
         advancedFoodTitle.text = "FE.Advanced.FoodSlot".Translate();
         advancedFoodTitle.alignment = TextAnchor.MiddleCenter;
-        advancedFoodRate = CreateAdvancedLabel(vanillaWindow.speedText, advancedRoot, new Rect(217f, 162f, 96f, 18f));
+        advancedFoodRate = CreateAdvancedLabel(vanillaWindow.speedText, advancedRoot, new Rect(WindowWidth / 2f - 48f, 162f, 96f, 18f));
         advancedFoodRate.alignment = TextAnchor.MiddleCenter;
-        advancedFoodRemaining = CreateAdvancedLabel(vanillaWindow.speedText, advancedRoot, new Rect(217f, 180f, 96f, 18f));
+        advancedFoodRemaining = CreateAdvancedLabel(vanillaWindow.speedText, advancedRoot, new Rect(WindowWidth / 2f - 48f, 180f, 96f, 18f));
         advancedFoodRemaining.alignment = TextAnchor.MiddleCenter;
-        advancedDiscardHint = CreateAdvancedLabel(vanillaWindow.speedText, advancedRoot, new Rect(222f, 198f, 86f, 24f));
+        advancedDiscardHint = CreateAdvancedLabel(vanillaWindow.speedText, advancedRoot, new Rect(WindowWidth / 2f - 57f, 198f, 114f, 24f));
         advancedDiscardHint.text = "FE.DiscardDigestion".Translate();
         advancedDiscardHint.alignment = TextAnchor.UpperCenter;
         advancedDiscardHint.horizontalOverflow = HorizontalWrapMode.Wrap;
         advancedInputs = CreateAdvancedSection(new Rect(18f, 74f, 208f, 220f), ProductSlotKind.Fluid);
-        advancedFlow = CreateAdvancedSection(new Rect(304f, 74f, 208f, 220f), ProductSlotKind.Side);
-        advancedProducts = CreateAdvancedSection(new Rect(18f, 266f, 494f, 110f), ProductSlotKind.Main);
-        advancedFlowArrows = CreateAdvancedArrows(vanillaWindow, false, new Vector2(265f, -230f));
-        advancedProductArrows = CreateAdvancedArrows(vanillaWindow, true, new Vector2(265f, -258f));
+        advancedFlow = CreateAdvancedSection(new Rect(WindowWidth - 226f, 74f, 208f, 220f), ProductSlotKind.Side);
+        advancedProducts = CreateAdvancedSection(new Rect(18f, 266f, WindowWidth - 36f, 110f), ProductSlotKind.Main);
+        advancedFlowArrows = CreateAdvancedArrows(vanillaWindow, false, new Vector2(WindowWidth / 2f, -230f));
+        advancedProductArrows = CreateAdvancedArrows(vanillaWindow, true, new Vector2(WindowWidth / 2f, -258f));
     }
 
     private static AdvancedSection CreateAdvancedSection(Rect bounds, ProductSlotKind kind) {
@@ -137,7 +138,7 @@ public static partial class FractionatorWindow {
         titleText.alignment = TextAnchor.MiddleCenter;
         AdvancedSection section = new() { Kind = kind };
         for (int i = 0; i < VisibleSlots; i++) {
-            float x = kind == ProductSlotKind.Main ? bounds.width / 2f + (i - 1.5f) * 112f : 54f + i % 2 * 100f;
+            float x = kind == ProductSlotKind.Main ? bounds.width / 2f + (i - 1.5f) * 106f : 54f + i % 2 * 100f;
             float y = kind == ProductSlotKind.Main ? 60f : 60f + i / 2 * 96f;
             ProductSlot slot = CreateAdvancedSlot(root, x, y);
             section.Slots[i] = slot;
@@ -502,7 +503,7 @@ public static partial class FractionatorWindow {
         float remaining = digesting ? AdvancedFractionatorRuntime.GetDigestionProgress(state) : 0f;
         SetDigestionMask(digesting ? 1f - remaining : 0f);
         double foodRate = AdvancedFractionatorRuntime.GetFoodRates(state, recipe, buildingId).ConsumptionPerMinute;
-        advancedFoodRate.text = foodRateDisplay.Update(shownId, foodRate);
+        advancedFoodRate.text = foodRateDisplay.Update(shownId, foodRate, finePrecision: true);
         advancedFoodRemaining.text = $"{Math.Ceiling(remaining * 100d)}%";
         advancedDiscardHint.gameObject.SetActive(digesting && totalReserve <= 0 && !NebulaMultiplayerModAPI.IsClient);
         UpdateDigestionDiscard(state);
@@ -547,11 +548,12 @@ public static partial class FractionatorWindow {
             double perMinute = 0d;
             double fullInputRate = 0d;
             int rateItemId = 0;
+            bool finePrecision = false;
             section.Satisfaction[i].text = string.Empty;
             if (itemId > 0 && recipe != null && section.Kind == ProductSlotKind.Fluid
                 && recipe.TryGetInput(itemId, out WorldviewRecipeInput input)) {
                 rateItemId = itemId;
-                bool catalyst = input.ConsumeProbability < 0.1f;
+                finePrecision = input.ConsumeProbability < 0.9999f;
                 if (input.ConsumeProbability >= 0.9999f) {
                     state.InputRates.TryGetValue(itemId, out double rate);
                     perMinute = rate * 60d;
@@ -559,15 +561,13 @@ public static partial class FractionatorWindow {
                     perMinute = rounds * input.Count * success
                         * AdvancedFractionatorRuntime.GetInputConsumeProbability(input, buildingId);
                 }
-                if (!catalyst) {
-                    fullInputRate = AdvancedFractionatorRuntime.GetInputFullBeltRate(recipe, input, buildingId) * 60d;
-                }
+                fullInputRate = AdvancedFractionatorRuntime.GetInputFullBeltRate(recipe, input, buildingId) * 60d;
             } else if (itemId > 0 && recipe != null && section.Kind == ProductSlotKind.Main) {
                 rateItemId = itemId;
                 WorldviewRecipeOutput output = recipe.ProductArray.FirstOrDefault(candidate => candidate.ItemId == itemId);
                 perMinute = output == null ? 0d : rounds * success * AdvancedFractionatorRuntime.GetOutputPerSuccess(recipe, output);
             }
-            section.Rates[i].text = section.RateDisplays[i].Update(rateItemId, perMinute);
+            section.Rates[i].text = section.RateDisplays[i].Update(rateItemId, perMinute, finePrecision);
             if (fullInputRate > 0d) {
                 SetSatisfaction(section.Satisfaction[i], section.RateDisplays[i].DisplayedRate / fullInputRate);
             }
@@ -582,7 +582,20 @@ public static partial class FractionatorWindow {
         text.color = new Color(normal.r, normal.g * fraction, normal.b * fraction, normal.a);
     }
 
-    private static string FormatRate(double value) => Math.Round(value).ToString("0") + "每分钟".Translate();
+    private static string FormatRate(double value, bool finePrecision = false) {
+        string number;
+        if (!finePrecision || value <= 0d) { number = Math.Round(value).ToString("0"); }
+        else if (value >= 10d) { number = Math.Floor(value).ToString("0"); }
+        else if (value >= 1d) { number = value.ToString("0.0"); }
+        else {
+            int decimals = Math.Min(15, 1 - (int)Math.Floor(Math.Log10(value)));
+            double rounded = Math.Round(value, decimals);
+            // 进位可能跨十进制数量级，重新确定小数位，避免把0.0999显示成三位有效数字。
+            if (rounded > 0d) { decimals = Math.Min(15, Math.Max(1, 1 - (int)Math.Floor(Math.Log10(rounded)))); }
+            number = rounded.ToString($"F{decimals}");
+        }
+        return number + "每分钟".Translate();
+    }
 
     private static bool IsVisibleProduct(int itemId, Dictionary<int, int> counts) =>
         counts.TryGetValue(itemId, out int count) && count > 0

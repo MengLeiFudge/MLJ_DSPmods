@@ -160,6 +160,14 @@ public static partial class FractionatorWindow {
         AlignLikeVanillaTopRight(_modPowerText.rectTransform, vanillaWindow.powerText.rectTransform, vanillaWindow);
         AlignLikeVanillaTopRight(_modPowerIcon.rectTransform, vanillaWindow.powerIcon.rectTransform, vanillaWindow);
         AlignLikeVanillaTopRight(modWindow.stateText.rectTransform, vanillaWindow.stateText.rectTransform, vanillaWindow);
+        RectTransform power = _modPowerText.rectTransform;
+        RectTransform state = modWindow.stateText.rectTransform;
+        float centerY = (advancedRoot.InverseTransformPoint(power.TransformPoint(power.rect.center)).y
+            + advancedRoot.InverseTransformPoint(state.TransformPoint(state.rect.center)).y) * 0.5f;
+        RectTransform recipe = advancedRecipeSlot.go.GetComponent<RectTransform>();
+        recipe.anchoredPosition = new Vector2(recipe.anchoredPosition.x, centerY);
+        RectTransform title = advancedRecipeText.rectTransform;
+        title.anchoredPosition = new Vector2(title.anchoredPosition.x, centerY + title.rect.height * 0.5f);
     }
 
     /// <summary>复制原版控件相对窗口右上角的偏移，窗口扩展不改变状态区边距与文字样式。</summary>
@@ -714,7 +722,7 @@ public static partial class FractionatorWindow {
         bool fed = state != null && state.DigestingEnergy > 0d;
         AdvancedTowerStatus status = AdvancedFractionatorRuntime.GetProcessingStatus(state);
         string text = (!fed ? "缺少矩阵"
-            : status is AdvancedTowerStatus.Running or AdvancedTowerStatus.Stacking ? "FE.Advanced.Feeding" : "待机").Translate();
+            : status == AdvancedTowerStatus.Running ? "FE.Advanced.Feeding" : "待机").Translate();
         src.powerText.text = text;
         src.powerText.color = fed ? src.powerNormalColor : src.powerOffColor;
         src.powerIcon.color = Color.clear;
@@ -734,11 +742,10 @@ public static partial class FractionatorWindow {
             AdvancedTowerStatus.MissingInput => "缺少原材料",
             AdvancedTowerStatus.FlowOutputBlocked => "FE.Advanced.FlowOutputBlocked",
             AdvancedTowerStatus.ProductOutputBlocked => "FE.Advanced.ProductOutputBlocked",
-            AdvancedTowerStatus.Stacking => "运行中 · 等待集装",
             _ => "正常运转",
         };
         modWindow.stateText.text = text.Translate();
-        modWindow.stateText.color = status is AdvancedTowerStatus.Running or AdvancedTowerStatus.Stacking
+        modWindow.stateText.color = status == AdvancedTowerStatus.Running
             ? modWindow.workNormalColor
             : status == AdvancedTowerStatus.AwaitingRecipe ? modWindow.idleColor : modWindow.workStoppedColor;
     }

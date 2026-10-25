@@ -77,14 +77,14 @@ public static partial class AdvancedFractionatorRuntime {
         }
     }
 
-    /// <summary>低于阈值时接收完整货物；食物保留硬容量，其余部分完整进入输入或流出。</summary>
+    /// <summary>低于阈值时接收完整货物；满缓存只允许借用一次收料空间，打破回环满带与满缓存的相互等待。</summary>
     /// <param name="state">调用方已持有实例锁的缓存。</param>
     /// <param name="recipe">当前配方；无配方时仅接收食物与直通物。</param>
     /// <param name="cargoTraffic">当前工厂的带与货物容器。</param>
     /// <param name="beltId">输入侧面连接的传送带。</param>
     /// <returns>是否接收了一整堆货物。</returns>
     private static bool TryReceiveCargo(AdvancedFractionatorState state, WorldviewRecipe recipe,
-        CargoTraffic cargoTraffic, int beltId, bool passthrough) {
+        CargoTraffic cargoTraffic, int beltId, bool passthrough, bool hasFlowOutput) {
         CargoPath path = cargoTraffic.GetCargoPath(cargoTraffic.beltPool[beltId].segPathId);
         // 窥看与拿起共用路径锁，按当前数量决定整批去向，不预留剩余件数。
         lock (path.buffer) {
@@ -103,7 +103,10 @@ public static partial class AdvancedFractionatorRuntime {
             int input = !passthrough && !foreignFood && GetCount(state.Inputs, itemId) < GetInputCapacity(recipe, itemId)
                 ? count - food : 0;
             int flow = count - food - input;
-            if (flow > 0 && GetCount(state.FlowOutputs, itemId) >= OutputCapacity) { return false; }
+            int flowCount = GetCount(state.FlowOutputs, itemId);
+            bool needsCirculationSpace = flow > 0 && flowCount >= OutputCapacity;
+            if (needsCirculationSpace && (!hasFlowOutput || state.CirculationIntakePending
+                || flowCount + flow > MaximumBufferCapacity)) { return false; }
             if (cargoTraffic.TryPickItemAtRear(beltId, itemId, null, out byte stack, out byte inc) <= 0) { return false; }
             int remainingCount = stack;
             int remainingInc = inc;
@@ -114,6 +117,7 @@ public static partial class AdvancedFractionatorRuntime {
                 MoveIncoming(ref remainingCount, ref remainingInc, state.Inputs, state.InputInc, itemId, input);
             }
             MoveIncoming(ref remainingCount, ref remainingInc, state.FlowOutputs, state.FlowOutputInc, itemId, remainingCount);
+            state.CirculationIntakePending |= needsCirculationSpace;
             state.SnapshotDirty = true;
             return true;
         }

@@ -27,10 +27,8 @@ public enum AdvancedTowerStatus {
     FlowOutputBlocked,
     /// <summary>产物输出缓存已满。</summary>
     ProductOutputBlocked,
-    /// <summary>正在运行，产物等待凑足整堆。</summary>
-    Stacking,
     /// <summary>正常运行。</summary>
-    Running,
+    Running = 7,
 }
 
 /// <summary>
@@ -64,6 +62,8 @@ public sealed class AdvancedFractionatorState {
     internal int FlowSampleRounds;
     /// <summary>两个侧面流出口共享的货物发送额度，最多积攒一堆；不持久化。</summary>
     internal double FlowOutputCredit;
+    /// <summary>满缓存时已借用一次整堆收料空间，待成功流出一堆后归还；随库存保存，换配方不清零。</summary>
+    internal bool CirculationIntakePending;
 
     /// <summary>反应输入增产点。</summary>
     public readonly Dictionary<int, int> InputInc = [];
@@ -143,10 +143,6 @@ public static partial class AdvancedFractionatorRuntime {
             if (!CanProcessOutputs(state, recipe)) { return AdvancedTowerStatus.FlowOutputBlocked; }
             int rounds = GetAvailableRounds(state, recipe);
             if (rounds <= 0) { return AdvancedTowerStatus.MissingInput; }
-            int stack = StackingManager.CurrentMaxStack;
-            if (stack > 1 && state.Products.Values.Any(count => count > 0 && count < stack)) {
-                return AdvancedTowerStatus.Stacking;
-            }
             return AdvancedTowerStatus.Running;
         }
     }
@@ -304,11 +300,13 @@ public static partial class AdvancedFractionatorRuntime {
             // 先排产物，再判断本帧是否只能直通；排出使阈值恢复后立即允许正常进料。
             if (fractionator.belt0 > 0 && fractionator.isOutput0) {
                 state.SnapshotDirty |= TryOutputProducts(state, recipe, cargoTraffic, fractionator.belt0,
-                    Math.Max(1, StackingManager.CurrentMaxStack), RequireFullStack(state, recipe));
+                    Math.Max(1, StackingManager.CurrentMaxStack));
             }
             bool passthrough = recipe != null && HasBlockedProduct(state, recipe);
-            HandleSidePort(state, recipe, cargoTraffic, fractionator.belt1, fractionator.isOutput1, passthrough);
-            HandleSidePort(state, recipe, cargoTraffic, fractionator.belt2, fractionator.isOutput2, passthrough);
+            bool hasFlowOutput = fractionator.belt1 > 0 && fractionator.isOutput1
+                || fractionator.belt2 > 0 && fractionator.isOutput2;
+            HandleSidePort(state, recipe, cargoTraffic, fractionator.belt1, fractionator.isOutput1, passthrough, hasFlowOutput);
+            HandleSidePort(state, recipe, cargoTraffic, fractionator.belt2, fractionator.isOutput2, passthrough, hasFlowOutput);
             EnsureDigestingFood(state, consumeRegister);
 
             float sacrificeBoost = ResearchManager.GetAdvancedTowerSacrificeBoost(buildingId);
@@ -366,7 +364,7 @@ public static partial class AdvancedFractionatorRuntime {
 
     /// <summary>侧口接收整堆或排出流动物；超量食物与反应物均保留增产点侧流。</summary>
     private static void HandleSidePort(AdvancedFractionatorState state, WorldviewRecipe recipe,
-        CargoTraffic cargoTraffic, int beltId, bool isOutput, bool passthrough) {
+        CargoTraffic cargoTraffic, int beltId, bool isOutput, bool passthrough, bool hasFlowOutput) {
         if (beltId <= 0) {
             return;
         }
@@ -376,7 +374,7 @@ public static partial class AdvancedFractionatorRuntime {
         }
 
         for (int i = 0; i < 2; i++) {
-            if (!TryReceiveCargo(state, recipe, cargoTraffic, beltId, passthrough)) { break; }
+            if (!TryReceiveCargo(state, recipe, cargoTraffic, beltId, passthrough, hasFlowOutput)) { break; }
         }
     }
 
@@ -567,24 +565,22 @@ public static partial class AdvancedFractionatorRuntime {
         return false;
     }
 
-    /// <summary>主料与催化剂齐备且输出低于阈值时等待集装；缺料或堵塞时释放尾料。</summary>
-    private static bool RequireFullStack(AdvancedFractionatorState state, WorldviewRecipe recipe) =>
-        recipe != null && GetAvailableRounds(state, recipe) > 0
-        && CanProcessOutputs(state, recipe);
-
     private static bool TryOutput(AdvancedFractionatorState state, WorldviewRecipe recipe,
         CargoTraffic cargoTraffic, int beltId) {
         if (state.FlowOutputCredit + 1e-9d < 1d) { return false; }
         int stackLimit = Math.Max(1, StackingManager.CurrentMaxStack);
         bool sent = TryOutputNonTarget(state.FlowOutputs, state.FlowOutputInc, recipe, currentInput: true,
                         cargoTraffic, beltId, stackLimit)
-                    || TryOutputCurrentFlow(state, recipe, cargoTraffic, beltId, stackLimit, RequireFullStack(state, recipe));
-        if (sent) { state.FlowOutputCredit = Math.Max(0d, state.FlowOutputCredit - 1d); }
+                    || TryOutputCurrentFlow(state, recipe, cargoTraffic, beltId, stackLimit);
+        if (sent) {
+            state.FlowOutputCredit = Math.Max(0d, state.FlowOutputCredit - 1d);
+            state.CirculationIntakePending = false;
+        }
         return sent;
     }
 
     private static bool TryOutputCurrentFlow(AdvancedFractionatorState state, WorldviewRecipe recipe,
-        CargoTraffic cargoTraffic, int beltId, int stackLimit, bool requireFullStack) {
+        CargoTraffic cargoTraffic, int beltId, int stackLimit) {
         if (recipe == null || recipe.InputArray.Length == 0) {
             return false;
         }
@@ -594,7 +590,7 @@ public static partial class AdvancedFractionatorRuntime {
             int index = (startIndex + offset) % inputCount;
             int itemId = recipe.InputArray[index].ItemId;
             if (!TryOutputItem(state.FlowOutputs, state.FlowOutputInc, itemId,
-                    cargoTraffic, beltId, stackLimit, requireFullStack)) {
+                    cargoTraffic, beltId, stackLimit)) {
                 continue;
             }
             state.FlowOutputCursor = (index + 1) % inputCount;
@@ -604,7 +600,7 @@ public static partial class AdvancedFractionatorRuntime {
     }
 
     private static bool TryOutputProducts(AdvancedFractionatorState state, WorldviewRecipe recipe,
-        CargoTraffic cargoTraffic, int beltId, int stackLimit, bool requireFullStack) {
+        CargoTraffic cargoTraffic, int beltId, int stackLimit) {
         if (TryOutputNonTarget(state.Products, null, recipe, currentInput: false, cargoTraffic, beltId, stackLimit)) {
             return true;
         }
@@ -615,7 +611,7 @@ public static partial class AdvancedFractionatorRuntime {
         int totalWeight = 0;
         foreach (WorldviewRecipeOutput output in recipe.ProductArray) {
             int count = GetCount(state.Products, output.ItemId);
-            if (count <= 0 || requireFullStack && count < stackLimit) {
+            if (count < stackLimit) {
                 continue;
             }
             totalWeight += (count + stackLimit - 1) / stackLimit;
@@ -629,7 +625,7 @@ public static partial class AdvancedFractionatorRuntime {
         int selectedItemId = 0;
         foreach (WorldviewRecipeOutput output in recipe.ProductArray) {
             int count = GetCount(state.Products, output.ItemId);
-            if (count <= 0 || requireFullStack && count < stackLimit) {
+            if (count < stackLimit) {
                 continue;
             }
             int itemWeight = (count + stackLimit - 1) / stackLimit;
@@ -641,7 +637,7 @@ public static partial class AdvancedFractionatorRuntime {
         }
         return selectedItemId > 0
                && TryOutputItem(state.Products, null, selectedItemId,
-                   cargoTraffic, beltId, stackLimit, requireFullStack);
+                   cargoTraffic, beltId, stackLimit);
     }
 
     private static bool TryOutputNonTarget(Dictionary<int, int> counts, Dictionary<int, int> incs,
@@ -651,24 +647,25 @@ public static partial class AdvancedFractionatorRuntime {
             bool belongsToCurrentRecipe = recipe != null && (currentInput
                 ? recipe.ContainsInput(pair.Key)
                 : recipe.ContainsProduct(pair.Key));
-            if (!belongsToCurrentRecipe && pair.Value > 0) {
+            if (!belongsToCurrentRecipe && pair.Value >= stackLimit) {
                 selectedItemId = pair.Key;
                 break;
             }
         }
         return selectedItemId > 0
                && TryOutputItem(counts, incs, selectedItemId,
-                   cargoTraffic, beltId, stackLimit, requireFullStack: false);
+                   cargoTraffic, beltId, stackLimit);
     }
 
+    /// <summary>两类输出都按当前科技层数整堆发送；缺催化剂不能拆堆，否则满载回环会增加货物格数。</summary>
     private static bool TryOutputItem(Dictionary<int, int> counts, Dictionary<int, int> incs,
-        int itemId, CargoTraffic cargoTraffic, int beltId, int stackLimit, bool requireFullStack) {
+        int itemId, CargoTraffic cargoTraffic, int beltId, int stackLimit) {
         int count = GetCount(counts, itemId);
-        if (count <= 0 || requireFullStack && count < stackLimit) {
+        if (count < stackLimit) {
             return false;
         }
-        int outputCount = Math.Min(stackLimit, count);
-        int outputInc = count <= 0 ? 0 : GetCount(incs, itemId) * outputCount / count;
+        int outputCount = stackLimit;
+        int outputInc = GetCount(incs, itemId) * outputCount / count;
         if (!cargoTraffic.TryInsertItemAtHead(
                 beltId, itemId, (byte)outputCount, (byte)Math.Min(byte.MaxValue, outputInc))) {
             return false;

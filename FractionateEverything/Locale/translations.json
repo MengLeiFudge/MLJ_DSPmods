@@ -4031,13 +4031,6 @@
     "1031": "Ausgang blockiert",
     "1041": "出力詰まり"
   },
-  "运行中 · 等待集装": {
-    "enUS": "Running · awaiting full stack",
-    "zhCN": "运行中 · 等待集装",
-    "frFR": "En marche · attend une pile complète",
-    "1031": "In Betrieb · wartet auf vollen Stapel",
-    "1041": "稼働中 · スタック待ち"
-  },
   "广播解析": {
     "enUS": "Broadcast analysis",
     "zhCN": "广播解析",

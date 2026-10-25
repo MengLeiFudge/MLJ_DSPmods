@@ -111,6 +111,7 @@ public static partial class AdvancedFractionatorRuntime {
                     lock (state) {
                         state.SelectedRecipeId = state.OutputCursor = state.FlowOutputCursor = 0;
                         ResetInputFlow(state);
+                        state.CirculationIntakePending = false;
                         ClearDigestion(state);
                         state.Inputs.Clear(); state.InputInc.Clear(); state.InputCargo.Clear();
                         state.Foods.Clear(); state.FoodInc.Clear(); state.Products.Clear();
@@ -130,6 +131,7 @@ public static partial class AdvancedFractionatorRuntime {
                                 }
                             }),
                             ("OutputCursor", field => state.OutputCursor = Math.Max(0, field.ReadInt32())),
+                            ("CirculationIntakePending", field => state.CirculationIntakePending = field.ReadBoolean()),
                             ("Inputs", field => ReadInventory(field, state.Inputs, MaximumBufferCapacity)),
                             ("InputInc", field => ReadInventory(field, state.InputInc, MaximumBufferCapacity * 10)),
                             ("Foods", field => ReadInventory(field, state.Foods, MaximumBufferCapacity)),
@@ -220,6 +222,7 @@ public static partial class AdvancedFractionatorRuntime {
                 : new AdvancedFractionatorState();
             lock (state) {
                 ResetInputFlow(state);
+                state.CirculationIntakePending = false;
                 int recipeId = reader.ReadInt32();
                 WorldviewRecipe recipe = RecipeManager.GetRecipe(recipeId);
                 state.SelectedRecipeId = recipeId != 0 && recipe?.IsAdvanced != true ? 0 : recipeId;
@@ -296,6 +299,7 @@ public static partial class AdvancedFractionatorRuntime {
                     field.Write(state.DigestingInc);
                 }),
                 ("OutputCursor", field => field.Write(state.OutputCursor)),
+                ("CirculationIntakePending", field => field.Write(state.CirculationIntakePending)),
                 ("Inputs", field => WriteDictionary(field, state.Inputs)),
                 ("InputInc", field => WriteDictionary(field, state.InputInc)),
                 ("Foods", field => WriteDictionary(field, state.Foods)),
