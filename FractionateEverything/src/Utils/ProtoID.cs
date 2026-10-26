@@ -441,10 +441,6 @@ public static partial class Utils {
     internal const int IOR量子计算机550MAGI = 7805;
     internal const int IGB超越X1型光学主机 = 7806;
     internal const int IOR光学计算机 = 7806;
-    internal const int IFE培养塔原胚 = 8111;
-    internal const int IFE解析塔原胚 = 8112;
-    internal const int IFE复制塔原胚 = 8113;
-    internal const int IFE转化塔原胚 = 8114;
     internal const int IFE通用原胚 = 8115;
 
     // 五塔身份。8121..8124 保持旧实体一一映射，8125 为新增高级矿物塔。
@@ -459,14 +455,14 @@ public static partial class Utils {
     internal const int IFE转化塔 = IFE高级转化塔;
     internal const int IFE行星内物流交互站 = 8131;
     internal const int IFE星际物流交互站 = 8132;
-    internal const int IFE残片 = 8161;
-    internal const int IFE记忆源点 = 8171;
+    internal const int IFE残片 = 8141;
+    internal const int IFE记忆源点 = 8142;
     /// <summary>当前世界生产峰值经FE额度账本提取的实体，不能逆向生成元数据。</summary>
-    internal const int IFE实体元数据 = 8178;
-    /// <summary>元数据制造的永久丰碑建设弹药。</summary>
-    internal const int IFE丰碑火箭 = 8179;
+    internal const int IFE实体元数据 = 8143;
+    /// <summary>用于真实戴森球结构建设的丰碑弹药。</summary>
+    internal const int IFE丰碑火箭 = 8144;
     /// <summary>射线接收站取得的丰碑解析材料。</summary>
-    internal const int IFE丰碑结晶 = 8180;
+    internal const int IFE丰碑结晶 = 8145;
     internal const int ISM熔炉采矿机A型 = 9446;
     internal const int ISM熔炉采矿机B型 = 9447;
     internal const int ISM化工采矿机C型 = 9448;
@@ -985,22 +981,20 @@ public static partial class Utils {
     internal const int RGB光学信息传输纤维 = 794;
     internal const int RGB量子计算主机 = 795;
     internal const int RGB海水淡化 = 801;
-    internal const int RFE行星内物流交互站 = 1061;
-    internal const int RFE星际物流交互站 = 1062;
-    internal const int RFE基础矿物塔 = 1063;
-    internal const int RFE基础解析塔 = 1064;
-    /// <summary>高级矿物展示配方1065～1071，对应稳定运行身份30101～30107。</summary>
-    internal const int RFE高级矿物展示起始 = 1065;
-    /// <summary>高级矿物扩展展示配方1082～1088，对应稳定运行身份30108～30114。</summary>
-    internal const int RFE高级矿物扩展展示起始 = 1082;
-    /// <summary>高级塔培育展示配方1072～1074，对应稳定运行身份30201～30203。</summary>
-    internal const int RFE高级培育展示起始 = 1072;
-    /// <summary>高级原胚繁育展示配方1075～1077，对应稳定运行身份30211～30213。</summary>
-    internal const int RFE高级繁育展示起始 = 1075;
-    /// <summary>高级转化展示配方1078～1081，对应稳定运行身份30301～30304。</summary>
-    internal const int RFE高级转化展示起始 = 1078;
-    /// <summary>高级转化扩展展示配方1100～1112，对应稳定身份30305～30317。</summary>
-    internal const int RFE高级转化扩展展示起始 = 1100;
+    internal const int RFE行星内物流交互站 = 1011;
+    internal const int RFE星际物流交互站 = 1012;
+    internal const int RFE基础矿物塔 = 1121;
+    internal const int RFE基础解析塔 = 1122;
+    /// <summary>催化增殖1101～1107，按矿物展示顺序对应30101～30107。</summary>
+    internal const int RFE高级矿物展示起始 = 1101;
+    /// <summary>源点重构1111～1117，与催化增殖逐列对应。</summary>
+    internal const int RFE高级矿物扩展展示起始 = 1111;
+    /// <summary>高级塔培育1123～1125，对应30201～30203。</summary>
+    internal const int RFE高级培育展示起始 = 1123;
+    /// <summary>高级原胚繁育1126～1128，对应30211～30213。</summary>
+    internal const int RFE高级繁育展示起始 = 1126;
+    /// <summary>每种输入一张转化配方，1141～1169对应30301～30329。</summary>
+    internal const int RFE高级转化展示起始 = 1141;
 
     internal const int T戴森球计划 = 1;
     internal const int T电磁学 = 1001;
@@ -1046,25 +1040,20 @@ public static partial class Utils {
     internal const int TGB标准制造单元 = 1202;
     internal const int T量子打印 = 1203;
     internal const int TGB高精度加工 = 1203;
-    internal const int TFE分馏塔原胚 = 2052;
-    internal const int TFE培养塔 = 2053;
-    internal const int TFE解析塔 = 2054;
-    internal const int TFE复制塔 = 2055;
-    internal const int TFE转化塔 = 2056;
-    internal const int TFE行星内物流交互 = 2061;
-    internal const int TFE星际物流交互 = 2062;
-
-    internal const int TFE分馏堆叠成长 = 2080;
-    /// <summary>长链探索完成后授予的终极探索节点。</summary>
-    internal const int TFE终极探索 = 2171;
-    /// <summary>长链仓储任务完成后授予的终极容量节点。</summary>
-    internal const int TFE终极仓储 = 2172;
-    internal const int TFE高级矿物特质 = 2110;
-    internal const int TFE高级交互特质 = 2120;
-    internal const int TFE高级转化特质 = 2130;
-    internal const int TFE亚空间能效 = 2140;
-    /// <summary>交互站充电与储能科技，2181～2185为独立节点。</summary>
-    internal const int TFE交互站电力 = 2180;
+    internal const int TFE行星内物流交互 = 1621;
+    internal const int TFE星际物流交互 = 1622;
+    internal const int TFE高级矿物特质 = 7000;
+    internal const int TFE高级交互特质 = 7010;
+    internal const int TFE高级转化特质 = 7020;
+    internal const int TFE分馏堆叠成长 = 7030;
+    // 能效代码按阶段2～5计算偏移，首项仍为7041。
+    internal const int TFE亚空间能效 = 7039;
+    internal const int TFE交互站电力 = 7050;
+    internal const int TFE遗迹测绘 = 7061;
+    internal const int TFE定向解析 = 7062;
+    internal const int TFE休眠保护 = 7063;
+    internal const int TFE终极仓储 = 7064;
+    internal const int TFE丰碑通关 = 7065;
     internal const int T处理器 = 1302;
     internal const int T量子芯片 = 1303;
     internal const int T光子聚束采矿 = 1304;

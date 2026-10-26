@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using FE.Compatibility.Mods;
 using FE.Logic.Civilization;
 using static FE.Logic.Items.ItemManager;
 using static FE.Utils.Utils;
@@ -246,23 +247,22 @@ public static class RecipeManager {
         }
     }
 
-    /// <summary>注册珍奇催化增殖及对应的源点重构配方，保留已发布的稳定身份。</summary>
+    /// <summary>矿物按分馏页顺序排列，两类配方使用各自连续的运行身份。</summary>
     private static void AddRareCatalysisRecipes() {
-        AddRareRecipe(30101, I光栅石, 0.02f, 6, [new(I石矿, 3)]);
-        AddRareRecipe(30102, I分形硅石, 0.04f, 6, [new(I硅石, 3), new(I石矿, 3)]);
-        AddRareRecipe(30103, I金伯利矿石, 0.02f, 6, [new(I煤矿, 3)]);
-        AddRareRecipe(30104, I可燃冰, 0.02f, 6, [new(I原油, 3)]);
+        AddRareRecipe(30101, I可燃冰, 0.02f, 6, [new(I原油, 3)]);
+        AddRareRecipe(30102, I金伯利矿石, 0.02f, 6, [new(I煤矿, 3)]);
+        AddRareRecipe(30103, I分形硅石, 0.04f, 6, [new(I硅石, 3), new(I石矿, 3)]);
+        AddRareRecipe(30104, I光栅石, 0.02f, 6, [new(I石矿, 3)]);
         AddRareRecipe(30105, I刺笋结晶, 0.04f, 6, [new(I植物燃料, 3), new(I煤矿, 3)]);
         AddRareRecipe(30106, I单极磁石, 0.04f, 3, [new(I分形硅石, 1), new(I有机晶体, 1), new(I刺笋结晶, 1)]);
-        AddRareRecipe(30108, I有机晶体, 0.04f, 6, [new(I原油, 3), new(I水, 3)]);
-
-        AddRareMemoryRecipe(30107, I单极磁石, 20);
-        AddRareMemoryRecipe(30109, I分形硅石, 60);
-        AddRareMemoryRecipe(30110, I有机晶体, 60);
-        AddRareMemoryRecipe(30111, I刺笋结晶, 60);
-        AddRareMemoryRecipe(30112, I可燃冰, 120);
-        AddRareMemoryRecipe(30113, I金伯利矿石, 120);
+        AddRareRecipe(30107, I有机晶体, 0.04f, 6, [new(I原油, 3), new(I水, 3)]);
+        AddRareMemoryRecipe(30111, I可燃冰, 120);
+        AddRareMemoryRecipe(30112, I金伯利矿石, 120);
+        AddRareMemoryRecipe(30113, I分形硅石, 60);
         AddRareMemoryRecipe(30114, I光栅石, 120);
+        AddRareMemoryRecipe(30115, I刺笋结晶, 60);
+        AddRareMemoryRecipe(30116, I单极磁石, 20);
+        AddRareMemoryRecipe(30117, I有机晶体, 60);
     }
 
     /// <summary>以指定原料和同种珍奇催化剂注册稀有增殖配方。</summary>
@@ -331,15 +331,14 @@ public static class RecipeManager {
     }
 
     private static void AddReplacementRecipes() {
-        foreach (ConversionSpec spec in ConversionSpec.CreateAll()) {
+        foreach (ConversionSpec spec in ConversionSpec.CreateAll(GenesisBook.Enable, OrbitalRing.Enable)) {
             if (spec.Inputs.Any(input => !LDB.items.Exist(input.Item))
                 || spec.Outputs.Any(output => !LDB.items.Exist(output.Item))) { continue; }
-            string name = string.Format("FE.Conversion.PairName".Translate(),
-                LDB.items.Select(spec.Inputs[0].Item).name, LDB.items.Select(spec.Outputs[0].Item).name);
+            string name = string.Format("FE.Conversion.InputName".Translate(), LDB.items.Select(spec.Inputs[0].Item).name);
             AddRecipe(new WorldviewRecipe(spec.Key, spec.Id, name, ERecipe.AdvancedConversion,
                 WorldviewRecipeKind.Replacement, ConversionSpec.Success,
                 spec.Inputs.Select(input => new WorldviewRecipeInput(input.Item, input.Count, input.Consume)).ToArray(),
-                spec.Outputs.Select(output => new WorldviewRecipeOutput(output.Item, output.Count, output.Recovery)).ToArray()) {
+                spec.Outputs.Select(output => new WorldviewRecipeOutput(output.Item, output.Count, output.Recovery, output.Weight)).ToArray()) {
                 ResearchStage = spec.Stage,
             });
         }

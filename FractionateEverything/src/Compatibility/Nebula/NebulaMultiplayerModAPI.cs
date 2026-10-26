@@ -23,8 +23,8 @@ namespace FE.Compatibility.Nebula;
 /// </summary>
 public static class NebulaMultiplayerModAPI {
     public const string GUID = NebulaModAPI.API_GUID;
-    /// <summary>联机规则修订号；统一库存交付包含物流背包快照与亚空间返还回执，要求双方一致。</summary>
-    public const int ProtocolVersion = 20;
+    /// <summary>联机规则修订：分组原型、随机候选、能力任务、定向解析与真实丰碑构件要求双方一致。</summary>
+    public const int ProtocolVersion = 21;
     public static bool Enable;
     public static Assembly assembly;
 
@@ -160,7 +160,7 @@ public static class NebulaMultiplayerModAPI {
         if (mark != null && NebulaModAPI.MultiplayerSession?.LocalPlayer?.IsHost == true) {
             NebulaModAPI.MultiplayerSession.Network.SendPacket(new ExplorationRecoveryPacket {
                 kind = (int)mark.Kind, contentId = mark.ContentId ?? string.Empty,
-                itemId = mark.ItemId, count = mark.Count, quality = mark.Quality,
+                itemId = mark.ItemId, count = mark.Count, quality = mark.Quality, bonusMemory = mark.BonusMemory,
             });
         }
     }
@@ -429,7 +429,9 @@ public sealed class ExplorationRecoveryPacket {
     public int itemId { get; set; }
     /// <summary>实际奖励件数；研究线索和剧情节点为零。</summary>
     public int count { get; set; }
-    /// <summary>遗迹固定质量，1～3，用于生成本地标题。</summary>
+    /// <summary>另行发放的源点，用于本端恢复提示。</summary>
+    public int bonusMemory { get; set; }
+    /// <summary>遗迹当前质量，1～3，用于生成本地标题。</summary>
     public int quality { get; set; }
 }
 
@@ -440,13 +442,13 @@ public sealed class ExplorationRecoveryPacketProcessor : BasePacketProcessor<Exp
     public override void ProcessPacket(ExplorationRecoveryPacket packet, INebulaConnection conn) {
         if (IsHost || packet == null) { return; }
         if (!Enum.IsDefined(typeof(ExplorationMarkKind), packet.kind)
-            || packet.quality is < 1 or > 3 || packet.count < 0) {
+            || packet.quality is < 1 or > 3 || packet.count < 0 || packet.bonusMemory < 0) {
             LogError("Ignored exploration recovery packet with invalid kind, quality or count.");
             return;
         }
         CivilizationModule.QueueRecoveryPopup(new ExplorationMark {
             Kind = (ExplorationMarkKind)packet.kind, ContentId = packet.contentId ?? string.Empty,
-            ItemId = packet.itemId, Count = packet.count, Quality = packet.quality,
+            ItemId = packet.itemId, Count = packet.count, Quality = packet.quality, BonusMemory = packet.bonusMemory,
         });
     }
 }

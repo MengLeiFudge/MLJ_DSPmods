@@ -607,7 +607,8 @@ public static partial class ResearchManager {
                 if (candidates.Length == 0) { progress = 0; break; }
 
                 // 成功次数推进虚拟进度并返还同件样本，只有损毁才消耗样本。
-                double progressPerSuccess = 10000d / candidates.Average(GetExpectedSampleCount);
+                string target = GetAnalysisTargetUnsafe(itemId, candidates);
+                double progressPerSuccess = 10000d / (target == null ? candidates.Average(GetExpectedSampleCount) : GetExpectedSampleCount(target));
                 int successesToComplete = Math.Max(1,
                     (int)Math.Ceiling((10000 - progress) / progressPerSuccess));
                 int appliedSuccesses = Math.Min(remainingSuccesses, successesToComplete);
@@ -617,7 +618,8 @@ public static partial class ResearchManager {
 
                 int selectedIndex = Math.Min(candidates.Length - 1,
                     (int)(GetRandDouble(ref seed) * candidates.Length));
-                int towerId = UnlockContent(candidates[selectedIndex]);
+                int towerId = UnlockContent(target ?? candidates[selectedIndex]);
+                if (target != null) { AnalysisTargets.Remove(itemId); }
                 if (towerId > 0) {
                     bootstrapTowers ??= [];
                     bootstrapTowers.Add(towerId);
@@ -639,6 +641,7 @@ public static partial class ResearchManager {
                 DataCenterInventory.AddExplorationReward(towerId, 1);
             }
         }
+        AbilityTasks.Record("Analysis", analysisSuccessCount);
         return new(destroyedCount, analysisSuccessCount, itemId, analysisSuccessCount, analysisSuccessCount);
     }
 
@@ -719,8 +722,9 @@ public static partial class ResearchManager {
     /// 判断指定 FE 科技是否已经完成对应方向的探索与解析。
     /// </summary>
     public static bool CanResearchTechnology(int techId) =>
-        !GrowthTechnologyManager.TryGetTechnologyContentId(techId, out _)
-        || GrowthTechnologyManager.IsTechnologyDiscovered(techId);
+        !GrowthTechnologyManager.IsTaskTechnology(techId)
+        && (!GrowthTechnologyManager.TryGetTechnologyContentId(techId, out _)
+            || GrowthTechnologyManager.IsTechnologyDiscovered(techId));
 
     /// <summary>
     /// 在主线程显示解析和探索结果，并返回是否需要广播联机快照。
@@ -764,6 +768,7 @@ public static partial class ResearchManager {
             ExploredContentDirections.Clear();
             UnlockedContents.Clear();
             DirectionProgress.Clear();
+            AnalysisTargets.Clear();
             BootstrapTowerGrants.Clear();
             AcquiredAdvancedTowers.Clear();
             AdvancedTowerInventoryMilestones.Clear();
@@ -782,6 +787,7 @@ public static partial class ResearchManager {
                 }),
                 ("UnlockedContents", br => ReadStringSet(br, UnlockedContents)),
                 ("DirectionProgress", br => ReadIntDictionary(br, DirectionProgress)),
+                ("AnalysisTargets", ImportAnalysisTargets),
                 ("BootstrapTowerGrants", br => ReadIntSet(br, BootstrapTowerGrants)),
                 ("AcquiredAdvancedTowers", br => ReadIntSet(br, AcquiredAdvancedTowers)),
                 ("AdvancedTowerInventoryMilestones", br =>
@@ -846,6 +852,7 @@ public static partial class ResearchManager {
                     WriteStringIntDictionary(bw, ExploredContentDirections)),
                 ("UnlockedContents", bw => WriteStringSet(bw, UnlockedContents)),
                 ("DirectionProgress", bw => WriteIntDictionary(bw, DirectionProgress)),
+                ("AnalysisTargets", ExportAnalysisTargets),
                 ("BootstrapTowerGrants", bw => WriteIntSet(bw, BootstrapTowerGrants)),
                 ("AcquiredAdvancedTowers", bw => WriteIntSet(bw, AcquiredAdvancedTowers)),
                 ("AdvancedTowerInventoryMilestones", bw =>
@@ -867,6 +874,7 @@ public static partial class ResearchManager {
             ExploredContentDirections.Clear();
             UnlockedContents.Clear();
             DirectionProgress.Clear();
+            AnalysisTargets.Clear();
             BootstrapTowerGrants.Clear();
             AcquiredAdvancedTowers.Clear();
             AdvancedTowerInventoryMilestones.Clear();

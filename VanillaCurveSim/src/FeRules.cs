@@ -34,6 +34,6 @@ internal static class FeRules {
         }
         ConversionSpec spec = ConversionSpec.CreateAll().FirstOrDefault(s => s.Key == recipe.Id);
         return spec == null ? recipe.OutputCounts : spec.Outputs
-            .Select(o => o.Count * (o.Recovery ? 0.5f + 0.05f * scenario.TraitLevel : 1f)).ToArray();
+            .Select(o => o.Count * (o.Recovery ? ConversionSpec.RecoveryRatio(scenario.TraitLevel) : 1f) * o.Weight / spec.Outputs.Sum(candidate => candidate.Weight)).ToArray();
     }
 }

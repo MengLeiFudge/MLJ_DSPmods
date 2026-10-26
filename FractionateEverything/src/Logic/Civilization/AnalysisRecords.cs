@@ -57,7 +57,7 @@ public static partial class ResearchManager {
                 AnalysisRecordState state = completed ? AnalysisRecordState.Completed
                     : known ? AnalysisRecordState.Analyzing : AnalysisRecordState.Undiscovered;
                 records.Add(new AnalysisRecordSnapshot(id, state, itemId,
-                    completed ? definition.DisplayName : string.Empty,
+                    completed || known && GrowthTechnologyManager.DirectedAnalysis ? definition.DisplayName : string.Empty,
                     completed ? 10000 : known ? GetDirectionProgressUnsafe(itemId) : 0));
             }
             return records.ToArray();

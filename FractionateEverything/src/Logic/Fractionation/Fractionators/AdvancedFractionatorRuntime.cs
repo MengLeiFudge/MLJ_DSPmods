@@ -470,6 +470,7 @@ public static partial class AdvancedFractionatorRuntime {
                 consumedMain += consumed;
                 if (consumed > 0) {
                     lock (consumeRegister) { consumeRegister[input.ItemId] += consumed; }
+                    AbilityTasks.RecordMaterialUse(input.ItemId, consumed);
                 }
             } else {
                 float probability = GetInputConsumeProbability(input, buildingId);
@@ -479,6 +480,7 @@ public static partial class AdvancedFractionatorRuntime {
                 if (consumed > 0) {
                     TakeInput(state, input.ItemId, consumed);
                     lock (consumeRegister) { consumeRegister[input.ItemId] += consumed; }
+                    AbilityTasks.RecordMaterialUse(input.ItemId, consumed);
                 }
             }
         }
@@ -488,6 +490,25 @@ public static partial class AdvancedFractionatorRuntime {
             return 0;
         }
 
+        AbilityTasks.Record("Production", consumedMain);
+        AbilityTasks.Record(recipe.Kind switch {
+            WorldviewRecipeKind.Replacement => "Conversion",
+            WorldviewRecipeKind.TowerCultivation => "Cultivation",
+            WorldviewRecipeKind.EmbryoBreeding => "Breeding",
+            _ => "Mineral",
+        }, successCount);
+        if (recipe.Kind == WorldviewRecipeKind.Replacement) {
+            // 每次成功独立抽一个候选，不能把每项期望值都当作本轮必出。
+            lock (productRegister) {
+                for (int i = 0; i < successCount; i++) {
+                    WorldviewRecipeOutput output = recipe.SelectOutput(ref seed);
+                    int count = WorldviewRecipe.RollExpected(ref seed, recipe.GetOutputPerSuccess(output));
+                    AddCount(state.Products, output.ItemId, count);
+                    productRegister[output.ItemId] += count;
+                }
+            }
+            return successCount;
+        }
         foreach (WorldviewRecipeOutput output in recipe.ProductArray) {
             float outputPerSuccess = GetOutputPerSuccess(recipe, output);
             int outputCount = WorldviewRecipe.RollExpected(ref seed, successCount * (double)outputPerSuccess);
@@ -692,6 +713,7 @@ public static partial class AdvancedFractionatorRuntime {
         if (state.DigestingEnergy > 0d) {
             return 1f;
         }
+        if (GrowthTechnologyManager.HibernationProtection) { return 0f; }
         int combatStatId = factory.entityPool[entityId].combatStatId;
         if (combatStatId <= 0 || combatStatId >= factory.skillSystem.combatStats.buffer.Length) {
             return 1f;
@@ -719,6 +741,7 @@ public static partial class AdvancedFractionatorRuntime {
         bool hasReserve = SumCounts(state.Foods) > 0;
         bool losingDurability = state.DigestingEnergy <= 0d && !hasReserve;
         bool recovering = state.DigestingEnergy > 0d && GetCount(state.Foods, state.DigestingItemId) > 0;
+        if (losingDurability && GrowthTechnologyManager.HibernationProtection) { return; }
         if (!losingDurability && !recovering) { return; }
         if (!losingDurability && combatStatId <= 0) {
             return;

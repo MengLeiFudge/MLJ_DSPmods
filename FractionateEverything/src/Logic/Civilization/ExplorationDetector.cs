@@ -62,6 +62,13 @@ public static class ExplorationDetector {
         ExplorationMark[] known = ExplorationManager.GetActiveMarks();
         if (ReferenceEquals(navigationSnapshot, known)) { return; }
         navigationSnapshot = known;
+        foreach (var tracked in TrackedSlots.ToArray()) {
+            ExplorationMark mark = known.FirstOrDefault(candidate => candidate.Id == tracked.Value);
+            if (mark == null || GetSlot(mark) == tracked.Key) { continue; }
+            TrackedSlots.Remove(tracked.Key);
+            string updatedSlot = GetSlot(mark);
+            if (!TrackedSlots.ContainsKey(updatedSlot)) { TrackedSlots[updatedSlot] = mark.Id; }
+        }
         foreach (string slot in TrackedSlots.Keys.ToArray()) {
             TrackedSlots[slot] = SelectTarget(slot, known, player)?.Id ?? 0;
         }

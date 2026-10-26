@@ -5,7 +5,9 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using BepInEx.Configuration;
+using BepInEx.Bootstrap;
 using CommonAPI.Systems;
+using FE.Compatibility.Mods;
 using FE.Logic.Fractionation.Recipes;
 using FE.Logic.Items;
 using HarmonyLib;
@@ -21,6 +23,8 @@ internal static class MonumentCatalog {
     private static ConfigEntry<string> identityConfig;
     private static readonly Dictionary<int, int> SailSources = [];
     private static readonly List<WorldviewRecipe> Recipes = [];
+    private static readonly Dictionary<int, int> RecipeSources = [];
+    internal static IReadOnlyList<int> MatrixIds => SailSources.Values.OrderBy(id => id).ToArray();
     internal static void Bind(ConfigFile config) => identityConfig = config.Bind("Monument", "SailIdentities", "",
         "Stable source-matrix:item identities. Keep this mapping with saves; multiplayer peers must use the same mapping.");
 
@@ -49,19 +53,44 @@ internal static class MonumentCatalog {
             }
             saved.Add(source, item);
         }
+        Dictionary<int, int> known = new() {
+            [5201] = 10000, [6001] = 10001, [6002] = 10002, [6003] = 10003,
+            [6004] = 10004, [6005] = 10005, [6006] = 10006,
+        };
+        if (OrbitalRing.Enable) { known[6278] = 10008; known[6279] = 10009; }
+        if (Chainloader.PluginInfos.ContainsKey("com.wangyu.projecteden")) {
+            var find = AccessTools.Method(AccessTools.TypeByName("ProjectEden.OreRegistry"), "FindItemIdByRef");
+            int bio = find?.Invoke(null, ["bio-matrix"]) is int value ? value : 0;
+            if (bio <= 0) { throw new InvalidOperationException("无法读取伊甸生物矩阵的实际身份。"); }
+            known[bio] = 10007;
+        }
+        // 已知身份由目录决定；仅未知来源继续沿用独立区间内的保存映射。
+        foreach (int source in saved.Keys.ToArray()) {
+            if (known.ContainsKey(source) || saved[source] < 10020 || GenesisBook.Enable && source is 6278 or 6279 or 6280) {
+                saved.Remove(source);
+            }
+        }
         HashSet<int> used = new(saved.Values);
+        used.UnionWith(known.Values);
         used.UnionWith(recipeIds);
         foreach (ItemProto existing in allItems) { if (existing != null) { used.Add(existing.ID); } }
-        ItemProto[] matrices = allItems.Where(item => item != null && (item.Type == EItemType.Matrix || item.ID == 5201))
-            .OrderBy(item => item.ID).ToArray();
+        ItemProto[] matrices = allItems.Where(item => item != null && (item.Type == EItemType.Matrix || item.ID == 5201)
+                && !(GenesisBook.Enable && item.ID is 6278 or 6279 or 6280))
+            .GroupBy(item => item.ID).Select(group => group.First()).OrderBy(item => item.ID).ToArray();
         int column = 0;
         foreach (ItemProto source in matrices) {
-            if (!saved.TryGetValue(source.ID, out int id)) {
-                id = Enumerable.Range(10000, 1800).FirstOrDefault(candidate => !used.Contains(candidate));
+            if (known.TryGetValue(source.ID, out int id)) {
+                saved[source.ID] = id;
+            } else if (!saved.TryGetValue(source.ID, out id)) {
+                id = Enumerable.Range(10020, 1780).FirstOrDefault(candidate => !used.Contains(candidate));
                 if (id == 0) { throw new InvalidOperationException("丰碑帆物品身份空间已用尽。"); }
                 saved.Add(source.ID, id); used.Add(id);
             }
-            if (recipeIds.Contains(id) || allItems.Any(existing => existing.ID == id)) { throw new InvalidOperationException($"丰碑帆物品身份冲突：{id}。"); }
+            int recipeId = id switch { 10000 => 1177, >= 10001 and <= 10006 => 1170 + id - 10000,
+                >= 10007 and <= 10009 => 1171 + id - 10000, _ => id };
+            if (recipeIds.Contains(recipeId) || allItems.Any(existing => existing != null && existing.ID == id)) {
+                throw new InvalidOperationException($"丰碑帆物品或配方身份冲突：{id}/{recipeId}。");
+            }
             var item = new ItemProto {
                 ID = id, Name = $"FE.Monument.Sail.{source.ID}", Description = "FE.Monument.SailDescription",
                 Type = EItemType.Product, StackSize = 100, UnlockKey = -1, IconPath = "Assets/fe/monument-sail",
@@ -72,9 +101,10 @@ internal static class MonumentCatalog {
             SailSources.Add(id, source.ID);
             var recipe = new WorldviewRecipe($"monument-sail:{source.ID}", 400000 + source.ID, item.Name,
                 ERecipe.AdvancedConversion, WorldviewRecipeKind.Monument, 0.08f,
-                [new(source.ID, 1), new(I太阳帆, 1)], [new(id, 10)]) { ResearchStage = 6, AnalysisItemId = source.ID };
+                [new(source.ID, 1), new(I太阳帆, matrices.Length)], [new(id, matrices.Length)]) { ResearchStage = 6, AnalysisItemId = source.ID };
             Recipes.Add(recipe);
-            AdvancedRecipeCatalog.RegisterPostProto(recipe, id,
+            RecipeSources.Add(recipeId, source.ID);
+            AdvancedRecipeCatalog.RegisterPostProto(recipe, recipeId,
                 tab分馏 * 1000 + (8 + column / 14) * 100 + column % 14 + 1);
             column++;
         }
@@ -84,8 +114,8 @@ internal static class MonumentCatalog {
             ERecipe.AdvancedConversion, WorldviewRecipeKind.Monument, 0.08f,
             [new(IFE实体元数据, 1), new(I小型运载火箭, 1)], [new(IFE丰碑火箭, 1)]) { ResearchStage = 6, AnalysisItemId = IFE实体元数据 };
         Recipes.Add(rocketRecipe);
-        if (recipeIds.Contains(11990)) { throw new InvalidOperationException("丰碑火箭配方身份冲突：11990。"); }
-        AdvancedRecipeCatalog.RegisterPostProto(rocketRecipe, 11990, tab分馏 * 1000 + 714);
+        if (recipeIds.Contains(1170)) { throw new InvalidOperationException("丰碑火箭配方身份冲突：1170。"); }
+        AdvancedRecipeCatalog.RegisterPostProto(rocketRecipe, 1170, tab分馏 * 1000 + 714);
     }
 
     private static bool registered;
@@ -144,8 +174,8 @@ internal static class MonumentCatalog {
     }
 
     internal static bool TryGetSource(int itemId, out int matrixId) => SailSources.TryGetValue(itemId, out matrixId);
-    internal static int GetRecipeProtoId(int persistentId) => persistentId == 399999 ? 11990
-        : SailSources.FirstOrDefault(pair => pair.Value == persistentId - 400000).Key;
+    internal static int GetRecipeProtoId(int persistentId) => persistentId == 399999 ? 1170
+        : RecipeSources.FirstOrDefault(pair => pair.Value == persistentId - 400000).Key;
     internal static bool IsSail(int itemId) => SailSources.ContainsKey(itemId);
     internal static bool IsMonumentItem(int itemId) => itemId is IFE丰碑火箭 or IFE丰碑结晶 || IsSail(itemId);
     internal static void AddRecipes() { foreach (WorldviewRecipe recipe in Recipes) { RecipeManager.AddRecipe(recipe); } }
@@ -153,7 +183,7 @@ internal static class MonumentCatalog {
     /// <summary>唯一价值表按制造投入分摊，不另建容量价格；结晶按一份火箭投入估值。</summary>
     internal static void ApplyValues() {
         float[] values = ItemManager.itemValue;
-        foreach (var pair in SailSources) { values[pair.Key] = (values[pair.Value] + values[I太阳帆]) / 10f; }
+        foreach (var pair in SailSources) { values[pair.Key] = values[pair.Value] / SailSources.Count + values[I太阳帆]; }
         values[IFE丰碑火箭] = values[IFE实体元数据] + values[I小型运载火箭];
         values[IFE丰碑结晶] = values[IFE丰碑火箭];
         RefreshNames();
@@ -165,7 +195,7 @@ internal static class MonumentCatalog {
             string name = string.Format("FE.Monument.SailName".Translate(), LDB.items.Select(pair.Value)?.name ?? pair.Value.ToString());
             ItemProto item = LDB.items.Select(pair.Key);
             if (item != null) { item.name = name; }
-            RecipeProto recipe = LDB.recipes.Select(pair.Key);
+            RecipeProto recipe = LDB.recipes.Select(GetRecipeProtoId(400000 + pair.Value));
             if (recipe != null) { recipe.name = name; }
             WorldviewRecipe runtime = Recipes.Find(value => value.PersistentId == 400000 + pair.Value);
             if (runtime != null) { runtime.DisplayName = name; }
@@ -177,7 +207,7 @@ internal static class MonumentCatalog {
     [HarmonyPostfix]
     [HarmonyPatch(typeof(RecipeProto), nameof(RecipeProto.RefreshTranslation))]
     private static void RecipeProto_RefreshTranslation_Postfix(RecipeProto __instance) {
-        if (TryGetSource(__instance.ID, out int matrix)) {
+        if (RecipeSources.TryGetValue(__instance.ID, out int matrix)) {
             __instance.name = string.Format("FE.Monument.SailName".Translate(), LDB.items.Select(matrix)?.Name.Translate() ?? matrix.ToString());
         }
     }

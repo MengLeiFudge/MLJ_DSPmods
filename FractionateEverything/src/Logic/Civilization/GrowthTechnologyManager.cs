@@ -62,8 +62,12 @@ public static class GrowthTechnologyManager {
     /// <summary>长链任务是否已授予无限仓储。</summary>
     public static bool UltimateCapacity => GameMain.history?.TechUnlocked(TFE终极仓储) == true;
 
-    /// <summary>长链任务是否已授予持续探索。</summary>
-    public static bool UltimateExploration => GameMain.history?.TechUnlocked(TFE终极探索) == true;
+    /// <summary>一次性能力由对应任务直接授予，运行效果读取原版科技状态。</summary>
+    public static bool RelicSurvey => GameMain.history?.TechUnlocked(TFE遗迹测绘) == true;
+    public static bool DirectedAnalysis => GameMain.history?.TechUnlocked(TFE定向解析) == true;
+    public static bool HibernationProtection => GameMain.history?.TechUnlocked(TFE休眠保护) == true;
+    public static bool MonumentCompleted => GameMain.history?.TechUnlocked(TFE丰碑通关) == true;
+    public static bool IsTaskTechnology(int id) => id is >= TFE遗迹测绘 and <= TFE丰碑通关;
 
     /// <summary>一次性研究完成后的剩余耗电倍率，索引零表示未研究。</summary>
     private static readonly double[] SubspaceEnergyRatios = [1d, 0.7d, 0.45d, 0.3d, 0.2d];
@@ -92,7 +96,7 @@ public static class GrowthTechnologyManager {
     public static float AdvancedMineralOutputRatio => 1f + AdvancedMineralTraitLevel * 0.25f;
 
     /// <summary>高级转化配方的材料回收比例，结算与科技汇总共用。</summary>
-    public static float AdvancedConversionRecoveryRatio => 0.5f + AdvancedConversionTraitLevel * 0.05f;
+    public static float AdvancedConversionRecoveryRatio => FE.Logic.Fractionation.Recipes.ConversionSpec.RecoveryRatio(AdvancedConversionTraitLevel);
 
     /// <summary>获取高级交互塔特质科技等级，范围 0..6。</summary>
     public static int AdvancedInteractionTraitLevel => Volatile.Read(ref interactionTraitLevel);
@@ -132,7 +136,10 @@ public static class GrowthTechnologyManager {
     /// </summary>
     public static bool TryGetTechnologyContentId(int techId, out string contentId) {
         contentId = techId switch {
-            TFE终极探索 => "ultimate:exploration",
+            TFE遗迹测绘 => "task:survey",
+            TFE定向解析 => "task:analysis",
+            TFE休眠保护 => "task:hibernation",
+            TFE丰碑通关 => "task:monument",
             TFE终极仓储 => "ultimate:capacity",
             TFE行星内物流交互 => PlanetaryInteractionTechnologyContentId,
             TFE星际物流交互 => InterstellarInteractionTechnologyContentId,
@@ -155,8 +162,8 @@ public static class GrowthTechnologyManager {
     /// 判断科技是否已经完成探索和解析，且可以公开真实内容或加入研究队列。
     /// </summary>
     public static bool IsTechnologyDiscovered(int techId) {
-        if (techId is TFE终极探索 or TFE终极仓储) {
-            return GameMain.history?.TechUnlocked(techId) == true;
+        if (IsTaskTechnology(techId)) {
+            return ResearchManager.CurrentMatrixStage >= AbilityTasks.GetStage(techId) || GameMain.history?.TechUnlocked(techId) == true;
         }
         if (!IsTechnologyNodeActive(techId) || !TryGetTechnologyContentId(techId, out string contentId)) {
             return false;
@@ -177,7 +184,7 @@ public static class GrowthTechnologyManager {
     public static bool IsTechnologyPreview(int techId) {
         GameHistoryData history = GameMain.history;
         if (history == null || !IsTechnologyNodeActive(techId) || !TryGetTechnologyContentId(techId, out string contentId)
-            || techId is TFE终极探索 or TFE终极仓储 || history.TechUnlocked(techId) || IsTechnologyDiscovered(techId)) {
+            || IsTaskTechnology(techId) || history.TechUnlocked(techId) || IsTechnologyDiscovered(techId)) {
             return false;
         }
         if (techId is TFE行星内物流交互 or TFE星际物流交互) {
@@ -196,7 +203,10 @@ public static class GrowthTechnologyManager {
     public static bool TryGetTechnologyUnlockText(TechProto tech, out string text) {
         int techId = tech?.ID ?? 0;
         text = techId switch {
-            TFE终极探索 => "远古广播持续回应".Translate(),
+            TFE遗迹测绘 => "FE.Ability.Survey.Effect".Translate(),
+            TFE定向解析 => "FE.Ability.Analysis.Effect".Translate(),
+            TFE休眠保护 => "FE.Ability.Hibernation.Effect".Translate(),
+            TFE丰碑通关 => "FE.Ability.Monument.Effect".Translate(),
             TFE终极仓储 => "亚空间容量：无限".Translate(),
             > TFE分馏堆叠成长 and <= TFE分馏堆叠成长 + 5 =>
                 string.Format("货物堆叠上限 +{0}".Translate(), techId <= TFE分馏堆叠成长 + 2 ? 2 : 4),
@@ -207,7 +217,7 @@ public static class GrowthTechnologyManager {
                     SubspaceEnergyRatios[techId - TFE亚空间能效 - 2] - SubspaceEnergyRatios[techId - TFE亚空间能效 - 1]),
             > TFE高级矿物特质 and <= TFE高级矿物特质 + FiniteGrowthLevelCount => "珍奇矿物产量 +25%".Translate(),
             > TFE高级交互特质 and <= TFE高级交互特质 + FiniteGrowthLevelCount => "繁育平均产出 +0.25".Translate(),
-            > TFE高级转化特质 and <= TFE高级转化特质 + FiniteGrowthLevelCount => "部件回收倍率 +5%".Translate(),
+            > TFE高级转化特质 and <= TFE高级转化特质 + FiniteGrowthLevelCount => "FE.Conversion.RecoveryUpgrade".Translate(),
             _ => null,
         };
         return text != null;
@@ -221,8 +231,11 @@ public static class GrowthTechnologyManager {
         AddStackTechs();
         AddEfficiencyTechs();
         AddStationPowerTechs();
-        AddUltimateTech(TFE终极探索, "终极探索");
-        AddUltimateTech(TFE终极仓储, "终极仓储");
+        AddAbilityTech(TFE遗迹测绘, "FE.Ability.Survey", "行星遗迹测绘", 0);
+        AddAbilityTech(TFE定向解析, "FE.Ability.Analysis", "定向解析", 1);
+        AddAbilityTech(TFE休眠保护, "FE.Ability.Hibernation", "生命塔休眠保护", 2);
+        AddAbilityTech(TFE终极仓储, "终极仓储", "终极仓储", 3);
+        AddAbilityTech(TFE丰碑通关, "FE.Ability.Monument", "丰碑工业突破", 4);
         AddFiniteSeries(TFE高级矿物特质, "FE高级矿物特质", "FE高级矿物特质描述",
             "Assets/fe/珍奇矿物增殖", 0);
         AddFiniteSeries(TFE高级交互特质, "FE高级交互特质", "FE高级交互特质描述",
@@ -466,15 +479,14 @@ public static class GrowthTechnologyManager {
         return level;
     }
 
-    /// <summary>注册由剧情直接授予的第十一级标记，普通研究入口保持关闭。</summary>
-    /// <param name="id">稳定科技身份。</param>
-    /// <param name="name">名称键。</param>
-    private static void AddUltimateTech(int id, string name) {
-        TechProto tech = ProtoRegistry.RegisterTech(id, name, "终极任务科技描述", "FE成长科技结果",
-            $"Assets/fe/{name}", [], [], [], 0, [], Vector2.zero);
-        tech.Level = 11;
-        tech.MaxLevel = 11;
+    /// <summary>任务节点在第二页底部同排展示；不注册科研成本或可排队路线。</summary>
+    private static void AddAbilityTech(int id, string name, string icon, int column) {
+        TechProto tech = ProtoRegistry.RegisterTech(id, name, "FE.Ability.Description", "FE成长科技结果",
+            $"Assets/fe/{icon}", [], [], [], 0, [], GetGrowthTechPosition(6, column));
+        tech.Level = 1;
+        tech.MaxLevel = 1;
         tech.IsHiddenTech = true;
+        GrowthTechPositions[id] = (6, column);
     }
 
     /// <summary>获取第一页物流交互节点的空位，沿用当前启用模组的基础布局。</summary>

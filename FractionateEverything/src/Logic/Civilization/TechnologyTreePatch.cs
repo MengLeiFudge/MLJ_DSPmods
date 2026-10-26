@@ -77,7 +77,7 @@ public static class TechnologyTreePatch {
     }
 
     /// <summary>
-    /// 两个物流交互科技保留稳定的 2061/2062 ID，但在界面中属于建筑科技第一页。
+    /// 两个物流交互科技使用1621/1622，在界面中属于建筑科技第一页。
     /// </summary>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(TechProto), nameof(TechProto.page), MethodType.Getter)]
@@ -115,7 +115,6 @@ public static class TechnologyTreePatch {
     /// <param name="tech">已注册的FE科技原型。</param>
     /// <returns>节点是否应当显示。</returns>
     private static bool IsTechnologyVisible(TechProto tech) => !tech.IsObsolete
-        && tech.ID is not TFE终极探索 and not TFE终极仓储
         && (GrowthTechnologyManager.IsTechnologyDiscovered(tech.ID)
             || GameMain.history?.TechUnlocked(tech.ID) == true
             || GrowthTechnologyManager.IsTechnologyPreview(tech.ID));
@@ -141,6 +140,16 @@ public static class TechnologyTreePatch {
     [HarmonyPatch(typeof(UITechNode), nameof(UITechNode.UpdateLayoutDynamic))]
     private static void UITechNode_UpdatePreview_Postfix(UITechNode __instance) {
         if (__instance.techProto == null) { return; }
+        if (GrowthTechnologyManager.IsTaskTechnology(__instance.techProto.ID)) {
+            __instance.startGroup.gameObject.SetActive(false);
+            __instance.costGroup.gameObject.SetActive(false);
+            __instance.pCostGroup.gameObject.SetActive(false);
+            __instance.costBg.gameObject.SetActive(false);
+            __instance.progressGroup.gameObject.SetActive(false);
+            __instance.unlockDirectButton.gameObject.SetActive(false);
+            __instance.techDescText.text = AbilityTasks.GetDescription(__instance.techProto.ID);
+            return;
+        }
         bool preview = GrowthTechnologyManager.IsTechnologyPreview(__instance.techProto.ID);
         if (!preview) {
             if (!Previews.TryGetValue(__instance, out TechnologyPreview previous) || !previous.Applied) { return; }
@@ -215,11 +224,16 @@ public static class TechnologyTreePatch {
     [HarmonyPrefix]
     [HarmonyPatch(typeof(UITechNode), nameof(UITechNode.OnPointerDown))]
     [HarmonyPatch(typeof(UITechNode), nameof(UITechNode.OnPointerEnter))]
-    [HarmonyPatch(typeof(UITechNode), nameof(UITechNode.DoStartTech))]
-    [HarmonyPatch(typeof(UITechNode), nameof(UITechNode.DoBuyoutTech))]
-    [HarmonyPatch(typeof(UITechNode), nameof(UITechNode.OnUnlockDirectButton))]
     private static bool UITechNode_PreviewAction_Prefix(UITechNode __instance) =>
         !GrowthTechnologyManager.IsTechnologyPreview(__instance.techProto?.ID ?? 0);
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(UITechNode), nameof(UITechNode.DoBuyoutTech))]
+    [HarmonyPatch(typeof(UITechNode), nameof(UITechNode.OnUnlockDirectButton))]
+    [HarmonyPatch(typeof(UITechNode), nameof(UITechNode.DoStartTech))]
+    private static bool UITechNode_ResearchAction_Prefix(UITechNode __instance) =>
+        !GrowthTechnologyManager.IsTaskTechnology(__instance.techProto?.ID ?? 0)
+        && !GrowthTechnologyManager.IsTechnologyPreview(__instance.techProto?.ID ?? 0);
 
     /// <summary>同步连接到 FE 科技的箭头与公共线段，隐藏目标不留下向外延伸的线。</summary>
     /// <param name="__instance">刚完成原版连接布局的科技节点。</param>

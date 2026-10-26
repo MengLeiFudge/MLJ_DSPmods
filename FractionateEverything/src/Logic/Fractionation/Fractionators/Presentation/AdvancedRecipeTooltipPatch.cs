@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 
 using HarmonyLib;
+using UnityEngine;
 using UnityEngine.UI;
 
 using FE.Logic.Civilization;
@@ -19,6 +20,10 @@ public static class AdvancedRecipeTooltipPatch {
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UIRecipeEntry), nameof(UIRecipeEntry.SetRecipe))]
     private static void UIRecipeEntry_SetRecipe_Postfix(UIRecipeEntry __instance, RecipeProto recipe) {
+        foreach (var icon in __instance.icons) {
+            Transform chance = icon.transform.Find("fe-candidate-chance");
+            if (chance != null) { chance.gameObject.SetActive(false); }
+        }
         WorldviewRecipe advanced = AdvancedRecipeCatalog.GetRecipe(recipe.ID);
         if (advanced == null) { return; }
         int buildingId = GetBuildingId(advanced);
@@ -26,8 +31,25 @@ public static class AdvancedRecipeTooltipPatch {
         // 原版依次排列产物和输入，最多显示七个图标；仅改数字，不改共享整数原型。
         foreach (WorldviewRecipeOutput output in advanced.ProductArray) {
             if (slot >= 7 || slot >= __instance.countTexts.Length) { break; }
-            __instance.countTexts[slot++].text = AdvancedFractionatorRuntime
-                .GetOutputPerSuccess(advanced, output).ToString("0.###");
+            Text count = __instance.countTexts[slot++];
+            count.text = advanced.GetOutputPerSuccess(output).ToString("0.###");
+            if (advanced.Kind == WorldviewRecipeKind.Replacement) {
+                Transform icon = __instance.icons[slot - 1].transform;
+                Text chance = icon.Find("fe-candidate-chance")?.GetComponent<Text>();
+                if (chance == null) {
+                    chance = UnityEngine.Object.Instantiate(count, icon);
+                    chance.name = "fe-candidate-chance";
+                    chance.rectTransform.anchorMin = chance.rectTransform.anchorMax = new Vector2(0f, 1f);
+                    chance.rectTransform.pivot = new Vector2(0f, 1f);
+                    chance.rectTransform.anchoredPosition = Vector2.zero;
+                    chance.rectTransform.sizeDelta = new Vector2(40f, 14f);
+                    chance.fontSize = 10; chance.alignment = TextAnchor.UpperLeft;
+                    chance.raycastTarget = false;
+                }
+                float probability = advanced.GetOutputProbability(output);
+                chance.text = probability < 0.0001f ? "<0.01%" : probability.ToString("0.##%");
+                chance.gameObject.SetActive(true);
+            }
         }
         foreach (WorldviewRecipeInput input in advanced.InputArray) {
             if (slot >= 7 || slot >= __instance.countTexts.Length) { break; }
@@ -35,7 +57,8 @@ public static class AdvancedRecipeTooltipPatch {
             __instance.countTexts[slot++].text = consumed.ToString("0.###");
         }
         __instance.timeText.text = AdvancedFractionatorRuntime.GetSuccessProbability(advanced,
-            ResearchManager.GetAdvancedTowerSacrificeBoost(buildingId)).ToString("0.#%");
+            ResearchManager.GetAdvancedTowerSacrificeBoost(buildingId)).ToString("0.#%")
+            + (advanced.Kind == WorldviewRecipeKind.Replacement ? "\n" + "FE.Conversion.OneCandidate".Translate() : "");
     }
 
     [HarmonyPrefix]

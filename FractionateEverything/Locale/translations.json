@@ -56,11 +56,11 @@
     "1041": "記念碑建設ロケット"
   },
   "FE.Monument.RocketDescription": {
-    "zhCN": "由实体元数据与运载火箭转化而成。火箭发射井将它送往丰碑，永久增加全档建设贡献；红巨星贡献最高，蓝巨星次之。",
-    "enUS": "Converted from tangible metadata and a carrier rocket. Launch from a silo to permanently add construction across this save. Red giants give the most contribution, followed by blue giants.",
-    "frFR": "Issue de métadonnées tangibles et d’une fusée porteuse. Un silo l’envoie au monument pour augmenter définitivement la construction de cette sauvegarde. Les géantes rouges contribuent le plus, puis les bleues.",
-    "1031": "Aus greifbaren Metadaten und einer Trägerrakete. Ein Silo erhöht damit dauerhaft den Baufortschritt dieses Spielstands. Rote Riesen liefern den höchsten Beitrag, blaue den zweithöchsten.",
-    "1041": "実体メタデータと輸送ロケットから転化。サイロから発射するとセーブ全体の建設貢献が恒久増加します。赤色巨星が最大、青色巨星が次点です。"
+    "zhCN": "由实体元数据与运载火箭转化而成，用于建设戴森球节点与框架。实际建成的丰碑结构承载配套帆的结晶产能。",
+    "enUS": "Converted from metadata and a carrier rocket to build Dyson sphere nodes and frames. Completed monument structures support crystal production from matched sails.",
+    "frFR": "Transformée à partir de métadonnées et d’une fusée, elle construit les nœuds et cadres de la sphère. Ces structures soutiennent la production de cristaux des voiles assorties.",
+    "1031": "Aus Metadaten und einer Trägerrakete gefertigt, baut sie Knoten und Rahmen der Dyson-Sphäre. Fertige Strukturen unterstützen die Kristallproduktion passender Segelsätze.",
+    "1041": "メタデータと輸送ロケットを転化し、ダイソン球のノードとフレームを建設します。完成した構造体が帆セットの結晶生産を支えます。"
   },
   "FE.Monument.Crystal": {
     "zhCN": "丰碑结晶",
@@ -70,18 +70,18 @@
     "1041": "記念碑結晶"
   },
   "FE.Monument.CrystalDescription": {
-    "zhCN": "由丰碑接收模式的射线接收站收集。每解析100件，永久增强丰碑；解析必定成功且无损毁。",
-    "enUS": "Collected by ray receivers in monument mode. Every 100 analyzed permanently strengthen the monument; analysis always succeeds without destruction.",
-    "frFR": "Collecté par les récepteurs en mode monument. Chaque lot de 100 analysés renforce définitivement le monument ; analyse garantie, sans destruction.",
-    "1031": "Von Strahlenempfängern im Monumentmodus gesammelt. Je 100 analysierte Kristalle stärken das Monument dauerhaft; Analyse garantiert und ohne Zerstörung.",
-    "1041": "記念碑受信モードのレイレシーバーで収集。100個解析ごとに恒久強化され、解析は必ず成功し破壊されません。"
+    "zhCN": "由丰碑接收模式的射线接收站收集。解析后积累加工进度，逐级缩短制造时间；越高的等级需要越多结晶。",
+    "enUS": "Collected by ray receivers in monument mode. Analysis advances processing levels that shorten manufacturing time; higher levels require more crystals.",
+    "frFR": "Collecté par les récepteurs en mode monument. L’analyse augmente les niveaux réduisant le temps de fabrication ; les niveaux supérieurs demandent plus de cristaux.",
+    "1031": "Von Strahlenempfängern im Monumentmodus gesammelt. Analyse steigert die Verarbeitungsstufe und verkürzt Fertigungszeiten; höhere Stufen benötigen mehr Kristalle.",
+    "1041": "記念碑モードの受信所で収集します。解析で加工レベルが上がり製造時間が短縮されます。上位レベルほど多くの結晶が必要です。"
   },
   "FE.Monument.SailDescription": {
-    "zhCN": "保留来源矩阵的丰碑帆，由电磁弹射器发射，在轨持续10分钟。各种可获得矩阵的在轨数量越接近，丰碑加速越强；缺少的种类也计入差异。",
-    "enUS": "A monument sail retaining its source matrix. Rail ejectors launch it for a 10-minute orbital life. More equal counts across all obtainable matrices give stronger acceleration; missing kinds count as zero.",
-    "frFR": "Voile conservant sa matrice d’origine, lancée par éjecteur pour 10 minutes en orbite. Des nombres égaux pour toutes les matrices accessibles renforcent l’accélération ; les types absents comptent pour zéro.",
-    "1031": "Bewahrt die Ursprungsmatrix. Vom EM-Werfer gestartet, bleibt es 10 Minuten im Orbit. Gleichmäßigere Mengen aller erhältlichen Matrizen verstärken die Beschleunigung; fehlende Arten zählen als null.",
-    "1041": "由来マトリックスを保持する帆。電磁射出機で発射し軌道上で10分持続します。入手可能な全種類の枚数が均等なほど加速が強くなり、未投入種類は0枚として扱います。"
+    "zhCN": "保留来源矩阵的丰碑帆，可吸附为永久球壳细胞。同一星系中各类帆累计配套，与丰碑结构共同提供结晶产能。",
+    "enUS": "A monument sail retaining its matrix identity. It becomes a permanent shell cell; matched types within one star system and monument structures provide crystal capacity.",
+    "frFR": "Une voile conservant l’identité de sa matrice devient une cellule permanente. Les types assortis d’un même système et les structures fournissent la capacité en cristaux.",
+    "1031": "Ein Monumentsegel behält seine Matrixidentität und wird zur dauerhaften Hüllenzelle. Passende Typen desselben Sternsystems liefern mit Strukturen Kristallkapazität.",
+    "1041": "元のマトリックスを保持した帆は恒久的なシェル細胞になります。同一星系で各種を組み合わせ、構造体と共に結晶生産能力を得ます。"
   },
   "FE.Monument.SailName": {
     "zhCN": "丰碑帆·{0}",
@@ -132,33 +132,26 @@
     "1031": "Fraktionierungsmonument",
     "1041": "分留記念碑"
   },
-  "FE.Monument.Balance": {
-    "zhCN": "矩阵均衡 {0:P0} · 供帆 {1:P0}",
-    "enUS": "Matrix balance {0:P0} · Sail supply {1:P0}",
-    "frFR": "Équilibre {0:P0} · Voiles {1:P0}",
-    "1031": "Matrixbalance {0:P0} · Segelversorgung {1:P0}",
-    "1041": "マトリックス均衡 {0:P0}・帆供給 {1:P0}"
-  },
   "FE.Monument.MatrixCount": {
-    "zhCN": "{0}：在轨 {1:N0}",
-    "enUS": "{0}: {1:N0} in orbit",
-    "frFR": "{0} : {1:N0} en orbite",
-    "1031": "{0}: {1:N0} im Orbit",
-    "1041": "{0}：軌道上 {1:N0}"
+    "zhCN": "{0}：已吸附构件 {1:N0}",
+    "enUS": "{0}: {1:N0} permanent cells",
+    "frFR": "{0} : {1:N0} cellules permanentes",
+    "1031": "{0}: {1:N0} dauerhafte Zellen",
+    "1041": "{0}：吸着済みセル {1:N0}"
   },
   "FE.Monument.Status": {
-    "zhCN": "建设等级 {0:N0} · 解析强化 {1:N0}（{2}/100）\n均衡 {3:P1} · 供帆 {4:P1}\n全档结晶预算 {5:N2}/分 · 跨档倍率 {6:N2}",
-    "enUS": "Construction level {0:N0} · Analysis growth {1:N0} ({2}/100)\nBalance {3:P1} · Sail supply {4:P1}\nSave-wide crystal budget {5:N2}/min · Cross-save multiplier {6:N2}",
-    "frFR": "Niveau {0:N0} · Renforcement {1:N0} ({2}/100)\nÉquilibre {3:P1} · Voiles {4:P1}\nBudget global {5:N2}/min · Multiplicateur inter-sauvegardes {6:N2}",
-    "1031": "Baustufe {0:N0} · Analysestärkung {1:N0} ({2}/100)\nBalance {3:P1} · Versorgung {4:P1}\nKristallbudget im Spielstand {5:N2}/min · Spielstandübergreifender Faktor {6:N2}",
-    "1041": "建設レベル {0:N0}・解析強化 {1:N0}（{2}/100）\n均衡 {3:P1}・帆供給 {4:P1}\nセーブ全体の結晶割当 {5:N2}/分・他セーブ倍率 {6:N2}"
+    "zhCN": "丰碑结构 {0:N0} · 加工等级 {1:N0}\n本级结晶 {2:N0}/{3:N0} · 有效套数 {4:N0}\n全档结晶预算 {5:N2}/分 · 跨档产能倍率 {6:N2}",
+    "enUS": "Monument structure {0:N0} · Processing level {1:N0}\nCrystals {2:N0}/{3:N0} · Complete sets {4:N0}\nSave-wide crystal budget {5:N2}/min · Cross-save production multiplier {6:N2}",
+    "frFR": "Structure {0:N0} · Niveau {1:N0}\nCristaux {2:N0}/{3:N0} · Ensembles complets {4:N0}\nBudget global {5:N2}/min · Multiplicateur inter-sauvegardes {6:N2}",
+    "1031": "Monumentstruktur {0:N0} · Stufe {1:N0}\nKristalle {2:N0}/{3:N0} · Sätze {4:N0}\nKristallbudget {5:N2}/min · Produktionsfaktor {6:N2}",
+    "1041": "記念碑構造 {0:N0}・加工レベル {1:N0}\n結晶 {2:N0}/{3:N0}・有効セット {4:N0}\n全セーブ結晶割当 {5:N2}/分・セーブ間産出倍率 {6:N2}"
   },
   "FE.Monument.Guide": {
-    "zhCN": "记录：丰碑可在任意星系建造。由高级转化塔把实体元数据与运载火箭转为建设火箭，供给火箭发射井；红巨星建设贡献最高，蓝巨星次之。\n所有可获得矩阵都能与太阳帆转成保留来源的丰碑帆，包括黑雾矩阵。弹射器空仓会识别传送带来料，装填后只收同种，耗尽后可换种。各类在轨数量要尽量一致，未投入种类也计零。\n火箭建设与结晶解析永久累积，帆会到期。射线接收站可切为接收结晶，全档共享产量预算；结晶送入解析塔继续强化。丰碑加速生产配方，目标是让全部普通生产配方达到一帧。",
-    "enUS": "Record: monuments can be built in any star system. Advanced conversion towers turn tangible metadata and carrier rockets into construction rockets for launch silos. Red giants contribute most, blue giants next.\nEvery obtainable matrix, including dark fog matrices, can be combined with solar sails to retain its source. Empty ejectors recognize belt inputs, then accept that kind until empty. Keep orbital counts balanced; absent kinds count as zero.\nConstruction and crystal analysis are permanent; sails expire. Ray receivers can collect crystals from a shared save-wide budget. Analyze crystals to keep growing. The goal is to bring all ordinary production recipes to one frame.",
-    "frFR": "Archives : un monument peut être construit dans tout système. Les tours avancées convertissent métadonnées et fusées en fusées de construction. Les géantes rouges contribuent le plus, puis les bleues.\nToute matrice accessible, y compris du brouillard noir, forme une voile avec une voile solaire. Un éjecteur vide reconnaît le convoyeur puis conserve ce type jusqu’à épuisement. Équilibrez toutes les quantités en orbite, absences comprises.\nConstruction et analyse sont permanentes ; les voiles expirent. Les récepteurs partagent le budget de cristaux de la sauvegarde. Analysez-les pour atteindre une image par recette de production ordinaire.",
-    "1031": "Aufzeichnung: Monumente sind in jedem Sternsystem möglich. Fortgeschrittene Umwandlungstürme machen aus Metadaten und Trägerraketen Bauraketen. Rote Riesen liefern den höchsten Beitrag, blaue den nächsten.\nJede erhältliche Matrix, auch die des Dunklen Nebels, ergibt mit Solarsegeln ein Segel bekannter Herkunft. Leere Werfer erkennen Bandmaterial und behalten die Sorte bis zur Leerung. Alle Orbitmengen ausgleichen; fehlende Arten zählen null.\nBau und Kristallanalyse bleiben dauerhaft, Segel verfallen. Empfänger teilen sich ein Kristallbudget für den gesamten Spielstand. Das Ziel ist eine Frame Dauer für jedes normale Produktionsrezept.",
-    "1041": "記録：どの星系にも建設可能です。高度転化塔で実体メタデータと輸送ロケットを建設ロケットにし、サイロへ供給します。赤色巨星の貢献が最大、青色巨星が次点です。\nダークフォッグを含む全入手可能マトリックスをソーラーセイルと転化します。空の射出機はベルト材料を識別し、空になるまで同種を受け入れます。未投入種類も0として全種類を均等にします。\n建設と結晶解析は恒久的ですが帆は期限で消えます。レイレシーバーを結晶受信へ切り替え、セーブ共通の割当を受けます。解析で強化し、全通常生産レシピの1フレーム化を目指します。"
+    "zhCN": "丰碑火箭建设已规划的戴森球结构，各类丰碑帆分别吸附为真实球壳细胞。首次吸附时，球壳按剩余空间为每类帆保留相同配额；同一星系每类各一个组成一套，不跨星系配套。\n射线接收站共享结晶产能。结晶送入解析塔提升永久加工等级，每级将剩余制造时间乘以0.95，所需结晶逐级增加。奖励前时间比达到50%即通关，额外速度加成翻倍；之后仍可继续升级，不要求一帧。拆除球体减少结晶产能，不撤回加工等级。",
+    "enUS": "Monument rockets build planned Dyson structures. Each sail becomes one real shell cell. The first monument sail reserves equal shares of remaining shell space for every kind. One of each kind in the same star system forms a set.\nReceivers share crystal production. Analyze crystals for permanent levels: remaining manufacturing time ×0.95 per level at increasing cost. Reaching 50% before the reward completes FE and doubles the extra speed bonus. Levels remain uncapped; one frame is not required. Demolition reduces production, not earned levels.",
+    "frFR": "Les fusées construisent les structures Dyson planifiées. Chaque voile devient une cellule permanente. La première réserve une part égale de l’espace restant à chaque type. Un exemplaire de chaque type dans le même système forme un ensemble.\nLes récepteurs partagent les cristaux. Leur analyse réduit le temps restant de fabrication de 5 % par niveau, à coût croissant. Atteindre 50 % avant récompense termine FE et double le bonus de vitesse supplémentaire. Les niveaux sont illimités. La démolition réduit la production, pas les niveaux acquis.",
+    "1031": "Monumentraketen bauen geplante Dyson-Strukturen. Jedes Segel wird zu einer dauerhaften Hüllenzelle. Das erste reserviert gleiche Anteile des verbleibenden Platzes für jede Sorte. Je eine aller Sorten im selben Sternsystem bildet einen Satz.\nEmpfänger teilen die Kristallproduktion. Analyse gewährt dauerhafte Stufen: Restfertigungszeit je Stufe ×0,95 bei steigenden Kosten. 50 % vor der Belohnung beendet FE und verdoppelt den zusätzlichen Tempobonus. Stufen bleiben unbegrenzt. Abriss senkt nur die Kristallproduktion.",
+    "1041": "ロケットは設計済みのダイソン構造を建設し、帆は恒久シェルセルになります。最初の帆が残り空間を各種類に等分確保します。同じ星系で全種類が1個ずつ揃うと1セットです。\n受信機は結晶産出を共有します。結晶解析で永久レベルが上がり、残り製造時間は毎レベル0.95倍、費用は増加します。報酬前50%到達でクリア、追加速度ボーナスが2倍です。レベル上限や1フレーム必須条件はありません。解体は産出だけを減らします。"
   },
   "FE.Challenge.Status": {
     "zhCN": "记录恢复 {0}/{1}",
@@ -189,11 +182,11 @@
     "1041": "防衛記録：起動後、信号から120m以内の地上ダークフォグを撃破します。過去の撃破は数えません。現地で航跡校正に変更できますが、進行はリセットされます。"
   },
   "FE.Challenge.Production": {
-    "zhCN": "生产复现实验：激活后，在信号中心120米内新建至少{1}台设备，实际运行“{0}”。需同时保有这些已产出的设备及指定配方。当前合格设备：{2}。只累计新设备实际完成的主产物，搬运库存不计入。现场可改用航迹校准并重置进度。",
-    "enUS": "Production reconstruction: after activation, build at least {1} machines within 120 m of the signal and run “{0}”. Keep those productive machines configured for that recipe. Qualified machines: {2}. Only their completed primary outputs count; transferred inventory does not. Switching to a route at the site resets progress.",
-    "frFR": "Reproduction : après activation, construisez au moins {1} machines à moins de 120 m et exécutez « {0} ». Conservez les machines productives avec cette recette. Machines valides : {2}. Seules leurs sorties principales réelles comptent, pas les transferts. Le passage au trajet sur place efface la progression.",
-    "1031": "Produktionsversuch: Nach Aktivierung mindestens {1} Maschinen im Umkreis von 120 m errichten und „{0}“ ausführen. Produktive Maschinen mit diesem Rezept beibehalten. Geeignete Maschinen: {2}. Nur tatsächliche Hauptprodukte zählen, keine Lagertransfers. Ein Wechsel zur Route vor Ort setzt den Fortschritt zurück.",
-    "1041": "生産再現：起動後、信号から120m以内に{1}台以上を新設し、「{0}」を実際に稼働させます。生産済み設備と指定レシピを維持してください。有効設備：{2}。新設備が完成させた主産物のみを数え、在庫移送は対象外です。現地で航跡へ変更すると進行をリセットします。"
+    "zhCN": "工艺验证：抵达激活后，在本星球使用至少{1}台设备运行“{0}”，已有设备同样有效。当前合格设备：{2}。只计任务开始后的真实产出，搬运库存不计。无需留守，完成后自动回收；现场可改用航迹校准并重置进度。",
+    "enUS": "After arrival, run “{0}” on at least {1} machines on this planet; existing machines qualify. Productive machines: {2}. Only new production counts, not inventory transfers. You may leave; completion collects rewards automatically. Switching to route calibration at the site resets progress.",
+    "frFR": "Après activation, produisez « {0} » avec au moins {1} machines de cette planète, existantes ou nouvelles. Machines valides : {2}. Seule la production après activation compte. Vous pouvez partir ; la récompense est automatique. Choisir le trajet sur place réinitialise la progression.",
+    "1031": "Nach Ankunft „{0}“ auf mindestens {1} Maschinen dieses Planeten herstellen. Bestehende Maschinen zählen. Geeignete Maschinen: {2}. Nur neue Produktion zählt. Keine weitere Anwesenheit nötig. Wechsel zur Bahnkalibrierung setzt den Fortschritt zurück.",
+    "1041": "到着後、この惑星の{1}台以上で「{0}」を生産します。既存設備も有効です。有効設備：{2}。開始後の実生産だけを数え、移送は対象外です。離れても自動完了します。航跡校正に変更すると進行をリセットします。"
   },
   "FE.Challenge.Dormant": {
     "zhCN": "记录尚未激活，抵达信号即可开始。",
@@ -266,11 +259,11 @@
     "1041": "{0}→{1}変換"
   },
   "FE.AdvancedRecipe.ConversionDescription": {
-    "enUS": "Auxiliary materials and catalysis rearrange the structure of existing products, converting them into new industrial materials.",
-    "zhCN": "利用辅料与催化作用重排既有制品的结构，将其转化为新的工业材料。",
-    "frFR": "Des matériaux auxiliaires et la catalyse réorganisent la structure de produits existants pour les convertir en nouveaux matériaux industriels.",
-    "1031": "Hilfsstoffe und Katalyse ordnen die Struktur vorhandener Erzeugnisse neu und wandeln sie in neue Industriematerialien um.",
-    "1041": "補助材と触媒作用で既存製品の構造を再配列し、新たな工業材料へと変換する。"
+    "enUS": "Restructures an industrial product into another form in its family. Recovered materials can feed further conversion.",
+    "zhCN": "重排工业制品的结构，使其转化为同一系列的不同形态。拆解回收的材料可以再次投入转化。",
+    "frFR": "Réorganise un produit en une autre forme de sa famille. Les matières récupérées peuvent être converties à nouveau.",
+    "1031": "Ordnet ein Industrieerzeugnis in eine andere Form seiner Familie um. Rückgewonnene Materialien können erneut umgewandelt werden.",
+    "1041": "工業製品を同系列の別形態へ変換する。回収素材は再び変換に使える。"
   },
   "FE.Storage.Expansion": {
     "enUS": "Matrix expansion",
@@ -2835,25 +2828,25 @@
     "1041": "新たな記録を待っています。"
   },
   "终极任务": {
-    "enUS": "Ultimate Expeditions",
-    "zhCN": "终极任务",
-    "frFR": "Expéditions ultimes",
-    "1031": "Ultimative Expeditionen",
-    "1041": "最終任務"
+    "enUS": "Ability tasks",
+    "zhCN": "能力任务",
+    "frFR": "Missions de capacité",
+    "1031": "Fähigkeitsaufgaben",
+    "1041": "能力タスク"
   },
   "FE.UltimateTasksPage.Summary": {
-    "enUS": "Some doors open only after a long journey.",
-    "zhCN": "有些门，需要走过漫长的道路才能推开。",
-    "frFR": "Certaines portes ne s'ouvrent qu'au terme d'un long voyage.",
-    "1031": "Manche Türen öffnen sich erst nach einer langen Reise.",
-    "1041": "長い道のりを歩んで初めて開く扉もある。"
+    "enUS": "Meet exploration, analysis, production, feeding and logistics conditions to gain one-time abilities automatically.",
+    "zhCN": "通过探索、解析、生产、供养和物流完成条件，自动取得一次性能力。",
+    "frFR": "Remplissez les conditions d’exploration, d’analyse, de production, d’alimentation et de logistique pour obtenir les capacités.",
+    "1031": "Erkundungs-, Analyse-, Produktions-, Versorgungs- und Logistikbedingungen schalten einmalige Fähigkeiten frei.",
+    "1041": "探索・解析・生産・供養・物流の条件を達成し、一度限りの能力を自動取得します。"
   },
   "FE.UltimateTasksPage.Empty": {
-    "enUS": "Some doors have not yet appeared before Icarus.\n\nComplete the main exploration journey and recover the Universe Matrix records to receive the final exploration signal. A storage anchor may respond when subspace capacity reaches its milestone.",
-    "zhCN": "有些门还没有出现在伊卡洛斯面前。\n\n走完主线探索并恢复宇宙矩阵资料后，远古中继将传来终极探索信号。亚空间容量达到里程碑时，库房锚点也会回应。",
-    "frFR": "Certaines portes restent invisibles à Icarus.\n\nTerminez l’exploration principale et restaurez les archives de la matrice universelle pour recevoir le signal d’exploration ultime. Un ancrage de stockage répondra lorsque la capacité du sous-espace atteindra son jalon.",
-    "1031": "Manche Türen sind Icarus noch verborgen.\n\nSchließe die Haupterkundung ab und stelle die Aufzeichnungen zur Universummatrix wieder her, um das ultimative Erkundungssignal zu empfangen. Ein Lageranker antwortet beim Erreichen des Subraum-Kapazitätsmeilensteins.",
-    "1041": "まだイカロスの前に現れていない扉がある。\n\n主線探索を完了し、宇宙マトリックスの記録を復元すると、最終探索信号が届く。亜空間容量が節目に達すると、倉庫のアンカーも応答する。"
+    "zhCN": "能力任务随矩阵阶段开放。探索、解析、生命塔生产与物流运转会留下可用于恢复能力的记录。",
+    "enUS": "Ability tasks become available with matrix stages. Exploration, analysis, living tower production and logistics record progress toward abilities.",
+    "frFR": "Les tâches de capacité suivent les étapes des matrices. Exploration, analyse, production et logistique contribuent à leur progression.",
+    "1031": "Fähigkeitsaufgaben öffnen sich mit Matrixstufen. Erkundung, Analyse, Produktion und Logistik tragen zum Fortschritt bei.",
+    "1041": "能力任務はマトリックス段階に応じて開放されます。探索、解析、生命塔生産、物流で能力回復の記録を積み重ねます。"
   },
   "长夜中的回声": {
     "enUS": "Echoes in the Long Night",
@@ -4066,28 +4059,28 @@
     "1031": "Superkompressionstechnologie",
     "1041": "超圧縮技術"
   },
-  "FE亚空间能效.T2142": {
+  "FE亚空间能效.T7041": {
     "enUS": "Subspace Transfer Efficiency",
     "zhCN": "亚空间存取能效",
     "frFR": "Efficacité des transferts sous-spatiaux",
     "1031": "Effizienz der Subraumtransfers",
     "1041": "亜空間転送効率"
   },
-  "FE亚空间能效.T2143": {
+  "FE亚空间能效.T7042": {
     "enUS": "Subspace Transfer Efficiency",
     "zhCN": "亚空间存取能效",
     "frFR": "Efficacité des transferts sous-spatiaux",
     "1031": "Effizienz der Subraumtransfers",
     "1041": "亜空間転送効率"
   },
-  "FE亚空间能效.T2144": {
+  "FE亚空间能效.T7043": {
     "enUS": "Subspace Transfer Efficiency",
     "zhCN": "亚空间存取能效",
     "frFR": "Efficacité des transferts sous-spatiaux",
     "1031": "Effizienz der Subraumtransfers",
     "1041": "亜空間転送効率"
   },
-  "FE亚空间能效.T2145": {
+  "FE亚空间能效.T7044": {
     "enUS": "Subspace Transfer Efficiency",
     "zhCN": "亚空间存取能效",
     "frFR": "Efficacité des transferts sous-spatiaux",
@@ -4219,5 +4212,250 @@
     "frFR": "Récupération par remplacement",
     "1031": "Rückgewinnung beim Austausch",
     "1041": "置換回収効率"
+  },
+  "FE.Conversion.InputName": {
+    "zhCN": "{0}形态转化",
+    "enUS": "{0} conversion",
+    "frFR": "Conversion de {0}",
+    "1031": "{0}-Umwandlung",
+    "1041": "{0}形態変換"
+  },
+  "FE.Conversion.RecoveryUpgrade": {
+    "zhCN": "拆解回收率 +12.5个百分点",
+    "enUS": "Dismantling recovery +12.5 percentage points",
+    "frFR": "Récupération au démontage +12,5 points",
+    "1031": "Demontagerückgewinnung +12,5 Prozentpunkte",
+    "1041": "分解回収率 +12.5ポイント"
+  },
+  "FE.Ability.Survey": {
+    "zhCN": "行星遗迹测绘",
+    "enUS": "Planetary relic survey",
+    "frFR": "Cartographie des reliques",
+    "1031": "Planetare Reliktkartierung",
+    "1041": "惑星遺跡測量"
+  },
+  "FE.Ability.Analysis": {
+    "zhCN": "定向解析",
+    "enUS": "Directed analysis",
+    "frFR": "Analyse ciblée",
+    "1031": "Gezielte Analyse",
+    "1041": "指定解析"
+  },
+  "FE.Ability.Hibernation": {
+    "zhCN": "生命塔休眠保护",
+    "enUS": "Living tower hibernation",
+    "frFR": "Hibernation des tours vivantes",
+    "1031": "Ruhezustand lebender Türme",
+    "1041": "生命塔休眠保護"
+  },
+  "FE.Ability.Monument": {
+    "zhCN": "丰碑工业突破",
+    "enUS": "Monument industrial breakthrough",
+    "frFR": "Percée industrielle du monument",
+    "1031": "Industrieller Monumentdurchbruch",
+    "1041": "記念碑産業革新"
+  },
+  "FE.Ability.Description": {
+    "zhCN": "完成以下条件即自动取得能力，无需额外科研。",
+    "enUS": "Complete these conditions to gain the ability automatically; no additional research is needed.",
+    "frFR": "Remplissez ces conditions pour obtenir automatiquement la capacité, sans recherche supplémentaire.",
+    "1031": "Diese Bedingungen schalten die Fähigkeit automatisch frei; weitere Forschung ist nicht nötig.",
+    "1041": "以下の条件達成で能力を自動取得します。追加研究は不要です。"
+  },
+  "FE.Ability.Survey.Effect": {
+    "zhCN": "登陆后公开本星球普通遗迹；仍需现场回收。",
+    "enUS": "Landing reveals ordinary relics on the planet; collection still requires a visit.",
+    "frFR": "Atterrir révèle les reliques ordinaires de la planète ; la récupération reste sur place.",
+    "1031": "Landung enthüllt gewöhnliche Relikte; Bergung erfolgt weiterhin vor Ort.",
+    "1041": "着陸後に惑星の通常遺跡を公開します。回収は現地で行います。"
+  },
+  "FE.Ability.Analysis.Effect": {
+    "zhCN": "可在解析样本页指定已有线索的恢复目标，仍需实际解析。",
+    "enUS": "Select a known clue as the recovery target on the analysis page; actual analysis is still required.",
+    "frFR": "Choisissez un indice connu comme cible sur la page d’analyse ; l’analyse reste nécessaire.",
+    "1031": "Auf der Analyseseite einen bekannten Hinweis als Ziel wählen; Analyse bleibt erforderlich.",
+    "1041": "解析ページで既知の手掛かりを対象に指定できます。実際の解析は必要です。"
+  },
+  "FE.Ability.Hibernation.Effect": {
+    "zhCN": "生命塔断粮时停机休眠，不再因断粮损坏；恢复供养后继续生产。",
+    "enUS": "Living towers hibernate without starvation damage when unfed. Feeding resumes production.",
+    "frFR": "Les tours sans nourriture hibernent sans dégâts. Le ravitaillement relance la production.",
+    "1031": "Unversorgte Türme ruhen ohne Hungerschaden. Nahrung setzt die Produktion fort.",
+    "1041": "生命塔は食料切れで休眠し、飢餓損傷を受けません。供給再開で生産を続けます。"
+  },
+  "FE.Ability.Monument.Effect": {
+    "zhCN": "万物分馏通关。丰碑额外制造速度加成翻倍，后续加工等级继续生效。",
+    "enUS": "Fractionate Everything completed. The extra monument manufacturing speed bonus is doubled, including future levels.",
+    "frFR": "Fractionate Everything terminé. Le bonus supplémentaire de vitesse du monument est doublé, y compris aux niveaux futurs.",
+    "1031": "Fractionate Everything abgeschlossen. Der zusätzliche Fertigungsbonus des Monuments wird auch für spätere Stufen verdoppelt.",
+    "1041": "万物分馏クリア。記念碑の追加製造速度ボーナスが2倍になり、以降のレベルにも適用されます。"
+  },
+  "FE.Task.Recover": {
+    "zhCN": "回收普通遗迹",
+    "enUS": "Collect ordinary relics",
+    "frFR": "Récupérer des reliques ordinaires",
+    "1031": "Gewöhnliche Relikte bergen",
+    "1041": "通常遺跡回収"
+  },
+  "FE.Task.Analysis": {
+    "zhCN": "成功解析样本",
+    "enUS": "Successful sample analyses",
+    "frFR": "Analyses réussies",
+    "1031": "Erfolgreiche Probenanalysen",
+    "1041": "試料解析成功"
+  },
+  "FE.Task.Cultivation": {
+    "zhCN": "塔体培育成功轮次",
+    "enUS": "Successful tower cultivation cycles",
+    "frFR": "Cycles de culture réussis",
+    "1031": "Erfolgreiche Turmkultivierung",
+    "1041": "塔体培養成功回数"
+  },
+  "FE.Task.Conversion": {
+    "zhCN": "形态转化成功轮次",
+    "enUS": "Successful conversion cycles",
+    "frFR": "Cycles de conversion réussis",
+    "1031": "Erfolgreiche Umwandlungen",
+    "1041": "形態変換成功回数"
+  },
+  "FE.Task.Breeding": {
+    "zhCN": "原胚繁育成功轮次",
+    "enUS": "Successful embryo breeding cycles",
+    "frFR": "Cycles de reproduction réussis",
+    "1031": "Erfolgreiche Embryovermehrung",
+    "1041": "原胚繁育成功回数"
+  },
+  "FE.Task.Digestion": {
+    "zhCN": "实际供养矩阵",
+    "enUS": "Matrices actually consumed as food",
+    "frFR": "Matrices réellement consommées",
+    "1031": "Tatsächlich verbrauchte Nahrungsmatrizen",
+    "1041": "実際に供養したマトリックス"
+  },
+  "FE.Task.Capacity": {
+    "zhCN": "亚空间容量倍率",
+    "enUS": "Subspace capacity multiplier",
+    "frFR": "Multiplicateur de capacité",
+    "1031": "Subraum-Kapazitätsfaktor",
+    "1041": "亜空間容量倍率"
+  },
+  "FE.Task.Upload": {
+    "zhCN": "交互站有效上传",
+    "enUS": "Effective station uploads",
+    "frFR": "Dépôts effectifs par station",
+    "1031": "Wirksame Stationsuploads",
+    "1041": "交互ステーション有効搬入"
+  },
+  "FE.Task.Download": {
+    "zhCN": "异站下载",
+    "enUS": "Downloads at another station",
+    "frFR": "Retraits par une autre station",
+    "1031": "Downloads an anderer Station",
+    "1041": "別ステーションでの搬出"
+  },
+  "FE.Task.Production": {
+    "zhCN": "下载物料用于高级塔生产",
+    "enUS": "Downloaded materials consumed by advanced towers",
+    "frFR": "Matériaux retirés consommés par les tours avancées",
+    "1031": "Heruntergeladene Materialien in fortgeschrittenen Türmen verbrauchen",
+    "1041": "搬出素材を上級塔生産で消費"
+  },
+  "FE.Task.Processing": {
+    "zhCN": "丰碑加工等级",
+    "enUS": "Monument processing level",
+    "frFR": "Niveau de traitement du monument",
+    "1031": "Verarbeitungsstufe des Monuments",
+    "1041": "記念碑加工レベル"
+  },
+  "FE.Task.InProgress": {
+    "zhCN": "条件推进中",
+    "enUS": "Conditions in progress",
+    "frFR": "Conditions en cours",
+    "1031": "Bedingungen in Arbeit",
+    "1041": "条件達成中"
+  },
+  "FE.Task.Completed": {
+    "zhCN": "能力已取得：{0}",
+    "enUS": "Ability gained: {0}",
+    "frFR": "Capacité obtenue : {0}",
+    "1031": "Fähigkeit erhalten: {0}",
+    "1041": "能力取得：{0}"
+  },
+  "FE.Analysis.SetTarget": {
+    "zhCN": "指定此记录",
+    "enUS": "Target this record",
+    "frFR": "Cibler cet enregistrement",
+    "1031": "Diesen Eintrag auswählen",
+    "1041": "この記録を指定"
+  },
+  "FE.Analysis.CancelTarget": {
+    "zhCN": "取消定向",
+    "enUS": "Clear analysis target",
+    "frFR": "Annuler la cible",
+    "1031": "Analyseziel aufheben",
+    "1041": "指定解除"
+  },
+  "FE.Exploration.RewardPreview": {
+    "zhCN": "源点回收预算：{0:N0}；残片情报会继续累积到此地点。",
+    "enUS": "Memory recovery budget: {0:N0}. Fragment intelligence can further upgrade this location.",
+    "frFR": "Budget de mémoire : {0:N0}. Les fragments peuvent encore améliorer ce site.",
+    "1031": "Erinnerungsbudget: {0:N0}. Fragmentinformationen können diesen Ort weiter aufwerten.",
+    "1041": "源点回収予算：{0:N0}。残片情報でこの地点をさらに強化できます。"
+  },
+  "FE.Challenge.Analysis": {
+    "zhCN": "样本还原：抵达激活后完成指定次数的实际样本解析。无需留守，完成后自动回收；现场可改用航迹校准。",
+    "enUS": "Sample reconstruction: after arrival, complete the required successful sample analyses. You may leave; rewards are automatic. Route calibration is available at the site.",
+    "frFR": "Après activation, effectuez les analyses demandées. Vous pouvez partir ; la récompense est automatique. Le trajet est une alternative sur place.",
+    "1031": "Nach Ankunft die geforderten Probenanalysen abschließen. Anwesenheit ist danach nicht nötig. Bahnkalibrierung ist vor Ort eine Alternative.",
+    "1041": "到着後に必要数の試料解析を成功させます。離れても自動完了します。現地では航跡校正にも変更できます。"
+  },
+  "FE.Challenge.Nutrition": {
+    "zhCN": "供养验证：抵达激活后让生命塔实际消耗指定数量的矩阵。无需留守，完成后自动回收；现场可改用航迹校准。",
+    "enUS": "Nutrition validation: after arrival, feed living towers the required number of matrices. You may leave; rewards are automatic. Route calibration is available at the site.",
+    "frFR": "Après activation, faites consommer les matrices demandées aux tours. Vous pouvez partir ; la récompense est automatique. Le trajet est une alternative sur place.",
+    "1031": "Nach Ankunft lebende Türme mit der geforderten Matrixmenge versorgen. Keine weitere Anwesenheit nötig. Bahnkalibrierung ist eine Alternative.",
+    "1041": "到着後、生命塔に必要数のマトリックスを供養します。離れても自動完了します。航跡校正にも変更できます。"
+  },
+  "FE.Monument.Processing": {
+    "zhCN": "加工等级 {0:N0} · 制造速度 ×{1:N3}",
+    "enUS": "Processing level {0:N0} · Manufacturing speed ×{1:N3}",
+    "frFR": "Niveau de traitement {0:N0} · Vitesse ×{1:N3}",
+    "1031": "Verarbeitungsstufe {0:N0} · Fertigungstempo ×{1:N3}",
+    "1041": "加工レベル {0:N0}・製造速度 ×{1:N3}"
+  },
+  "FE.Recipe.CultivationDescription": {
+    "zhCN": "以基础塔体为载体培育生命组织，使其具备新的分馏能力。",
+    "enUS": "Cultivates living tissue on a basic tower to develop new fractionation abilities.",
+    "frFR": "Cultive des tissus vivants sur une tour de base pour développer ses capacités.",
+    "1031": "Züchtet lebendes Gewebe auf einem Basisturm für neue Fraktionierungsfähigkeiten.",
+    "1041": "基礎塔を基盤に生命組織を培養し、新たな分留能力を与える。"
+  },
+  "FE.Recipe.BreedingDescription": {
+    "zhCN": "借助成熟塔体的生命组织繁育原胚，为新的生命塔提供种子。",
+    "enUS": "Breeds embryos from mature tower tissue to seed new living towers.",
+    "frFR": "Reproduit des embryons à partir de tissus de tours matures.",
+    "1031": "Vermehrt Embryos aus reifem Turmgewebe für neue lebende Türme.",
+    "1041": "成熟塔の生命組織から原胚を繁育し、新しい生命塔の種を得る。"
+  },
+  "FE.Recipe.MemoryDescription": {
+    "zhCN": "以记忆源点重现矿物的结构，将保存的信息还原为实物。",
+    "enUS": "Recreates a mineral structure from memory, restoring recorded information as matter.",
+    "frFR": "Recrée une structure minérale à partir de mémoire pour en restituer la matière.",
+    "1031": "Stellt Mineralstrukturen aus Erinnerung als Materie wieder her.",
+    "1041": "記憶源点から鉱物構造を再現し、記録された情報を実物に戻す。"
+  },
+  "FE.Recipe.CatalysisDescription": {
+    "zhCN": "以矿物为催化核心，引导基础物质重新结晶，补充稀有矿物。",
+    "enUS": "Uses a mineral catalyst to guide base matter into new rare mineral crystals.",
+    "frFR": "Un catalyseur minéral guide la recristallisation de matière en minerais rares.",
+    "1031": "Ein Mineralkatalysator lässt Grundstoffe zu seltenen Mineralien kristallisieren.",
+    "1041": "鉱物を触媒として基礎物質を再結晶させ、希少鉱物を補う。"
+  },
+  "FE.Conversion.OneCandidate": {
+    "zhCN": "随机一种",
+    "enUS": "One random output",
+    "frFR": "Un résultat aléatoire",
+    "1031": "Ein zufälliges Ergebnis",
+    "1041": "ランダムに1種類"
   }
 }

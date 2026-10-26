@@ -12,6 +12,7 @@ public static partial class ExplorationManager {
             ("MarkId", w => w.Write(c.MarkId)), ("Kind", w => w.Write((int)c.Kind)),
             ("Reward", w => w.Write(c.Reward)), ("Started", w => w.Write(c.Started)),
             ("StartTick", w => w.Write(c.StartTick)), ("Owner", w => w.Write(c.Owner)),
+            ("Baseline", w => w.Write(c.Baseline)),
             ("Progress", w => w.Write(c.Progress)), ("Required", w => w.Write(c.Required)),
             ("RecipeId", w => w.Write(c.RecipeId)), ("RequiredMachines", w => w.Write(c.RequiredMachines)),
             ("QualifiedMachines", w => w.Write(c.QualifiedMachines)), ("OutsideSince", w => w.Write(c.OutsideSince)),
@@ -32,6 +33,7 @@ public static partial class ExplorationManager {
                 ("MarkId", r => c.MarkId = r.ReadInt32()), ("Kind", r => c.Kind = (SignalChallengeKind)r.ReadInt32()),
                 ("Reward", r => c.Reward = r.ReadInt32()), ("Started", r => c.Started = r.ReadBoolean()),
                 ("StartTick", r => c.StartTick = r.ReadInt64()), ("Owner", r => c.Owner = r.ReadInt32()),
+                ("Baseline", r => c.Baseline = Math.Max(0, r.ReadInt64())),
                 ("Progress", r => c.Progress = r.ReadInt32()), ("Required", r => c.Required = r.ReadInt32()),
                 ("RecipeId", r => c.RecipeId = r.ReadInt32()), ("RequiredMachines", r => c.RequiredMachines = r.ReadInt32()),
                 ("QualifiedMachines", r => c.QualifiedMachines = r.ReadInt32()), ("OutsideSince", r => c.OutsideSince = r.ReadInt64()),
@@ -53,8 +55,8 @@ public static partial class ExplorationManager {
                 }))
             );
             if (c.MarkId <= 0 || !Enum.IsDefined(typeof(SignalChallengeKind), c.Kind)
-                || c.Reward is < 1 or > 240 || c.Progress < 0 || c.Progress > c.Required || c.Required is < 1 or > 360
-                || c.RequiredMachines is < 2 or > 3 || c.QualifiedMachines is < 0 or > 1000000
+                || c.Reward < 1 || c.Progress < 0 || c.Progress > c.Required || c.Required is < 1 or > 360
+                || c.RequiredMachines is < 1 or > 3 || c.QualifiedMachines is < 0 or > 1000000
                 || c.StartTick < 0 || c.OutsideSince < 0 || c.Owner is < -1 or > 65535 || Challenges.ContainsKey(c.MarkId)) {
                 throw new InvalidDataException("探索挑战状态无效。");
             }

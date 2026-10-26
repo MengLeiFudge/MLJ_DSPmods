@@ -8,7 +8,7 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Civilization;
 
 /// <summary>重要广播的任务类型；路线始终可作为现场替代方案。</summary>
-public enum SignalChallengeKind { Route = 1, Combat = 2, Production = 3 }
+public enum SignalChallengeKind { Route = 1, Combat = 2, Production = 3, Analysis = 4, Nutrition = 5 }
 
 /// <summary>挑战的持久事实；归探索锁保护，不直接暴露给窗口或工厂线程。</summary>
 internal sealed class SignalChallenge {
@@ -25,7 +25,9 @@ internal sealed class SignalChallenge {
     public int QualifiedMachines;
     public long OutsideSince;
     public Vector3[] Route = [];
-    /// <summary>启动后新建的制造台及其累计合格产量，实体身份防止拆除重用组件号冒领。</summary>
+    /// <summary>工厂任务启动时的累计事实基准，避免历史产量直接完成新任务。</summary>
+    public long Baseline;
+    /// <summary>参与任务的既有或新建设备，实体身份防止拆除重用组件号冒领。</summary>
     public readonly Dictionary<int, (int Entity, int Produced)> Machines = [];
 }
 
@@ -53,9 +55,9 @@ public static partial class ExplorationManager {
         if (mark.Quality < 2 || Challenges.Count >= 2) { return; }
         PlanetData planet = GameMain.galaxy.PlanetById(mark.PlanetId);
         var challenge = new SignalChallenge {
-            MarkId = mark.Id, Kind = (SignalChallengeKind)(1 + NextInt(3)),
+            MarkId = mark.Id, Kind = (SignalChallengeKind)(1 + NextInt(5)),
             Reward = ResearchManager.GetChallengeMemoryReward(ResearchManager.CurrentMatrixStage, mark.Quality),
-            RequiredMachines = mark.Quality == 3 ? 3 : 2,
+            RequiredMachines = 1,
         };
         if (planet.type == EPlanetType.Gas) { challenge.Kind = SignalChallengeKind.Route; }
         if (challenge.Kind == SignalChallengeKind.Combat) {
@@ -82,6 +84,9 @@ public static partial class ExplorationManager {
             if (challenge.RecipeId == 0) { challenge.Kind = SignalChallengeKind.Route; }
             else { challenge.Required = mark.Quality == 3 ? 360 : 240; }
         }
+        if (challenge.Kind is SignalChallengeKind.Analysis or SignalChallengeKind.Nutrition) {
+            challenge.Required = challenge.Kind == SignalChallengeKind.Analysis ? 64 : 32;
+        }
         if (challenge.Kind == SignalChallengeKind.Route) { MakeRoute(mark, challenge); }
         Challenges.Add(mark.Id, challenge);
         MarkDirty();
@@ -90,8 +95,8 @@ public static partial class ExplorationManager {
     /// <summary>按真实半径限制航迹总长；固定折线路径不会随玩家移动重生成。</summary>
     private static void MakeRoute(ExplorationMark mark, SignalChallenge challenge) {
         PlanetData planet = GameMain.galaxy.PlanetById(mark.PlanetId);
-        int segments = mark.Quality == 3 ? 6 : 4;
-        float length = Mathf.Min(mark.Quality == 3 ? 360f : 240f, 0.5f * Mathf.PI * planet.realRadius);
+        int segments = 3;
+        float length = Mathf.Min(120f, 0.5f * Mathf.PI * planet.realRadius);
         challenge.Route = new Vector3[segments + 1];
         challenge.Route[0] = mark.LocalPosition.normalized * MarkRadius(planet);
         Vector3 normal = challenge.Route[0].normalized;
@@ -111,7 +116,7 @@ public static partial class ExplorationManager {
             if (!Challenges.TryGetValue(markId, out SignalChallenge c)) { return null; }
             return new SignalChallengeView {
                 MarkId = markId, Kind = c.Kind, Started = c.Started, Progress = c.Progress, Required = c.Required,
-                Reward = c.Reward, RecipeId = c.RecipeId, RequiredMachines = c.RequiredMachines,
+                Reward = FindMark(markId) is ExplorationMark mark ? GetMemoryReward(mark) : c.Reward, RecipeId = c.RecipeId, RequiredMachines = c.RequiredMachines,
                 Machines = c.QualifiedMachines, Route = (Vector3[])c.Route.Clone(),
             };
         }
@@ -125,6 +130,8 @@ public static partial class ExplorationManager {
         string rules = c.Kind switch {
             SignalChallengeKind.Route => "FE.Challenge.Route".Translate(),
             SignalChallengeKind.Combat => "FE.Challenge.Combat".Translate(),
+            SignalChallengeKind.Analysis => "FE.Challenge.Analysis".Translate(),
+            SignalChallengeKind.Nutrition => "FE.Challenge.Nutrition".Translate(),
             _ => string.Format("FE.Challenge.Production".Translate(), LDB.recipes.Select(c.RecipeId)?.name,
                 c.RequiredMachines, c.Machines),
         };
@@ -165,10 +172,19 @@ public static partial class ExplorationManager {
                 foreach (var player in players) {
                     if (!IsWithinArrival(mark, player.Position, player.Planet)) { continue; }
                     c.Started = true; c.StartTick = tick; c.Owner = player.Id; c.OutsideSince = 0;
+                    c.Baseline = AbilityTasks.Count(c.Kind == SignalChallengeKind.Analysis ? "Analysis" : "Digestion");
                     MarkDirty(); break;
                 }
             }
-            if (c.Kind == SignalChallengeKind.Production) {
+            if (c.Started && c.Kind is SignalChallengeKind.Analysis or SignalChallengeKind.Nutrition) {
+                long current = AbilityTasks.Count(c.Kind == SignalChallengeKind.Analysis ? "Analysis" : "Digestion");
+                int progress = (int)Math.Min(c.Required, Math.Max(0, current - c.Baseline));
+                if (progress != c.Progress) { c.Progress = progress; MarkDirty(); }
+                if (progress >= c.Required) { CompleteChallenge(mark, c); }
+                continue;
+            }
+            if (c.Started && c.Kind == SignalChallengeKind.Production) {
+                RegisterExistingMachines(c, planet.factory);
                 int qualified = CountWorkingMachines(c);
                 if (qualified != c.QualifiedMachines) { c.QualifiedMachines = qualified; MarkDirty(); }
                 if (c.Progress >= c.Required && qualified >= c.RequiredMachines) { CompleteChallenge(mark, c); }
@@ -211,13 +227,26 @@ public static partial class ExplorationManager {
     }
 
     private static void CompleteChallenge(ExplorationMark mark, SignalChallenge challenge) {
-        mark.ItemId = IFE记忆源点; mark.Count = challenge.Reward;
+        mark.ItemId = IFE记忆源点; mark.Count = GetMemoryReward(mark);
         // 移除挑战后才进入常规认领，固定奖励不再经过普通点随机表。
         Challenges.Remove(mark.Id);
         Claim(mark);
     }
 
-    /// <summary>消费工厂线程上传的事实；只统计开启后、地点范围内的新设备和真实击杀。</summary>
+    /// <summary>将既有和新建设备纳入任务，只累计任务开始后的实际产出。</summary>
+    private static void RegisterExistingMachines(SignalChallenge challenge, PlanetFactory factory) {
+        if (factory?.factorySystem == null) { return; }
+        var system = factory.factorySystem;
+        for (int id = 1; id < system.assemblerCursor; id++) {
+            ref AssemblerComponent machine = ref system.assemblerPool[id];
+            if (machine.id != id || machine.recipeId != challenge.RecipeId) { continue; }
+            if (!challenge.Machines.TryGetValue(id, out var tracked) || tracked.Entity != machine.entityId) {
+                challenge.Machines[id] = (machine.entityId, 0); MarkDirty();
+            }
+        }
+    }
+
+    /// <summary>消费工厂线程上传的事实，只统计开启后的设备产量和真实击杀。</summary>
     private static void DrainChallengeFacts() {
         while (ExplorationChallengeFacts.TryDequeue(out ChallengeFact fact)) {
             if (!ReferenceEquals(fact.World, GameMain.data)) { continue; }
@@ -229,8 +258,7 @@ public static partial class ExplorationManager {
                     && Vector3.Distance(fact.Position, mark.LocalPosition) <= ChallengeWorkRadius) {
                     c.Progress = Math.Min(c.Required, c.Progress + 1); MarkDirty();
                 } else if (c.Kind == SignalChallengeKind.Production && factory != null && fact.EntityId > 0
-                    && fact.EntityId < factory.entityPool.Length && factory.entityPool[fact.EntityId].id == fact.EntityId
-                    && Vector3.Distance(factory.entityPool[fact.EntityId].pos, mark.LocalPosition) <= ChallengeWorkRadius) {
+                    && fact.EntityId < factory.entityPool.Length && factory.entityPool[fact.EntityId].id == fact.EntityId) {
                     if (fact.Kind == ChallengeFactKind.Build) { c.Machines[fact.AssemblerId] = (fact.EntityId, 0); MarkDirty(); }
                     else if (fact.Kind == ChallengeFactKind.Produce && fact.RecipeId == c.RecipeId
                         && c.Machines.TryGetValue(fact.AssemblerId, out var machine) && machine.Entity == fact.EntityId) {

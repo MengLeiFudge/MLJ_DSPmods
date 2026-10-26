@@ -416,13 +416,13 @@ internal static class CalculatorDataExporter {
             var consumeProbabilities = recipe.Inputs
                 .Select(input => AdvancedFractionatorRuntime.GetInputConsumeProbability(input, buildingId)).ToArray();
             var outputCounts = recipe.Products
-                .Select(output => AdvancedFractionatorRuntime.GetOutputPerSuccess(recipe, output)).ToArray();
+                .Select(output => recipe.GetExpectedOutputPerSuccess(output)).ToArray();
             var outputMain = new JArray();
             for (int i = 0; i < recipe.Products.Count; i++) {
                 outputMain.Add(new JObject {
                     { "OutputID", recipe.Products[i].ItemId },
-                    { "OutputCount", outputCounts[i] },
-                    { "SuccessRatio", 1.0 },
+                    { "OutputCount", recipe.GetOutputPerSuccess(recipe.Products[i]) },
+                    { "SuccessRatio", recipe.GetOutputProbability(recipe.Products[i]) },
                 });
             }
             int protoId = AdvancedRecipeCatalog.GetProtoId(recipe.PersistentId);

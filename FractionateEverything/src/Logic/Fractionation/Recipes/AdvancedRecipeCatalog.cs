@@ -40,9 +40,13 @@ public static class AdvancedRecipeCatalog {
                 _ => throw new InvalidOperationException($"Unsupported advanced recipe type: {recipe.RecipeType}"),
             };
             // 名称和说明在 Awake 统一加载；此阶段晚于语言键索引建立，不能再注册翻译。
-            string nameKey = recipe.Kind == WorldviewRecipeKind.Replacement ? recipe.DisplayName : $"FE.AdvancedRecipe.{id}";
-            string descriptionKey = recipe.Kind == WorldviewRecipeKind.Replacement && recipe.PersistentId > 30304
-                ? "FE.AdvancedRecipe.ConversionDescription" : $"FE.AdvancedRecipe.{id}.Description";
+            string nameKey = recipe.DisplayName;
+            string descriptionKey = recipe.Kind switch {
+                WorldviewRecipeKind.Replacement => "FE.AdvancedRecipe.ConversionDescription",
+                WorldviewRecipeKind.TowerCultivation => "FE.Recipe.CultivationDescription",
+                WorldviewRecipeKind.EmbryoBreeding => "FE.Recipe.BreedingDescription",
+                _ => recipe.ContainsInput(IFE记忆源点) ? "FE.Recipe.MemoryDescription" : "FE.Recipe.CatalysisDescription",
+            };
             row += (column - 1) / 14;
             int gridColumn = (column - 1) % 14 + 1;
             // 原型保留整数比例；提示图的平均消耗、产出与概率由表现层读取运行配方。
@@ -125,11 +129,10 @@ public static class AdvancedRecipeCatalog {
     /// <summary>将稳定运行身份映射到图标索引范围内的原型身份；未知身份返回0。</summary>
     public static int GetProtoId(int persistentId) => persistentId switch {
         >= 30101 and <= 30107 => RFE高级矿物展示起始 + persistentId - 30101,
-        >= 30108 and <= 30114 => RFE高级矿物扩展展示起始 + persistentId - 30108,
+        >= 30111 and <= 30117 => RFE高级矿物扩展展示起始 + persistentId - 30111,
         >= 30201 and <= 30203 => RFE高级培育展示起始 + persistentId - 30201,
         >= 30211 and <= 30213 => RFE高级繁育展示起始 + persistentId - 30211,
-        >= 30301 and <= 30304 => RFE高级转化展示起始 + persistentId - 30301,
-        >= 30305 and <= 30317 => RFE高级转化扩展展示起始 + persistentId - 30305,
+        >= 30301 and <= 30329 => RFE高级转化展示起始 + persistentId - 30301,
         >= 399999 and < 412000 => FE.Logic.Civilization.Monument.MonumentCatalog.GetRecipeProtoId(persistentId),
         _ => 0,
     };

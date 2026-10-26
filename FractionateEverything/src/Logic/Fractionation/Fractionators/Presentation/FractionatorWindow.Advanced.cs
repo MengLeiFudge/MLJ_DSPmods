@@ -628,7 +628,7 @@ public static partial class FractionatorWindow {
             } else if (itemId > 0 && recipe != null && section.Kind == ProductSlotKind.Main) {
                 rateItemId = itemId;
                 WorldviewRecipeOutput output = recipe.ProductArray.FirstOrDefault(candidate => candidate.ItemId == itemId);
-                perMinute = output == null ? 0d : rounds * success * AdvancedFractionatorRuntime.GetOutputPerSuccess(recipe, output);
+                perMinute = output == null ? 0d : rounds * success * recipe.GetExpectedOutputPerSuccess(output);
             }
             section.Rates[i].text = section.RateDisplays[i].Update(rateItemId, perMinute, finePrecision);
             if (fullInputRate > 0d) {

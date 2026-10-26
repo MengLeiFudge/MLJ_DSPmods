@@ -60,6 +60,7 @@ public static class CivilizationModule {
             ResearchManager.UpdateSacrificeBoosts(gameTick);
             SubspaceExpansion.GameTick(gameTick);
             MetadataExtraction.Refresh();
+            AbilityTasks.Tick();
             MonumentManager.Tick();
             MonumentReceivers.Refresh();
         }
@@ -69,6 +70,7 @@ public static class CivilizationModule {
         dirty |= MetadataExtraction.TakeDirty();
         dirty |= MonumentManager.TakeDirty();
         dirty |= MonumentReceivers.TakeDirty();
+        dirty |= AbilityTasks.TakeDirty();
         civilizationSnapshotPending |= dirty;
         FlushNotifications();
 
@@ -151,7 +153,8 @@ public static class CivilizationModule {
             ("Monument", MonumentManager.ImportLegacy),
             ("MonumentState", MonumentManager.Import),
             ("MonumentReceivers", MonumentReceivers.ImportLegacy),
-            ("MonumentReceiversState", MonumentReceivers.Import)
+            ("MonumentReceiversState", MonumentReceivers.Import),
+            ("AbilityTasks", AbilityTasks.Import)
         );
     }
 
@@ -164,7 +167,8 @@ public static class CivilizationModule {
             ("ExplorationState", ExplorationManager.Export),
             ("MetadataState", MetadataExtraction.Export),
             ("MonumentState", MonumentManager.Export),
-            ("MonumentReceiversState", MonumentReceivers.Export)
+            ("MonumentReceiversState", MonumentReceivers.Export),
+            ("AbilityTasks", AbilityTasks.Export)
         );
     }
 
@@ -191,6 +195,7 @@ public static class CivilizationModule {
         MetadataExtraction.IntoOtherSave();
         MonumentManager.IntoOtherSave();
         MonumentReceivers.IntoOtherSave();
+        AbilityTasks.Clear();
         MessageLog.Clear();
         lastProcessedGameTick = long.MinValue;
         lastProcessedSecond = long.MinValue;

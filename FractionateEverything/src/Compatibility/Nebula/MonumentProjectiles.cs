@@ -12,6 +12,12 @@ namespace FE.Compatibility.Nebula;
 internal static class MonumentProjectiles {
     internal static void Send(int star, SailBullet bullet) => Send(star, false, bullet.Export);
     internal static void Send(int star, DysonRocket rocket) => Send(star, true, rocket.Export);
+    internal static void SendCell(int star, int layer, int shell, int index, int count) {
+        if (!NebulaModAPI.IsMultiplayerActive || NebulaMultiplayerModAPI.IsClient) { return; }
+        NebulaModAPI.MultiplayerSession.Network.SendPacket(new MonumentCellPacket {
+            World = ChallengeNetwork.WorldId, Star = star, Layer = layer, Shell = shell, Index = index, Count = count,
+        });
+    }
 
     private static void Send(int star, bool rocket, Action<BinaryWriter> export) {
         if (!NebulaModAPI.IsMultiplayerActive || NebulaMultiplayerModAPI.IsClient) { return; }
@@ -34,7 +40,7 @@ internal static class MonumentProjectiles {
             if (packet.Rocket) {
                 DysonRocket rocket = default;
                 rocket.Import(reader, sphere);
-                if (rocket.nodeLayerId != -8180 || rocket.planetId / 100 != packet.Star) { return; }
+                if (rocket.nodeLayerId is < -10 or > -1 || rocket.planetId / 100 != packet.Star) { return; }
                 MonumentFlight.AddRocket(sphere, rocket);
             } else {
                 SailBullet bullet = default;
@@ -62,5 +68,24 @@ public sealed class MonumentProjectilePacket {
 public sealed class MonumentProjectileProcessor : BasePacketProcessor<MonumentProjectilePacket> {
     public override void ProcessPacket(MonumentProjectilePacket packet, INebulaConnection connection) {
         if (!IsHost && packet?.World == ChallengeNetwork.WorldId) { MonumentProjectiles.Apply(packet); }
+    }
+}
+
+/// <summary>主机已建细胞的绝对数量；晚于球体快照或重复到达时不重复建设。</summary>
+public sealed class MonumentCellPacket {
+    public string World { get; set; }
+    public int Star { get; set; }
+    public int Layer { get; set; }
+    public int Shell { get; set; }
+    public int Index { get; set; }
+    public int Count { get; set; }
+}
+
+[RegisterPacketProcessor]
+public sealed class MonumentCellProcessor : BasePacketProcessor<MonumentCellPacket> {
+    public override void ProcessPacket(MonumentCellPacket packet, INebulaConnection connection) {
+        if (!IsHost && packet?.World == ChallengeNetwork.WorldId && packet.Layer is >= 1 and <= 10 && packet.Count > 0) {
+            MonumentManager.ApplyCell(packet.Star, packet.Layer, packet.Shell, packet.Index, packet.Count);
+        }
     }
 }

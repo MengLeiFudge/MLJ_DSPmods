@@ -46,7 +46,7 @@ public sealed class WorldviewRecipeInput(int itemId, int count, float consumePro
 /// <summary>
 /// 定义一项高级配方产物。
 /// </summary>
-public sealed class WorldviewRecipeOutput(int itemId, float count, bool scalesWithRecovery = false) {
+public sealed class WorldviewRecipeOutput(int itemId, float count, bool scalesWithRecovery = false, float weight = 1f) {
     /// <summary>物品 ID。</summary>
     public int ItemId { get; } = itemId;
 
@@ -55,6 +55,8 @@ public sealed class WorldviewRecipeOutput(int itemId, float count, bool scalesWi
 
     /// <summary>是否按高级转化塔的置换回收比例结算。</summary>
     public bool ScalesWithRecovery { get; } = scalesWithRecovery;
+    /// <summary>随机候选的相对权重；普通多产物配方不使用此字段。</summary>
+    public float Weight { get; } = weight;
 }
 
 /// <summary>
@@ -129,7 +131,7 @@ public sealed class WorldviewRecipe : BaseRecipe {
         WorldviewRecipeKind kind, float successProbability,
         IReadOnlyList<WorldviewRecipeInput> inputs, IReadOnlyList<WorldviewRecipeOutput> outputs)
         : base(inputs.Count > 0 ? inputs[0].ItemId : 0, successProbability,
-            BuildBaseOutputs(outputs), []) {
+            BuildBaseOutputs(outputs, kind), []) {
         StableId = stableId;
         AnalysisItemId = inputs.Count > 0 ? inputs[0].ItemId : 0;
         ResearchStage = kind == WorldviewRecipeKind.BasicMineral ? 0 : 2;
@@ -175,6 +177,28 @@ public sealed class WorldviewRecipe : BaseRecipe {
             return GrowthTechnologyManager.EmbryoBreedingOutput;
         }
         return output.ScalesWithRecovery ? output.Count * GrowthTechnologyManager.AdvancedConversionRecoveryRatio : output.Count;
+    }
+
+    /// <summary>每次成功选中该候选的概率；非转化配方同时产出所有定义产物。</summary>
+    public float GetOutputProbability(WorldviewRecipeOutput output) {
+        if (Kind != WorldviewRecipeKind.Replacement) { return 1f; }
+        float total = 0f;
+        foreach (WorldviewRecipeOutput candidate in ProductArray) { total += candidate.Weight; }
+        return total > 0f ? output.Weight / total : 0f;
+    }
+
+    /// <summary>长期平均产量，用于速率、图鉴和离线导出，不作为单次抽中产量。</summary>
+    public float GetExpectedOutputPerSuccess(WorldviewRecipeOutput output) =>
+        GetOutputPerSuccess(output) * GetOutputProbability(output);
+
+    /// <summary>一次成功独立选择一个候选，最后一项吸收浮点尾差。</summary>
+    internal WorldviewRecipeOutput SelectOutput(ref uint seed) {
+        double roll = GetRandDouble(ref seed);
+        foreach (WorldviewRecipeOutput output in ProductArray) {
+            roll -= GetOutputProbability(output);
+            if (roll < 0d) { return output; }
+        }
+        return ProductArray[ProductArray.Length - 1];
     }
 
     /// <inheritdoc />
@@ -248,10 +272,12 @@ public sealed class WorldviewRecipe : BaseRecipe {
         return result;
     }
 
-    private static List<OutputInfo> BuildBaseOutputs(IReadOnlyList<WorldviewRecipeOutput> outputs) {
+    private static List<OutputInfo> BuildBaseOutputs(IReadOnlyList<WorldviewRecipeOutput> outputs, WorldviewRecipeKind kind) {
         List<OutputInfo> result = [];
         foreach (WorldviewRecipeOutput output in outputs) {
-            result.Add(new OutputInfo(1f, output.ItemId, output.Count));
+            float totalWeight = 0f;
+            foreach (WorldviewRecipeOutput candidate in outputs) { totalWeight += candidate.Weight; }
+            result.Add(new OutputInfo(kind == WorldviewRecipeKind.Replacement ? output.Weight / totalWeight : 1f, output.ItemId, output.Count));
         }
         return result;
     }

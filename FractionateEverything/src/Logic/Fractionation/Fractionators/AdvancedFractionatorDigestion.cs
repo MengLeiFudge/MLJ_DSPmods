@@ -61,6 +61,7 @@ public static partial class AdvancedFractionatorRuntime {
         state.DigestionVersion++;
         state.SnapshotDirty = true;
         lock (consumeRegister) { consumeRegister[itemId]++; }
+        AbilityTasks.Record("Digestion", 1);
         return true;
     }
 

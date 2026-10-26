@@ -52,9 +52,6 @@ public static class VanillaRecipeManager {
 
     public static double GlobalTimeLimitRatio => StackingManager.CurrentVanillaRecipeTimeRatio / MonumentManager.SpeedFactor;
 
-    /// <summary>空配方集不能触发通关，未解锁的有效配方也参与终局判定。</summary>
-    internal static bool AllAtOneFrame => VanillaRecipeList.Count > 0 && VanillaRecipeList.TrueForAll(value => value.recipe.TimeSpend == 1);
-
     /// <summary>只从加载基线重新计算；整帧结果未改变时不刷新执行缓存。</summary>
     internal static void RefreshComputedTimes() {
         double ratio = GlobalTimeLimitRatio;

@@ -32,7 +32,9 @@ public sealed class ExplorationMark {
     public int ItemId;
     /// <summary>实际奖励数量。</summary>
     public int Count;
-    /// <summary>生成后固定的质量层级，1～3。</summary>
+    /// <summary>残片情报累计的额外源点奖励；回收后仍保留以供档案展示。</summary>
+    public int BonusMemory;
+    /// <summary>当前质量层级，残片情报可将其提升到三级。</summary>
     public int Quality = 1;
 }
 
@@ -127,7 +129,7 @@ public static partial class ExplorationManager {
     /// <returns>本端语言的文明记录或奖励描述。</returns>
     public static string GetRecoveryText(ExplorationMark mark) {
         if (mark == null) { return string.Empty; }
-        return mark.Kind switch {
+        string text = mark.Kind switch {
             ExplorationMarkKind.FirstRelic or ExplorationMarkKind.PlanetDetector or ExplorationMarkKind.Story =>
                 GetStoryNarrative(mark.ItemId),
             ExplorationMarkKind.Sacrifice => "FE.ExplorationManager.SacrificeRecovered".Translate(),
@@ -141,6 +143,8 @@ public static partial class ExplorationManager {
                 string.Format("回收了以{0}为样本的未知记录。".Translate(), LDB.items.Select(mark.ItemId)?.name),
             _ => string.Format("探索取得：{0} × {1}".Translate(), LDB.items.Select(mark.ItemId)?.name, mark.Count),
         };
+        return mark.BonusMemory > 0 && mark.ItemId != IFE记忆源点
+            ? text + "\n" + string.Format("探索取得：{0} × {1}".Translate(), LDB.items.Select(IFE记忆源点)?.name, mark.BonusMemory) : text;
     }
 
     /// <summary>下一主线节点是否只在等待矩阵科技推进；不点名所需矩阵。</summary>
@@ -183,7 +187,9 @@ public static partial class ExplorationManager {
             },
             _ => "FE.ExplorationManager.BroadcastHint".Translate(),
         };
-        return string.Format("FE.ExplorationManager.Destination".Translate(), lead, planet?.displayName) + GetChallengeDescription(mark.Id);
+        string reward = IsKeySignal(mark) ? "" : "\n" + string.Format("FE.Exploration.RewardPreview".Translate(),
+            GetMemoryReward(mark));
+        return string.Format("FE.ExplorationManager.Destination".Translate(), lead, planet?.displayName) + reward + GetChallengeDescription(mark.Id);
     }
 
     /// <summary>获取已广播点的缓存快照；不会暴露未发现静默点。</summary>
@@ -210,16 +216,6 @@ public static partial class ExplorationManager {
         }
     }
 
-    /// <summary>返回当前终极任务步骤，0～5为进行中，6为完成。</summary>
-    /// <param name="branch">0为探索，1为仓储。</param>
-    /// <returns>任务步骤。</returns>
-    public static int GetUltimateStep(int branch) { lock (Sync) { return UltimateSteps[branch == 0 ? 0 : 1]; } }
-
-    /// <summary>获取终极任务已经提交的 Memory。</summary>
-    /// <param name="branch">0为探索，1为仓储。</param>
-    /// <returns>累计交付数量。</returns>
-    public static int GetUltimateInput(int branch) { lock (Sync) { return UltimateInputs[branch == 0 ? 0 : 1]; } }
-
     /// <summary>统计星球当前可探测静默点，不包含剧情和广播。</summary>
     /// <param name="planetId">星球身份。</param>
     /// <param name="collected">已回收数量。</param>
@@ -234,9 +230,9 @@ public static partial class ExplorationManager {
 
     /// <summary>返回定时广播剩余游戏刻。</summary>
     /// <param name="gameTick">当前游戏刻。</param>
-    /// <returns>剩余刻数，终极持续广播返回零。</returns>
+    /// <returns>距离下次广播检查的剩余刻数；已有两个待办时不再增加地点。</returns>
     public static long GetTicksUntilNextSignal(long gameTick) {
-        lock (Sync) { return GrowthTechnologyManager.UltimateExploration ? 0 : Math.Max(0, nextTimedGenerationTick - gameTick); }
+        lock (Sync) { return Math.Max(0, nextTimedGenerationTick - gameTick); }
     }
 
     /// <summary>开局保证母星首遗物存在。</summary>
@@ -252,14 +248,24 @@ public static partial class ExplorationManager {
         }
     }
 
-    /// <summary>Frag 结算尝试生成动态补给，统一受星球容量和冷却约束。</summary>
-    /// <param name="count">需要生成的点数。</param>
-    /// <param name="source">提示来源。</param>
+    /// <summary>残片情报集中升级一个既有普通地点；没有候选时仅生成一个地点。</summary>
+    /// <param name="count">本批获得的情报次数。</param>
+    /// <param name="source">情报来源。</param>
     public static void AddExplorationPoints(int count, string source) {
-        if (count <= 0 || NebulaMultiplayerModAPI.IsClient) { return; }
-        int generated = 0;
+        if (count <= 0 || NebulaMultiplayerModAPI.IsClient || !FirstRelicClaimed || GameMain.mainPlayer == null || GameMain.galaxy == null) { return; }
         lock (Sync) {
-            while (generated < count && GenerateDynamicMark()) { generated++; }
+            ExplorationMark mark = DiscoveredMarks.Values.Where(m => !IsKeySignal(m))
+                .Select(m => FindMark(m.Id)).Where(m => m != null)
+                .OrderBy(m => m.PlanetId == GameMain.mainPlayer?.planetId ? 0 : 1)
+                .ThenBy(m => GetSignalDistance(m, GameMain.galaxy.PlanetById(m.PlanetId), GameMain.mainPlayer.uPosition))
+                .FirstOrDefault() ?? ActiveMarks.FirstOrDefault(m => !IsKeySignal(m));
+            if (mark == null && GenerateDynamicMark()) { mark = ActiveMarks.Last(); }
+            if (mark == null) { return; }
+            mark.Quality = (int)Math.Min(3L, (long)mark.Quality + count);
+            int reward = ResearchManager.GetChallengeMemoryReward(ResearchManager.CurrentMatrixStage, 1);
+            mark.BonusMemory = (int)Math.Min(int.MaxValue / 2, (long)mark.BonusMemory + (long)count * reward);
+            DiscoveredMarks[mark.Id] = CloneMark(mark);
+            MarkDirty();
         }
     }
 
@@ -299,12 +305,8 @@ public static partial class ExplorationManager {
                 EnsureFirstRelicMark();
                 EnsureStory();
                 EnsureMilestones();
-                EnsureUltimate(0);
-                EnsureUltimate(1);
                 if (FirstRelicClaimed) {
-                    if (GrowthTechnologyManager.UltimateExploration) {
-                        ReplenishUltimateSignals();
-                    } else if (nextTimedGenerationTick == 0) {
+                    if (nextTimedGenerationTick == 0) {
                         nextTimedGenerationTick = gameTick + GetGenerationIntervalTicks();
                         MarkDirty();
                     } else if (gameTick >= nextTimedGenerationTick) {
@@ -385,7 +387,10 @@ public static partial class ExplorationManager {
                 ("CapacityHintShown", r => capacityHintShown = r.ReadBoolean()),
                 ("UltimateSteps", r => ReadUltimateArray(r, UltimateSteps, 6)),
                 ("UltimateInputs", r => ReadUltimateArray(r, UltimateInputs, UltimateMemoryCost)),
-                ("ActiveMarks", r => r.ReadList(item => { ActiveMarks.Add(ReadMark(item)); }, MaximumRecords)),
+                ("ActiveMarks", r => r.ReadList(item => {
+                    ExplorationMark mark = ReadMark(item);
+                    if (mark.Kind != ExplorationMarkKind.Ultimate) { ActiveMarks.Add(mark); }
+                }, MaximumRecords)),
                 ("Records", r => r.ReadList(item => {
                     ExplorationRecord record = new();
                     item.ReadBlocks(("Mark", field => record.Mark = ReadMark(field)), ("Tick", field => record.Tick = field.ReadInt64()));
@@ -442,7 +447,10 @@ public static partial class ExplorationManager {
             capacityHintShown = reader.ReadBoolean();
             for (int i = 0; i < 2; i++) { UltimateSteps[i] = Math.Max(0, Math.Min(6, reader.ReadInt32())); UltimateInputs[i] = Math.Max(0, Math.Min(UltimateMemoryCost, reader.ReadInt32())); }
             int count = ReadCount(reader);
-            for (int i = 0; i < count; i++) { ActiveMarks.Add(ReadLegacyMark(reader)); }
+            for (int i = 0; i < count; i++) {
+                ExplorationMark mark = ReadLegacyMark(reader);
+                if (mark.Kind != ExplorationMarkKind.Ultimate) { ActiveMarks.Add(mark); }
+            }
             count = ReadCount(reader);
             for (int i = 0; i < count; i++) {
                 var record = new ExplorationRecord { Mark = ReadLegacyMark(reader), Tick = reader.ReadInt64() };
@@ -521,36 +529,6 @@ public static partial class ExplorationManager {
         }
     }
 
-    /// <summary>终极任务以实际探索或容量里程碑开放，已收到入口或已推进的任务保持可用。</summary>
-    /// <param name="branch">零为探索，一为仓储。</param>
-    /// <returns>是否可以在面板显示并推进该任务链。</returns>
-    public static bool IsUltimateQuestAvailable(int branch) {
-        bool ready = branch == 0
-            ? StoryCompleted >= StoryNodeCount && ResearchManager.IsContentUnlocked(ResearchManager.StageContentId(6))
-            : SubspaceExpansion.UltimateQuestReady;
-        string content = branch == 0 ? "exploration" : "capacity";
-        lock (Sync) {
-            return ready || UltimateSteps[branch] > 0
-                || ActiveMarks.Any(m => m.Kind == ExplorationMarkKind.Ultimate && m.ContentId == content);
-        }
-    }
-
-    private static void EnsureUltimate(int branch) {
-        bool ready = IsUltimateQuestAvailable(branch);
-        string id = branch == 0 ? "exploration" : "capacity";
-        if ((!ready && UltimateSteps[branch] == 0) || UltimateSteps[branch] >= 6
-            || ActiveMarks.Any(m => m.Kind == ExplorationMarkKind.Ultimate && m.ContentId == id)) { return; }
-        ExplorationRecord previous = Records.LastOrDefault(r => r.Mark.Kind == ExplorationMarkKind.Ultimate && r.Mark.ContentId == id);
-        PlanetData planet = SelectActivePlanet(previous?.Mark.PlanetId ?? 0, UltimateSteps[branch] % 2 == 1);
-        AddMark(planet, ExplorationMarkKind.Ultimate, UltimateSteps[branch], id);
-    }
-
-    /// <summary>终极奖励生效后按星球上限及冷却补充普通广播，剧情与静默点不占名额。</summary>
-    private static void ReplenishUltimateSignals() {
-        if (!GrowthTechnologyManager.UltimateExploration) { return; }
-        int missing = Math.Max(0, 2 - ActiveMarks.Count(m => !IsKeySignal(m)));
-        for (int i = 0; i < missing; i++) { GenerateDynamicMark(); }
-    }
 
     /// <summary>各星球最近一次普通广播生成刻，随存档及主机快照保存。</summary>
     private static readonly Dictionary<int, long> LastBroadcastTicks = [];
@@ -559,20 +537,14 @@ public static partial class ExplorationManager {
     /// <returns>本次是否实际生成。</returns>
     private static bool GenerateDynamicMark() {
         PlanetData planet = SelectActivePlanet();
-        if (planet == null || ActiveMarks.Count(m => m.PlanetId == planet.id && !IsKeySignal(m)) >= 2
+        if (planet == null || ActiveMarks.Count(m => !IsKeySignal(m)) >= 2
             || LastBroadcastTicks.TryGetValue(planet.id, out long tick) && GameMain.gameTick - tick < 10 * TicksPerMinute) {
             return false;
         }
         LastBroadcastTicks[planet.id] = GameMain.gameTick;
         ExplorationMark mark = AddMark(planet, ExplorationMarkKind.ResourceCache);
-        int roll = NextInt(100);
-        mark.Quality = ResearchManager.CurrentMatrixStage switch {
-            <= 1 => 1,
-            2 => roll < 70 ? 1 : 2,
-            3 => roll < 50 ? 1 : roll < 85 ? 2 : 3,
-            4 => roll < 30 ? 1 : roll < 75 ? 2 : 3,
-            _ => roll < 15 ? 1 : roll < 60 ? 2 : 3,
-        };
+        mark.Quality = ResearchManager.CurrentMatrixStage switch { <= 1 => 1, <= 3 => 2, _ => 3 };
+        DiscoveredMarks[mark.Id] = CloneMark(mark);
         TryCreateChallenge(mark);
         return true;
     }
@@ -740,13 +712,10 @@ public static partial class ExplorationManager {
             ResearchManager.UnlockSacrifice();
         } else if (mark.Kind == ExplorationMarkKind.Infrastructure) {
             ResearchManager.RecoverInfrastructure(mark.ContentId);
-        } else if (mark.Kind == ExplorationMarkKind.Ultimate) {
-            int branch = mark.ContentId == "exploration" ? 0 : 1;
-            UltimateSteps[branch] = mark.ItemId + 1;
-            if (UltimateSteps[branch] == 6) {
-                GameMain.history.UnlockTechUnlimited(branch == 0 ? TFE终极探索 : TFE终极仓储, true);
-            }
-        } else { AwardCache(mark); }
+        } else {
+            AwardCache(mark);
+            AbilityTasks.Record("Recovery", 1);
+        }
         if (!IsKeySignal(mark)) { DiscoveredMarks[mark.Id] = CloneMark(mark); }
         var record = new ExplorationRecord { Mark = CloneMark(mark), Tick = GameMain.gameTick };
         Records.Add(record);
@@ -754,7 +723,6 @@ public static partial class ExplorationManager {
         CivilizationModule.QueueRecoveryPopup(record.Mark);
         NebulaMultiplayerModAPI.BroadcastExplorationRecovery(record.Mark);
         MarkDirty();
-        ReplenishUltimateSignals();
     }
 
     /// <summary>结算主线节点的固定奖励和研究线索。</summary>
@@ -769,46 +737,39 @@ public static partial class ExplorationManager {
         if (number is >= 7 and <= 9) { DataCenterInventory.AddExplorationReward(IFE记忆源点, 12); }
     }
 
-    /// <summary>抽取并发放普通遗迹奖励，将实际结果写回点位以供存档和本地化显示。</summary>
+    /// <summary>预览与结算共用源点奖励，挑战基础奖励在生成时固定。</summary>
     /// <param name="mark">待结算的普通遗迹。</param>
+    private static int GetMemoryReward(ExplorationMark mark) {
+        lock (Sync) {
+            int basis = Challenges.TryGetValue(mark.Id, out SignalChallenge challenge) ? challenge.Reward
+                : ResearchManager.GetChallengeMemoryReward(ResearchManager.CurrentMatrixStage, mark.Quality);
+            return (int)Math.Min(int.MaxValue, (long)basis + mark.BonusMemory);
+        }
+    }
+
     private static void AwardCache(ExplorationMark mark) {
         if (mark.ItemId == IFE记忆源点 && mark.Count > 0) {
             DataCenterInventory.AddExplorationReward(mark.ItemId, mark.Count); return;
         }
-        if (mark.Quality >= 2 && NextInt(100) < 25 && ResearchManager.TryRecoverPage(ref randomSeed, out string page)) {
-            mark.ContentId = page;
-            mark.ItemId = IFE残片;
-            mark.Count = 0;
-            return;
+        mark.BonusMemory = GetMemoryReward(mark);
+        DataCenterInventory.AddExplorationReward(IFE记忆源点, mark.BonusMemory);
+        if (mark.Quality >= 2 && ResearchManager.TryRecoverPage(ref randomSeed, out string page)) {
+            mark.ContentId = page; mark.ItemId = IFE残片; mark.Count = 0; return;
         }
-        bool silent = mark.Kind == ExplorationMarkKind.SilentCache;
-        double memoryChance = silent ? mark.Quality == 3 ? 0.25 : 0 : mark.Quality switch { 1 => 0.05, 2 => 0.30, _ => 0.60 };
-        if (GetRandDouble(ref randomSeed) < memoryChance) {
-            mark.ItemId = IFE记忆源点;
-            mark.Count = silent ? 10 + NextInt(11) : mark.Quality switch { 1 => 1 + NextInt(2), 2 => 5 + NextInt(6), _ => 20 + NextInt(21) };
-        } else if (ResearchManager.GetDirectionSnapshots().Sum(s => s.PendingContentCount) < 8 && NextInt(100) < 30) {
+        if (ResearchManager.GetDirectionSnapshots().Sum(s => s.PendingContentCount) < 8) {
             string[] candidates = ResearchManager.GetPotentialContentIds();
             if (candidates.Length > 0) {
                 string id = candidates[NextInt(candidates.Length)];
                 int[] inputs = ResearchManager.GetContentDirectionItemIds(id);
                 if (inputs.Length > 0 && ResearchManager.DiscoverContent(id, inputs[0], false)) {
-                    mark.ContentId = id; mark.ItemId = inputs[0]; mark.Count = 0;
-                    return;
+                    mark.ContentId = id; mark.ItemId = inputs[0]; mark.Count = 0; return;
                 }
             }
         }
-        if (mark.ItemId <= 0) {
-            int[] scarce = HasProducedFirstMatrix()
-                ? new[] { IFE通用原胚, IFE高级交互塔 }.Where(id => DataCenterInventory.GetModDataItemCount(id) < 300).ToArray()
-                : [];
-            if (scarce.Length > 0) {
-                // 紧缺时必定补给，数量随机浮动，层级越高越多。
-                mark.ItemId = scarce[NextInt(scarce.Length)];
-                mark.Count = mark.ItemId == IFE通用原胚 ? 50 + NextInt(51) : mark.Quality * (2 + NextInt(3));
-            } else {
-                mark.ItemId = SelectBuildingReward(); mark.Count = mark.Quality;
-            }
-        }
+        int[] scarce = HasProducedFirstMatrix()
+            ? new[] { IFE通用原胚, IFE高级交互塔 }.Where(id => DataCenterInventory.GetModDataItemCount(id) < 300).ToArray() : [];
+        mark.ItemId = scarce.Length > 0 ? scarce[NextInt(scarce.Length)] : SelectBuildingReward();
+        mark.Count = mark.ItemId == IFE通用原胚 ? 100 * mark.Quality : 8 * mark.Quality;
         DataCenterInventory.AddExplorationReward(mark.ItemId, mark.Count);
     }
 
@@ -848,7 +809,8 @@ public static partial class ExplorationManager {
             ("Position", field => { field.Write(m.LocalPosition.x); field.Write(m.LocalPosition.y); field.Write(m.LocalPosition.z); }),
             ("Kind", field => field.Write((int)m.Kind)), ("Content", field => field.Write(m.ContentId ?? "")),
             ("Item", field => field.Write(m.ItemId)), ("Count", field => field.Write(m.Count)),
-            ("Quality", field => field.Write(m.Quality))
+            ("Quality", field => field.Write(m.Quality)),
+            ("BonusMemory", field => field.Write(m.BonusMemory))
         );
     }
 
@@ -860,7 +822,8 @@ public static partial class ExplorationManager {
             ("Position", field => mark.LocalPosition = new Vector3(field.ReadSingle(), field.ReadSingle(), field.ReadSingle())),
             ("Kind", field => mark.Kind = (ExplorationMarkKind)field.ReadInt32()),
             ("Content", field => mark.ContentId = field.ReadString()), ("Item", field => mark.ItemId = field.ReadInt32()),
-            ("Count", field => mark.Count = field.ReadInt32()), ("Quality", field => mark.Quality = field.ReadInt32())
+            ("Count", field => mark.Count = field.ReadInt32()), ("Quality", field => mark.Quality = field.ReadInt32()),
+            ("BonusMemory", field => mark.BonusMemory = Math.Max(0, field.ReadInt32()))
         );
         if (mark.Id == 0 || mark.PlanetId <= 0 || !Finite(mark.LocalPosition.x) || !Finite(mark.LocalPosition.y)
             || !Finite(mark.LocalPosition.z) || mark.Quality < 1 || mark.Quality > 3 || mark.Count < 0
@@ -877,7 +840,7 @@ public static partial class ExplorationManager {
         return mark;
     }
     private static ExplorationMark CloneMark(ExplorationMark m) => new() { Id = m.Id, PlanetId = m.PlanetId, LocalPosition = m.LocalPosition,
-        Kind = m.Kind, ContentId = m.ContentId, ItemId = m.ItemId, Count = m.Count, Quality = m.Quality };
+        Kind = m.Kind, ContentId = m.ContentId, ItemId = m.ItemId, Count = m.Count, Quality = m.Quality, BonusMemory = m.BonusMemory };
 
     /// <summary>取得阶段主线标题。</summary>
     /// <param name="number">从1起的主线序号。</param>

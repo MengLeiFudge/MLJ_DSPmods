@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using FE.Logic.Fractionation.Recipes;
+using static FE.Utils.Utils;
 
 namespace VanillaCurveSim;
 
@@ -12,6 +14,7 @@ internal static class FeProductionSimulator {
         if (!recipe.RequiresFood) { speed = 1; }
         float[] probabilities = FeRules.InputProbabilities(recipe, scenario);
         float[] outputs = FeRules.OutputCounts(recipe, scenario);
+        ConversionSpec conversion = ConversionSpec.CreateAll().FirstOrDefault(spec => spec.Key == recipe.Id);
         int maxMainCount = recipe.InputCounts.Where((_, i) => recipe.ConsumeProbabilities[i] >= 0.9999f).Max();
         float rate = (float)(30d * scenario.Stack / maxMainCount * speed);
         int availableRounds = (recipe.RequiresFood ? 40 : 20) * scenario.Stack / maxMainCount;
@@ -75,6 +78,20 @@ internal static class FeProductionSimulator {
                 }
             }
             if (successes == 0) { continue; }
+            if (conversion != null) {
+                float totalWeight = conversion.Outputs.Sum(output => output.Weight);
+                for (int success = 0; success < successes; success++) {
+                    double roll = GetRandDouble(ref seed);
+                    var selected = conversion.Outputs[conversion.Outputs.Length - 1];
+                    foreach (var candidate in conversion.Outputs) {
+                        roll -= candidate.Weight / totalWeight;
+                        if (roll < 0) { selected = candidate; break; }
+                    }
+                    double count = selected.Count * (selected.Recovery ? ConversionSpec.RecoveryRatio(scenario.TraitLevel) : 1f);
+                    result.Produced[selected.Item] += FeRules.Roll(ref seed, count);
+                }
+                continue;
+            }
             for (int i = 0; i < recipe.Outputs.Length; i++) {
                 result.Produced[recipe.Outputs[i]] += recipe.RequiresFood
                     ? FeRules.Roll(ref seed, successes * outputs[i])

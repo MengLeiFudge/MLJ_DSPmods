@@ -157,7 +157,7 @@ public static partial class StationManager {
                     if (requests.Count == 0) { continue; }
                     long budget = Math.Max(0L, stationComponent.energy) / requests.Count;
                     foreach (var request in requests) {
-                        stationComponent.SetTargetCount(request.Slot, request.Target, budget, request.Capacity);
+                        stationComponent.SetTargetCount(__instance.planet.id, request.Slot, request.Target, budget, request.Capacity);
                     }
                 }
             }
@@ -169,10 +169,11 @@ public static partial class StationManager {
 
     /// <summary>按可用电量裁剪槽位目标数量，并按实际搬运数量结算耗电。</summary>
     /// <param name="stationComponent">发起上传或下载的交互站。</param>
+    /// <param name="planetId">实际站点所在星球。</param>
     /// <param name="index">物品槽位的零基索引。</param>
     /// <param name="targetCount">槽位期望保留的物品数量。</param>
     /// <param name="maxSlotEnergy">本轮分配给该槽位的电量上限，单位 J。</param>
-    private static void SetTargetCount(this StationComponent stationComponent, int index, int targetCount,
+    private static void SetTargetCount(this StationComponent stationComponent, int planetId, int index, int targetCount,
         long maxSlotEnergy, ECapacityMode capacityMode = ECapacityMode.Limited) {
         ref StationStore store = ref stationComponent.storage[index];
         if (store.count == targetCount || !IsUploadableItem(store.itemId)) {
@@ -203,6 +204,7 @@ public static partial class StationManager {
             count = TakeItemFromModData(store.itemId, count, out int inc);
             store.count += count;
             store.inc += inc;
+            AbilityTasks.RecordStationTransfer(planetId, stationComponent.entityId, store.itemId, count, true);
         } else {
             // 将交互站的物品上传到亚空间；容量竞争导致部分接收时把未接收部分放回槽位。
             int offeredCount = count;
@@ -215,6 +217,7 @@ public static partial class StationManager {
                 store.inc += (int)receipt.RejectedInc;
             }
             count = acceptedCount;
+            AbilityTasks.RecordStationTransfer(planetId, stationComponent.entityId, store.itemId, (int)receipt.Stored, false);
         }
 
         if (count <= 0) {

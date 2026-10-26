@@ -19,7 +19,7 @@ internal static class ConversionBalance {
         string Name(int item) => names.TryGetValue(item, out string value) ? value : $"物品{item}";
         string Number(double value) => value.ToString("0.####", CultureInfo.InvariantCulture);
         var report = new StringBuilder("# 转化配方物料核算\r\n\r\n");
-        report.AppendLine("来源：与FE运行目录编译同一份ConversionSpec，名称读取原版导出表。按1000次尝试、无献祭增益、辅料充足核算期望；基础成功率8%，主料失败92%原样回流。高级塔电耗为0，食物另列，不包含带速、待机与供料短缺。原型是否在模组组合中可得，由运行时来源闭包决定。");
+        report.AppendLine("来源：与FE运行目录共用ConversionSpec。按1000次尝试、无供养品质或献祭增益核算；成功率8%，失败92%原样回流。每次成功只抽一种候选。工作营养按实际主料支付，待机消耗另计；各单塔期望不能替代完整回环的物料平衡。");
         report.AppendLine();
         report.AppendLine("| 稳定ID | 每成功轮参与物料（括号内为消耗概率） | 1000次尝试净消耗 | 期望产物（回收特质0级→6级） | 工作营养／折合蓝矩阵 |");
         report.AppendLine("| --- | --- | --- | --- | --- |");
@@ -28,33 +28,14 @@ internal static class ConversionBalance {
             double successes = 1000d * ConversionSpec.Success;
             string input = string.Join(" + ", recipe.Inputs.Select(i => $"{Name(i.Item)}×{i.Count}（{Number(i.Consume * 100d)}%）"));
             string used = string.Join(" + ", recipe.Inputs.Select(i => $"{Name(i.Item)}×{Number(i.Count * successes * i.Consume)}"));
-            string output = string.Join(" + ", recipe.Outputs.Select(o => $"{Name(o.Item)}×{Number(o.Count * successes * (o.Recovery ? 0.5d : 1d))}"
-                + (o.Recovery ? $"→{Number(o.Count * successes * 0.8d)}" : "")));
+            double totalWeight = recipe.Outputs.Sum(o => (double)o.Weight);
+            string output = string.Join(" + ", recipe.Outputs.Select(o => $"{Name(o.Item)}×{Number(o.Count * successes * o.Weight / totalWeight * (o.Recovery ? ConversionSpec.RecoveryRatio(0) : 1d))}"
+                + (o.Recovery ? $"→{Number(o.Count * successes * o.Weight / totalWeight * ConversionSpec.RecoveryRatio(6))}" : "")));
             double nutrition = recipe.Inputs.Where(i => i.Consume >= 0.9999f).Sum(i => i.Count) * successes;
             report.AppendLine($"| {recipe.Id} | {input} | {used} | {output} | {Number(nutrition)}／{Number(nutrition / 5.25d)} |");
         }
         report.AppendLine();
-        report.AppendLine("## 可逆链净流");
-        report.AppendLine();
-        report.AppendLine("以下按一轮正向、再把全部主要产物逆向处理，扣除两边主料后显示剩余；负数代表净投入。辅料及食物另付。单位为期望件，不代表每批确定扣除小数件。");
-        report.AppendLine();
-        report.AppendLine("| 正向／逆向 | 主体净流 | 辅料净投入 | 工作营养 |");
-        report.AppendLine("| --- | --- | --- | --- |");
-        foreach (ConversionSpec forward in recipes) {
-            ConversionSpec reverse = recipes.FirstOrDefault(candidate => candidate.Id > forward.Id
-                && candidate.Inputs[0].Item == forward.Outputs[0].Item
-                && candidate.Outputs[0].Item == forward.Inputs[0].Item);
-            if (reverse == null) { continue; }
-            double turns = forward.Outputs[0].Count / (double)reverse.Inputs[0].Count;
-            double net = reverse.Outputs[0].Count * turns - forward.Inputs[0].Count;
-            var auxiliary = forward.Inputs.Skip(1).Select(i => (i.Item, Count: i.Count * (double)i.Consume))
-                .Concat(reverse.Inputs.Skip(1).Select(i => (i.Item, Count: i.Count * (double)i.Consume * turns)))
-                .GroupBy(i => i.Item).Select(group => $"{Name(group.Key)}×{Number(group.Sum(i => i.Count))}");
-            double nutrition = forward.Inputs[0].Count + reverse.Inputs[0].Count * turns;
-            report.AppendLine($"| {forward.Id}／{reverse.Id} | {Name(forward.Inputs[0].Item)} {Number(net)} | {string.Join(" + ", auxiliary)} | {Number(nutrition)} |");
-        }
-        report.AppendLine();
-        report.AppendLine("燃料回喂：30301与30302各成功一次，净消耗液氢燃料棒1、反物质1、钛合金0.02、湮灭约束球0.02；0级回收时重氢净0、氢净+2.5，6级时重氢净+3、氢净+4；产出反物质燃料棒1，消耗工作营养2。回流不能免除燃料棒、反物质与营养投入。设备升级不返还辅料；硅材料与黑雾相邻往返不增加主体总量，并持续消耗催化剂与营养。无战斗入口由FE元数据额度兑换能量碎片提供；额度兑换不属于转化配方的物料核算。");
+        report.AppendLine("回收特质由50%提高至125%，只乘向低档拆解的数量。两级链每成功轮消耗4件，升级得到1件高档、降级得到16×回收率件低档，自身候选返还4件。忽略自身的中性循环，两段往返的主体倍率等于回收率；满级提供25%主体余量，仍需支付两座塔的矩阵营养。更多档位含极低概率跨级候选，应按全部候选核算，不能把多种期望产物视为每次同时发放。");
         string path = Path.Combine(root, "VanillaCurveSim", "Reports", "ConversionBalance.md");
         Directory.CreateDirectory(Path.GetDirectoryName(path));
         File.WriteAllText(path, report.ToString(), new UTF8Encoding(true));

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using FE.Compatibility.Nebula;
 using FE.Logic.Civilization;
 using FE.Logic.DataCenter;
 using FE.UI.MainPanel.Theme;
@@ -39,9 +40,14 @@ public sealed class AnalysisSamplesPage : CardBrowserPage {
                     : "FE.AnalysisSamplesPage.NoStock".Translate();
                 return new PageCard {
                     Key = record.Key, ItemId = record.SampleItemId, Tint = Blue, Progress = record.Progress / 10000f,
-                    Title = name, Status = string.Format("解析进度 {0:0.#}%".Translate(), record.Progress / 100f),
+                    Title = string.IsNullOrEmpty(record.ResultName) ? name : record.ResultName,
+                    Status = string.Format("解析进度 {0:0.#}%".Translate(), record.Progress / 100f),
                     Detail = string.Format("FE.AnalysisSamplesPage.AnalyzingDetail".Translate(), name, stockText,
                         record.Progress / 100f),
+                    ActionLabel = (ResearchManager.IsAnalysisTarget(record.SampleItemId, record.Key)
+                        ? "FE.Analysis.CancelTarget" : "FE.Analysis.SetTarget").Translate(),
+                    Action = !GrowthTechnologyManager.DirectedAnalysis ? null : () => AnalysisTargetSync.SetTarget(record.SampleItemId,
+                        ResearchManager.IsAnalysisTarget(record.SampleItemId, record.Key) ? "" : record.Key),
                 };
             default:
                 // 匿名占位：不显示图标与名称，进度条保持空轨道，保证三态版式一致。

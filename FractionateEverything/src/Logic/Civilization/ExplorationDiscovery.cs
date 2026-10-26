@@ -23,7 +23,7 @@ public static partial class ExplorationManager {
             bool changed = VisitedPlanets.Add(planetId);
             foreach (ExplorationMark mark in NearbyMarks(planetId)) {
                 if (IsKeySignal(mark) || DiscoveredMarks.ContainsKey(mark.Id)
-                    || GetSignalDistance(mark, planet, position) > DetectionRange) { continue; }
+                    || !GrowthTechnologyManager.RelicSurvey && GetSignalDistance(mark, planet, position) > DetectionRange) { continue; }
                 DiscoveredMarks.Add(mark.Id, CloneMark(mark));
                 changed = true;
             }

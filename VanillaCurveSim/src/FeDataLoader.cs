@@ -68,7 +68,7 @@ internal static class FeDataLoader {
                 || !recipe.InputCounts.SequenceEqual(spec.Inputs.Select(i => i.Count))
                 || !recipe.ConsumeProbabilities.SequenceEqual(spec.Inputs.Select(i => i.Consume))
                 || !recipe.Outputs.SequenceEqual(spec.Outputs.Select(o => o.Item))
-                || !recipe.OutputCounts.SequenceEqual(spec.Outputs.Select(o => o.Count * (o.Recovery ? 0.5f : 1f)))) {
+                || !recipe.OutputCounts.SequenceEqual(spec.Outputs.Select(o => o.Count * (o.Recovery ? ConversionSpec.RecoveryRatio(0) : 1f) * o.Weight / spec.Outputs.Sum(candidate => candidate.Weight)))) {
                 throw new InvalidDataException($"{recipe.Id}与当前ConversionSpec不一致，请重新导出零特质数据。");
             }
         }
