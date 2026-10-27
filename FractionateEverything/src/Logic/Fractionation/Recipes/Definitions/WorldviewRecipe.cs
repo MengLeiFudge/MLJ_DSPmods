@@ -84,8 +84,17 @@ public sealed class WorldviewRecipe : BaseRecipe {
     /// <summary>跨存档、蓝图和联机稳定的配方整数 ID。</summary>
     public int PersistentId { get; }
 
-    /// <summary>玩家可见配方名称。</summary>
-    public string DisplayName { get; internal set; }
+    /// <summary>原始名称；高级展示原型使用在 Awake 注册的完整翻译键。</summary>
+    public string Name { get; }
+
+    /// <summary>动态丰碑名称的显示覆盖，不参与原型注册。</summary>
+    private string displayName;
+
+    /// <summary>玩家可见配方名称，普通名称随当前语言翻译。</summary>
+    public string DisplayName {
+        get => displayName ?? Name.Translate();
+        internal set => displayName = value;
+    }
 
     /// <summary>配方类型。</summary>
     public override ERecipe RecipeType { get; }
@@ -127,7 +136,7 @@ public sealed class WorldviewRecipe : BaseRecipe {
     /// <summary>
     /// 创建一张稳定配方。
     /// </summary>
-    public WorldviewRecipe(string stableId, int persistentId, string displayName, ERecipe recipeType,
+    public WorldviewRecipe(string stableId, int persistentId, string name, ERecipe recipeType,
         WorldviewRecipeKind kind, float successProbability,
         IReadOnlyList<WorldviewRecipeInput> inputs, IReadOnlyList<WorldviewRecipeOutput> outputs)
         : base(inputs.Count > 0 ? inputs[0].ItemId : 0, successProbability,
@@ -136,7 +145,7 @@ public sealed class WorldviewRecipe : BaseRecipe {
         AnalysisItemId = inputs.Count > 0 ? inputs[0].ItemId : 0;
         ResearchStage = kind == WorldviewRecipeKind.BasicMineral ? 0 : 2;
         PersistentId = persistentId;
-        DisplayName = displayName;
+        Name = name;
         RecipeType = recipeType;
         Kind = kind;
         CycleSuccessProbability = successProbability;

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 using CommonAPI.Systems;
-using HarmonyLib;
 
 using FE.Logic.Civilization;
 
@@ -41,7 +40,7 @@ public static class AdvancedRecipeCatalog {
                 _ => throw new InvalidOperationException($"Unsupported advanced recipe type: {recipe.RecipeType}"),
             };
             // LDBTool 按 Name 绑定 ID；注册键不能依赖翻译或尚未加载的物品名称。
-            string nameKey = $"FE.AdvancedRecipe.Runtime.{recipe.PersistentId}";
+            string nameKey = recipe.Name;
             string descriptionKey = recipe.Kind switch {
                 WorldviewRecipeKind.Replacement => "FE.AdvancedRecipe.ConversionDescription",
                 WorldviewRecipeKind.TowerCultivation => "FE.Recipe.CultivationDescription",
@@ -78,7 +77,7 @@ public static class AdvancedRecipeCatalog {
         RecipeProto template = LDB.recipes.Select(GetProtoId(30301));
         if (template == null) { throw new InvalidOperationException("丰碑配方缺少高级转化选择器类型。"); }
         var proto = new RecipeProto {
-            ID = id, Name = recipe.DisplayName, Description = "FE.Monument.RecipeDescription",
+            ID = id, Name = recipe.Name, Description = "FE.Monument.RecipeDescription",
             Type = template.Type, TimeSpend = 60, Items = recipe.InputArray.Select(input => input.ItemId).ToArray(),
             ItemCounts = recipe.InputArray.Select(input => input.Count).ToArray(),
             Results = recipe.ProductArray.Select(output => output.ItemId).ToArray(),
@@ -88,48 +87,6 @@ public static class AdvancedRecipeCatalog {
         xiaoye97.LDBTool.PostAddProto(proto);
         if (proto.ID != id) { throw new InvalidOperationException("丰碑展示配方不能重映射稳定身份。"); }
         PersistentIds.Add(id, recipe.PersistentId);
-    }
-
-    /// <summary>最终目录重建后同步展示名称，不改变注册键和原型身份。</summary>
-    internal static void RefreshNames() {
-        foreach (int id in PersistentIds.Keys) {
-            RecipeProto proto = LDB.recipes.Select(id);
-            if (proto != null) { RecipeProto_RefreshTranslation_Postfix(proto); }
-        }
-    }
-
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(RecipeProto), nameof(RecipeProto.RefreshTranslation))]
-    private static void RecipeProto_RefreshTranslation_Postfix(RecipeProto __instance) {
-        WorldviewRecipe recipe = GetRecipe(__instance.ID);
-        if (recipe == null) { return; }
-        string template;
-        int itemId;
-        switch (recipe.Kind) {
-            case WorldviewRecipeKind.TowerCultivation:
-                template = "培育{0}";
-                itemId = recipe.ProductArray[0].ItemId;
-                break;
-            case WorldviewRecipeKind.EmbryoBreeding:
-                template = "{0}原胚繁育";
-                itemId = recipe.InputArray[0].ItemId;
-                break;
-            case WorldviewRecipeKind.RareCatalysis:
-                template = recipe.ContainsInput(IFE记忆源点) ? "{0}记忆重构" : "{0}催化增殖";
-                itemId = recipe.ProductArray[0].ItemId;
-                break;
-            case WorldviewRecipeKind.Replacement:
-                template = "FE.Conversion.InputName";
-                itemId = recipe.InputArray[0].ItemId;
-                break;
-            default:
-                return;
-        }
-        ItemProto item = LDB.items.Select(itemId);
-        if (item == null) { return; }
-        // 直接翻译原始键，避免依赖物品与配方的 RefreshTranslation 执行顺序。
-        recipe.DisplayName = string.Format(template.Translate(), item.Name.Translate());
-        __instance.name = recipe.DisplayName;
     }
 
     /// <summary>在全部原型加载后移除物品的展示配方关联，避免普通物品提示泄露未解锁配方或改变主制造来源。</summary>

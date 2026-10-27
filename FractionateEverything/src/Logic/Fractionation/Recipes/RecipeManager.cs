@@ -79,7 +79,6 @@ public static class RecipeManager {
         foreach (WorldviewRecipe recipe in WorldviewRecipes.Where(recipe => recipe.Kind == WorldviewRecipeKind.Replacement)) {
             recipe.ResearchStage = Math.Max(recipe.ResearchStage, GetMatrixStageIndex(itemToMatrix[recipe.PrimaryProductId]) + 1);
         }
-        AdvancedRecipeCatalog.RefreshNames();
         ResearchManager.BuildResearchCatalog();
         AddAnalysisDirections();
         LogInfo($"Added {RecipeList.Count} fractionation recipes.");
@@ -250,29 +249,30 @@ public static class RecipeManager {
 
     /// <summary>矿物按分馏页顺序排列，两类配方使用各自连续的运行身份。</summary>
     private static void AddRareCatalysisRecipes() {
-        AddRareRecipe(30101, I可燃冰, 0.02f, 6, [new(I原油, 3)]);
-        AddRareRecipe(30102, I金伯利矿石, 0.02f, 6, [new(I煤矿, 3)]);
-        AddRareRecipe(30103, I分形硅石, 0.04f, 6, [new(I硅石, 3), new(I石矿, 3)]);
-        AddRareRecipe(30104, I光栅石, 0.02f, 6, [new(I石矿, 3)]);
-        AddRareRecipe(30105, I刺笋结晶, 0.04f, 6, [new(I植物燃料, 3), new(I煤矿, 3)]);
-        AddRareRecipe(30106, I单极磁石, 0.04f, 3, [new(I分形硅石, 1), new(I有机晶体, 1), new(I刺笋结晶, 1)]);
-        AddRareRecipe(30107, I有机晶体, 0.04f, 6, [new(I原油, 3), new(I水, 3)]);
-        AddRareMemoryRecipe(30111, I可燃冰, 120);
-        AddRareMemoryRecipe(30112, I金伯利矿石, 120);
-        AddRareMemoryRecipe(30113, I分形硅石, 60);
-        AddRareMemoryRecipe(30114, I光栅石, 120);
-        AddRareMemoryRecipe(30115, I刺笋结晶, 60);
-        AddRareMemoryRecipe(30116, I单极磁石, 20);
-        AddRareMemoryRecipe(30117, I有机晶体, 60);
+        AddRareRecipe(30101, I可燃冰, "可燃冰催化增殖", 0.02f, 6, [new(I原油, 3)]);
+        AddRareRecipe(30102, I金伯利矿石, "金伯利矿石催化增殖", 0.02f, 6, [new(I煤矿, 3)]);
+        AddRareRecipe(30103, I分形硅石, "分形硅石催化增殖", 0.04f, 6, [new(I硅石, 3), new(I石矿, 3)]);
+        AddRareRecipe(30104, I光栅石, "光栅石催化增殖", 0.02f, 6, [new(I石矿, 3)]);
+        AddRareRecipe(30105, I刺笋结晶, "刺笋结晶催化增殖", 0.04f, 6, [new(I植物燃料, 3), new(I煤矿, 3)]);
+        AddRareRecipe(30106, I单极磁石, "单极磁石催化增殖", 0.04f, 3, [new(I分形硅石, 1), new(I有机晶体, 1), new(I刺笋结晶, 1)]);
+        AddRareRecipe(30107, I有机晶体, "有机晶体催化增殖", 0.04f, 6, [new(I原油, 3), new(I水, 3)]);
+        AddRareMemoryRecipe(30111, I可燃冰, "可燃冰记忆重构", 120);
+        AddRareMemoryRecipe(30112, I金伯利矿石, "金伯利矿石记忆重构", 120);
+        AddRareMemoryRecipe(30113, I分形硅石, "分形硅石记忆重构", 60);
+        AddRareMemoryRecipe(30114, I光栅石, "光栅石记忆重构", 120);
+        AddRareMemoryRecipe(30115, I刺笋结晶, "刺笋结晶记忆重构", 60);
+        AddRareMemoryRecipe(30116, I单极磁石, "单极磁石记忆重构", 20);
+        AddRareMemoryRecipe(30117, I有机晶体, "有机晶体记忆重构", 60);
     }
 
     /// <summary>以指定原料和同种珍奇催化剂注册稀有增殖配方。</summary>
     /// <param name="persistentId">配方跨存档和联机稳定的整数身份。</param>
     /// <param name="rareItemId">兼作催化剂、解析样本和产物的珍奇物品。</param>
+    /// <param name="name">已在 Awake 注册的完整配方名称键。</param>
     /// <param name="successProbability">配方基础概率，只控制周转，不承担科技产量成长。</param>
     /// <param name="productCount">每成功轮基础产量。</param>
     /// <param name="rawInputs">成功轮消耗、失败轮回流的主原料。</param>
-    private static void AddRareRecipe(int persistentId, int rareItemId, float successProbability, int productCount,
+    private static void AddRareRecipe(int persistentId, int rareItemId, string name, float successProbability, int productCount,
         IReadOnlyList<WorldviewRecipeInput> rawInputs) {
         ItemProto rare = LDB.items.Select(rareItemId);
         if (rare == null) {
@@ -280,7 +280,7 @@ public static class RecipeManager {
         }
         List<WorldviewRecipeInput> inputs = [..rawInputs, new(rareItemId, 1, 0.05f)];
         AddRecipe(new WorldviewRecipe($"mineral-rare:{rareItemId}", persistentId,
-            string.Format("{0}催化增殖".Translate(), rare.name), ERecipe.AdvancedMineral, WorldviewRecipeKind.RareCatalysis, successProbability,
+            name, ERecipe.AdvancedMineral, WorldviewRecipeKind.RareCatalysis, successProbability,
             inputs, [new WorldviewRecipeOutput(rareItemId, productCount)]) {
                 AnalysisItemId = rareItemId,
                 ResearchStage = rareItemId == I单极磁石 ? 5 : 3,
@@ -290,38 +290,33 @@ public static class RecipeManager {
     /// <summary>以一件源点和同种珍奇催化剂注册白糖阶段的传说重构配方。</summary>
     /// <param name="persistentId">配方跨存档和联机稳定的整数身份。</param>
     /// <param name="rareItemId">兼作催化剂和产物的珍奇物品。</param>
+    /// <param name="name">已在 Awake 注册的完整配方名称键。</param>
     /// <param name="productCount">每成功轮新产出的数量，催化剂损耗另行结算。</param>
-    private static void AddRareMemoryRecipe(int persistentId, int rareItemId, int productCount) {
+    private static void AddRareMemoryRecipe(int persistentId, int rareItemId, string name, int productCount) {
         ItemProto rare = LDB.items.Select(rareItemId);
         if (rare == null) {
             return;
         }
         AddRecipe(new WorldviewRecipe($"mineral-memory:{rareItemId}", persistentId,
-            string.Format("{0}记忆重构".Translate(), rare.name), ERecipe.AdvancedMineral,
+            name, ERecipe.AdvancedMineral,
             WorldviewRecipeKind.RareCatalysis, 0.08f,
             [new(IFE记忆源点, 1), new(rareItemId, 1, 0.05f)],
             [new(rareItemId, productCount)]) { AnalysisItemId = rareItemId, ResearchStage = 6 });
     }
 
     private static void AddInteractionRecipes() {
-        int[] towers = [IFE高级矿物塔, IFE高级交互塔, IFE高级转化塔];
+        (int Id, string Name)[] towers = [(IFE高级矿物塔, "高级矿物塔"), (IFE高级交互塔, "培养塔"), (IFE高级转化塔, "转化塔")];
         for (int i = 0; i < towers.Length; i++) {
-            int towerId = towers[i];
-            ItemProto tower = LDB.items.Select(towerId);
-            string towerName = (towerId switch {
-                IFE高级矿物塔 => "高级矿物塔",
-                IFE高级交互塔 => "培养塔",
-                _ => "转化塔",
-            }).Translate();
+            var (towerId, towerName) = towers[i];
             AddRecipe(new WorldviewRecipe($"interaction-culture:{towerId}", 30201 + i,
-                string.Format("培育{0}".Translate(), tower?.name ?? towerName),
+                $"培育{towerName}",
                 ERecipe.AdvancedInteraction,
                 WorldviewRecipeKind.TowerCultivation, 0.08f,
                 [new WorldviewRecipeInput(IFE通用原胚, 1)], [new WorldviewRecipeOutput(towerId, 1f)]) {
                     AnalysisItemId = IFE通用原胚, ResearchStage = towerId == IFE高级交互塔 ? 0 : 1,
                 });
             AddRecipe(new WorldviewRecipe($"interaction-breed:{towerId}", 30211 + i,
-                string.Format("{0}原胚繁育".Translate(), tower?.name ?? towerName),
+                $"{towerName}原胚繁育",
                 ERecipe.AdvancedInteraction,
                 WorldviewRecipeKind.EmbryoBreeding, 0.08f,
                 [new WorldviewRecipeInput(towerId, 1), new WorldviewRecipeInput(IFE通用原胚, 1, 0.05f)],
@@ -335,8 +330,7 @@ public static class RecipeManager {
         foreach (ConversionSpec spec in ConversionSpec.CreateAll(GenesisBook.Enable, OrbitalRing.Enable)) {
             if (spec.Inputs.Any(input => !LDB.items.Exist(input.Item))
                 || spec.Outputs.Any(output => !LDB.items.Exist(output.Item))) { continue; }
-            string name = string.Format("FE.Conversion.InputName".Translate(), LDB.items.Select(spec.Inputs[0].Item).name);
-            AddRecipe(new WorldviewRecipe(spec.Key, spec.Id, name, ERecipe.AdvancedConversion,
+            AddRecipe(new WorldviewRecipe(spec.Key, spec.Id, spec.Name, ERecipe.AdvancedConversion,
                 WorldviewRecipeKind.Replacement, ConversionSpec.Success,
                 spec.Inputs.Select(input => new WorldviewRecipeInput(input.Item, input.Count, input.Consume)).ToArray(),
                 spec.Outputs.Select(output => new WorldviewRecipeOutput(output.Item, output.Count, output.Recovery, output.Weight)).ToArray()) {

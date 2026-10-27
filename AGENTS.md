@@ -265,7 +265,7 @@ public static class ConversionTower {
     public static bool EnableFluidEnhancement => Level >= 3;
     public static int MaxStack => Level switch { < 6 => 1, _ => 4 };
 
-    public static void AddTranslations() { ... }
+    // 名称和说明词条统一放入 Locale/translations.json。
     public static void Create() { ... }        // 注册物品、配方和模型
     public static void SetMaterial() { ... }   // 应用材质与颜色
     public static void UpdateHpAndEnergy() { ... }
@@ -318,12 +318,25 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
 - Use early returns for validation failures (guard clauses)
 - Log with the shared logger utilities in `Utils/LogUtils.cs`; avoid console spam
 
+## 物品与配方原型注册（强制）
+
+- 沿用2.x的注册流程：先在 `Awake` 注册翻译，再在 `FeatureBootstrap.PreAddData` 调用所属业务域，通过 `ProtoRegistry.RegisterItem` / `RegisterRecipe` 注册原型。当前翻译统一写入 `FractionateEverything/Locale/translations.json`，由 `LoadTranslationsFromJson` 注册；固定名称不得等到PreAdd或FinalAction才追加翻译。
+- `Proto.Name` 是未翻译的名称键，`proto.name` 是玩家看到的译文。注册时传完整名称键或已注册物品的 `item.Name`；禁止传 `item.name`、`DisplayName`、`.Translate()` 的结果，以及由译文拼接的字符串。运行配方参与原型注册时，也必须保留原始名称键。
+- 普通制造配方与产物同名时可以沿用 `item.Name`，物品和配方属于不同原型表。培育、繁育、催化、重构、转化等不同配方必须分别声明完整且稳定的名称键，并在JSON中提供五语词条；只注册 `培育{0}` 这类模板，不能代替注册 `培育高级矿物塔` 等完整名称。
+- 同一原型类型内，数字ID和名称键都必须唯一。LDBTool按原型类型与 `Name` 保存ID绑定，同名键可能让不同原型得到同一个ID；不同模组兼容分支只要对应不同身份，即使不会同时加载、显示名称相同，也要使用不同键。改显示文案应改译文，不能随意改注册键。
+- 数字ID沿用 `Utils/ProtoID.cs` 及领域内的稳定映射，`GridIndex` 只负责展示位置，不承担身份。新增或调整ID须核对原版、FE及已支持大型模组的实际占用；不以换显示名、压缩序号或忽略重复项处理冲突。
+- 注册前核对本批待注册目录和已加载原型，不能只靠 `LDB.*.Exist` 判断尚未合并的PreAdd列表；核对LDBTool返回的实际ID与声明ID是否一致。冲突或重映射应定位并报告，不能在后续字典初始化时吞掉重复项。
+- 普通原型的名称显示和语言刷新交给原版 `RefreshTranslation`。固定配方名称不得再加Harmony名称补丁、手写语言刷新阶段或按运行ID生成未注册翻译的占位名称来绕过上述流程。
+- 确实依赖最终外部目录的动态原型，沿既有业务owner的PostAdd及动态名称入口处理，例如未知模组矩阵的丰碑帆；仍须保留独立、稳定的原始名称键。动态显示名不得写回注册键，也不能让普通固定配方走这条例外。
+
+普通物品及制造配方示例见 [BasicMineralTower.Create](FractionateEverything/src/Logic/Fractionation/Fractionators/Definitions/BasicMineralTower.cs)；高级配方定义和注册入口分别见 [RecipeManager](FractionateEverything/src/Logic/Fractionation/Recipes/RecipeManager.cs) 与 [AdvancedRecipeCatalog](FractionateEverything/src/Logic/Fractionation/Recipes/AdvancedRecipeCatalog.cs)。
+
 ## Common Tasks
 
 ### Adding a New Tower
 1. Create `Logic/Fractionation/Fractionators/Definitions/NewTowerName.cs` following the static class template above
 2. Add `Level`, `EnableXxx`, switch-expression properties as needed
-3. Implement `AddTranslations()`, `Create()`, `SetMaterial()`, `UpdateHpAndEnergy()`
+3. Add complete name/description translations to `Locale/translations.json`; implement `Create()`, `SetMaterial()`, `UpdateHpAndEnergy()`
 4. Register in `Logic/Fractionation/Fractionators/FractionatorManager.cs`
 5. Add Proto IDs to `Utils/ProtoID.cs`
 

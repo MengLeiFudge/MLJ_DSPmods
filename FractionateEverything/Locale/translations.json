@@ -1,4 +1,354 @@
 ﻿{
+  "可燃冰催化增殖": {
+    "zhCN": "可燃冰催化增殖",
+    "enUS": "Fire Ice Catalytic Proliferation",
+    "frFR": "Multiplication catalytique de Glace ardente",
+    "1031": "Katalytische Vermehrung von Brennbareis",
+    "1041": "メタンハイドレートの触媒増殖"
+  },
+  "可燃冰记忆重构": {
+    "zhCN": "可燃冰记忆重构",
+    "enUS": "Fire Ice Memory Reconstruction",
+    "frFR": "Reconstruction de Glace ardente par Mémoire",
+    "1031": "Erinnerungsrekonstruktion von Brennbareis",
+    "1041": "記憶コアによるメタンハイドレートの再構成"
+  },
+  "金伯利矿石催化增殖": {
+    "zhCN": "金伯利矿石催化增殖",
+    "enUS": "Kimberlite Ore Catalytic Proliferation",
+    "frFR": "Multiplication catalytique de Kimberlite",
+    "1031": "Katalytische Vermehrung von Kimberliterz",
+    "1041": "キンバーライトの触媒増殖"
+  },
+  "金伯利矿石记忆重构": {
+    "zhCN": "金伯利矿石记忆重构",
+    "enUS": "Kimberlite Ore Memory Reconstruction",
+    "frFR": "Reconstruction de Kimberlite par Mémoire",
+    "1031": "Erinnerungsrekonstruktion von Kimberliterz",
+    "1041": "記憶コアによるキンバーライトの再構成"
+  },
+  "分形硅石催化增殖": {
+    "zhCN": "分形硅石催化增殖",
+    "enUS": "Fractal Silicon Catalytic Proliferation",
+    "frFR": "Multiplication catalytique de Silicium fractal",
+    "1031": "Katalytische Vermehrung von Fraktalsilizium",
+    "1041": "フラクタルシリコンの触媒増殖"
+  },
+  "分形硅石记忆重构": {
+    "zhCN": "分形硅石记忆重构",
+    "enUS": "Fractal Silicon Memory Reconstruction",
+    "frFR": "Reconstruction de Silicium fractal par Mémoire",
+    "1031": "Erinnerungsrekonstruktion von Fraktalsilizium",
+    "1041": "記憶コアによるフラクタルシリコンの再構成"
+  },
+  "光栅石催化增殖": {
+    "zhCN": "光栅石催化增殖",
+    "enUS": "Grating Crystal Catalytic Proliferation",
+    "frFR": "Multiplication catalytique de Crist. de diffraction",
+    "1031": "Katalytische Vermehrung von Gitterkristall",
+    "1041": "光格子結晶の触媒増殖"
+  },
+  "光栅石记忆重构": {
+    "zhCN": "光栅石记忆重构",
+    "enUS": "Grating Crystal Memory Reconstruction",
+    "frFR": "Reconstruction de Crist. de diffraction par Mémoire",
+    "1031": "Erinnerungsrekonstruktion von Gitterkristall",
+    "1041": "記憶コアによる光格子結晶の再構成"
+  },
+  "刺笋结晶催化增殖": {
+    "zhCN": "刺笋结晶催化增殖",
+    "enUS": "Stalagmite Crystal Catalytic Proliferation",
+    "frFR": "Multiplication catalytique de Cristal stalagmite",
+    "1031": "Katalytische Vermehrung von Stalagmitkristall",
+    "1041": "紡錘状石筍結晶の触媒増殖"
+  },
+  "刺笋结晶记忆重构": {
+    "zhCN": "刺笋结晶记忆重构",
+    "enUS": "Stalagmite Crystal Memory Reconstruction",
+    "frFR": "Reconstruction de Cristal stalagmite par Mémoire",
+    "1031": "Erinnerungsrekonstruktion von Stalagmitkristall",
+    "1041": "記憶コアによる紡錘状石筍結晶の再構成"
+  },
+  "单极磁石催化增殖": {
+    "zhCN": "单极磁石催化增殖",
+    "enUS": "Unipolar Magnet Catalytic Proliferation",
+    "frFR": "Multiplication catalytique de Aimant unipolaire",
+    "1031": "Katalytische Vermehrung von Monopolmagnet",
+    "1041": "単極磁石の触媒増殖"
+  },
+  "单极磁石记忆重构": {
+    "zhCN": "单极磁石记忆重构",
+    "enUS": "Unipolar Magnet Memory Reconstruction",
+    "frFR": "Reconstruction de Aimant unipolaire par Mémoire",
+    "1031": "Erinnerungsrekonstruktion von Monopolmagnet",
+    "1041": "記憶コアによる単極磁石の再構成"
+  },
+  "有机晶体催化增殖": {
+    "zhCN": "有机晶体催化增殖",
+    "enUS": "Organic Crystal Catalytic Proliferation",
+    "frFR": "Multiplication catalytique de Cristal organique",
+    "1031": "Katalytische Vermehrung von Organischer Kristall",
+    "1041": "有機結晶の触媒増殖"
+  },
+  "有机晶体记忆重构": {
+    "zhCN": "有机晶体记忆重构",
+    "enUS": "Organic Crystal Memory Reconstruction",
+    "frFR": "Reconstruction de Cristal organique par Mémoire",
+    "1031": "Erinnerungsrekonstruktion von Organischer Kristall",
+    "1041": "記憶コアによる有機結晶の再構成"
+  },
+  "培育高级矿物塔": {
+    "zhCN": "培育高级矿物塔",
+    "enUS": "Cultivate Advanced Mineral Tower",
+    "frFR": "Cultiver Tour minérale avancée",
+    "1031": "Verbesserter Mineralturm züchten",
+    "1041": "上級鉱物塔を育成"
+  },
+  "高级矿物塔原胚繁育": {
+    "zhCN": "高级矿物塔原胚繁育",
+    "enUS": "Advanced Mineral Tower Embryo Breeding",
+    "frFR": "Reproduction d'embryons de Tour minérale avancée",
+    "1031": "Embryonenvermehrung durch Verbesserter Mineralturm",
+    "1041": "上級鉱物塔による原胚繁殖"
+  },
+  "培育培养塔": {
+    "zhCN": "培育高级交互塔",
+    "enUS": "Cultivate Advanced Interaction Tower",
+    "frFR": "Cultiver Tour d'interaction avancée",
+    "1031": "Verbesserter Interaktionsturm züchten",
+    "1041": "上級交互塔を育成"
+  },
+  "培养塔原胚繁育": {
+    "zhCN": "高级交互塔原胚繁育",
+    "enUS": "Advanced Interaction Tower Embryo Breeding",
+    "frFR": "Reproduction d'embryons de Tour d'interaction avancée",
+    "1031": "Embryonenvermehrung durch Verbesserter Interaktionsturm",
+    "1041": "上級交互塔による原胚繁殖"
+  },
+  "培育转化塔": {
+    "zhCN": "培育高级转化塔",
+    "enUS": "Cultivate Advanced Conversion Tower",
+    "frFR": "Cultiver Tour de conversion avancée",
+    "1031": "Verbesserter Umwandlungsturm züchten",
+    "1041": "上級転換塔を育成"
+  },
+  "转化塔原胚繁育": {
+    "zhCN": "高级转化塔原胚繁育",
+    "enUS": "Advanced Conversion Tower Embryo Breeding",
+    "frFR": "Reproduction d'embryons de Tour de conversion avancée",
+    "1031": "Embryonenvermehrung durch Verbesserter Umwandlungsturm",
+    "1041": "上級転換塔による原胚繁殖"
+  },
+  "传送带转化": {
+    "zhCN": "传送带形态转化",
+    "enUS": "Conveyor Belt Mk.I conversion",
+    "frFR": "Conversion de Convoyeur MK I",
+    "1031": "Fließband Typ I-Umwandlung",
+    "1041": "ベルトコンベア形態変換"
+  },
+  "高速传送带转化": {
+    "zhCN": "高速传送带形态转化",
+    "enUS": "Conveyor Belt Mk.II conversion",
+    "frFR": "Conversion de Convoyeur MK II",
+    "1031": "Fließband Typ II-Umwandlung",
+    "1041": "高速ベルトコンベア形態変換"
+  },
+  "极速传送带转化": {
+    "zhCN": "极速传送带形态转化",
+    "enUS": "Conveyor Belt Mk.III conversion",
+    "frFR": "Conversion de Convoyeur MK III",
+    "1031": "Fließband Typ III-Umwandlung",
+    "1041": "超速ベルトコンベア形態変換"
+  },
+  "液氢燃料棒转化": {
+    "zhCN": "液氢燃料棒形态转化",
+    "enUS": "Hydrogen Fuel Rod conversion",
+    "frFR": "Conversion de Barre d'hydrogène",
+    "1031": "Wasserstoff-Brennstab-Umwandlung",
+    "1041": "液化水素燃料棒形態変換"
+  },
+  "焦油燃料棒转化": {
+    "zhCN": "焦油燃料棒形态转化",
+    "enUS": "Tar Fuel Rod conversion",
+    "frFR": "Conversion de Barre de combustible au goudron",
+    "1031": "Teer-Brennstab-Umwandlung",
+    "1041": "タール燃料棒形態変換"
+  },
+  "创世铀燃料棒转化": {
+    "zhCN": "铀燃料棒形态转化",
+    "enUS": "Uranium Fuel Rod conversion",
+    "frFR": "Conversion de Barre de combustible à l’uranium",
+    "1031": "Uran-Brennstab-Umwandlung",
+    "1041": "ウラン燃料棒形態変換"
+  },
+  "星环铀燃料棒转化": {
+    "zhCN": "铀燃料棒形态转化",
+    "enUS": "Uranium Fuel Rod conversion",
+    "frFR": "Conversion de Barre de combustible à l’uranium",
+    "1031": "Uran-Brennstab-Umwandlung",
+    "1041": "ウラン燃料棒形態変換"
+  },
+  "氘核燃料棒转化": {
+    "zhCN": "氘核燃料棒形态转化",
+    "enUS": "Deuteron Fuel Rod conversion",
+    "frFR": "Conversion de Barre de deutérium",
+    "1031": "Deuterium-Brennstab-Umwandlung",
+    "1041": "重陽子燃料棒形態変換"
+  },
+  "氦三燃料棒转化": {
+    "zhCN": "氦三燃料棒形态转化",
+    "enUS": "Helium-3 Fuel Rod conversion",
+    "frFR": "Conversion de Barre de combustible à l’hélium-3",
+    "1031": "Helium-3-Brennstab-Umwandlung",
+    "1041": "ヘリウム3燃料棒形態変換"
+  },
+  "反物质燃料棒转化": {
+    "zhCN": "反物质燃料棒形态转化",
+    "enUS": "Antimatter Fuel Rod conversion",
+    "frFR": "Conversion de Barre d'antimatière",
+    "1031": "Antimaterie-Brennstab-Umwandlung",
+    "1041": "反物質燃料棒形態変換"
+  },
+  "化学燃料棒转化": {
+    "zhCN": "化学燃料棒形态转化",
+    "enUS": "Chemical Fuel Rod conversion",
+    "frFR": "Conversion de Barre de combustible chimique",
+    "1031": "Chemischer Brennstab-Umwandlung",
+    "1041": "化学燃料棒形態変換"
+  },
+  "基础制造台转化": {
+    "zhCN": "基础制造台形态转化",
+    "enUS": "Basic Assembling Machine conversion",
+    "frFR": "Conversion de Machine d’assemblage de base",
+    "1031": "Grundmontagemaschine-Umwandlung",
+    "1041": "基礎組立機形態変換"
+  },
+  "标准制造单元转化": {
+    "zhCN": "标准制造单元形态转化",
+    "enUS": "Standard Manufacturing Unit conversion",
+    "frFR": "Conversion de Unité de fabrication standard",
+    "1031": "Standard-Fertigungseinheit-Umwandlung",
+    "1041": "標準製造ユニット形態変換"
+  },
+  "高精度装配线转化": {
+    "zhCN": "高精度装配线形态转化",
+    "enUS": "High-Precision Assembly Line conversion",
+    "frFR": "Conversion de Ligne d’assemblage de haute précision",
+    "1031": "Hochpräzisions-Montagelinie-Umwandlung",
+    "1041": "高精度組立ライン形態変換"
+  },
+  "物质重组工厂转化": {
+    "zhCN": "物质重组工厂形态转化",
+    "enUS": "Matter Recombination Factory conversion",
+    "frFR": "Conversion de Usine de recombinaison de matière",
+    "1031": "Materie-Rekombinationsfabrik-Umwandlung",
+    "1041": "物質再構成工場形態変換"
+  },
+  "制造台MkI转化": {
+    "zhCN": "制造台 Mk.I形态转化",
+    "enUS": "Assembling Machine Mk.I conversion",
+    "frFR": "Conversion de Assembleur MK I",
+    "1031": "Zusammens.-Masch. Typ I-Umwandlung",
+    "1041": "組立機 Mk.I形態変換"
+  },
+  "制造台MkII转化": {
+    "zhCN": "制造台 Mk.II形态转化",
+    "enUS": "Assembling Machine Mk.II conversion",
+    "frFR": "Conversion de Assembleur MK II",
+    "1031": "Zusammens.-Masch. Typ II-Umwandlung",
+    "1041": "組立機 Mk.II形態変換"
+  },
+  "制造台MkIII转化": {
+    "zhCN": "制造台 Mk.III形态转化",
+    "enUS": "Assembling Machine Mk.III conversion",
+    "frFR": "Conversion de Assembleur MK III",
+    "1031": "Zusammens.-Masch. Typ III-Umwandlung",
+    "1041": "組立機 Mk.III形態変換"
+  },
+  "电弧熔炉转化": {
+    "zhCN": "电弧熔炉形态转化",
+    "enUS": "Arc Smelter conversion",
+    "frFR": "Conversion de Four à arc",
+    "1031": "Lichtbogen-Schmelzofen-Umwandlung",
+    "1041": "アーク溶鉱炉形態変換"
+  },
+  "位面熔炉转化": {
+    "zhCN": "位面熔炉形态转化",
+    "enUS": "Plane Smelter conversion",
+    "frFR": "Conversion de Four dimensionnel",
+    "1031": "Planaren-Schmelzofen-Umwandlung",
+    "1041": "プレーン溶鉱炉形態変換"
+  },
+  "化工厂转化": {
+    "zhCN": "化工厂形态转化",
+    "enUS": "Chemical Plant conversion",
+    "frFR": "Conversion de Usine chimique",
+    "1031": "Chemiefabrik-Umwandlung",
+    "1041": "化学工場形態変換"
+  },
+  "量子化工厂转化": {
+    "zhCN": "量子化工厂形态转化",
+    "enUS": "Quantum Chemical Plant conversion",
+    "frFR": "Conversion de Usine chimique quantique",
+    "1031": "Quanten-Chemiefabrik-Umwandlung",
+    "1041": "量子化学工場形態変換"
+  },
+  "采矿机转化": {
+    "zhCN": "采矿机形态转化",
+    "enUS": "Mining Machine conversion",
+    "frFR": "Conversion de Mine",
+    "1031": "Bergbaumaschine-Umwandlung",
+    "1041": "採鉱機形態変換"
+  },
+  "大型采矿机转化": {
+    "zhCN": "大型采矿机形态转化",
+    "enUS": "Advanced Mining Machine conversion",
+    "frFR": "Conversion de Mine avancée",
+    "1031": "Große Bergbaumaschine-Umwandlung",
+    "1041": "大型採鉱機形態変換"
+  },
+  "能量碎片转化": {
+    "zhCN": "能量碎片形态转化",
+    "enUS": "Energy Shard conversion",
+    "frFR": "Conversion de Fragment d'énergie",
+    "1031": "Energiesplitter-Umwandlung",
+    "1041": "エネルギーの欠片形態変換"
+  },
+  "黑雾矩阵转化": {
+    "zhCN": "黑雾矩阵形态转化",
+    "enUS": "Dark Fog Matrix conversion",
+    "frFR": "Conversion de Matrice de la Nuée des ombres",
+    "1031": "Dunkelnebel-Matrix-Umwandlung",
+    "1041": "ダークフォグマトリクス形態変換"
+  },
+  "物质重组器转化": {
+    "zhCN": "物质重组器形态转化",
+    "enUS": "Matter Recombinator conversion",
+    "frFR": "Conversion de Recombinateur de matière",
+    "1031": "Materien-Rekombinator-Umwandlung",
+    "1041": "物質再構成機形態変換"
+  },
+  "硅基神经元转化": {
+    "zhCN": "硅基神经元形态转化",
+    "enUS": "Silicon-based Neuron conversion",
+    "frFR": "Conversion de Neurone de silicium",
+    "1031": "Siliziumbasiertes Neuron-Umwandlung",
+    "1041": "シリコンニューロン形態変換"
+  },
+  "负熵奇点转化": {
+    "zhCN": "负熵奇点形态转化",
+    "enUS": "Negentropy Singularity conversion",
+    "frFR": "Conversion de Singularité néguentropique",
+    "1031": "Negentropie-Singularität-Umwandlung",
+    "1041": "負エントロピー特異点形態変換"
+  },
+  "核心素转化": {
+    "zhCN": "核心素形态转化",
+    "enUS": "Core Element conversion",
+    "frFR": "Conversion de Élément central",
+    "1031": "Kernelement-Umwandlung",
+    "1041": "コア元素形態変換"
+  },
   "FE.Growth.Summary.Labels": {
     "zhCN": "货物堆叠上限\n矿物利用产量倍率\n高级矿物特质倍率\n成功轮原胚产量\n置换材料回收率\n亚空间存取耗电\n交互站充电与储能",
     "enUS": "Cargo stack limit\nVeins Utilization yield\nAdvanced mineral trait yield\nEmbryos per success\nMaterial recovery\nSubspace energy use\nStation charge / storage",
@@ -1531,27 +1881,6 @@
     "frFR": "Réplication de {0}",
     "1031": "Selbstreplikation von {0}",
     "1041": "{0}の自己複製"
-  },
-  "{0}催化增殖": {
-    "enUS": "{0} Catalytic Proliferation",
-    "zhCN": "{0}催化增殖",
-    "frFR": "Multiplication catalytique de {0}",
-    "1031": "Katalytische Vermehrung von {0}",
-    "1041": "{0}の触媒増殖"
-  },
-  "培育{0}": {
-    "enUS": "Cultivate {0}",
-    "zhCN": "培育{0}",
-    "frFR": "Cultiver {0}",
-    "1031": "{0} züchten",
-    "1041": "{0}を育成"
-  },
-  "{0}原胚繁育": {
-    "enUS": "{0} Embryo Breeding",
-    "zhCN": "{0}原胚繁育",
-    "frFR": "Reproduction d'embryons de {0}",
-    "1031": "Embryonenvermehrung durch {0}",
-    "1041": "{0}による原胚繁殖"
   },
   "液氢燃料棒重氢置换": {
     "enUS": "Deuterium Replacement for Hydrogen Fuel Rod",
@@ -3975,13 +4304,6 @@
     "1031": "Aufzeichnung mit {0} als Probe entdeckt",
     "1041": "{0}をサンプルとする記録を発見"
   },
-  "{0}记忆重构": {
-    "enUS": "{0} Memory Reconstruction",
-    "zhCN": "{0}记忆重构",
-    "frFR": "Reconstruction de {0} par Mémoire",
-    "1031": "Erinnerungsrekonstruktion von {0}",
-    "1041": "記憶コアによる{0}の再構成"
-  },
   "等待供养": {
     "enUS": "Awaiting nourishment",
     "zhCN": "等待供养",
@@ -4212,13 +4534,6 @@
     "frFR": "Récupération par remplacement",
     "1031": "Rückgewinnung beim Austausch",
     "1041": "置換回収効率"
-  },
-  "FE.Conversion.InputName": {
-    "zhCN": "{0}形态转化",
-    "enUS": "{0} conversion",
-    "frFR": "Conversion de {0}",
-    "1031": "{0}-Umwandlung",
-    "1041": "{0}形態変換"
   },
   "FE.Conversion.RecoveryUpgrade": {
     "zhCN": "拆解回收率 +12.5个百分点",
