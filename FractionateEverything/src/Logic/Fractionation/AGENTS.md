@@ -33,6 +33,7 @@ Fractionation/
 - `ERecipe` 数值保持：高级交互 1、基础解析 2、基础矿物 3、高级转化 4、高级矿物 5。
 - 物理 Item/Model/Recipe ID、`WorldviewRecipe.StableId` / `PersistentId`、蓝图 magic/version 和存档块名不得因源码重命名改变。
 - 旧中文塔常量只能作为同 ID 兼容别名，不能注册旧塔或建立第二套目录。
+- 高级展示配方的 `Proto.Name` 使用由稳定运行身份生成的唯一注册键；翻译只写 `name` 和运行配方的 `DisplayName`，不得参与LDBTool的ID绑定。预注册时同时检查本目录已占用身份，注册后核对实际ID，不接受重映射。
 
 ## Runtime Rules
 

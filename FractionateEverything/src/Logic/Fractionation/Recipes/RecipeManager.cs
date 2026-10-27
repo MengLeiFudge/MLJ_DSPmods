@@ -79,6 +79,7 @@ public static class RecipeManager {
         foreach (WorldviewRecipe recipe in WorldviewRecipes.Where(recipe => recipe.Kind == WorldviewRecipeKind.Replacement)) {
             recipe.ResearchStage = Math.Max(recipe.ResearchStage, GetMatrixStageIndex(itemToMatrix[recipe.PrimaryProductId]) + 1);
         }
+        AdvancedRecipeCatalog.RefreshNames();
         ResearchManager.BuildResearchCatalog();
         AddAnalysisDirections();
         LogInfo($"Added {RecipeList.Count} fractionation recipes.");
