@@ -5,7 +5,7 @@
 
 # 万物分馏 Fractionate Everything
 
-万物分馏是一条需要探索、解析和供养的古文明生命工业路线。从母星遗迹和基础矿物复制起步，逐步建立珍奇催化、生命塔培育、原胚繁育与工业置换产线。
+万物分馏是一条需要探索、解析和供养的古文明生命工业路线。从母星遗迹和基础矿物复制起步，逐步建立珍奇催化、生命塔培育、原胚繁育与循环转化产线，最终建设分馏丰碑。
 
 Fractionate Everything is a living-industry progression built around exploration, sample analysis and sustained automation. Begin with a relic on your home world, then develop five specialized fractionators and a galaxy-wide subspace inventory.
 
@@ -26,10 +26,9 @@ Earlier FE 3.0 saves can also be loaded. Readable data is restored block by bloc
 开局的G手册会出现“神秘信号？”。首遗物位于出生点所在半球，并避开黑雾基地。屏幕只显示一条信号强度条，感应范围按星球半径调整；在大星球上远处也能感知。地面行走和低空悬浮都能接近，实际进入范围才会回收。关键信号的结果会打开确认弹窗。首遗物提供：
 
 - 基础矿物塔4座、基础解析塔2座及其制造配方。
-- 铁、铜、石、煤四条解析线索，以及一条原胚培育线索。
 - 分馏亚空间和主面板访问。
 
-普通矿物配方需要先解析，不直接解锁。首次实际生产电磁矩阵后，新的主线才会带来高级交互塔2座、原胚60个和源点30份。先给高级塔供养矩阵，再着手培育。
+普通矿物复制在回收首遗物且完成电磁矩阵科技后自动恢复，无需另行解析样本。首次实际生产电磁矩阵后，主线补给地点会带来高级交互塔2座、原胚60个和源点30份，并开放高级塔培育。先给高级塔供养矩阵，再送入原胚。
 
 The starting relic appears in the birth hemisphere, away from dark-fog bases. Recover it for four Basic Mineral Towers, two Basic Analysis Towers and access to subspace. Movement and logistics upgrades remain part of your own research. Producing the first Electromagnetic Matrix opens the story supply of living towers, embryos and Memory.
 
@@ -37,47 +36,47 @@ The starting relic appears in the birth hemisphere, away from dark-fog bases. Re
 
 | 塔型 | 用途 |
 | --- | --- |
-| 基础矿物塔 / Basic Mineral | 自动匹配已解析普通矿物配方，成功时同物1变2 |
-| 基础解析塔 / Basic Analysis | 解析线索指定样本，失败回流；持续投入科学矩阵可扩充亚空间 |
+| 基础矿物塔 / Basic Mineral | 自动匹配已解锁的普通矿物配方，成功时复制同种资源，产量随矿物利用成长 |
+| 基础解析塔 / Basic Analysis | 解析已知线索的样本，成功返还、损毁消耗；处理矩阵扩容、源点恢复与献祭 |
 | 高级矿物塔 / Advanced Mineral | 使用普通矿物与珍奇催化剂增殖资源 |
 | 高级交互塔 / Advanced Interaction | 培育高级塔，以塔体模板繁育原胚 |
-| 高级转化塔 / Advanced Conversion | 升级机器、置换燃料、配平中间材料，重构黑雾材料 |
+| 高级转化塔 / Advanced Conversion | 在同系列设备、燃料或黑雾材料中随机转化，并制造丰碑构件 |
 
-基础塔独立制造、接入电网，正面接口还能上传到亚空间。高级塔在窗口选择已解析配方，使用矩阵作为营养。正常产物和失败物等待当前集装规格输出；主消耗物不足一轮后释放尾料，剩余催化剂不会让尾料永久滞留。
+基础塔独立制造、接入电网，正面接口还能上传到亚空间。每座高级塔在窗口选择一张已解锁配方，使用矩阵作为营养。产物和流动物都按当前集装规格整堆输出；不足一堆的余料保留，可手动取出。混带和共用回环由玩家自行设计。
 
-所有已注册的矩阵（包括黑雾及模组矩阵）都能供养生命塔，价值越高，每件营养越多、处理越快。工作和待机都会消耗营养；断粮损失耐久，充分供养可恢复。无人机不能维修生命塔，主动拆除返还缓存，损毁丢失缓存。基础输入按20堆、高级主料及辅料按40堆、流出及产物按5堆设置接收阈值；达到阈值才停收，本次完整货物或批次允许越过。
+所有已注册的矩阵（包括黑雾及模组矩阵）都能供养生命塔，价值越高，每件营养越多、处理越快。工作和待机都会消耗营养；断粮损失耐久，充分供养可恢复，完成休眠保护后断粮只会停机。无人机不能维修生命塔，主动拆除返还缓存，损毁丢失缓存。基础输入按20堆、高级主料及辅料按40堆、流出及产物按5堆设置接收阈值；达到阈值才停收，本次完整货物或批次允许越过。
 
 Basic towers use electricity. Advanced towers consume any supported matrix as nutrition, including Dark Fog matrices. Dismantling returns cached items; destruction does not. Buffers use admission thresholds: a complete incoming stack or reaction batch may exceed a threshold before further processing stops.
 
 ## 研究与源点 Research and Memory
 
-探索只告诉你需要什么样本，结果的名称与用途在解析完成前保持未知。面板只列已知且未完成的样本，完成后移出。同一样本共享进度，完成时从已探索未完成的记录中取得一项。解析成功才消耗样本，大多数样本会完整回流，可以用传送带连接成循环。培育使用原胚，反向繁育使用对应塔体。
+配方按塔型列出当前世界可用的完整目录，未发现内容匿名显示，已知线索显示样本及共享解析进度，解锁后保留并展示详情。稀有配方须先取得线索；同一样本共享进度，完成时从已有未完成线索中取得一项。定向解析能力允许指定已有线索的结果。成功解析推进进度并从正面返还同件样本，只有损毁消耗样本；未处理部分从侧面回流，循环产线要接回两种输出。普通矿物复制与塔体培育随矩阵资格开放；反向繁育和源点重构属于传说配方，由高级遗迹残页或完整分钟献祭恢复。
 
 源点每个矩阵阶段恢复一次成长科技资格，随后仍需用矩阵逐项研究。成长科技的科研工作量参考原版同矩阵阶段升级，矩阵成本单独计算；未显现科技不能加入研究队列。物流科技则在原版物流资格之后，通过回收远古接口恢复。
 
-同种高级塔亚空间库存首次达到1000，会让对应特质线索有机会出现；首次千塔还会出现献祭主线。回收后，解析塔在没有待解析内容时才献祭塔体，以2%概率产源点。
+同种高级塔亚空间库存首次达到1000，会保留对应特质的探索资格；首次千塔还会出现献祭主线。回收后，解析塔在没有该塔待解析线索时才献祭塔体：每次经过处理8%，被处理件数以2%概率产源点。
 
-当前可恢复阶段全部完成后，可继续向解析塔投入源点。本完整分钟的投入提高下一分钟三类高级塔的成功率：相对增益为 `min(75%, 5%×floor(sqrt(M)))`，M是本分钟实际献祭的源点。增益每分钟替换，不永久累积；源点生产变体独立消耗，不会被自动截流。
+献祭已开放且当前可恢复阶段全部完成后，可继续向解析塔投入源点。本完整分钟的投入提高下一分钟三类高级塔的成功率：相对增益为 `min(75%, 5%×floor(sqrt(M)))`，M是本分钟实际献祭的源点。增益每分钟替换，不永久累积；源点生产变体独立消耗，不会被自动截流。
 
-Each sample has one shared probabilistic analysis slot. Memory restores growth qualifications once per matrix stage. After the sacrifice story is unlocked, excess tower samples can produce Memory; Memory offerings then boost all advanced towers during the next complete minute.
+Common recipes follow matrix qualifications; rare recipes need clues and shared sample analysis; legendary recipes come from ancient pages or Memory offerings. Successful sample analysis returns the same item at the front, while only destruction consumes it. Connect both outputs if you want a continuous loop. Memory restores growth qualifications once per matrix stage, then supplies a temporary bonus during the next complete minute once offerings are available.
 
 ## 遗迹与广播 Exploration
 
-静默遗迹位置和质量固定，回收后不刷新。母星默认2处，出生星系其他岩石星每颗6处，其他星系每颗3处，气巨1处。
+静默遗迹的初始位置和质量按星图确定，回收后不刷新。母星默认2处，出生星系其他岩石星每颗6处，其他星系每颗3处，气巨1处。残片可以升级既有地点的质量并累积奖励，不改变坐标。
 
-新的高质量广播可带航迹、战斗或生产挑战，全档最多同时两项。航迹按固定路径依次经过节点，持续偏离会从起点重来；生产需在现场新建并实际运行指定配方，旧库存不计入。战斗或生产可在现场改走航迹，原进度清零。完成直接回收阶段对应的源点。
+新的高质量广播可带航迹、战斗、生产、样本解析或供养挑战，全档最多同时两项。航迹需依次经过节点，持续偏离会重置；生产统计激活后目标星球的真实产出，已有合格机器也可使用，旧库存不计入。解析和供养可回工厂完成。战斗或生产可在现场改走航迹，原进度清零。完成后领取该地点的源点奖励。
 
-New high-quality broadcasts may require a fixed route, ground combat or production from newly built machines. Up to two challenges can remain active. Combat and production can be replaced by a route at the site, resetting progress.
+High-quality broadcasts can ask for a route, ground combat, production, sample analysis or feeding. Up to two challenges can remain active. Production counts new output after activation, including output from existing qualifying machines; stored items do not count. Analysis and feeding can be completed back at your factory. Combat and production can be replaced by a route at the site, resetting progress.
 
-普通广播在近距离发现前完全隐藏。一旦进入180米感知范围，位置就永久记录，可稍后从任务中的遗迹探索页重新标注。后续主线点击“查看信号”即可设置目标星球导航和地表标记，不会自动移动。首主线仅有强度条，不公开坐标，不需要换挡或切模式。
+普通静默地点在近距离发现前隐藏，进入180米感知范围后永久记录；新广播直接公开位置。后续主线和已发现地点可从任务页“标注位置”，也可点击左侧信号栏开启指引，不会自动移动。主线独立显示，普通地点按三个质量等级各共用一槽；固定同槽其他地点只替换该槽。首遗物只有强度条，不公开精确坐标。
 
-新地点以实际到访、已建工厂为依据展开。母星系其他行星是主探索区，外星系地点跟随已有活动；研究更高矩阵不会单独要求远行。普通广播初始20分钟一个，探索科技逐渐缩短，最短10分钟；每星球最多2个，同时遵守10分钟生成冷却。残片解析也受此限制。广播质量仍取决于生成时的矩阵阶段。
+新地点以实际到访、已建工厂为依据展开。普通广播每20游戏分钟检查一次，全档未回收动态普通点少于2才补充，同星球至少间隔10分钟；回收不会立即补点。残片优先升级已发现未回收普通地点，其次升级既有广播，均不存在时才尝试新增。质量达到最高后仍可累积源点奖励。遗迹测绘能力会公开已登陆星球的普通静默点。
 
 普通遗迹18米、关键地点30米为水平回收范围，空间距离同时计入悬空点位的高度，步行和默认悬浮都能触发。信号条满格不代替实际到达。奖励与地点记录不会在读档或查看时重抽。
 
-首个矩阵生产后，亚空间原胚或高级交互塔不足300时，资源点有机会补给。黑雾击杀的残片基础掉率10%，每级探索增加2个百分点；每片残片送入解析塔后有2%概率尝试生成广播。战斗不是主线门槛。
+普通地点必给源点，奖励随矩阵阶段和地点质量提高；质量较高的地点还可恢复残页或提供线索与补给。黑雾击杀可掉落残片，首次矩阵生产后还可掉落原胚。把残片送入解析塔可逐步强化既有目的地，减少为零散奖励反复跑图。战斗不是主线门槛。
 
-The first relic uses a graphical signal bar scaled to the planet's radius. Later story destinations and discovered ordinary sites can be marked through View Signal, without automatic movement. Ordinary sites stay hidden until approached, then remain recorded. Relics are sparse and new destinations follow actual visits and factory activity. Rewards are recorded once; combat is optional.
+The first relic uses an anonymous signal bar. Later story destinations have their own HUD slot; ordinary sites share one slot per quality tier. Marking a site changes only its slot. Discovered locations remain recorded, and new broadcasts reveal their locations directly. Fragments upgrade existing unrecovered sites and accumulate rewards, creating a new destination only when no eligible site exists. Guidance never moves Icarus automatically.
 
 ## 亚空间与成长 Subspace and Progression
 
@@ -103,33 +102,35 @@ Subspace stores materials; players build production lines or configure tower fac
 
 FE分馏塔从1层开始，随运输站集装物流三项科技逐级达到2、3、4层。紫糖两级依次提升至6、8层，绿糖三级依次提升至12、16、20层。从首级六层起，集装机、白爪输入与输出、物流塔与物流交互站、分馏塔两种输出统一成长。首级需要3315集装分拣器改良、3803运输站集装物流及信息矩阵科技，双向运输仍单独研究。3311～3315、3801～3803使用黄糖阶段费用；FE成长材料读取当前科技树的阶段组合。普通生产配方从6层起按4/堆叠层数缩短耗时并向上取整到整帧，丰碑继续加速，实际堆叠保持20层上限。
 
-完成主线探索并恢复宇宙矩阵资料后，在终极任务面板开放终极探索任务；亚空间容量达到初始的35倍后开放终极仓储任务。恢复中继或空间锚点，带着机甲背包里的源点进入回收范围，自动分批交付2400源点（不扣亚空间），再连接最终核心；任务直接授予最终能力，无矩阵研究费用，不占科技树位置。终极探索持续补足两个普通广播，终极仓储解除玩法容量限制。
+一次性能力按适合的矩阵阶段排列在科技第二页底部，包括遗迹测绘、定向解析、休眠保护、终极仓储和丰碑工业突破。任务组合回收、解析、培育、繁育、转化、供养和物流生产等实际行为；达到阶段与任务条件后科技自动完成，无需再次科研。在“任务 / 文明寻踪”查看条件与进度。
 
 Each item has its own capacity. Manual deposits may exceed it; excess automatic deliveries from basic towers and unlimited-upload stations irreversibly contribute to expansion. Limited uploads stop at the lower of capacity and their target. All supplied science-matrix tiers expand storage independently and simultaneously. Icons show which tiers are active; hovering over an item still shows its inventory and capacity.
 
 ## 高级配方 Advanced Recipes
 
-高级配方基础成功率8%，失败主料完整回流，辅料和催化剂仅在成功轮概率消耗。转化配方使用2～3种物料：主料承担转换，辅料持续配套，低损耗催化剂可长期维持。燃料副产物可以回喂，设备升级消耗配套材料，中间材料往返用于配平。无合法物料来源的配方及其解析方向不会出现。
+高级配方的投入、成功率和产出按具体配方查看。失败原料回流，催化剂按成功轮的消耗概率结算。常规转化按输入物品分别选方，每次成功只随机取得同系列的一种候选产物；可以向低级回收、同级返回或向高级转化，跨级越远越少见。精选系列包括传送带、燃料棒、制造台、熔炉、化工厂、采矿机和黑雾材料；普通科学矩阵不组成转化链。
 
 单极磁石基础配方使用多种矿物及少量单极催化，不消耗源点。白糖阶段还有独立的源点简化变体；两条路线可以并存。
 
-黑雾链恢复能量碎片↔黑雾矩阵↔物质重组器↔硅基神经元↔负熵奇点↔核心素的相邻转换。没有黑雾战斗的存档可在亚空间页用已入库的实体元数据按1:1兑换能量碎片。往返仍消耗催化剂和营养，不能无成本复制材料。
+黑雾材料系列包含能量碎片、黑雾矩阵、物质重组器、硅基神经元、负熵奇点和核心素。没有黑雾战斗的存档可在亚空间页用已入库的实体元数据按1:1兑换能量碎片。多座高级塔可各选一张配方，配合混带回环与产物分流；是否共用回环由玩家决定，运行始终需要矩阵供养。
 
-Advanced conversions use primary materials, auxiliaries and low-loss catalysts. Fuel byproducts can feed earlier stages; equipment upgrades consume supporting materials. The Dark Fog material chain can start from energy shards exchanged 1:1 for materialized metadata in Subspace Storage; combat is not required. New matrix production peaks automatically deposit metadata into subspace, without spending vanilla research-buyout balances. Ordinary science matrices do not form a conversion chain.
+Each advanced tower selects one unlocked recipe. Standard conversions take one material type and randomly choose one result from its series on each success; distant upgrades are rarer. Players can connect several towers through a shared loop and extract selected products. Matrix nutrition remains a running cost. Dark Fog materials can start from energy shards exchanged 1:1 for stored physical metadata, so combat is optional.
 
 ## 分馏丰碑 Fractionation Monument
 
-白糖阶段恢复丰碑配方。高级转化塔把“1矩阵＋1太阳帆”转为10枚对应来源的丰碑帆，把“1实体元数据＋1小型运载火箭”转为1枚丰碑建设火箭，基础成功率均为8%，矩阵营养仍需另外供养。
+白糖阶段恢复丰碑配方。若当前世界的丰碑矩阵目录共有n种，每种帆的成功轮配方为“1对应矩阵＋n太阳帆→n对应丰碑帆”；建设火箭为“1实体元数据＋1小型运载火箭→1丰碑建设火箭”。基础成功率均为8%，矩阵营养另行供养。
 
-所有有合法来源的矩阵都参与均衡，包括黑雾矩阵；尚未投入的种类也计零。电磁弹射器（含星环重型）从传送带识别丰碑帆，装填后只收同种，空仓可换种。帆在轨10分钟，所有来源的有效在轨数量越接近，额外加速越完整。火箭发射井供给建设火箭，任意星系可建，红巨星贡献最高、蓝巨星次之。
+丰碑矩阵目录先使用已知大型模组的指定名单，例如排除创世之书仅用于合成的组合矩阵，再补充其他来源的矩阵；种类数不随解锁进度变化。电磁弹射器发射各类丰碑帆，火箭发射井用建设火箭建设实际节点和框架。丰碑帆吸附后成为永久球壳细胞，首次吸附时按剩余空间为各类帆保留等额配额。同一星系各类已吸附帆各一个组成一套，不跨星系配套；结晶产能还受专属火箭已建结构限制。
 
-射线接收站可切为接收丰碑结晶，先取尽已有整件产物再切换。全档接收站共享结晶预算，供帆不足会降低产量；每100件结晶送入解析塔永久强化一次，必定成功且无损毁。建设与解析进度不会因帆过期回退。管理中的丰碑建设页集中显示结构、各类帆、结晶产能和加工进度。
+射线接收站可切为接收丰碑结晶，先取尽已有整件产物再切换。有效接收站共享全档结晶产能，增加接收站不会增加总预算。结晶送入解析塔必定用于永久加工成长，无损毁；第一级需要100件，后续基础费用按1.25的指数增长，再向上取整。加工等级不设上限，每级将奖励前的剩余制造时间乘0.95。拆除丰碑减少结晶产能，不撤回已取得的加工等级。
 
-本存档矩阵生产峰值增长后，新增额度自动按1:1转为实体元数据并进入亚空间，不扣原版买断余额、不重复发放。丰碑页可查看各矩阵峰值与累计已提取额度，取用物品在亚空间页完成。其他星图的宇宙矩阵峰值线性增强已建成丰碑。最终目标是把全部有效普通生产配方（包括其他模组注册配方）缩短到1帧，不加速科研或FE分馏反应，也不提高20层堆叠上限。
+本存档矩阵生产峰值增长后，新增额度自动按1:1转为实体元数据并进入亚空间，不扣原版买断余额、不重复发放。在“管理 / 丰碑建设”查看结构、各类帆、有效套数、结晶产能、加工进度以及各矩阵峰值和累计已提取额度；取用物品在“管理 / 亚空间仓储”完成。其他星图的宇宙矩阵峰值增强结晶产能。
+
+丰碑自身在通关奖励前的剩余制造时间达到50%即完成万物分馏，对应加工等级14；不计入堆叠等其他加速。通关奖励把额外速度加成翻倍：原速度倍率F变为`1＋2×(F−1)`，后续加工继续成长。仅加速有效普通生产配方，不改变科研、FE分馏反应或20层堆叠上限；一帧是引擎下限，不是通关要求。
 
 Multiplayer peers must use the same FE build and `Monument/SailIdentities` mapping. Keep this configuration with your saves: existing matrix-to-ammunition IDs must not be reassigned. A mismatch is rejected when joining or loading.
 
-The white-matrix stage opens monument conversions. Each obtainable matrix, including Dark Fog matrices, produces source-specific sails. Keep all orbital counts balanced; sails last 10 minutes, while construction and crystal-analysis progress are permanent. Silos launch construction rockets, with red giants contributing most and blue giants next. Ray receivers share a save-wide crystal budget; analyze 100 crystals for one permanent growth step. The goal is one frame for every valid ordinary production recipe, including recipes added by other mods. Research and fractionation rates are unchanged.
+The white-matrix stage opens monument construction. With n matrix types in the final catalogue, one matrix plus n solar sails makes n matching monument sails. Known mod lists exclude composite-only matrices where appropriate; unknown matrix sources are added separately. Sails become permanent shell cells, with equal space reserved for each type. Complete sets are counted within each star system and limited by actual monument structures. Ray receivers share the resulting crystal budget. Analyze crystals for permanent processing levels: the first costs 100, later costs grow by 25%, and each level multiplies remaining recipe time by 0.95. Levels have no gameplay cap. Reaching 50% before the completion bonus finishes FE and doubles only the extra speed component. One frame is not required.
 
 ## 操作 Controls
 
@@ -139,7 +140,7 @@ The white-matrix stage opens monument conversions. Each obtainable matrix, inclu
 | 切换面板外壳 | Ctrl + Shift + F，面板打开时 |
 | 重读教程 | G |
 
-面板分为任务、配方、管理、资料、设置。默认文明寻踪，核心主线与能力任务在此查看，普通地点归遗迹探索；两页各自切换进行中与已完成。配方按塔型查看发现、解析与解锁状态。管理包含丰碑建设和亚空间仓储，资料包含使用指南、手记和消息记录，设置集中在一页。左侧分页目录、右侧详情，长文可滚动。G手册只在关键节点提供短篇故事，具体操作请看面板指南。中文物品名为“源点”“残片”。高级塔配方在塔窗口选择，窗口区分缺少矩阵、缺料、堵塞和集装。
+面板分为任务、配方、管理、资料、设置。默认文明寻踪，核心主线与能力任务在此查看，普通地点归遗迹探索；两页各自切换进行中与已完成。配方按塔型查看发现、解析与解锁状态。管理包含丰碑建设和亚空间仓储，资料包含使用指南、手记和消息记录，设置集中在一页。左侧分页目录、右侧详情，长文可滚动。G手册只在关键节点提供短篇故事，具体操作请看面板指南。中文物品名为“源点”“残片”。高级塔配方在塔窗口选择，窗口分别显示供养状态、缺料、流动输出堵塞和产物输出堵塞。
 
 Keys can be changed in the game settings. The panel groups Tasks, Recipes, Management, Archives and Settings. Traces of Civilization contains the core story and ability tasks; Relic Exploration contains discovered sites. Both separate ongoing and completed records. Recipes are organized by tower type with discovery, analysis and unlock states. Management contains Monument Construction and Subspace Storage; the monument page also shows matrix production peaks and extracted metadata. Archives combine the guide, diary and messages, and all settings share one page.
 
@@ -147,13 +148,13 @@ Keys can be changed in the game settings. The panel groups Tasks, Recipes, Manag
 
 Nebula由主机结算研究、探索、交付、库存和高级塔，中途加入同步当前状态。客户端认领或交付时，主机按连接数据验证玩家位置、所在星球、回收距离和剩余需求；回收事实传给客户端，由各端使用自己的语言显示。客户端请使用传送带提取高级塔产物。
 
-当前FE存档格式为13，面向新存档。联机所有玩家必须使用相同FE版本。所有存档使用统一堆叠路线，旧“是否玩过”标记不再决定开局补给或科技。通关档案按独立世界计数；沙盒、用过一键解锁及没有资格记录的早期存档不能新增正式通关记录。
+FE 3.x顶层存档版本固定为10，历史存档按具名数据块恢复可用进度。联机所有玩家必须使用相同FE版本。通关档案按独立世界计数；沙盒、用过一键解锁及没有资格记录的早期存档不能新增正式通关记录。
 
-The current save format is version 13. Nebula is host-authoritative; all players must use the same FE version. Every save follows the same stacking progression. Completion records count distinct worlds; sandbox saves, unlock-all saves and earlier saves without an eligibility record cannot add a completion.
+FE 3.x keeps top-level save version 10 and restores readable named blocks from earlier saves. Nebula is host-authoritative; all players must use the same FE version. Completion records count distinct worlds; sandbox saves, unlock-all saves and earlier saves without an eligibility record cannot add a completion.
 
 ## 安装 Installation
 
-推荐使用 [r2modman](https://dsp.thunderstore.io/package/ebkr/r2modman/) 或兼容的Thunderstore管理器安装并启用FractionateEverything。清单已声明BepInEx、LDBTool、DSPModSave、CommonAPI、BuildBarTool、ModFixerOne、ErrorAnalyzer、AchievementsEnabler和NebulaMultiplayerModApi依赖。成就启用器为必需插件，其平台成就开关仍遵循玩家自己的配置。
+推荐使用 [r2modman](https://dsp.thunderstore.io/package/ebkr/r2modman/) 或兼容的Thunderstore管理器安装并启用FractionateEverything。清单已声明BepInEx、LDBTool、DSPModSave、CommonAPI、BuildBarTool、ModFixerOne、ErrorAnalyzer、AchievementsEnabler、TowerFactory和NebulaMultiplayerModApi依赖。成就启用器为必需插件，其平台成就开关仍遵循玩家自己的配置。
 
 Install with r2modman or another Thunderstore-compatible manager. Required dependencies are declared in the package manifest.
 

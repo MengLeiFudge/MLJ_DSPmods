@@ -24,10 +24,9 @@ feedback. I would be appreciated.
 
 ### [Fractionate Everything 万物分馏](https://github.com/MengLeiFudge/MLJ_DSPmods/tree/master/FractionateEverything)
 
-包含培养塔、解析塔、复制塔和转化塔，以及以矩阵解析数据、协议恢复和远古科技树组织的大量分馏配方；物流交互站可以把生产线直接接入数据中心。
+以五种分馏塔构建探索、样本解析、矩阵供养与循环转化产线。任务页追寻文明与遗迹，配方按塔型查看解锁进度；物流交互站接入共享亚空间，丰碑建设逐级提升制造速度。
 
-Featuring four specialized fractionators, protocol recovery driven by matrix analysis data, an ancient technology
-tree, and Interaction Stations that connect production lines directly to the data centre.
+Build a living industry with five fractionator types, exploration, sample analysis, matrix nutrition and conversion loops. Track civilization and relic tasks, browse recipes by tower type, connect production to shared subspace, and build a monument that progressively accelerates manufacturing.
 
 ### [Get Dsp Data 获取游戏数据](https://github.com/MengLeiFudge/MLJ_DSPmods/tree/master/GetDspData)
 
