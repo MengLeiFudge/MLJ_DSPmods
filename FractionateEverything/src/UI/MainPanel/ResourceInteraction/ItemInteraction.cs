@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
+using FE.Compatibility.Nebula;
 using FE.Logic.Civilization;
 using FE.Logic.DataCenter;
 using FE.UI.Controls;
@@ -42,7 +43,7 @@ public static class ItemInteraction {
     ];
     private static readonly int[][] FractionateGroupItemIdGroups = [
         [IFE通用原胚],
-        [IFE残片, IFE记忆源点],
+        [IFE残片, IFE记忆源点, IFE实体元数据, IFE丰碑火箭, IFE丰碑结晶],
         [IFE基础矿物塔, IFE基础解析塔, IFE高级矿物塔, IFE高级交互塔, IFE高级转化塔],
         [IFE行星内物流交互站, IFE星际物流交互站],
         [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵],
@@ -61,6 +62,7 @@ public static class ItemInteraction {
     private static readonly MyImageButton[,] btnItems = new MyImageButton[RowCount, ColumnCount];
     private static readonly MyCheckBox[] _typeFilterChecks = new MyCheckBox[ItemTypeFilters.Length];
     private static MyCheckBox _fractionateGroupCheckBox;
+    private static UIButton _metadataExchangeButton;
     private static UIButton _prevPageButton;
     private static UIButton _nextPageButton;
     private static Text _pageIndicator;
@@ -173,6 +175,12 @@ public static class ItemInteraction {
         var nodes = new List<LayoutNode> {
             CheckBoxNode(ShowNotStoredItemEntry, "显示未存储的物品",
                 pos: (0, 0), span: (1, 2), objectName: "item-interaction-show-empty"),
+            ButtonNode("FE.Metadata.Exchange", onClick: MetadataExchangeSync.Request,
+                onBuilt: button => {
+                    _metadataExchangeButton = button;
+                    button.tips.tipTitle = "FE.Metadata.Exchange".Translate();
+                    button.tips.tipText = "FE.Metadata.ExchangeHelp".Translate();
+                }, pos: (0, 2)),
             ButtonNode("查找指定物品", onClick: () => { SearchSpecifiedItem(150f); },
                 pos: (0, 3), objectName: "item-interaction-search"),
         };
@@ -234,10 +242,11 @@ public static class ItemInteraction {
     }
 
     public static void UpdateUI() {
-        if (!tab.gameObject.activeSelf) {
+        if (tab == null || !tab.gameObject.activeInHierarchy) {
             return;
         }
 
+        _metadataExchangeButton.button.interactable = GetModDataItemCount(IFE实体元数据) > 0;
         List<(ItemProto item, long count)> items = GetDisplayItems();
         int totalPages = Math.Max(1, (items.Count + ItemsPerPage - 1) / ItemsPerPage);
         if (_currentPage >= totalPages) {

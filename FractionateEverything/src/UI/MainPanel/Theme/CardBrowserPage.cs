@@ -61,6 +61,12 @@ public abstract class CardBrowserPage {
     private string renderedKey;
     private int pageIndex;
     private float nextRefresh;
+    private readonly List<Button> filterButtons = [];
+    private GameData world;
+    /// <summary>页内分类或状态索引，只影响展示。</summary>
+    protected int SelectedFilter { get; private set; }
+    /// <summary>页头切换项的翻译键；空集合表示不显示切换。</summary>
+    protected virtual IReadOnlyList<string> Filters => Array.Empty<string>();
 
     /// <summary>页面标题。</summary>
     protected abstract string Title { get; }
@@ -76,11 +82,21 @@ public abstract class CardBrowserPage {
     /// <param name="window">当前外壳。</param>
     /// <param name="parent">页面父节点。</param>
     public void CreateUI(MyWindow window, RectTransform parent) {
-        slots.Clear(); detailIcons.Clear();
+        slots.Clear(); detailIcons.Clear(); filterButtons.Clear();
         root = PageLayout.CreateCard(parent, "card-browser", 0, 0, 1082, 767,
             PageLayout.TransparentColor, PageLayout.TransparentColor);
         var header = PageLayout.CreatePageHeader(window, root, Title, Summary);
         summaryText = header.Summary;
+        for (int i = 0; i < Filters.Count; i++) {
+            int index = i;
+            filterButtons.Add(AddButton(root, Filters[i].Translate(), 1082 - Filters.Count * 150 + i * 150, 0, 142, () => {
+                SelectedFilter = index;
+                selectedKey = null;
+                pageIndex = 0;
+                nextRefresh = 0;
+                UpdateUI();
+            }));
+        }
         RectTransform list = PageLayout.CreateContentCard(root, "cards", 0, 88, ListWidth, 679);
         RectTransform detail = PageLayout.CreateContentCard(root, "detail", ListWidth + 16, 88, DetailWidth, 679);
         for (int i = 0; i < PageSize; i++) {
@@ -142,17 +158,30 @@ public abstract class CardBrowserPage {
     public void UpdateUI() {
         if (root == null || !root.gameObject.activeInHierarchy || Time.unscaledTime < nextRefresh) { return; }
         nextRefresh = Time.unscaledTime + 0.5f;
+        if (world != GameMain.data) {
+            world = GameMain.data;
+            SelectedFilter = 0;
+            selectedKey = renderedKey = null;
+            pageIndex = 0;
+        }
         cards = ReadCards();
         summaryText.text = Summary;
         bool found = false;
         foreach (PageCard card in cards) { if (card.Key == selectedKey) { found = true; break; } }
-        if (!found) { selectedKey = cards.Count > 0 ? cards[0].Key : null; }
+        if (!found) {
+            selectedKey = cards.Count > 0 ? cards[0].Key : null;
+            pageIndex = 0;
+        }
         pageIndex = Math.Min(pageIndex, Math.Max(0, (cards.Count - 1) / PageSize));
         Render();
     }
 
     /// <summary>重用现有卡片对象绘制列表及选中详情。</summary>
     private void Render() {
+        for (int i = 0; i < filterButtons.Count; i++) {
+            PageLayout.SetCardState((RectTransform)filterButtons[i].transform,
+                i == SelectedFilter ? CardVisualState.Selected : CardVisualState.Normal);
+        }
         PageCard selected = null;
         foreach (PageCard card in cards) { if (card.Key == selectedKey) { selected = card; break; } }
         for (int i = 0; i < slots.Count; i++) {

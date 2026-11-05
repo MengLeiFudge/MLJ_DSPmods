@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using FE.Logic.Fractionation.Recipes;
 
 namespace FE.Logic.Civilization;
 
@@ -35,6 +36,26 @@ public sealed class AnalysisRecordSnapshot(string key, AnalysisRecordState state
 }
 
 public static partial class ResearchManager {
+    /// <summary>按塔型列出本世界全部合法配方的取得状态，未发现配方只保留匿名占位。</summary>
+    /// <param name="type">生产塔的配方类型。</param>
+    /// <returns>按稳定配方身份排序的安全展示快照。</returns>
+    public static AnalysisRecordSnapshot[] GetRecipeRecordSnapshots(ERecipe type) {
+        lock (Sync) {
+            return RecipeManager.WorldviewRecipes.Where(recipe => recipe.RecipeType == type)
+                .OrderBy(recipe => recipe.PersistentId)
+                .Select(recipe => {
+                    bool completed = UnlockedContents.Contains(recipe.StableId);
+                    bool known = completed || ExploredContents.Contains(recipe.StableId);
+                    int sample = known ? recipe.AnalysisItemId : 0;
+                    if (known && ExploredContentDirections.TryGetValue(recipe.StableId, out int direction)) { sample = direction; }
+                    return new AnalysisRecordSnapshot(recipe.StableId,
+                        completed ? AnalysisRecordState.Completed : known ? AnalysisRecordState.Analyzing : AnalysisRecordState.Undiscovered,
+                        sample, completed || known && GrowthTechnologyManager.DirectedAnalysis ? recipe.DisplayName : string.Empty,
+                        completed ? 10000 : known ? GetDirectionProgressUnsafe(sample) : 0);
+                }).ToArray();
+        }
+    }
+
     /// <summary>按阶段和稳定身份列出解析三态；状态变化不改变排序，未知项不暴露实物或结果。</summary>
     /// <returns>当前可探索以及已经获得线索或完成的样本内容，不含普通配方、传说及科技资料。</returns>
     public static AnalysisRecordSnapshot[] GetAnalysisRecordSnapshots() {

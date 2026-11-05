@@ -164,7 +164,7 @@ public static class MainWindow {
 
     public static void NavigateToPage(string categoryName, int internalTabIndex = 0) {
         if (!CivilizationRecoveryManager.HasDataCenterCommunication) {
-            categoryName = "指引";
+            categoryName = "资料";
             internalTabIndex = 0;
         }
         if (OpenedMainPanelType == FEMainPanelType.Legacy && _legacyConfigWin != null) {
@@ -222,7 +222,7 @@ public static class MainWindow {
         if (openedWithCommunication) {
             ApplyCurrentPageRouteToOpenedPanel();
         } else {
-            NavigateToPage("指引");
+            NavigateToPage("资料");
         }
 
     }
@@ -398,9 +398,8 @@ public static class MainWindow {
     }
 
     private static void ApplyCurrentPageRouteToOpenedPanel() {
-        if (string.IsNullOrEmpty(currentPageCategoryName) || string.IsNullOrEmpty(currentPageSubpageName)) {
-            return;
-        }
+        (currentPageCategoryName, currentPageSubpageName) =
+            MainWindowPageRegistry.NormalizeRoute(currentPageCategoryName, currentPageSubpageName);
 
         switch (OpenedMainPanelType) {
             case FEMainPanelType.Legacy:

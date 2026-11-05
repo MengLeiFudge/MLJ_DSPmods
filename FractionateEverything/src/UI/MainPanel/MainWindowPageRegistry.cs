@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using FE.Logic.Civilization;
+using FE.Logic.Fractionation.Recipes;
 using FE.UI.Foundation.Window;
 using FE.UI.MainPanel.Archive;
 using FE.UI.MainPanel.Civilization;
@@ -16,36 +17,31 @@ namespace FE.UI.MainPanel;
 /// FE 主面板页面注册、分类顺序和可见性过滤中心。
 /// </summary>
 public static class MainWindowPageRegistry {
-    public const string ResourceInteractionCategoryName = "工业";
-    public const string CivilizationCategoryName = "研究";
-    public const string ArchiveCategoryName = "手记";
+    public const string ResourceInteractionCategoryName = "管理";
+    public const string CivilizationCategoryName = "任务";
+    public const string ArchiveCategoryName = "资料";
     public const string SystemSettingCategoryName = "设置";
-    private static readonly string[] categoryOrder = ["指引", "研究", "探索", "工业", "手记", "设置"];
+    private static readonly string[] categoryOrder = ["任务", "配方", "管理", "资料", "设置"];
 
+    private static readonly MainWindowPageDefinition encyclopedia = Browser("资料", "FE.Encyclopedia.Title", new UsageGuidePage());
     private static readonly MainWindowPageDefinition[] allPages = [
-        Browser("指引", "当前目标", new CurrentGoalPage()),
-        Browser("指引", "主线记录", new StoryRecordsPage()),
-        Browser("指引", "FE.Encyclopedia.Title", new UsageGuidePage()),
-        Browser("指引", "FE.MessageLog.Title", new MessageLogPage()),
-        Browser("研究", "解析样本", new AnalysisSamplesPage()),
-        Browser("研究", "阶段恢复", new StageRecoveryPage()),
-        Browser("研究", "塔体特质", new TowerTraitsPage()),
-        Browser("探索", "信号追踪", new SignalTrackingPage()),
-        Browser("探索", "地点档案", new LocationArchivePage()),
-        Browser("探索", "终极任务", new UltimateTasksPage()),
-        Browser("工业", "配方图鉴", new RecipeGalleryPage()),
-        Browser("工业", "生命塔", new LivingTowersPage()),
-        new("工业", "亚空间仓储", ItemInteraction.CreateUI, ItemInteraction.UpdateUI),
-        Browser("手记", "1.x手记", new DiaryPage(0)),
-        Browser("手记", "2.x手记", new DiaryPage(1)),
-        Browser("手记", "伊卡洛斯手记", new DiaryPage(2)),
-        new("设置", "亚空间存取", Miscellaneous.CreateStorageUI, Miscellaneous.UpdateUI),
-        new("设置", "界面与兼容", Miscellaneous.CreateInterfaceUI, Miscellaneous.UpdateUI),
+        Browser("任务", "文明寻踪", new TaskJournalPage(true)),
+        Browser("任务", "遗迹探索", new TaskJournalPage(false)),
+        Browser("配方", "基础矿物塔", new RecipeGalleryPage(ERecipe.BasicMineral)),
+        Browser("配方", "高级矿物塔", new RecipeGalleryPage(ERecipe.AdvancedMineral)),
+        Browser("配方", "高级交互塔", new RecipeGalleryPage(ERecipe.AdvancedInteraction)),
+        Browser("配方", "高级转化塔", new RecipeGalleryPage(ERecipe.AdvancedConversion)),
+        Browser("管理", "丰碑建设", new MonumentPage()),
+        new("管理", "亚空间仓储", ItemInteraction.CreateUI, ItemInteraction.UpdateUI),
+        encyclopedia,
+        Browser("资料", "手记", new DiaryPage()),
+        Browser("资料", "FE.MessageLog.Title", new MessageLogPage()),
+        new("设置", "设置", Miscellaneous.CreateUI, Miscellaneous.UpdateUI),
     ];
 
     /// <summary>通信建立前仅创建百科，其他页面不生成控件和操作入口。</summary>
     private static readonly IReadOnlyList<MainWindowCategoryDefinition> encyclopediaCategories =
-        new MainWindowCategoryDefinition[] { new("指引", new[] { allPages[2] }) };
+        new MainWindowCategoryDefinition[] { new("资料", new[] { encyclopedia }) };
 
     /// <summary>将卡片页实例接入两种外壳共用的注册表。</summary>
     /// <param name="category">分类。</param>
@@ -54,6 +50,26 @@ public static class MainWindowPageRegistry {
     /// <returns>外壳所用页面定义。</returns>
     private static MainWindowPageDefinition Browser(string category, string title, CardBrowserPage page) =>
         new(category, title, page.CreateUI, page.UpdateUI);
+
+    /// <summary>将已保存的旧目录路由映射到对应的新页面；未知入口回到文明寻踪。</summary>
+    /// <param name="category">保存的分类键。</param>
+    /// <param name="page">保存的子页键。</param>
+    /// <returns>当前注册表中的有效路由。</returns>
+    internal static (string Category, string Page) NormalizeRoute(string category, string page) {
+        foreach (MainWindowPageDefinition definition in allPages) {
+            if (definition.CategoryName == category && definition.SubpageName == page) { return (category, page); }
+        }
+        return (category, page) switch {
+            ("指引", "FE.Encyclopedia.Title") => ("资料", "FE.Encyclopedia.Title"),
+            ("指引", "FE.MessageLog.Title") => ("资料", "FE.MessageLog.Title"),
+            ("探索", "信号追踪" or "地点档案") => ("任务", "遗迹探索"),
+            ("研究", "解析样本") or ("工业", "配方图鉴") => ("配方", "基础矿物塔"),
+            ("工业", "亚空间仓储") => ("管理", "亚空间仓储"),
+            ("手记", _) => ("资料", "手记"),
+            ("设置", _) => ("设置", "设置"),
+            _ => ("任务", "文明寻踪"),
+        };
+    }
 
     private static readonly IReadOnlyList<MainWindowCategoryDefinition>[,,] categoryCache = BuildCategoryCache();
 

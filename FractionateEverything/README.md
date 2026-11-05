@@ -69,7 +69,7 @@ Each sample has one shared probabilistic analysis slot. Memory restores growth q
 
 New high-quality broadcasts may require a fixed route, ground combat or production from newly built machines. Up to two challenges can remain active. Combat and production can be replaced by a route at the site, resetting progress.
 
-普通广播在近距离发现前完全隐藏。一旦进入180米感知范围，位置就永久记录，可稍后从信号追踪页重新标注。后续主线点击“查看信号”即可设置目标星球导航和地表标记，不会自动移动。首主线仅有强度条，不公开坐标，不需要换挡或切模式。
+普通广播在近距离发现前完全隐藏。一旦进入180米感知范围，位置就永久记录，可稍后从任务中的遗迹探索页重新标注。后续主线点击“查看信号”即可设置目标星球导航和地表标记，不会自动移动。首主线仅有强度条，不公开坐标，不需要换挡或切模式。
 
 新地点以实际到访、已建工厂为依据展开。母星系其他行星是主探索区，外星系地点跟随已有活动；研究更高矩阵不会单独要求远行。普通广播初始20分钟一个，探索科技逐渐缩短，最短10分钟；每星球最多2个，同时遵守10分钟生成冷却。残片解析也受此限制。广播质量仍取决于生成时的矩阵阶段。
 
@@ -113,9 +113,9 @@ Each item has its own capacity. Manual deposits may exceed it; excess automatic 
 
 单极磁石基础配方使用多种矿物及少量单极催化，不消耗源点。白糖阶段还有独立的源点简化变体；两条路线可以并存。
 
-黑雾链恢复能量碎片↔黑雾矩阵↔物质重组器↔硅基神经元↔负熵奇点↔核心素的相邻转换。没有黑雾战斗的存档可用本存档的FE元数据额度兑换能量碎片，额度与实体提取共用。往返仍消耗催化剂和营养，不能无成本复制材料。
+黑雾链恢复能量碎片↔黑雾矩阵↔物质重组器↔硅基神经元↔负熵奇点↔核心素的相邻转换。没有黑雾战斗的存档可在亚空间页用已入库的实体元数据按1:1兑换能量碎片。往返仍消耗催化剂和营养，不能无成本复制材料。
 
-Advanced conversions use primary materials, auxiliaries and low-loss catalysts. Fuel byproducts can feed earlier stages; equipment upgrades consume supporting materials. The adjacent Dark Fog material chain starts from energy shards exchanged against this world's FE metadata allowance, which is shared with physical extraction; combat is not required. Ordinary science matrices do not form a conversion chain.
+Advanced conversions use primary materials, auxiliaries and low-loss catalysts. Fuel byproducts can feed earlier stages; equipment upgrades consume supporting materials. The Dark Fog material chain can start from energy shards exchanged 1:1 for materialized metadata in Subspace Storage; combat is not required. New matrix production peaks automatically deposit metadata into subspace, without spending vanilla research-buyout balances. Ordinary science matrices do not form a conversion chain.
 
 ## 分馏丰碑 Fractionation Monument
 
@@ -123,9 +123,9 @@ Advanced conversions use primary materials, auxiliaries and low-loss catalysts. 
 
 所有有合法来源的矩阵都参与均衡，包括黑雾矩阵；尚未投入的种类也计零。电磁弹射器（含星环重型）从传送带识别丰碑帆，装填后只收同种，空仓可换种。帆在轨10分钟，所有来源的有效在轨数量越接近，额外加速越完整。火箭发射井供给建设火箭，任意星系可建，红巨星贡献最高、蓝巨星次之。
 
-射线接收站可切为接收丰碑结晶，先取尽已有整件产物再切换。全档接收站共享结晶预算，供帆不足会降低产量；每100件结晶送入解析塔永久强化一次，必定成功且无损毁。建设与解析进度不会因帆过期回退。阶段恢复页可查看建设、均衡与各来源在轨数量。
+射线接收站可切为接收丰碑结晶，先取尽已有整件产物再切换。全档接收站共享结晶预算，供帆不足会降低产量；每100件结晶送入解析塔永久强化一次，必定成功且无损毁。建设与解析进度不会因帆过期回退。管理中的丰碑建设页集中显示结构、各类帆、结晶产能和加工进度。
 
-本存档元数据额度只读取生产峰值，提取实体与兑换能量碎片共用额度，不扣原版买断余额；指标创新高才增加额度。其他星图的宇宙矩阵峰值线性增强已建成丰碑。最终目标是把全部有效普通生产配方（包括其他模组注册配方）缩短到1帧，不加速科研或FE分馏反应，也不提高20层堆叠上限。
+本存档矩阵生产峰值增长后，新增额度自动按1:1转为实体元数据并进入亚空间，不扣原版买断余额、不重复发放。丰碑页可查看各矩阵峰值与累计已提取额度，取用物品在亚空间页完成。其他星图的宇宙矩阵峰值线性增强已建成丰碑。最终目标是把全部有效普通生产配方（包括其他模组注册配方）缩短到1帧，不加速科研或FE分馏反应，也不提高20层堆叠上限。
 
 Multiplayer peers must use the same FE build and `Monument/SailIdentities` mapping. Keep this configuration with your saves: existing matrix-to-ammunition IDs must not be reassigned. A mismatch is rejected when joining or loading.
 
@@ -139,9 +139,9 @@ The white-matrix stage opens monument conversions. Each obtainable matrix, inclu
 | 切换面板外壳 | Ctrl + Shift + F，面板打开时 |
 | 重读教程 | G |
 
-面板分为指引、研究、探索、工业、手记、设置，共十七页。默认当前目标，指南随发现开放；左侧是窄单列目录，右侧是宽阅读区，点击切换内容，长文可以滚动。G手册只在关键节点提供短篇故事，具体操作请看面板指南。中文物品名为“源点”“残片”。高级塔配方在塔窗口选择，窗口区分缺少矩阵、缺料、堵塞和集装。
+面板分为任务、配方、管理、资料、设置。默认文明寻踪，核心主线与能力任务在此查看，普通地点归遗迹探索；两页各自切换进行中与已完成。配方按塔型查看发现、解析与解锁状态。管理包含丰碑建设和亚空间仓储，资料包含使用指南、手记和消息记录，设置集中在一页。左侧分页目录、右侧详情，长文可滚动。G手册只在关键节点提供短篇故事，具体操作请看面板指南。中文物品名为“源点”“残片”。高级塔配方在塔窗口选择，窗口区分缺少矩阵、缺料、堵塞和集装。
 
-Keys can be changed in the game settings. The panel has seventeen pages across six categories, starting with Current Goals and a stage-based guide.
+Keys can be changed in the game settings. The panel groups Tasks, Recipes, Management, Archives and Settings. Traces of Civilization contains the core story and ability tasks; Relic Exploration contains discovered sites. Both separate ongoing and completed records. Recipes are organized by tower type with discovery, analysis and unlock states. Management contains Monument Construction and Subspace Storage; the monument page also shows matrix production peaks and extracted metadata. Archives combine the guide, diary and messages, and all settings share one page.
 
 ## 联机与存档 Multiplayer and Saves
 

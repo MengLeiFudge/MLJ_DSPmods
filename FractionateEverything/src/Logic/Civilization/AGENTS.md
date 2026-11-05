@@ -20,7 +20,7 @@
 - Recovery.cs：首遗物、亚空间通信与基础塔启动补给。
 - FragDropPatch.cs：可选黑雾补给。
 - PermanentProfileStore.cs：本地完成世界账本及去重通关次数。
-- MetadataExtraction.cs：只读生产峰值、共享提取额度及跨星图倍率。
+- MetadataExtraction.cs：只读生产峰值，将新增额度自动入库为实体元数据；拥有已提取账本、实体兑换去重流水及跨星图倍率。入库与扣账沿同一库存锁提交，主机统一结算并同步，UI只读快照。
 - Monument/：矩阵帆身份、真实结构与球壳配额、永久加工等级、原版发射器专属弹药分流、接收站共享预算；普通配方时间由VanillaRecipeManager投影。
 - Tutorial.cs：关键发现触发的G手册短篇叙事及第三方布局兼容；详细操作归面板指南。
 

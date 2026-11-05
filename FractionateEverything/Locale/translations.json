@@ -581,11 +581,11 @@
     "1041": "利用可能：{0:N0}"
   },
   "FE.Metadata.Description": {
-    "zhCN": "生产最高记录可以凝结为实体元数据，也可以交换能量碎片。每件消耗一单位额度，两种用途共享余额。\n\n额度只随本世界生产指标的新高增加，恒定产能不会反复授予；不扣除原版科技买断余额。每次最多处理100件，不足时领取余量，产物进入亚空间。",
-    "enUS": "Production peaks can become materialized metadata or energy shards. Each item costs one unit from the same allowance.\n\nOnly new production peaks in this world add allowance; steady production does not repeatedly grant it. Vanilla research-buyout balances are untouched. Each action transfers up to 100 items, or the remaining allowance, into subspace.",
-    "frFR": "Les pics de production deviennent des métadonnées physiques ou des fragments énergétiques. Chaque objet consomme une unité du même quota.\n\nSeuls les nouveaux records de ce monde augmentent le quota. Le solde des recherches instantanées reste intact. Chaque action place jusqu’à 100 objets, ou le quota restant, dans le sous-espace.",
-    "1031": "Produktionsspitzen lassen sich in Metadaten oder Energiefragmente umwandeln. Jedes Objekt kostet eine Einheit desselben Kontingents.\n\nNur neue Spitzen dieser Welt erhöhen es; konstante Produktion gewährt nichts erneut. Das Guthaben für Forschungskäufe bleibt unverändert. Pro Aktion gelangen bis zu 100 Objekte oder der Rest ins Subraumlager.",
-    "1041": "生産最高記録から実体化メタデータまたはエネルギー破片を得られます。どちらも1個につき共通枠を1消費します。\n\nこの世界の新記録だけが枠を増やし、一定の生産では繰り返し増えません。通常の研究購入用残高は変更しません。1回最大100個、足りない場合は残りを亜空間へ送ります。"
+    "zhCN": "本存档矩阵生产峰值增加时，新增额度自动凝结为实体元数据并存入亚空间，可用于丰碑建设。物品在亚空间仓储中取用。\n\n恒定产能不会重复发放；不会扣除原版科技买断余额。累计已提取额度保留本存档此前的提取与兑换记录。",
+    "enUS": "New matrix production peaks in this save automatically become materialized metadata in subspace for monument construction. Withdraw items from Subspace Storage.\n\nSteady production grants nothing twice and vanilla research-buyout balances are unchanged. Extracted allowance includes earlier extractions and exchanges in this save.",
+    "frFR": "Les nouveaux pics de matrices de cette partie deviennent automatiquement des métadonnées physiques dans le sous-espace pour le monument. Retirez-les dans le stockage.\n\nUne production stable ne rapporte rien de plus ; le solde de recherche instantanée reste intact. Le total inclut les extractions et échanges antérieurs.",
+    "1031": "Neue Matrix-Produktionsrekorde dieses Spielstands werden automatisch als materialisierte Metadaten für den Monumentbau eingelagert. Entnahme im Subraumlager.\n\nGleichbleibende Produktion vergibt nichts doppelt; das Forschungskaufguthaben bleibt unverändert. Frühere Extraktionen und Tausche zählen zum Gesamtbetrag.",
+    "1041": "このセーブのマトリックス生産最高記録が増えると、新しい枠が実体化メタデータとして自動的に亜空間へ入り、記念碑建設に使えます。取り出しは亜空間倉庫で行います。\n\n一定の生産では重複支給せず、通常の研究購入残高も消費しません。累計には以前の抽出・交換も含みます。"
   },
   "FE.Metadata.Extract": {
     "zhCN": "提取实体元数据",
@@ -784,11 +784,11 @@
     "1041": "推定消費 {0:0.##}/分\n稼働時の食料比率 {1:P1}"
   },
   "FE.Encyclopedia.Title": {
-    "enUS": "Encyclopedia",
-    "zhCN": "百科",
-    "frFR": "Encyclopédie",
-    "1031": "Enzyklopädie",
-    "1041": "百科事典"
+    "zhCN": "使用指南",
+    "enUS": "User Guide",
+    "frFR": "Guide pratique",
+    "1031": "Anleitung",
+    "1041": "利用ガイド"
   },
   "FE.Encyclopedia.Summary": {
     "enUS": "Restore damaged entries through matrix progress or pages from advanced relics.",
@@ -847,11 +847,11 @@
     "1041": "通常鉱物の複製と塔の培養はマトリックス技術に応じて開放される。レアレシピは先に手掛かりを得て、記録に示されたサンプルを解析する。手掛かりのない物品は無傷で通過し、それだけでレシピを発見することはできない。解析ページでは未発見・解析中・復元済みの記録が同じ位置に残る。未発見の記録はサンプルも結果も表示しない。\n\n解析成功は共有進捗を進め、同じサンプルを正面から返す。新たなサンプルは増えず、破損時だけ消費される。未処理のサンプルは増産剤ポイントを保ったまま側面に流れる。産物バッファがしきい値に達すると反応を止め、産物を排出・回収するまで入力は側面へ通過する。一回の処理でしきい値を超えることはある。\n\nエネルギーマトリックスの研究後は回路基板で置換用サンプルを作れる。各通過の成功率は1%、破損率は3%、側面への返却率は96%。成功すると現在利用可能なレシピのサンプルを一つ作り、手掛かりを記録する。対象レシピをすべて復元すると作成を止める。"
   },
   "FE.Encyclopedia.Explore": {
-    "enUS": "The first signal is only a strength bar, sensed on the surface or at low hover altitude. For later story signals and discovered sites, use Mark location in the panel or Show guide beside the signal bar. The guide points to the planet while you are away and to the location while you are on that planet. Select the same location to cancel, or another to change the destination. Icarus remains under your control.\n\nOrdinary signals remain hidden until approached. Once discovered, their locations stay in Signal Tracking until recovered, then in the location archive. Relics are sparse; the home system is the main exploration area, and new destinations follow your actual activity. Research improves fragment recovery and the frequency of new broadcasts.\n\nRecovery rewards go to subspace. Records preserve the actual result; revisiting an archive does not award it again.",
-    "zhCN": "最初的信号只有强度条，地面行走或低空悬浮时都能感知。后续主线和已发现地点可在面板中“标注位置”，也可在左侧信号栏“开启指引”。不在目标星球时连线指向星球，在目标星球时指向地点；同一地点可取消，选择其他地点则切换目标。机甲仍由玩家操控。\n\n普通信号在接近前保持隐藏。一旦发现，位置就留在信号追踪中，回收后进入地点档案。遗迹数量稀少，母星系是主要探索区域，新的目的地随实际活动范围展开。探索研究改善残片回收和新广播的出现频率。\n\n探索物资存入亚空间。档案保存实际取得的结果，回看不会再次发奖。",
-    "frFR": "Le premier signal est une simple barre de force, perceptible au sol ou en vol stationnaire bas. Pour les signaux narratifs suivants et les sites découverts, utilisez Marquer la position dans le panneau ou Afficher le guidage près de la barre. Le guidage pointe vers la planète à distance, puis vers le lieu une fois sur place. Sélectionnez le même lieu pour annuler ou un autre pour changer de destination. Icarus reste sous votre contrôle.\n\nLes signaux ordinaires restent cachés jusqu’à votre approche. Leurs positions découvertes restent dans le suivi, puis dans les archives après récupération. Les reliques sont rares ; le système natal est la zone principale, les destinations suivent votre activité réelle. La recherche améliore la récupération de fragments et la fréquence des émissions. Les récompenses vont au sous-espace, une seule fois.",
-    "1031": "Das erste Signal ist nur ein Stärkebalken, der am Boden oder im niedrigen Schwebeflug sichtbar ist. Spätere Handlungssignale und entdeckte Orte lassen sich im Fenster mit Position markieren oder neben dem Balken mit Wegweiser anzeigen verfolgen. Außerhalb des Zielplaneten zeigt die Linie zum Planeten, auf ihm zum Ort. Derselbe Ort lässt sich abwählen, ein anderer ersetzt das Ziel. Ikarus bleibt unter deiner Kontrolle.\n\nGewöhnliche Signale bleiben bis zur Annäherung verborgen. Entdeckte Orte bleiben in der Signalverfolgung und nach der Bergung im Archiv. Relikte sind selten; das Heimatsystem ist das Hauptgebiet, weitere Ziele folgen deiner tatsächlichen Aktivität. Forschung verbessert Fragmentfunde und die Häufigkeit neuer Sendungen. Belohnungen gelangen einmalig in den Subraum.",
-    "1041": "最初の信号は強度バーだけで示され、地上や低空ホバリング中に感知できる。その後の物語信号と発見済みの場所は、パネルの「位置をマーク」または左側の「ガイドを表示」で追跡できる。目的の惑星にいない時は惑星へ、その惑星にいる時は地点へ線が伸びる。同じ地点で解除し、別の地点を選ぶと目的地が切り替わる。イカロスの移動はプレイヤーが操作する。\n\n通常信号は接近するまで隠される。一度発見した場所は追跡一覧に残り、回収後は地点アーカイブへ移る。遺跡は少数で、母星系を中心に実際の活動範囲に応じて展開する。探索研究は断片回収と放送の頻度を改善する。報酬は亜空間へ一度だけ送られる。"
+    "enUS": "The first signal is only a strength bar, sensed on the surface or at low hover altitude. For later story signals and discovered sites, use Mark location in the panel or Show guide beside the signal bar. The guide points to the planet while you are away and to the location while you are on that planet. Select the same location to cancel, or another to change the destination. Icarus remains under your control.\n\nOrdinary signals remain hidden until approached. Once discovered, their locations stay in Relic Exploration under In Progress until recovered, then under Completed. Relics are sparse; the home system is the main exploration area, and new destinations follow your actual activity. Research improves fragment recovery and the frequency of new broadcasts.\n\nRecovery rewards go to subspace. Records preserve the actual result; revisiting an archive does not award it again.",
+    "zhCN": "最初的信号只有强度条，地面行走或低空悬浮时都能感知。后续主线和已发现地点可在面板中“标注位置”，也可在左侧信号栏“开启指引”。不在目标星球时连线指向星球，在目标星球时指向地点；同一地点可取消，选择其他地点则切换目标。机甲仍由玩家操控。\n\n普通信号在接近前保持隐藏。一旦发现，位置就留在遗迹探索的进行中列表，回收后进入已完成列表。遗迹数量稀少，母星系是主要探索区域，新的目的地随实际活动范围展开。探索研究改善残片回收和新广播的出现频率。\n\n探索物资存入亚空间。档案保存实际取得的结果，回看不会再次发奖。",
+    "frFR": "Le premier signal est une simple barre de force, perceptible au sol ou en vol stationnaire bas. Pour les signaux narratifs suivants et les sites découverts, utilisez Marquer la position dans le panneau ou Afficher le guidage près de la barre. Le guidage pointe vers la planète à distance, puis vers le lieu une fois sur place. Sélectionnez le même lieu pour annuler ou un autre pour changer de destination. Icarus reste sous votre contrôle.\n\nLes signaux ordinaires restent cachés jusqu’à votre approche. Leurs positions restent dans Exploration des vestiges, parmi les missions en cours puis terminées après récupération. Les reliques sont rares ; le système natal est la zone principale, les destinations suivent votre activité réelle. La recherche améliore la récupération de fragments et la fréquence des émissions. Les récompenses vont au sous-espace, une seule fois.",
+    "1031": "Das erste Signal ist nur ein Stärkebalken, der am Boden oder im niedrigen Schwebeflug sichtbar ist. Spätere Handlungssignale und entdeckte Orte lassen sich im Fenster mit Position markieren oder neben dem Balken mit Wegweiser anzeigen verfolgen. Außerhalb des Zielplaneten zeigt die Linie zum Planeten, auf ihm zum Ort. Derselbe Ort lässt sich abwählen, ein anderer ersetzt das Ziel. Ikarus bleibt unter deiner Kontrolle.\n\nGewöhnliche Signale bleiben bis zur Annäherung verborgen. Entdeckte Orte bleiben in der Relikterkundung bei den offenen Einträgen und nach der Bergung bei den abgeschlossenen. Relikte sind selten; das Heimatsystem ist das Hauptgebiet, weitere Ziele folgen deiner tatsächlichen Aktivität. Forschung verbessert Fragmentfunde und die Häufigkeit neuer Sendungen. Belohnungen gelangen einmalig in den Subraum.",
+    "1041": "最初の信号は強度バーだけで示され、地上や低空ホバリング中に感知できる。その後の物語信号と発見済みの場所は、パネルの「位置をマーク」または左側の「ガイドを表示」で追跡できる。目的の惑星にいない時は惑星へ、その惑星にいる時は地点へ線が伸びる。同じ地点で解除し、別の地点を選ぶと目的地が切り替わる。イカロスの移動はプレイヤーが操作する。\n\n通常信号は接近するまで隠される。発見した場所は遺跡探索の進行中一覧に残り、回収後は完了一覧へ移る。遺跡は少数で、母星系を中心に実際の活動範囲に応じて展開する。探索研究は断片回収と放送の頻度を改善する。報酬は亜空間へ一度だけ送られる。"
   },
   "FE.Encyclopedia.Storage": {
     "enUS": "Each item has its own capacity. To expand subspace, power a basic analysis tower and feed science matrices into a side port. Each matrix tier accumulates its own expansion effect, so different tiers can work at the same time. Expansion is permanent, with growth gradually slowing.\n\nProcessed matrices first enter the shared supply buffer for their tier. The remaining processed matrices become offerings and may produce Memory; unprocessed matrices flow out at the side with their proliferator points. Relic rewards may exceed normal capacity and remain available for withdrawal.",
@@ -896,11 +896,11 @@
     "1041": "回路基板によるサンプル作成"
   },
   "FE.MessageLog.Title": {
-    "enUS": "Message Log",
-    "zhCN": "消息日志",
-    "frFR": "Journal des messages",
-    "1031": "Nachrichtenprotokoll",
-    "1041": "メッセージログ"
+    "zhCN": "消息记录",
+    "enUS": "Message History",
+    "frFR": "Historique des messages",
+    "1031": "Nachrichtenverlauf",
+    "1041": "メッセージ履歴"
   },
   "FE.MessageLog.Summary": {
     "enUS": "The latest 50 text tips and relic messages in this game, newest first. Consecutive identical messages are merged and show ×N. Cleared when changing saves.",
@@ -3276,11 +3276,11 @@
     "1041": "基礎解析塔"
   },
   "FE.UsageGuidePage.Analysis": {
-    "enUS": "The incomplete records identify several samples. Sending them into an analysis tower may reveal something unusual…\n\nIn Research / Analysis Samples, choose an item already mentioned in the records. Connect a basic analysis tower to power, feed samples into its side, and loop the flow output on the opposite side back to the input.\n\nMost samples leave intact. Both successful analysis and destruction consume samples; higher-value samples are less likely to succeed and more likely to be destroyed. You can build other production lines while watching the panel's progress.",
-    "zhCN": "残缺的记录留下了几种样本。将它们送进解析塔，也许就能发现一些奇特的东西……\n\n先在“研究 / 解析样本”里选一种已有记录的物品。给基础解析塔接通电网，从侧面送入样本，再将另一侧的流动出口接回输入，形成循环。\n\n大多数样本会完整地流出；解析成功和损毁都会消耗样本。样本价值越高，解析成功率越低，也越容易损毁。可以一边建设其他产线，一边留意面板中的进度。",
-    "frFR": "Les archives incomplètes désignent plusieurs échantillons. Les envoyer dans une tour d'analyse pourrait révéler des choses étranges…\n\nDans Recherche / Échantillons à analyser, choisissez un objet déjà mentionné. Alimentez une tour d'analyse de base en électricité, introduisez les échantillons par le côté et reliez la sortie en circulation de l'autre côté à l'entrée.\n\nLa plupart des échantillons ressortent intacts. Une analyse réussie comme une destruction consomme des échantillons ; plus leur valeur est élevée, plus la réussite est rare et la destruction probable. Vous pouvez construire d'autres chaînes tout en surveillant la progression.",
-    "1031": "Die lückenhaften Aufzeichnungen nennen mehrere Proben. Im Analyseturm könnten sie etwas Ungewöhnliches enthüllen …\n\nWähle unter Forschung / Analyseproben einen bereits erwähnten Gegenstand. Versorge einen einfachen Analyseturm mit Strom, führe die Proben seitlich zu und verbinde den Durchflussausgang auf der Gegenseite wieder mit dem Eingang.\n\nDie meisten Proben verlassen den Turm unversehrt. Erfolgreiche Analysen und Zerstörung verbrauchen Proben; je wertvoller eine Probe ist, desto geringer ist ihre Erfolgschance und desto höher ihr Zerstörungsrisiko. Währenddessen kannst du andere Anlagen bauen und den Fortschritt im Fenster verfolgen.",
-    "1041": "不完全な記録には、いくつかのサンプルが示されている。解析塔に送れば、不思議なものが見つかるかもしれない……\n\n「研究 / 解析サンプル」で記録のあるアイテムを選ぼう。基礎解析塔に電力をつなぎ、側面からサンプルを入れ、反対側の循環出口を入口に戻してループを作る。\n\nほとんどのサンプルはそのまま流れ出るが、解析成功時と損壊時には消費される。価値が高いサンプルほど解析成功率が下がり、損壊しやすくなる。他のラインを作りながら、画面の進捗を確認するとよい。"
+    "enUS": "The incomplete records identify several samples. Sending them into an analysis tower may reveal something unusual…\n\nIn Recipes / the corresponding tower, choose an item already mentioned in the records. Connect a basic analysis tower to power, feed samples into its side, and loop the flow output on the opposite side back to the input.\n\nMost samples leave intact. Both successful analysis and destruction consume samples; higher-value samples are less likely to succeed and more likely to be destroyed. You can build other production lines while watching the panel's progress.",
+    "zhCN": "残缺的记录留下了几种样本。将它们送进解析塔，也许就能发现一些奇特的东西……\n\n先在“配方 / 对应塔型”里选一种已有记录的物品。给基础解析塔接通电网，从侧面送入样本，再将另一侧的流动出口接回输入，形成循环。\n\n大多数样本会完整地流出；解析成功和损毁都会消耗样本。样本价值越高，解析成功率越低，也越容易损毁。可以一边建设其他产线，一边留意面板中的进度。",
+    "frFR": "Les archives incomplètes désignent plusieurs échantillons. Les envoyer dans une tour d'analyse pourrait révéler des choses étranges…\n\nDans Recettes / la tour correspondante, choisissez un objet déjà mentionné. Alimentez une tour d'analyse de base en électricité, introduisez les échantillons par le côté et reliez la sortie en circulation de l'autre côté à l'entrée.\n\nLa plupart des échantillons ressortent intacts. Une analyse réussie comme une destruction consomme des échantillons ; plus leur valeur est élevée, plus la réussite est rare et la destruction probable. Vous pouvez construire d'autres chaînes tout en surveillant la progression.",
+    "1031": "Die lückenhaften Aufzeichnungen nennen mehrere Proben. Im Analyseturm könnten sie etwas Ungewöhnliches enthüllen …\n\nWähle unter Rezepte / den passenden Turm einen bereits erwähnten Gegenstand. Versorge einen einfachen Analyseturm mit Strom, führe die Proben seitlich zu und verbinde den Durchflussausgang auf der Gegenseite wieder mit dem Eingang.\n\nDie meisten Proben verlassen den Turm unversehrt. Erfolgreiche Analysen und Zerstörung verbrauchen Proben; je wertvoller eine Probe ist, desto geringer ist ihre Erfolgschance und desto höher ihr Zerstörungsrisiko. Währenddessen kannst du andere Anlagen bauen und den Fortschritt im Fenster verfolgen.",
+    "1041": "不完全な記録には、いくつかのサンプルが示されている。解析塔に送れば、不思議なものが見つかるかもしれない……\n\n「レシピ / 対応する塔」で記録のあるアイテムを選ぼう。基礎解析塔に電力をつなぎ、側面からサンプルを入れ、反対側の循環出口を入口に戻してループを作る。\n\nほとんどのサンプルはそのまま流れ出るが、解析成功時と損壊時には消費される。価値が高いサンプルほど解析成功率が下がり、損壊しやすくなる。他のラインを作りながら、画面の進捗を確認するとよい。"
   },
   "循着回声寻找": {
     "enUS": "Follow the Echo",
@@ -3290,9 +3290,9 @@
     "1041": "こだまをたどる"
   },
   "遗迹探索": {
-    "enUS": "Relic Exploration",
     "zhCN": "遗迹探索",
-    "frFR": "Exploration des reliques",
+    "enUS": "Relic Exploration",
+    "frFR": "Exploration des vestiges",
     "1031": "Relikterkundung",
     "1041": "遺跡探索"
   },
@@ -3374,11 +3374,11 @@
     "1041": "亜空間に接続する"
   },
   "FE.UsageGuidePage.Logistics": {
-    "enUS": "The ancient interface's structure has been restored. You can now build logistics interaction stations to exchange items directly between production lines and subspace.\n\nChoose upload or download in the station window and provide enough power. Transfer energy varies with item value; researching Subspace Transfer Efficiency reduces it.\n\nAdjust how much stock to keep and when transfers begin in Settings / Subspace Transfers.",
-    "zhCN": "古老接口的结构已经恢复，可以着手建造物流交互站了。它能让产线直接与亚空间交换物品。\n\n在物流站窗口设定上传或下载方向，并接通充足的电力。存取所需能量会随物品价值变化，升级亚空间存取能效可以减少耗电。\n\n需要保留多少库存、何时开始存取，可以在“设置 / 亚空间存取”中调整。",
-    "frFR": "La structure de l'interface antique est restaurée. Construisez des stations d'interaction logistique pour échanger directement entre les chaînes et le sous-espace.\n\nChoisissez le dépôt ou le retrait dans la fenêtre de station et fournissez assez d'électricité. L'énergie dépend de la valeur des objets ; l'efficacité des transferts sous-spatiaux la réduit.\n\nRéglez les stocks à conserver et les seuils de transfert dans Paramètres / Transferts sous-spatiaux.",
-    "1031": "Die Struktur der antiken Schnittstelle ist wiederhergestellt. Baue Logistik-Interaktionsstationen für den direkten Austausch zwischen Produktion und Subraum.\n\nWähle Einlagerung oder Entnahme im Stationsfenster und sorge für genügend Strom. Die Transferenergie hängt vom Gegenstandswert ab; Forschung zur Subraumtransfereffizienz senkt sie.\n\nVorratsmengen und Transferschwellen stellst du unter Einstellungen / Subraumtransfers ein.",
-    "1041": "古代インターフェースの構造が復元され、物流交互ステーションを建てられるようになった。生産ラインと亜空間が直接アイテムを交換できる。\n\nステーション画面で搬入・搬出を設定し、十分な電力をつなごう。必要エネルギーはアイテム価値で変わり、亜空間転送効率を研究すると削減できる。\n\n残す在庫量や出し入れの開始条件は「設定 / 亜空間への出し入れ」で調整する。"
+    "enUS": "The ancient interface's structure has been restored. You can now build logistics interaction stations to exchange items directly between production lines and subspace.\n\nChoose upload or download in the station window and provide enough power. Transfer energy varies with item value; researching Subspace Transfer Efficiency reduces it.\n\nAdjust how much stock to keep and when transfers begin in Settings.",
+    "zhCN": "古老接口的结构已经恢复，可以着手建造物流交互站了。它能让产线直接与亚空间交换物品。\n\n在物流站窗口设定上传或下载方向，并接通充足的电力。存取所需能量会随物品价值变化，升级亚空间存取能效可以减少耗电。\n\n需要保留多少库存、何时开始存取，可以在“设置”中调整。",
+    "frFR": "La structure de l'interface antique est restaurée. Construisez des stations d'interaction logistique pour échanger directement entre les chaînes et le sous-espace.\n\nChoisissez le dépôt ou le retrait dans la fenêtre de station et fournissez assez d'électricité. L'énergie dépend de la valeur des objets ; l'efficacité des transferts sous-spatiaux la réduit.\n\nRéglez les stocks à conserver et les seuils de transfert dans Paramètres.",
+    "1031": "Die Struktur der antiken Schnittstelle ist wiederhergestellt. Baue Logistik-Interaktionsstationen für den direkten Austausch zwischen Produktion und Subraum.\n\nWähle Einlagerung oder Entnahme im Stationsfenster und sorge für genügend Strom. Die Transferenergie hängt vom Gegenstandswert ab; Forschung zur Subraumtransfereffizienz senkt sie.\n\nVorratsmengen und Transferschwellen stellst du unter Einstellungen ein.",
+    "1041": "古代インターフェースの構造が復元され、物流交互ステーションを建てられるようになった。生産ラインと亜空間が直接アイテムを交換できる。\n\nステーション画面で搬入・搬出を設定し、十分な電力をつなごう。必要エネルギーはアイテム価値で変わり、亜空間転送効率を研究すると削減できる。\n\n残す在庫量や出し入れの開始条件は「設定」で調整する。"
   },
   "留下来的光": {
     "enUS": "The Light Left Behind",
@@ -4585,11 +4585,11 @@
     "1041": "着陸後に惑星の通常遺跡を公開します。回収は現地で行います。"
   },
   "FE.Ability.Analysis.Effect": {
-    "zhCN": "可在解析样本页指定已有线索的恢复目标，仍需实际解析。",
-    "enUS": "Select a known clue as the recovery target on the analysis page; actual analysis is still required.",
-    "frFR": "Choisissez un indice connu comme cible sur la page d’analyse ; l’analyse reste nécessaire.",
-    "1031": "Auf der Analyseseite einen bekannten Hinweis als Ziel wählen; Analyse bleibt erforderlich.",
-    "1041": "解析ページで既知の手掛かりを対象に指定できます。実際の解析は必要です。"
+    "zhCN": "可在对应配方或特质详情中指定已有线索的恢复目标，仍需实际解析。",
+    "enUS": "Choose a known clue as the target in its recipe or trait details; actual analysis is still required.",
+    "frFR": "Choisissez un indice connu dans les détails de sa recette ou de son trait ; l’analyse reste nécessaire.",
+    "1031": "Wähle einen bekannten Hinweis in den Rezept- oder Eigenschaftsdetails als Ziel; die Analyse bleibt erforderlich.",
+    "1041": "レシピや特性の詳細で既知の手掛かりを解析目標に指定できます。実際の解析は引き続き必要です。"
   },
   "FE.Ability.Hibernation.Effect": {
     "zhCN": "生命塔断粮时停机休眠，不再因断粮损坏；恢复供养后继续生产。",
@@ -4772,5 +4772,173 @@
     "frFR": "Un résultat aléatoire",
     "1031": "Ein zufälliges Ergebnis",
     "1041": "ランダムに1種類"
+  },
+  "任务": {
+    "zhCN": "任务",
+    "enUS": "Tasks",
+    "frFR": "Missions",
+    "1031": "Aufgaben",
+    "1041": "任務"
+  },
+  "配方": {
+    "zhCN": "配方",
+    "enUS": "Recipes",
+    "frFR": "Recettes",
+    "1031": "Rezepte",
+    "1041": "レシピ"
+  },
+  "管理": {
+    "zhCN": "管理",
+    "enUS": "Management",
+    "frFR": "Gestion",
+    "1031": "Verwaltung",
+    "1041": "管理"
+  },
+  "资料": {
+    "zhCN": "资料",
+    "enUS": "Archives",
+    "frFR": "Archives",
+    "1031": "Archiv",
+    "1041": "資料"
+  },
+  "文明寻踪": {
+    "zhCN": "文明寻踪",
+    "enUS": "Traces of Civilization",
+    "frFR": "Traces de civilisation",
+    "1031": "Spuren der Zivilisation",
+    "1041": "文明の足跡"
+  },
+  "丰碑建设": {
+    "zhCN": "丰碑建设",
+    "enUS": "Monument Construction",
+    "frFR": "Construction du monument",
+    "1031": "Monumentbau",
+    "1041": "記念碑建設"
+  },
+  "FE.Tasks.CivilizationSummary": {
+    "zhCN": "追寻古文明留下的线索，恢复技术与能力，逐步完成丰碑。",
+    "enUS": "Follow ancient clues, recover technology and abilities, and build the monument.",
+    "frFR": "Suivez les indices anciens, retrouvez technologies et capacités, puis construisez le monument.",
+    "1031": "Folge alten Spuren, erschließe Technologien und Fähigkeiten und errichte das Monument.",
+    "1041": "古代文明の手掛かりを追い、技術と能力を取り戻し、記念碑を完成させよう。"
+  },
+  "FE.Tasks.RelicsSummary": {
+    "zhCN": "查看已发现的各地遗迹与回收记录；位置标注仍由你选择。",
+    "enUS": "Browse discovered relics and recovery records. Choose which locations to track.",
+    "frFR": "Consultez les vestiges découverts et les récupérations. Choisissez les lieux à suivre.",
+    "1031": "Entdeckte Relikte und Bergungsberichte ansehen und Orte zur Verfolgung wählen.",
+    "1041": "発見済みの遺跡と回収記録を確認し、追跡する場所を選べます。"
+  },
+  "FE.Tasks.NoActive": {
+    "zhCN": "目前没有已发现的未完成任务。",
+    "enUS": "No discovered tasks are currently unfinished.",
+    "frFR": "Aucune mission découverte en cours.",
+    "1031": "Keine entdeckten Aufgaben offen.",
+    "1041": "発見済みの未完了任務はありません。"
+  },
+  "FE.Tasks.NoCompleted": {
+    "zhCN": "尚无完成记录。",
+    "enUS": "No completed records yet.",
+    "frFR": "Aucune mission terminée.",
+    "1031": "Noch keine abgeschlossenen Einträge.",
+    "1041": "完了記録はまだありません。"
+  },
+  "FE.Tasks.StageTitle": {
+    "zhCN": "{0} · 阶段记忆",
+    "enUS": "{0} · Stage memory",
+    "frFR": "{0} · Mémoire de palier",
+    "1031": "{0} · Stufenerinnerung",
+    "1041": "{0} · 段階の記憶"
+  },
+  "FE.Analysis.AvailableStock": {
+    "zhCN": "可用库存：{0:N0}",
+    "enUS": "Available stock: {0:N0}",
+    "frFR": "Stock disponible : {0:N0}",
+    "1031": "Verfügbarer Bestand: {0:N0}",
+    "1041": "利用可能な在庫：{0:N0}"
+  },
+  "FE.Recipes.Summary": {
+    "zhCN": "本塔配方的线索、解析进度与解锁结果。未发现的记录保持匿名。",
+    "enUS": "Clues, analysis progress and unlocked recipes for this tower. Undiscovered records remain anonymous.",
+    "frFR": "Indices, analyse et recettes débloquées pour cette tour. Les archives inconnues restent anonymes.",
+    "1031": "Hinweise, Analysefortschritt und freigeschaltete Rezepte dieses Turms. Unentdeckte Einträge bleiben anonym.",
+    "1041": "この塔のレシピの手掛かり、解析進捗、解放結果。未発見の記録は匿名で表示します。"
+  },
+  "FE.Recipes.Inputs": {
+    "zhCN": "原料与催化剂持有需求（消耗概率按成功轮计算）：",
+    "enUS": "Ingredients and catalyst stock required (consumption chance per success):",
+    "frFR": "Ingrédients et catalyseurs requis (probabilité de consommation par réussite) :",
+    "1031": "Benötigte Zutaten und Katalysatoren (Verbrauchschance je Erfolg):",
+    "1041": "原料と触媒の必要保持数（消費確率は成功ごと）："
+  },
+  "FE.Recipes.Outputs": {
+    "zhCN": "每次成功的产量：",
+    "enUS": "Output per success:",
+    "frFR": "Production par réussite :",
+    "1031": "Ausgabe je Erfolg:",
+    "1041": "成功ごとの産出量："
+  },
+  "FE.Recipes.Candidates": {
+    "zhCN": "每次成功随机得到一种候选产物：",
+    "enUS": "Each success randomly selects one output:",
+    "frFR": "Chaque réussite tire un seul produit :",
+    "1031": "Jeder Erfolg wählt zufällig ein Produkt:",
+    "1041": "成功ごとに候補から1種類をランダムに産出："
+  },
+  "FE.Recipes.Candidate": {
+    "zhCN": "{0} ×{1:0.###} · 抽中概率 {2} · 成功轮均值 {3:0.###}",
+    "enUS": "{0} ×{1:0.###} · Chance {2} · Mean per success {3:0.###}",
+    "frFR": "{0} ×{1:0.###} · Probabilité {2} · Moyenne par réussite {3:0.###}",
+    "1031": "{0} ×{1:0.###} · Chance {2} · Mittel je Erfolg {3:0.###}",
+    "1041": "{0} ×{1:0.###} · 選出確率 {2} · 成功あたり平均 {3:0.###}"
+  },
+  "FE.Monument.PageSummary": {
+    "zhCN": "建设成果、结晶产能、加工进度与本存档元数据来源。",
+    "enUS": "Construction, crystal output, processing progress and this save’s metadata sources.",
+    "frFR": "Construction, cristaux, progression et sources de métadonnées de cette partie.",
+    "1031": "Baufortschritt, Kristallertrag, Verarbeitungsstufe und Metadatenquellen dieses Spielstands.",
+    "1041": "建設成果、結晶生産、加工進捗、このセーブのメタデータ供給源。"
+  },
+  "FE.Metadata.Extracted": {
+    "zhCN": "已提取：{0:N0}",
+    "enUS": "Extracted: {0:N0}",
+    "frFR": "Extrait : {0:N0}",
+    "1031": "Extrahiert: {0:N0}",
+    "1041": "抽出済み：{0:N0}"
+  },
+  "FE.Metadata.PeakDetail": {
+    "zhCN": "本存档生产峰值：{0:N0}\n累计已提取额度：{1:N0}",
+    "enUS": "Production peak in this save: {0:N0}\nTotal extracted allowance: {1:N0}",
+    "frFR": "Pic de production de cette partie : {0:N0}\nQuota total extrait : {1:N0}",
+    "1031": "Produktionsrekord dieses Spielstands: {0:N0}\nInsgesamt extrahiertes Kontingent: {1:N0}",
+    "1041": "このセーブの生産最高記録：{0:N0}\n抽出済み枠の合計：{1:N0}"
+  },
+  "FE.Metadata.ExchangeHelp": {
+    "zhCN": "将亚空间内已有的实体元数据按1:1兑换为能量碎片，每次最多100件，不足时兑换余量。消耗实体元数据，产物留在亚空间；不再次扣除生产峰值额度。",
+    "enUS": "Exchange stored materialized metadata for energy shards at 1:1, up to 100 per click. If fewer are available, exchange the remainder. Items stay in subspace; production-peak allowance is not charged again.",
+    "frFR": "Échangez les métadonnées physiques stockées contre des fragments énergétiques à 1:1, jusqu’à 100 par clic ou le reste disponible. Les produits restent dans le sous-espace, sans déduire à nouveau le quota.",
+    "1031": "Eingelagerte Metadaten im Verhältnis 1:1 gegen Energiefragmente tauschen, höchstens 100 je Klick oder den Restbestand. Die Produkte bleiben im Subraum; das Rekordkontingent wird nicht erneut belastet.",
+    "1041": "亜空間の実体化メタデータを1:1でエネルギー破片に交換します。1回最大100個、足りなければ残りを交換します。産物は亜空間に残り、生産最高記録の枠は再消費しません。"
+  },
+  "FE.Settings.Summary": {
+    "zhCN": "物品存取、物流阈值、界面与兼容选项。",
+    "enUS": "Item access, logistics thresholds, interface and compatibility options.",
+    "frFR": "Accès aux objets, seuils logistiques, interface et compatibilité.",
+    "1031": "Gegenstandszugriff, Logistikschwellen, Oberfläche und Kompatibilität.",
+    "1041": "アイテムの出し入れ、物流しきい値、表示と互換性の設定。"
+  },
+  "高级交互塔": {
+    "enUS": "Advanced Interaction Tower",
+    "zhCN": "高级交互塔",
+    "frFR": "Tour d'interaction avancée",
+    "1031": "Verbesserter Interaktionsturm",
+    "1041": "上級交互塔"
+  },
+  "高级转化塔": {
+    "enUS": "Advanced Conversion Tower",
+    "zhCN": "高级转化塔",
+    "frFR": "Tour de conversion avancée",
+    "1031": "Verbesserter Umwandlungsturm",
+    "1041": "上級転換塔"
   }
 }

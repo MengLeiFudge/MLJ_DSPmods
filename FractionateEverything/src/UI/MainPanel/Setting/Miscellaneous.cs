@@ -15,7 +15,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using static FE.UI.Layout.GridDsl;
 using static FE.Configuration.ModSettings;
-using static FE.Utils.Utils;
 
 namespace FE.UI.MainPanel.Setting;
 
@@ -23,8 +22,7 @@ namespace FE.UI.MainPanel.Setting;
 /// 主面板风格、快捷操作和物流阈值设置页面。
 /// </summary>
 public static class Miscellaneous {
-    private static RectTransform storageTab;
-    private static RectTransform interfaceTab;
+    private static RectTransform settingsTab;
 
     private static string[] ClickTakeCountsStr = ClickTakeCounts.Select(count => count.ToString()).ToArray();
     private static readonly string[] ExtractTargetStrs = ["提取到手上", "提取到背包"];
@@ -62,37 +60,30 @@ public static class Miscellaneous {
     /// <summary>保留既有公开配置入口；实际配置由 ModSettings 持有。</summary>
     public static void LoadConfig(ConfigFile configFile) => ModSettings.LoadConfig(configFile);
 
-    /// <summary>创建亚空间提取、消耗顺序及站点阈值设置。</summary>
+    /// <summary>在同一页面分组展示存取、界面与兼容设置。</summary>
     /// <param name="wnd">面板外壳。</param>
     /// <param name="trans">页面父节点。</param>
-    public static void CreateStorageUI(MyWindow wnd, RectTransform trans) {
-        storageTab = trans;
-        LayoutNode[] children = [
-            LabeledComboBoxNode("左键单击时提取几组物品", ClickTakeCountsStr, LeftClickTakeCountEntry, pos: (0, 0)),
-            LabeledComboBoxNode("右键单击时提取几组物品", ClickTakeCountsStr, RightClickTakeCountEntry, pos: (1, 0)),
-            LabeledComboBoxNode("物品提取目标", ExtractTargetStrs, ExtractTargetEntry, pos: (2, 0)),
+    public static void CreateUI(MyWindow wnd, RectTransform trans) {
+        settingsTab = trans;
+        PackageAutoSortTwiceCheckBox = null;
+        List<LayoutNode> children = [
+            CardTitleNode("亚空间存取", pos: (0, 0)),
+            LabeledComboBoxNode("左键单击时提取几组物品", ClickTakeCountsStr, LeftClickTakeCountEntry, pos: (1, 0)),
+            LabeledComboBoxNode("右键单击时提取几组物品", ClickTakeCountsStr, RightClickTakeCountEntry, pos: (2, 0)),
+            LabeledComboBoxNode("物品提取目标", ExtractTargetStrs, ExtractTargetEntry, pos: (3, 0)),
             LabeledComboBoxNode("物品消耗顺序", TakeItemPriorityStrs, TakeItemPriorityEntry,
-                tipTitle: "物品消耗顺序", tipContent: "物品消耗顺序说明", pos: (3, 0)),
+                tipTitle: "物品消耗顺序", tipContent: "物品消耗顺序说明", pos: (4, 0)),
             LabeledSliderNode("物流交互站下载阈值", DownloadThresholdEntry, new DownloadThresholdMapper(), "P0",
                 tipTitle: "物流交互站下载阈值", tipContent: "物流交互站阈值修改说明",
-                onSliderBuilt: s => DownloadThresholdSlider = s, onTipBuilt: t => DownloadThresholdTipsButton2 = t, pos: (4, 0)),
+                onSliderBuilt: s => DownloadThresholdSlider = s, onTipBuilt: t => DownloadThresholdTipsButton2 = t, pos: (5, 0)),
             LabeledSliderNode("物流交互站上传阈值", UploadThresholdEntry, new UploadThresholdMapper(), "P0",
                 tipTitle: "物流交互站上传阈值", tipContent: "物流交互站阈值修改说明",
-                onSliderBuilt: s => UploadThresholdSlider = s, onTipBuilt: t => UploadThresholdTipsButton2 = t, pos: (5, 0)),
+                onSliderBuilt: s => UploadThresholdSlider = s, onTipBuilt: t => UploadThresholdTipsButton2 = t, pos: (6, 0)),
         ];
-        CreateSettingsLayout(wnd, trans, "亚空间存取", "FE.Settings.StorageSummary".Translate(), children);
-    }
-
-    /// <summary>创建界面偏好、收纳和已安装模组的兼容设置。</summary>
-    /// <param name="wnd">面板外壳。</param>
-    /// <param name="trans">页面父节点。</param>
-    public static void CreateInterfaceUI(MyWindow wnd, RectTransform trans) {
-        interfaceTab = trans;
-        List<LayoutNode> children = [
-            CheckBoxNode(EnableConfirmationDialogEntry, "启用确认弹窗", pos: (0, 0)),
-            CheckBoxNode(EnablePackageSortTwiceEntry, "双击背包排序按钮将多余物品收入分馏亚空间",
-                onBuilt: cb => PackageSortTwiceCheckBox = cb, pos: (1, 0)),
-        ];
+        children.Add(CardTitleNode("界面与兼容", pos: (children.Count, 0)));
+        children.Add(CheckBoxNode(EnableConfirmationDialogEntry, "启用确认弹窗", pos: (children.Count, 0)));
+        children.Add(CheckBoxNode(EnablePackageSortTwiceEntry, "双击背包排序按钮将多余物品收入分馏亚空间",
+            onBuilt: cb => PackageSortTwiceCheckBox = cb, pos: (children.Count, 0)));
         if (AutoSorter.Enable) {
             children.Add(CheckBoxNode(EnablePackageAutoSortTwiceEntry, "AutoSorter模组将背包中多余物品收入分馏亚空间",
                 onBuilt: cb => PackageAutoSortTwiceCheckBox = cb, pos: (children.Count, 0)));
@@ -101,10 +92,10 @@ public static class Miscellaneous {
         children.Add(ButtonNode(MainWindow.GetSwitchMainPanelButtonLabel(),
             onClick: () => MainWindow.SwitchMainPanelFrom(MainWindow.GetCurrentMainPanelType()),
             onBuilt: btn => SwitchMainPanelButton = btn, pos: (children.Count, 0)));
-        CreateSettingsLayout(wnd, trans, "界面与兼容", "FE.Settings.InterfaceSummary".Translate(), children);
+        CreateSettingsLayout(wnd, trans, "设置", "FE.Settings.Summary".Translate(), children);
     }
 
-    /// <summary>复用设置控件布局，保持两个页面独立的生命周期。</summary>
+    /// <summary>按组标题与设置行排版，沿用既有控件与文字样式。</summary>
     /// <param name="wnd">外壳。</param>
     /// <param name="parent">页面父节点。</param>
     /// <param name="title">页面标题。</param>
@@ -121,14 +112,13 @@ public static class Miscellaneous {
 
     /// <summary>仅刷新正在显示的设置页。</summary>
     public static void UpdateUI() {
-        if (storageTab != null && storageTab.gameObject.activeInHierarchy) {
+        if (settingsTab != null && settingsTab.gameObject.activeInHierarchy) {
             bool isMultiplayer = NebulaMultiplayerModAPI.IsMultiplayerActive;
             DownloadThresholdSlider.slider.interactable = !isMultiplayer;
             DownloadThresholdTipsButton2.gameObject.SetActive(isMultiplayer);
             UploadThresholdSlider.slider.interactable = !isMultiplayer;
             UploadThresholdTipsButton2.gameObject.SetActive(isMultiplayer);
-        }
-        if (interfaceTab != null && interfaceTab.gameObject.activeInHierarchy) {
+
             PackageSortTwiceCheckBox.SetEnable(PackageAccessRules.TechItemInteractionUnlocked);
             PackageAutoSortTwiceCheckBox?.SetEnable(PackageAccessRules.TechItemInteractionUnlocked);
             RefreshSwitchMainPanelButtonLabel();

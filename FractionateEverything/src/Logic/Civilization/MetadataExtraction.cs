@@ -10,7 +10,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Civilization;
 
-/// <summary>只读原版生产峰值，以FE自有扣账将额度提取为实体；兑换与提取共享每种矩阵的额度。</summary>
+/// <summary>只读原版生产峰值，自动将新增额度入库为实体；已有实体可在亚空间兑换能量碎片。</summary>
 public static class MetadataExtraction {
     private static readonly Dictionary<int, long> Spent = [];
     private static readonly HashSet<string> Committed = [];
@@ -39,6 +39,13 @@ public static class MetadataExtraction {
         }
     }
 
+    /// <summary>当前存档各矩阵的峰值与累计已结算额度，供丰碑页只读展示。</summary>
+    public static (int MatrixId, long Peak, long Extracted)[] Snapshot() {
+        lock (DataCenterInventory.centerItemCount) {
+            return MatrixIds.Select(id => (id, Read(Peaks, id), Read(Spent, id))).ToArray();
+        }
+    }
+
     public static double ExternalMultiplier {
         get { lock (DataCenterInventory.centerItemCount) { return externalMultiplier; } }
     }
@@ -46,11 +53,21 @@ public static class MetadataExtraction {
     /// <summary>按秒读取当前指标；不调用会为缺失条目插入零值的原版查询方法。</summary>
     public static void Refresh() {
         if (NebulaMultiplayerModAPI.IsClient) { return; }
+        long accepted = 0, newCount = 0;
         lock (DataCenterInventory.centerItemCount) {
             List<IDCNT> production = GameMain.history?.propertyData?.totalProduction;
             foreach (int matrix in MatrixIds) {
                 long peak = production?.Where(p => p.id == matrix).Select(p => (long)Math.Max(0, p.count)).DefaultIfEmpty().Max() ?? 0;
                 if (Read(Peaks, matrix) != peak) { Peaks[matrix] = peak; dirty = true; }
+                long pending = Math.Max(0, peak - Read(Spent, matrix));
+                if (pending == 0) { continue; }
+                // 沿用奖励的超存规则，只按实际入库扣账；数值边界拒收的差额留待下一次结算。
+                long stored = DataCenterInventory.AddStoredItem(IFE实体元数据, pending, 0,
+                    StorageSource.Manual, out newCount).Stored;
+                if (stored == 0) { continue; }
+                Spent[matrix] = checked(Read(Spent, matrix) + stored);
+                accepted += stored;
+                dirty = true;
             }
             long current = GameMain.data?.gameDesc?.seedKey64 ?? 0;
             double total = 0;
@@ -64,24 +81,24 @@ public static class MetadataExtraction {
             double multiplier = 1 + total / scale;
             if (externalMultiplier != multiplier) { externalMultiplier = multiplier; dirty = true; }
         }
+        DataCenterInventory.NotifyItemAdded(IFE实体元数据, accepted, 0, newCount, false);
     }
 
-    /// <summary>一单位额度兑换一件指定实体；只能由主机执行。重复流水不再次扣款或发货。</summary>
-    internal static int Exchange(string requestId, int matrixId, bool energyShard, int requested) {
+    /// <summary>将亚空间已有元数据按1:1兑换能量碎片；主机在同一库存锁内提交，重复流水不发货。</summary>
+    internal static int Exchange(string requestId, int requested) {
         if (NebulaMultiplayerModAPI.IsClient || !Guid.TryParseExact(requestId, "N", out _)
-            || !MatrixIds.Contains(matrixId) || requested is < 1 or > 1000) { return 0; }
-        Refresh();
-        int output = energyShard ? I能量碎片 : IFE实体元数据;
+            || requested is < 1 or > 100) { return 0; }
+        int output = I能量碎片;
         long accepted;
         long newCount;
         lock (DataCenterInventory.centerItemCount) {
             if (!Committed.Add(requestId)) { return 0; }
             dirty = true;
-            int count = (int)Math.Min(requested, Available(matrixId));
+            int count = (int)Math.Min(requested, DataCenterInventory.GetModDataItemCount(IFE实体元数据));
             if (count <= 0 || !LDB.items.Exist(output)) { return 0; }
-            // 手动提取允许超存；仍以实际入库量扣账，整数边界不能吞掉额度。
+            // 指定来源是亚空间内已有实体。先确定实际可入库量，再在同一锁内扣除等量元数据。
             accepted = DataCenterInventory.AddStoredItem(output, count, 0, StorageSource.Manual, out newCount).Stored;
-            Spent[matrixId] = checked(Read(Spent, matrixId) + accepted);
+            DataCenterInventory.TakeItemFromModData(IFE实体元数据, (int)accepted, out _);
         }
         DataCenterInventory.NotifyItemAdded(output, accepted, 0, newCount, false);
         return (int)accepted;

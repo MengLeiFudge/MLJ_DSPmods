@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using FE.Compatibility.Nebula;
+﻿using FE.Compatibility.Nebula;
 using FE.Logic.Civilization;
 using FE.Logic.DataCenter;
 using FE.UI.MainPanel.Theme;
@@ -9,20 +7,14 @@ using static FE.Utils.Utils;
 
 namespace FE.UI.MainPanel.Civilization;
 
-/// <summary>同页按固定顺序展示解析三态：未发现为灰色匿名占位，解析中显示样本与进度，已恢复换色显示结果。</summary>
-public sealed class AnalysisSamplesPage : CardBrowserPage {
-    /// <summary>未发现占位色：不透露物品，只表示此处还有内容。</summary>
+/// <summary>任务与塔型配方目录共用的解析三态展示；未发现记录不公开物品身份。</summary>
+internal static class AnalysisRecordCards {
     private static readonly Color UndiscoveredTint = new(0.55f, 0.58f, 0.62f, 0.55f);
 
-    protected override string Title => "解析样本".Translate();
-    protected override string Summary => "FE.AnalysisSamplesPage.Summary".Translate();
-    protected override string EmptyText => "FE.AnalysisSamplesPage.Empty".Translate();
-
-    /// <summary>直接沿用接口顺序；状态变化不重排，条目位置保持不变。</summary>
-    protected override IReadOnlyList<PageCard> ReadCards() => ResearchManager.GetAnalysisRecordSnapshots()
-        .Select(CreateCard).ToArray();
-
-    private static PageCard CreateCard(AnalysisRecordSnapshot record) {
+    /// <summary>从领域的安全快照生成详情及定向解析命令。</summary>
+    /// <param name="record">已过滤公开范围的解析记录。</param>
+    /// <returns>不包含未授权结果信息的卡片。</returns>
+    internal static PageCard Create(AnalysisRecordSnapshot record) {
         switch (record.State) {
             case AnalysisRecordState.Completed:
                 return new PageCard {
@@ -33,24 +25,19 @@ public sealed class AnalysisSamplesPage : CardBrowserPage {
                 };
             case AnalysisRecordState.Analyzing:
                 string name = LDB.items.Select(record.SampleItemId)?.name ?? "未知样本".Translate();
-                long stock = DataCenterInventory.GetModDataItemCount(record.SampleItemId)
-                             + (GameMain.mainPlayer?.package?.GetItemCount(record.SampleItemId) ?? 0);
-                string stockText = stock > 0
-                    ? string.Format("手头库存：{0}（亚空间与背包）".Translate(), stock)
-                    : "FE.AnalysisSamplesPage.NoStock".Translate();
+                long stock = PlayerInventoryAccess.GetItemTotalCount(record.SampleItemId);
                 return new PageCard {
                     Key = record.Key, ItemId = record.SampleItemId, Tint = Blue, Progress = record.Progress / 10000f,
                     Title = string.IsNullOrEmpty(record.ResultName) ? name : record.ResultName,
                     Status = string.Format("解析进度 {0:0.#}%".Translate(), record.Progress / 100f),
-                    Detail = string.Format("FE.AnalysisSamplesPage.AnalyzingDetail".Translate(), name, stockText,
-                        record.Progress / 100f),
+                    Detail = string.Format("FE.AnalysisSamplesPage.AnalyzingDetail".Translate(), name,
+                        string.Format("FE.Analysis.AvailableStock".Translate(), stock), record.Progress / 100f),
                     ActionLabel = (ResearchManager.IsAnalysisTarget(record.SampleItemId, record.Key)
                         ? "FE.Analysis.CancelTarget" : "FE.Analysis.SetTarget").Translate(),
                     Action = !GrowthTechnologyManager.DirectedAnalysis ? null : () => AnalysisTargetSync.SetTarget(record.SampleItemId,
                         ResearchManager.IsAnalysisTarget(record.SampleItemId, record.Key) ? "" : record.Key),
                 };
             default:
-                // 匿名占位：不显示图标与名称，进度条保持空轨道，保证三态版式一致。
                 return new PageCard {
                     Key = record.Key, ShowIcon = false, Tint = UndiscoveredTint, Progress = 0f,
                     Title = "？？？", Status = "尚未发现".Translate(),
