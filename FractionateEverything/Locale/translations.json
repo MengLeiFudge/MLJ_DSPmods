@@ -2575,20 +2575,6 @@
     "1031": "Bestätigungsdialoge aktivieren",
     "1041": "確認ダイアログを有効にする"
   },
-  "双击背包排序按钮将多余物品收入分馏亚空间": {
-    "enUS": "Double-click the inventory sort button to store excess items in the Fractionation Subspace",
-    "zhCN": "双击背包排序按钮将多余物品收入分馏亚空间",
-    "frFR": "Double-cliquer sur le tri de l'inventaire pour déposer les objets excédentaires dans le sous-espace",
-    "1031": "Überschüssige Gegenstände per Doppelklick auf die Inventarsortierung im Subraum einlagern",
-    "1041": "インベントリの整頓ボタンをダブルクリックして余剰品を分留亜空間に収納"
-  },
-  "AutoSorter模组将背包中多余物品收入分馏亚空间": {
-    "enUS": "The AutoSorter mod stores excess inventory items in the Fractionation Subspace",
-    "zhCN": "AutoSorter模组将背包中多余物品收入分馏亚空间",
-    "frFR": "Autoriser AutoSorter à déposer les objets excédentaires dans le sous-espace",
-    "1031": "AutoSorter lagert überschüssige Inventargegenstände im Subraum ein",
-    "1041": "AutoSorterでインベントリの余剰品を分留亜空間に収納"
-  },
   "PackageLogistic兼容亚空间": {
     "enUS": "Allow PackageLogistic to use the Fractionation Subspace",
     "zhCN": "PackageLogistic兼容亚空间",

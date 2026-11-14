@@ -82,6 +82,10 @@ The first relic uses an anonymous signal bar. Later story destinations have thei
 
 亚空间是跨星球共享库存，每种物品独立计容量，物品价值只有一套。仓储页悬停物品可查看库存和容量。手动上传、整理与地面回收允许超存实体；基础塔与交互站无限上传的超额物料折为永久扩容积累，不能兑回物品。有限上传同时受容量和上传目标约束，满即停；探索奖励允许超容。
 
+自动整理或单击玩家背包的排序按钮时，先按原版整理并回填中键锁定格，再把普通格中的余量补进左侧物流栏。玩家实际双击背包排序按钮，才会在这两步完成后将剩余普通格物品上传亚空间。物流补充和上传均保留锁定格物品；箱子及其他仓储即使双击整理也不会上传。与 Delivery Slots Tweaks 同用时，玩家背包的整理转移统一由 FE 处理。
+
+Auto-sorting or clicking the player inventory sort button first runs vanilla sorting, including refilling filtered slots, then moves items from unfiltered slots into matching logistics slots. Physically double-clicking that button uploads the remaining items from unfiltered slots to the Fractionation Subspace afterward. These transfers preserve filtered-slot contents. Sorting chests or other storage never uploads their contents, including on a double-click. FE handles player-inventory sorting transfers when Delivery Slots Tweaks is installed.
+
 向已供电的基础解析塔持续投入主线矩阵即可永久扩容。各档同时工作、独立累积，效果各不相同，积累越多边际增长越慢；多塔共享同档供料，停供不缩水。仓储页固定矩阵图标分别显示“生效中”，问号说明并行关系，不公开增长倍率或速率。
 
 手动存取和基础塔正面上传无额外耗能。FE行星/星际物流交互站每槽右上选择关闭上传、有限上传或无限上传，右下独立开关下载；新槽默认有限上传并开启下载。左侧原版物流供需独立，保留阈值、增产点、蓝图与复制粘贴。电量只在本轮有实际存取需求的槽位间均分一次，按实际搬运量扣除，未用部分留到下轮。

@@ -8,7 +8,7 @@ using xiaoye97;
 namespace FE.Compatibility.Mods;
 
 /// <summary>
-/// DeliverySlotsTweaks 模组检测与建筑师模式兼容入口。
+/// DeliverySlotsTweaks 模组检测、建筑师模式与背包整理兼容入口。
 /// </summary>
 public static class DeliverySlotsTweaks {
     public const string GUID = "starfi5h.plugin.DeliverySlotsTweaks";
@@ -33,6 +33,7 @@ public static class DeliverySlotsTweaks {
 
     private static bool _finished = false;
 
+    /// <summary>读取兼容设置，并在外部模组完成初始化后接管整理时的物品转移。</summary>
     [HarmonyPostfix]
     [HarmonyAfter(LDBToolPlugin.MODGUID)]
     [HarmonyPatch(typeof(VFPreload), nameof(VFPreload.InvokeOnLoadWorkEnded))]
@@ -44,6 +45,16 @@ public static class DeliverySlotsTweaks {
                 (ConfigEntry<bool>)AccessTools.Field(classType, "EnableArchitectMode").GetValue(null);
             UseLogisticSlotsEntry =
                 (ConfigEntry<bool>)AccessTools.Field(classType, "UseLogisticSlots").GetValue(null);
+
+            MethodInfo sortPrefix = AccessTools.Method(
+                assembly.GetType("DeliverySlotsTweaks.DeliveryPackagePatch"), "Sort_Prefix");
+            if (sortPrefix == null) {
+                CheckPlugins.LogWarning("无法接管 DeliverySlotsTweaks 的整理转移：未找到 Sort_Prefix 补丁。");
+            } else {
+                MethodInfo sort = AccessTools.Method(typeof(StorageComponent), nameof(StorageComponent.Sort));
+                new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.DeliverySlotsTweaks").Unpatch(sort, sortPrefix);
+                CheckPlugins.LogInfo("DeliverySlotsTweaks 的整理转移已由 FE 接管。");
+            }
         }
         catch (Exception ex) {
             CheckPlugins.LogWarning($"Failed to compat DeliverySlotsTweaks: {ex}");

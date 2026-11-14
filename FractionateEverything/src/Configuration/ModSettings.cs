@@ -25,8 +25,6 @@ public static class ModSettings {
     internal static ConfigEntry<float> DownloadThresholdEntry;
     internal static ConfigEntry<float> UploadThresholdEntry;
     internal static ConfigEntry<bool> EnableConfirmationDialogEntry;
-    internal static ConfigEntry<bool> EnablePackageSortTwiceEntry;
-    internal static ConfigEntry<bool> EnablePackageAutoSortTwiceEntry;
     internal static ConfigEntry<bool> EnablePackageLogisticEntry;
     public static int LeftClickTakeCount => ClickTakeCounts[LeftClickTakeCountEntry.Value];
     public static int RightClickTakeCount => ClickTakeCounts[RightClickTakeCountEntry.Value];
@@ -35,8 +33,6 @@ public static class ModSettings {
     public static float DownloadThreshold => DownloadThresholdEntry.Value;
     public static float UploadThreshold => UploadThresholdEntry.Value;
     public static bool EnableConfirmationDialog => EnableConfirmationDialogEntry.Value;
-    public static bool EnablePackageSortTwice => EnablePackageSortTwiceEntry.Value;
-    public static bool EnablePackageAutoSortTwice => EnablePackageAutoSortTwiceEntry.Value;
     public static bool EnablePackageLogistic => EnablePackageLogisticEntry.Value;
 
     /// <summary>绑定既有 Miscellaneous 配置键，并沿用原有范围校正。</summary>
@@ -72,10 +68,6 @@ public static class ModSettings {
         EnableConfirmationDialogEntry =
             configFile.Bind("Miscellaneous", "EnableConfirmationDialog", true, "启用确认弹窗");
 
-        EnablePackageSortTwiceEntry =
-            configFile.Bind("Miscellaneous", "EnablePackageSortTwice", true, "双击背包排序按钮将多余物品收入分馏亚空间");
-        EnablePackageAutoSortTwiceEntry =
-            configFile.Bind("Miscellaneous", "EnablePackageAutoSortTwice", false, "AutoSorter模组将背包中多余物品收入分馏亚空间");
         EnablePackageLogisticEntry =
             configFile.Bind("Miscellaneous", "PackageLogistic", false, "PackageLogistic兼容亚空间");
     }

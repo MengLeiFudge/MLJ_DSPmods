@@ -26,7 +26,6 @@ namespace FE.Compatibility;
 [BepInDependency(BuildBarToolPlugin.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(NebulaMultiplayerModAPI.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(AchievementsEnabler.GUID, BepInDependency.DependencyFlags.SoftDependency)]
-[BepInDependency(AutoSorter.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(Auxilaryfunction.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(BigTower.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(BuildToolOpt.GUID, BepInDependency.DependencyFlags.SoftDependency)]
@@ -126,7 +125,6 @@ public class CheckPlugins : BaseUnityPlugin {
         }
 
 
-        AutoSorter.Compatible();
         Auxilaryfunction.Compatible();
         BuildToolOpt.Compatible();
         CheatEnabler.Compatible();

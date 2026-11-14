@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using BepInEx.Configuration;
-using FE.Compatibility.Mods;
-using FE.Configuration;
 using FE.Compatibility.Nebula;
-using FE.Logic.DataCenter;
+using FE.Configuration;
 using FE.UI.Controls;
 using FE.UI.Foundation.Window;
 using FE.UI.Layout;
@@ -43,8 +41,6 @@ public static class Miscellaneous {
     private static UIButton UploadThresholdTipsButton2;
 
 
-    private static MyCheckBox PackageSortTwiceCheckBox;
-    private static MyCheckBox PackageAutoSortTwiceCheckBox;
     private static UIButton SwitchMainPanelButton;
     public static int LeftClickTakeCount => ModSettings.LeftClickTakeCount;
     public static int RightClickTakeCount => ModSettings.RightClickTakeCount;
@@ -53,8 +49,6 @@ public static class Miscellaneous {
     public static float DownloadThreshold => ModSettings.DownloadThreshold;
     public static float UploadThreshold => ModSettings.UploadThreshold;
     public static bool EnableConfirmationDialog => ModSettings.EnableConfirmationDialog;
-    public static bool EnablePackageSortTwice => ModSettings.EnablePackageSortTwice;
-    public static bool EnablePackageAutoSortTwice => ModSettings.EnablePackageAutoSortTwice;
     public static bool EnablePackageLogistic => ModSettings.EnablePackageLogistic;
 
     /// <summary>保留既有公开配置入口；实际配置由 ModSettings 持有。</summary>
@@ -65,7 +59,6 @@ public static class Miscellaneous {
     /// <param name="trans">页面父节点。</param>
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         settingsTab = trans;
-        PackageAutoSortTwiceCheckBox = null;
         List<LayoutNode> children = [
             CardTitleNode("亚空间存取", pos: (0, 0)),
             LabeledComboBoxNode("左键单击时提取几组物品", ClickTakeCountsStr, LeftClickTakeCountEntry, pos: (1, 0)),
@@ -82,12 +75,6 @@ public static class Miscellaneous {
         ];
         children.Add(CardTitleNode("界面与兼容", pos: (children.Count, 0)));
         children.Add(CheckBoxNode(EnableConfirmationDialogEntry, "启用确认弹窗", pos: (children.Count, 0)));
-        children.Add(CheckBoxNode(EnablePackageSortTwiceEntry, "双击背包排序按钮将多余物品收入分馏亚空间",
-            onBuilt: cb => PackageSortTwiceCheckBox = cb, pos: (children.Count, 0)));
-        if (AutoSorter.Enable) {
-            children.Add(CheckBoxNode(EnablePackageAutoSortTwiceEntry, "AutoSorter模组将背包中多余物品收入分馏亚空间",
-                onBuilt: cb => PackageAutoSortTwiceCheckBox = cb, pos: (children.Count, 0)));
-        }
         children.Add(CheckBoxNode(EnablePackageLogisticEntry, "PackageLogistic兼容亚空间", pos: (children.Count, 0)));
         children.Add(ButtonNode(MainWindow.GetSwitchMainPanelButtonLabel(),
             onClick: () => MainWindow.SwitchMainPanelFrom(MainWindow.GetCurrentMainPanelType()),
@@ -119,8 +106,6 @@ public static class Miscellaneous {
             UploadThresholdSlider.slider.interactable = !isMultiplayer;
             UploadThresholdTipsButton2.gameObject.SetActive(isMultiplayer);
 
-            PackageSortTwiceCheckBox.SetEnable(PackageAccessRules.TechItemInteractionUnlocked);
-            PackageAutoSortTwiceCheckBox?.SetEnable(PackageAccessRules.TechItemInteractionUnlocked);
             RefreshSwitchMainPanelButtonLabel();
         }
     }
