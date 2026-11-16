@@ -68,7 +68,8 @@ public static class StorageSortPatch {
     [HarmonyPatch(typeof(Button), nameof(Button.OnPointerClick))]
     private static void Button_OnPointerClick_Postfix(Button __instance, PointerEventData eventData) {
         Player player = GameMain.mainPlayer;
-        if (DSPGame.IsMenuDemo || player == null || eventData == null
+        // 原按钮点击回调可能销毁自身，须先按 Unity 对象语义判空再读取组件状态。
+        if (__instance == null || DSPGame.IsMenuDemo || player == null || eventData == null
             || eventData.button != PointerEventData.InputButton.Left || !Input.GetMouseButtonUp(0)
             || !__instance.IsActive() || !__instance.IsInteractable()
             || lastManualSortFrame == Time.frameCount) {
@@ -80,7 +81,7 @@ public static class StorageSortPatch {
             if (__instance.onClick.GetPersistentListenerState(index) != UnityEventCallState.Off
                 && __instance.onClick.GetPersistentMethodName(index) == nameof(UIStorageGrid.OnSort)
                 && __instance.onClick.GetPersistentTarget(index) is UIStorageGrid grid
-                && grid.storage == player.package
+                && grid != null && grid.storage != null && grid.storage == player.package
                 && (grid.storage.type == EStorageType.Default || grid.sortableFilter)) {
                 isPlayerSortButton = true;
                 break;
