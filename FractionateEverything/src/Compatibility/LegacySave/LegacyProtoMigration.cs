@@ -12,7 +12,7 @@ namespace FE.Compatibility.LegacySave;
 /// <summary>
 /// 仅迁移 FE 2.2.10 仍有当前对应物的 Item/Model/Recipe 物理引用，并清理无对应旧 ID。
 /// 不迁移 Tech、不读写 FE 自有 DataCenter/Recipe 状态。
-/// 退休实体/预建筑必须延迟到 PlanetFactory.Import 完整消费外层 payload 后再 Remove*WithComponents。
+/// 退休实体/预建筑须等组件与全局系统导入完成后再 Remove*WithComponents；完整读档统一在 GameData.Import 后清理。
 /// </summary>
 public static class LegacyProtoMigration {
     [ThreadStatic]
@@ -32,6 +32,10 @@ public static class LegacyProtoMigration {
 
     [ThreadStatic]
     private static List<int> pendingRetiredPrebuildIds;
+
+    [ThreadStatic]
+    private static List<(PlanetFactory Factory, int[] EntityIds, int[] PrebuildIds)> pendingGameDataRetirements;
+
     // v2.2.10 映射：仅保留当前仍有对应物的物理引用。
     private static readonly Dictionary<int, int> ItemIds = new() {
         [8016] = IFE通用原胚, // 8115
@@ -184,12 +188,26 @@ public static class LegacyProtoMigration {
     [HarmonyPrefix]
     [HarmonyPatch(typeof(GameData), nameof(GameData.Import))]
     public static void GameData_Import_Prefix() {
+        pendingGameDataRetirements?.Clear();
         inGameDataImport = true;
         migrateCurrentGameData = migratePendingSave;
     }
 
+    /// <summary>全局警报与战斗系统导入完成后，统一移除本次读档的退休建筑。</summary>
+    [HarmonyPostfix]
+    [HarmonyPriority(Priority.First)]
+    [HarmonyPatch(typeof(GameData), nameof(GameData.Import))]
+    public static void GameData_Import_Postfix() {
+        if (pendingGameDataRetirements == null) {
+            return;
+        }
+        foreach (var pending in pendingGameDataRetirements) {
+            FlushRetiredPlanetObjects(pending.Factory, pending.EntityIds, pending.PrebuildIds);
+        }
+    }
+
     /// <summary>
-    /// GameData 导入结束或异常退出时清理本次存档的迁移门禁状态。
+    /// GameData 导入结束或异常退出时清理本次存档的迁移门禁状态与待清理队列。
     /// </summary>
     /// <param name="__exception">原始导入异常；成功时为 null。</param>
     /// <remarks>保持 void 返回值，让 Harmony 保留原始异常栈；返回异常会触发重新抛出。</remarks>
@@ -199,6 +217,7 @@ public static class LegacyProtoMigration {
         inGameDataImport = false;
         migrateCurrentGameData = false;
         migratePendingSave = false;
+        pendingGameDataRetirements?.Clear();
         if (__exception != null) {
             LogError($"[LegacySave] 游戏存档导入失败：{__exception}");
         }
@@ -231,14 +250,14 @@ public static class LegacyProtoMigration {
         pendingRetiredPrebuildIds.Add(prebuildId);
     }
 
-    private static void FlushRetiredPlanetObjects(PlanetFactory factory) {
+    private static void FlushRetiredPlanetObjects(PlanetFactory factory,
+        IReadOnlyList<int> entityIds, IReadOnlyList<int> prebuildIds) {
         if (factory == null) {
             return;
         }
-        EnsureImportScopeLists();
         // 先实体后预建筑：组件池与连接由原生 Remove*WithComponents 一并清理。
-        for (int i = 0; i < pendingRetiredEntityIds.Count; i++) {
-            int entityId = pendingRetiredEntityIds[i];
+        for (int i = 0; i < entityIds.Count; i++) {
+            int entityId = entityIds[i];
             if (entityId > 0
                 && factory.entityPool != null
                 && entityId < factory.entityPool.Length
@@ -246,8 +265,8 @@ public static class LegacyProtoMigration {
                 factory.RemoveEntityWithComponents(entityId, false);
             }
         }
-        for (int i = 0; i < pendingRetiredPrebuildIds.Count; i++) {
-            int prebuildId = pendingRetiredPrebuildIds[i];
+        for (int i = 0; i < prebuildIds.Count; i++) {
+            int prebuildId = prebuildIds[i];
             if (prebuildId > 0
                 && factory.prebuildPool != null
                 && prebuildId < factory.prebuildPool.Length
@@ -270,13 +289,21 @@ public static class LegacyProtoMigration {
     }
 
     /// <summary>
-    /// 外层 animation/sign/connection 与组件池均已读完后，再移除退休实体/预建筑。
+    /// 外层 payload 与组件读完后，完整读档登记至全局清理队列，独立工厂导入直接清理。
     /// </summary>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.Import))]
     public static void PlanetFactory_Import_Postfix(PlanetFactory __instance) {
         try {
-            FlushRetiredPlanetObjects(__instance);
+            if (inGameDataImport) {
+                if (pendingRetiredEntityIds.Count > 0 || pendingRetiredPrebuildIds.Count > 0) {
+                    pendingGameDataRetirements ??= [];
+                    pendingGameDataRetirements.Add((__instance,
+                        pendingRetiredEntityIds.ToArray(), pendingRetiredPrebuildIds.ToArray()));
+                }
+            } else {
+                FlushRetiredPlanetObjects(__instance, pendingRetiredEntityIds, pendingRetiredPrebuildIds);
+            }
         } finally {
             ClearImportScope();
         }
@@ -348,7 +375,7 @@ public static class LegacyProtoMigration {
         if (WasRetiredContent(originalProtoId, mappedItemId)) {
             // 不可在此 SetNull/清 id：PlanetFactory.Import 在 EntityData.Import 之后仍按 id!=0
             // 继续读取 animation/sign/16 连接字节；提前 id=0 会跳过 payload 并令后续存档流错位。
-            // 组件池此时尚未导入，仅 SetNull 也会留下孤儿组件。延迟到 PlanetFactory.Import postfix。
+            // 组件池此时尚未导入，仅 SetNull 也会留下孤儿组件。完整读档须等 GameData.Import 完成后移除。
             int entityId = __instance.id;
             __instance.protoId = 0;
             __instance.modelIndex = 0;
