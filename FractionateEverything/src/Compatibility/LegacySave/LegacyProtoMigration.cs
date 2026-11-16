@@ -192,14 +192,16 @@ public static class LegacyProtoMigration {
     /// GameData 导入结束或异常退出时清理本次存档的迁移门禁状态。
     /// </summary>
     /// <param name="__exception">原始导入异常；成功时为 null。</param>
-    /// <returns>原样返回导入异常。</returns>
+    /// <remarks>保持 void 返回值，让 Harmony 保留原始异常栈；返回异常会触发重新抛出。</remarks>
     [HarmonyFinalizer]
     [HarmonyPatch(typeof(GameData), nameof(GameData.Import))]
-    public static Exception GameData_Import_Finalizer(Exception __exception) {
+    public static void GameData_Import_Finalizer(Exception __exception) {
         inGameDataImport = false;
         migrateCurrentGameData = false;
         migratePendingSave = false;
-        return __exception;
+        if (__exception != null) {
+            LogError($"[LegacySave] 游戏存档导入失败：{__exception}");
+        }
     }
 
     private static void EnsureImportScopeLists() {
@@ -285,9 +287,8 @@ public static class LegacyProtoMigration {
     /// </summary>
     [HarmonyFinalizer]
     [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.Import))]
-    public static Exception PlanetFactory_Import_Finalizer(Exception __exception) {
+    public static void PlanetFactory_Import_Finalizer() {
         ClearImportScope();
-        return __exception;
     }
 
     private static IEnumerable<CodeInstruction> MapSelectArgument(IEnumerable<CodeInstruction> instructions,
