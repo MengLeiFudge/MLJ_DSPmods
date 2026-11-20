@@ -440,6 +440,7 @@ For multi-column layout helper `GetPosition`, default total width is aligned to 
 **Mod DLLs:** 只保留没有本地源码的模组，当前为 `LDBTool`、`BuildBarTool`、`AchievementsEnabler`、`Auxilaryfunction`、`BigTower`、`DSPRecipeFinder`、`Multifunction_mod`、`TowerFactory`、`GalacticScale`。
 
 其余模组（CommonAPI、nebula、DSP_Battle、ProjectGenesis、OrbitalRing、MoreMegaStructure、DSPCalculator、CheatEnabler、UXAssist、BuildToolOpt、DeliverySlotsTweaks 等）直接读 `ModSourcesRootDir` 下的真实源码仓库，不再反编译。查模组 API 时先看源码仓库，源码未覆盖的才看 `DecompiledSource/`。
+核对模组版本时看 `BepInPlugin` 版本参数或其版本常量（例如 `DSP_Battle` 的 `Configs.versionString`），不要用 `manifest.json` 的 `version_number`：部分 fork 长期不改这个字段，`DSP_Battle` 仓库写 `2.0.0` 而实际代码是 `3.4.25`。
 
 **How it's generated** — Run `AfterBuildEvent` → select option `2`:
 1. Publicizes game DLLs from game install → nuget package dir → decompiles
