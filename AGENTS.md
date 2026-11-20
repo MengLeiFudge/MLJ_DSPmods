@@ -437,10 +437,9 @@ For multi-column layout helper `GetPosition`, default total width is aligned to 
 - `Assembly-CSharp/` — Main game logic
 - `UnityEngine.UI/` — UI components
 
-**Mod DLLs:**
-- `DSP_Battle/` — 深空来敌 (They Come From Void)
-- `ProjectGenesis/` — 创世之书 (Genesis Book)
-- `ProjectOrbitalRing/` — 星环 (Orbital Ring)
+**Mod DLLs:** 只保留没有本地源码的模组，当前为 `LDBTool`、`BuildBarTool`、`AchievementsEnabler`、`Auxilaryfunction`、`BigTower`、`DSPRecipeFinder`、`Multifunction_mod`、`TowerFactory`、`GalacticScale`。
+
+其余模组（CommonAPI、nebula、DSP_Battle、ProjectGenesis、OrbitalRing、MoreMegaStructure、DSPCalculator、CheatEnabler、UXAssist、BuildToolOpt、DeliverySlotsTweaks 等）直接读 `ModSourcesRootDir` 下的真实源码仓库，不再反编译。查模组 API 时先看源码仓库，源码未覆盖的才看 `DecompiledSource/`。
 
 **How it's generated** — Run `AfterBuildEvent` → select option `2`:
 1. Publicizes game DLLs from game install → nuget package dir → decompiles
