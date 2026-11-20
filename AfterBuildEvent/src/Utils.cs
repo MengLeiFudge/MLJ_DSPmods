@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Security.Cryptography;
 using System.Threading;
 using static AfterBuildEvent.PathConfig;
 
@@ -255,5 +256,14 @@ public static class Utils {
         }
     }
 
+
+    /// <summary>
+    /// 计算文件的 SHA256，用于判断 DLL 内容是否真的变化。
+    /// </summary>
+    public static string GetFileSha256(string path) {
+        using FileStream stream = File.OpenRead(path);
+        using SHA256 sha256 = SHA256.Create();
+        return BitConverter.ToString(sha256.ComputeHash(stream)).Replace("-", "");
+    }
     #endregion
 }

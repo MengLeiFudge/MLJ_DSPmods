@@ -44,6 +44,7 @@ public static class PathConfig {
     public static string DspCalcFullIconDir => $@"{SolutionFullDir}\gamedata\icons";
     public static string CalcJsonLocalDir => $@"{SolutionFullDir}\gamedata\calc json";
     public static string CalcIconWorkDir => $@"{SolutionFullDir}\gamedata\test";
+    public static string DecompiledSourceDir => $@"{SolutionFullDir}\gamedata\DecompiledSource";
     public static string IconExportRequestPath => $@"{SolutionFullDir}\gamedata\calc-icon-export-request.json";
     public static string IconExportMarkerPath => $@"{SolutionFullDir}\gamedata\calc-icon-export-done.json";
 

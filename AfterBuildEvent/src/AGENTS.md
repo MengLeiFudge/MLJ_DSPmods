@@ -115,15 +115,22 @@ PublizeDll(DSPACDll → NugetGameLibNet45Dir\Assembly-CSharp.dll)
 PublizeDll(DSPUIDll → NugetGameLibNet45Dir\UnityEngine.UI.dll)
     → DecompileDll(ilspycmd → gamedata/DecompiledSource/UnityEngine.UI/)
 
-# 模组 DLL：从 CheckPlugins 软依赖出发，经 mods.yml 定位 R2 插件后反编译
-Parse `FractionateEverything/src/Compatibility/CheckPlugins.cs`
-    → collect `[BepInDependency(..., SoftDependency)]`
-Read `mods.yml`
-    → confirm the user actually installed the package through R2
-Inspect `BepInEx/plugins/<package>/`
-    → find the primary mod DLL (`.dll` or `.dll.old`, skipping companion libs)
-DecompileDll(ilspycmd → gamedata/DecompiledSource/<AssemblyName>/)
+# 模组 DLL：只按 ModDecompileTargets 固定清单反编译
+ModDecompileTargets(包名, 主 DLL, 本地源码目录, FE 软依赖标识符)
+    → 本地源码目录存在：跳过反编译，只打印源码路径与已安装版本
+    → 否则读 mods.yml 确认已安装，在 BepInEx/plugins/<包名>/ 定位主 DLL（兼容 .dll.old）
+    → DecompileDll(ilspycmd → gamedata/DecompiledSource/<AssemblyName>/)
 ```
+
+`ModDecompileTargets` 是反编译目标的唯一真源，不再从 FE 软依赖推导。
+**FE 的 `CheckPlugins.cs` 软依赖新增或改名时，必须同步在这张清单里补充对应的包名和主 DLL 文件名**；
+未列入清单的软依赖在模式 2 运行时会打印警告，但不会被自动纳入反编译。
+清单里的本地源码目录相对 `ModSourcesRootDir`（`DefaultPath.props`）解析，目录存在即跳过反编译；
+打印的已安装版本用于发现本地源码与 R2 版本漂移，不做自动比对。
+
+增量判断依据源 DLL 的 SHA256 与 `ilspycmd --version`，二者都没变化且反编译项目仍在时才跳过；
+状态记录在 `gamedata/DecompiledSource/.decompile-state.txt`，只在反编译项目成功生成后写入。
+不要改回用文件时间或插件版本号判断，同版本重打包和工具升级都会漏掉。
 
 Requires `ilspycmd` globally installed: `dotnet tool install -g ilspycmd`
 

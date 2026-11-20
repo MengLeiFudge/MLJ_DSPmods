@@ -444,9 +444,10 @@ For multi-column layout helper `GetPosition`, default total width is aligned to 
 
 **How it's generated** — Run `AfterBuildEvent` → select option `2`:
 1. Publicizes game DLLs from game install → nuget package dir → decompiles
-2. Reads FE soft dependencies from `CheckPlugins.cs`, confirms installation via `mods.yml`, then decompiles matching mod DLLs directly from `R2ProfileDir\BepInEx\plugins\`
-3. Decompiles each via `ilspycmd -p --nested-directories` into `DecompiledSource/{DllName}/`
-4. Requires `ilspycmd` installed globally: `dotnet tool install -g ilspycmd`
+2. 按 `LibraryUpdate` 中固定的 `ModDecompileTargets` 清单反编译模组：已有本地源码的直接跳过，其余按 `mods.yml` 在 `R2ProfileDir\BepInEx\plugins\` 定位主 DLL。清单是唯一真源，FE 的 `CheckPlugins.cs` 软依赖只用来提示清单漏项；**FE 软依赖新增或改名时必须同步补充清单**
+3. 源 DLL 的 SHA256 与 `ilspycmd --version` 都没变化时跳过，状态记在 `gamedata/DecompiledSource/.decompile-state.txt`
+4. 反编译使用 `ilspycmd -p --nested-directories`，输出到 `DecompiledSource/{DllName}/`
+5. 需要全局安装 `ilspycmd`：`dotnet tool install -g ilspycmd`
 
 **When to use it:**
 - Verifying whether a Harmony patch target (`typeof(X)`, `nameof(X.Y)`) actually exists

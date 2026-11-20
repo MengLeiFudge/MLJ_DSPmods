@@ -67,6 +67,26 @@ public class CmdProcess : IDisposable {
         return p.ExitCode;
     }
 
+    /// <summary>
+    /// 同步执行命令并返回标准输出与错误输出，用于读取工具版本等短命令结果。
+    /// </summary>
+    public static string RunCapture(string fileName, string arguments, string workingDir = "") {
+        ProcessStartInfo startInfo = new() {
+            FileName = fileName,
+            Arguments = arguments,
+            WorkingDirectory = workingDir,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
+        using Process p = new() { StartInfo = startInfo };
+        p.Start();
+        string output = p.StandardOutput.ReadToEnd() + p.StandardError.ReadToEnd();
+        p.WaitForExit();
+        return output.Trim();
+    }
+
     public void Dispose() {
         input.WriteLine("exit");
         process.WaitForExit();

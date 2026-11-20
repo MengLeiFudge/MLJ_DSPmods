@@ -5,8 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using static AfterBuildEvent.Utils;
 using static AfterBuildEvent.PathConfig;
+using static AfterBuildEvent.Utils;
 
 namespace AfterBuildEvent;
 
@@ -14,160 +14,362 @@ static partial class AfterBuildEvent {
     #region 更新类库需要的部分DLL
 
     /// <summary>
-    /// 匹配 CheckPlugins.cs 中的软依赖特性，用于确定模式 2 的模组反编译目标。
+    /// 匹配 CheckPlugins.cs 中的软依赖特性。只用于提示 FE 新增了未列入固定清单的模组，
+    /// 不参与反编译目标解析。
     /// </summary>
     private static readonly Regex SoftDependencyRegex =
         new(@"\[BepInDependency\(([^,\)]+),\s*BepInDependency\.DependencyFlags\.SoftDependency\)\]",
             RegexOptions.Compiled);
 
     /// <summary>
-    /// 从 FE 兼容性源文件中提取 GUID 字符串字面量，用于关键字匹配。
+    /// 记录源 DLL 内容哈希与 ilspycmd 版本的状态文件名，用于跳过未变化的 DLL。
     /// </summary>
-    private static readonly Regex GuidLiteralRegex =
-        new(@"public\s+const\s+string\s+GUID\s*=\s*""([^""]+)""", RegexOptions.Compiled);
+    private const string DecompileStateFileName = ".decompile-state.txt";
 
     /// <summary>
-    /// 作为附属库的程序集名称前缀，绝不会作为主要模组反编译目标。
+    /// 模式 2 的固定反编译清单，是反编译目标的唯一真源。
+    /// FE 的 CheckPlugins 软依赖新增或改名时，必须同步在这里补充条目；
+    /// 未列入清单的软依赖会在运行时打印警告。
     /// </summary>
-    private static readonly string[] IgnoredModDllPrefixes =
-        ["System.", "Newtonsoft.Json", "0Harmony", "BepInEx.", "Mono.", "MonoMod.", "K4os.", "Unity."];
+    private static readonly ModDecompileTarget[] ModDecompileTargets = [
+        new("xiaoye97-LDBTool", "LDBTool.dll", "", "LDBToolPlugin"),
+        new("CommonAPI-CommonAPI", "CommonAPI.dll", "CommonAPI", "CommonAPIPlugin"),
+        new("CommonAPI-DSPModSave", "DSPModSave.dll", "CommonAPI", "DSPModSavePlugin"),
+        new("jinxOAO-BuildBarTool", "BuildBarTool.dll", "", "BuildBarToolPlugin"),
+        new("nebula-NebulaMultiplayerModApi", "NebulaAPI.dll", "nebula", "NebulaMultiplayerModAPI"),
+        new("PhantomGamers-AchievementsEnabler", "AchievementsEnabler.dll", "", "AchievementsEnabler"),
+        new("blacksnipebiu-Auxilaryfunction", "Auxilaryfunction.dll", "", "Auxilaryfunction"),
+        new("cat_yummi-BigTower", "BigTower.dll", "", "BigTower"),
+        new("starfi5h-BuildToolOpt", "BuildToolOpt.dll", @"DSP_Mod\BuildToolOpt", "BuildToolOpt"),
+        new("soarqin-CheatEnabler", "CheatEnabler.dll", @"DSP_Mods\CheatEnabler", "CheatEnabler"),
+        // 未安装：包名按 BepInEx GUID 推断，尚未与 Thunderstore 核对。
+        new("kumor-CustomCreateBirthStar", "CustomCreateBirthStar.dll", "", "CustomCreateBirthStar"),
+        new("starfi5h-DeliverySlotsTweaks", "DeliverySlotsTweaks.dll", @"DSP_Mod\DeliverySlotsTweaks",
+            "DeliverySlotsTweaks"),
+        new("jinxOAO-DSPCalculator", "DSPCalculator.dll", "DSPCalculator", "DspCalculator"),
+        new("appuns-DSPRecipeFinder", "DSPRecipeFinder.dll", "", "DspRecipeFinder"),
+        new("HiddenCirno-GenesisBook", "ProjectGenesis.dll", "ProjectGenesis", "GenesisBook"),
+        new("jinxOAO-MoreMegaStructure", "MoreMegaStructure.dll", "DSPmod_MoreMegaStructures",
+            "MoreMegaStructure"),
+        new("blacksnipebiu-Multfuntion_mod", "Multifunction_mod.dll", "", "Multfunction_mod"),
+        new("ProfessorCat-OrbitalRing", "ProjectOrbitalRing.dll", "OrbitalRing-MOD", "OrbitalRing"),
+        // 未安装：包名按 BepInEx GUID 推断，尚未与 Thunderstore 核对。
+        new("qlvlp-PackageLogistic", "PackageLogistic.dll", "", "PackageLogistic"),
+        new("jinxOAO-SmelterMiner", "SmelterMiner.dll", "", "SmelterMiner"),
+        new("ckcz123-TheyComeFromVoid", "DSP_Battle.dll", "DSP_Battle", "TheyComeFromVoid"),
+        new("cat_yummi-TowerFactory", "TowerFactory.dll", "", "TowerFactory"),
+        new("soarqin-UXAssist", "UXAssist.dll", @"DSP_Mods\UXAssist", "UxAssist"),
+        // 非 FE 软依赖，保留用于排查第三方模组。
+        new("Galactic_Scale-GalacticScale", "GalacticScale.dll", "", ""),
+    ];
 
     /// <summary>
-    /// 作为附属库的确切程序集基本名称，绝不会作为主要模组反编译目标。
+    /// 一个反编译目标：R2 包名（等同 plugins 目录名）、主 DLL 文件名、
+    /// 本地源码目录（相对 ModSourcesRootDir，空表示没有本地源码）与对应的 FE 软依赖标识符。
     /// </summary>
-    private static readonly string[] IgnoredModDllNames =
-        ["websocket-sharp", "discord_game_sdk", "discord_game_sdk_dotnet", "Open.Nat", "HarmonyXInterop"];
-
-    /// <summary>
-    /// 根据 CheckPlugins 和可选 GUID 关键字解析出的一个软依赖反编译候选项。
-    /// </summary>
-    private sealed class ModDecompileTarget {
-        /// <summary>
-        /// 来自 BepInDependency 特性的原始依赖表达式文本。
-        /// </summary>
-        public string DependencyExpression { get; set; } = "";
-
-        /// <summary>
-        /// 用作主要关键字和兼容性文件主名的前导标识符。
-        /// </summary>
-        public string SourceName { get; set; } = "";
-
-        /// <summary>
-        /// 用于匹配 mods.yml 包名和显示名称的规范化关键字。
-        /// </summary>
-        public List<string> Keywords { get; set; } = [];
+    private sealed class ModDecompileTarget(string package, string dllName, string sourceDir, string feDependency) {
+        public string Package { get; } = package;
+        public string DllName { get; } = dllName;
+        public string SourceDir { get; } = sourceDir;
+        public string FeDependency { get; } = feDependency;
     }
+
+    /// <summary>
+    /// 一条反编译状态：生成当前源码时源 DLL 的内容哈希与 ilspycmd 版本。
+    /// </summary>
+    private sealed class DecompileStateEntry {
+        public string SourceSha256 { get; set; } = "";
+        public string IlspyVersion { get; set; } = "";
+    }
+
+    /// <summary>
+    /// 反编译状态文件路径，与反编译产物同目录。
+    /// </summary>
+    private static string DecompileStatePath => $@"{DecompiledSourceDir}\{DecompileStateFileName}";
 
     private static void UpdateLibDll() {
         using CmdProcess cmd = new();
-        if (NugetGameLibNet45Dir != null) {
-            PublizeDll(cmd, DSPACDll, $@"{NugetGameLibNet45Dir}\Assembly-CSharp.dll");
-            DecompileDll(cmd, "Assembly-CSharp.dll");
-            PublizeDll(cmd, DSPUIDll, $@"{NugetGameLibNet45Dir}\UnityEngine.UI.dll");
-            DecompileDll(cmd, "UnityEngine.UI.dll");
-        } else {
-            Console.WriteLine("NugetGameLibNet45Dir为空，跳过Publize游戏dll");
-        }
-        DecompileModsFromR2(cmd);
+        LoadModInfos();
+        WarnUnlistedSoftDependencies();
+        Dictionary<string, DecompileStateEntry> state = LoadDecompileState();
+        string ilspyVersion = GetIlspyVersion();
+        DecompileGameDlls(cmd, ilspyVersion, state);
+        DecompileModsFromR2(cmd, ilspyVersion, state);
+        SaveDecompileState(state);
     }
 
     /// <summary>
-    /// 以 CheckPlugins 的软依赖为准，再通过 mods.yml 和插件目录确认是否真的需要反编译。
+    /// 反编译游戏 DLL。源 DLL 内容与 ilspycmd 版本都没变化时跳过 publicize 和反编译。
     /// </summary>
-    private static void DecompileModsFromR2(CmdProcess cmd) {
-        LoadModInfos();
+    private static void DecompileGameDlls(
+        CmdProcess cmd, string ilspyVersion, Dictionary<string, DecompileStateEntry> state) {
+        if (NugetGameLibNet45Dir == null) {
+            Console.WriteLine("NugetGameLibNet45Dir为空，跳过Publize游戏dll");
+            return;
+        }
+
+        PublizeAndDecompileGameDll(cmd, ilspyVersion, state, DSPACDll, "Assembly-CSharp.dll");
+        PublizeAndDecompileGameDll(cmd, ilspyVersion, state, DSPUIDll, "UnityEngine.UI.dll");
+    }
+
+    private static void PublizeAndDecompileGameDll(
+        CmdProcess cmd, string ilspyVersion, Dictionary<string, DecompileStateEntry> state,
+        string sourceDllPath, string dllName) {
+        string actualSourcePath = ResolveExistingDll(sourceDllPath);
+        if (actualSourcePath == null) {
+            Console.WriteLine($"未找到 {sourceDllPath} (且无 .old 备份)，跳过反编译");
+            return;
+        }
+
+        string assemblyName = Path.GetFileNameWithoutExtension(dllName);
+        if (ShouldSkipDecompile(state, assemblyName, actualSourcePath, ilspyVersion)) {
+            return;
+        }
+
+        string targetPath = $@"{NugetGameLibNet45Dir}\{dllName}";
+        PublizeDll(cmd, actualSourcePath, targetPath);
+        if (!File.Exists(targetPath)) {
+            Console.Error.WriteLine($"publicize 未产出 {targetPath}，跳过反编译");
+            return;
+        }
+
+        bool succeeded = DecompileDll(cmd, dllName);
+        RecordDecompileState(state, assemblyName, actualSourcePath, ilspyVersion, succeeded);
+    }
+
+    /// <summary>
+    /// 按固定清单反编译已安装的 R2 模组。已有本地源码或 DLL 未变化时跳过。
+    /// </summary>
+    private static void DecompileModsFromR2(
+        CmdProcess cmd, string ilspyVersion, Dictionary<string, DecompileStateEntry> state) {
         IReadOnlyList<ModInfo> installedMods = GetAllModInfos();
         if (installedMods.Count == 0) {
             Console.WriteLine("mods.yml 中没有可用模组信息，跳过 mod 反编译。");
             return;
         }
 
-        List<ModDecompileTarget> targets = GetModDecompileTargets();
-        if (targets.Count == 0) {
-            Console.WriteLine("CheckPlugins 中没有解析到软依赖，跳过 mod 反编译。");
-            return;
-        }
-
-        HashSet<string> handledDlls = new(StringComparer.OrdinalIgnoreCase);
-        foreach (ModDecompileTarget target in targets) {
-            ModInfo modInfo = FindBestMatchingMod(installedMods, target.Keywords);
-            if (modInfo == null) {
+        foreach (ModDecompileTarget target in ModDecompileTargets) {
+            if (TryResolveLocalSource(target, out string sourcePath, out string installedVersion)) {
                 Console.WriteLine(
-                    $"mods.yml 中未找到 {target.SourceName}（表达式：{target.DependencyExpression}），跳过。");
+                    $"跳过反编译 {target.Package}：已有本地源码 {sourcePath}（已安装版本 {installedVersion}）");
+                continue;
+            }
+
+            ModInfo modInfo = GetModInfo(target.Package);
+            if (modInfo == null) {
+                Console.WriteLine($"mods.yml 中未找到 {target.Package}，跳过反编译。");
                 continue;
             }
 
             string pluginDir = Path.Combine(R2PluginsDir, modInfo.name);
-            if (!Directory.Exists(pluginDir)) {
-                Console.WriteLine($"已在 mods.yml 找到 {modInfo.name}，但插件目录不存在：{pluginDir}");
+            string dllPath = FindConfiguredDll(pluginDir, target.DllName);
+            if (dllPath == null) {
+                Console.WriteLine($"插件目录 {pluginDir} 中未找到 {target.DllName}，跳过反编译。");
                 continue;
             }
 
-            string dllPath = TrySelectPrimaryModDll(pluginDir, modInfo, target);
-            if (string.IsNullOrWhiteSpace(dllPath)) {
-                Console.WriteLine($"插件目录 {pluginDir} 中未找到可反编译的主 DLL，跳过。");
-                continue;
-            }
-
-            string fullDllPath = Path.GetFullPath(dllPath);
-            if (!handledDlls.Add(fullDllPath)) {
-                Console.WriteLine($"DLL 已处理过，跳过重复目标：{fullDllPath}");
+            string assemblyName = Path.GetFileNameWithoutExtension(target.DllName);
+            if (ShouldSkipDecompile(state, assemblyName, dllPath, ilspyVersion)) {
                 continue;
             }
 
             Console.WriteLine($"开始处理模组 {modInfo.name} -> {dllPath}");
             DecompileModDll(cmd, dllPath);
+            RecordDecompileState(state, assemblyName, dllPath, ilspyVersion, HasDecompiledSource(assemblyName));
         }
-    }
-
-    private static List<ModDecompileTarget> GetModDecompileTargets() {
-        List<ModDecompileTarget> targets = [];
-        if (!File.Exists(CheckPluginsSourcePath)) {
-            Console.WriteLine($"未找到 CheckPlugins 源文件：{CheckPluginsSourcePath}");
-            return targets;
-        }
-
-        string source = File.ReadAllText(CheckPluginsSourcePath);
-        HashSet<string> seenExpressions = new(StringComparer.OrdinalIgnoreCase);
-        foreach (Match match in SoftDependencyRegex.Matches(source)) {
-            string dependencyExpression = match.Groups[1].Value.Trim();
-            if (!seenExpressions.Add(dependencyExpression)) {
-                continue;
-            }
-
-            string sourceName = dependencyExpression.Split('.')[0].Trim();
-            targets.Add(new() {
-                DependencyExpression = dependencyExpression,
-                SourceName = sourceName,
-                Keywords = BuildTargetKeywords(sourceName),
-            });
-        }
-        return targets;
     }
 
     /// <summary>
-    /// 关键字优先取兼容类名；如果本地兼容文件里有 GUID 字面量，再把 GUID 末段加入候选，兼容命名差异。
+    /// 提示 FE 软依赖中尚未列入固定清单的模组。清单才是反编译目标的唯一真源。
     /// </summary>
-    private static List<string> BuildTargetKeywords(string sourceName) {
-        HashSet<string> keywords = new(StringComparer.OrdinalIgnoreCase) { sourceName };
-        if (sourceName.EndsWith("Plugin", StringComparison.OrdinalIgnoreCase)) {
-            keywords.Add(sourceName.Substring(0, sourceName.Length - "Plugin".Length));
+    private static void WarnUnlistedSoftDependencies() {
+        if (!File.Exists(CheckPluginsSourcePath)) {
+            Console.WriteLine($"未找到 CheckPlugins 源文件：{CheckPluginsSourcePath}");
+            return;
         }
 
-        string compatibilitySourcePath = Path.Combine(CompatibilityDir, $"{sourceName}.cs");
-        if (File.Exists(compatibilitySourcePath)) {
-            Match match = GuidLiteralRegex.Match(File.ReadAllText(compatibilitySourcePath));
-            if (match.Success) {
-                string guid = match.Groups[1].Value.Trim();
-                string guidTail = guid.Split('.').LastOrDefault();
-                if (!string.IsNullOrWhiteSpace(guidTail)) {
-                    keywords.Add(guidTail);
+        HashSet<string> listed = ModDecompileTargets
+            .Select(target => target.FeDependency)
+            .Where(dependency => !string.IsNullOrWhiteSpace(dependency))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        HashSet<string> warned = new(StringComparer.OrdinalIgnoreCase);
+        foreach (Match match in SoftDependencyRegex.Matches(File.ReadAllText(CheckPluginsSourcePath))) {
+            string dependencyExpression = match.Groups[1].Value.Trim();
+            string sourceName = dependencyExpression.Split('.')[0].Trim();
+            if (listed.Contains(sourceName) || !warned.Add(sourceName)) {
+                continue;
+            }
+
+            Console.WriteLine(
+                $"警告：FE 软依赖 {sourceName} 未列入 ModDecompileTargets，请补充其 R2 包名与主 DLL 文件名。");
+        }
+    }
+
+    /// <summary>
+    /// 按清单给定的本地源码目录判断是否已有源码，并取出 mods.yml 中的已安装版本，便于发现版本漂移。
+    /// </summary>
+    private static bool TryResolveLocalSource(
+        ModDecompileTarget target, out string sourcePath, out string installedVersion) {
+        sourcePath = "";
+        installedVersion = "";
+        if (string.IsNullOrWhiteSpace(target.SourceDir)) {
+            return false;
+        }
+
+        string fullPath = Path.Combine(ModSourcesRootDir, target.SourceDir);
+        if (!Directory.Exists(fullPath)) {
+            return false;
+        }
+
+        sourcePath = fullPath;
+        ModInfo modInfo = GetModInfo(target.Package);
+        installedVersion = modInfo == null ? "未知" : modInfo.version;
+        return true;
+    }
+
+    /// <summary>
+    /// 按清单给定的 DLL 文件名定位插件文件，兼容 r2modman 禁用模组后的 .dll.old。
+    /// </summary>
+    private static string FindConfiguredDll(string pluginDir, string dllName) {
+        if (!Directory.Exists(pluginDir)) {
+            return null;
+        }
+
+        string dllPath = Path.Combine(pluginDir, dllName);
+        if (File.Exists(dllPath)) {
+            return dllPath;
+        }
+
+        string disabledDllPath = dllPath + ".old";
+        return File.Exists(disabledDllPath) ? disabledDllPath : null;
+    }
+
+    private static string ResolveExistingDll(string dllPath) {
+        if (File.Exists(dllPath)) {
+            return dllPath;
+        }
+
+        return File.Exists(dllPath + ".old") ? dllPath + ".old" : null;
+    }
+
+    private static bool HasDecompiledSource(string assemblyName) {
+        return File.Exists(Path.Combine(DecompiledSourceDir, assemblyName, $"{assemblyName}.csproj"));
+    }
+
+    /// <summary>
+    /// 源 DLL 内容、ilspycmd 版本和已生成项目都未变化时才跳过反编译。
+    /// </summary>
+    private static bool ShouldSkipDecompile(
+        Dictionary<string, DecompileStateEntry> state, string assemblyName, string sourceDllPath,
+        string ilspyVersion) {
+        if (!HasDecompiledSource(assemblyName)) {
+            return false;
+        }
+
+        if (!state.TryGetValue(assemblyName, out DecompileStateEntry entry)) {
+            return false;
+        }
+
+        if (!string.Equals(entry.IlspyVersion, ilspyVersion, StringComparison.OrdinalIgnoreCase)) {
+            return false;
+        }
+
+        if (!string.Equals(entry.SourceSha256, GetFileSha256(sourceDllPath),
+                StringComparison.OrdinalIgnoreCase)) {
+            return false;
+        }
+
+        Console.WriteLine($"跳过反编译 {assemblyName}：源 DLL 内容与 ilspycmd 版本均未变化");
+        return true;
+    }
+
+    private static void RecordDecompileState(
+        Dictionary<string, DecompileStateEntry> state, string assemblyName, string sourceDllPath,
+        string ilspyVersion, bool succeeded) {
+        if (!succeeded) {
+            return;
+        }
+
+        state[assemblyName] = new() {
+            SourceSha256 = GetFileSha256(sourceDllPath),
+            IlspyVersion = ilspyVersion,
+        };
+    }
+
+    private static Dictionary<string, DecompileStateEntry> LoadDecompileState() {
+        Dictionary<string, DecompileStateEntry> state = new(StringComparer.OrdinalIgnoreCase);
+        if (!File.Exists(DecompileStatePath)) {
+            return state;
+        }
+
+        try {
+            foreach (string line in File.ReadAllLines(DecompileStatePath)) {
+                string[] parts = line.Split('\t');
+                if (parts.Length < 3 || string.IsNullOrWhiteSpace(parts[0])) {
+                    continue;
                 }
+
+                state[parts[0]] = new() {
+                    SourceSha256 = parts[1],
+                    IlspyVersion = parts[2],
+                };
             }
         }
+        catch (Exception ex) {
+            Console.WriteLine($"读取反编译状态失败，本次将重新反编译：{ex.Message}");
+            state.Clear();
+        }
 
-        return keywords.Where(keyword => !string.IsNullOrWhiteSpace(keyword)).ToList();
+        return state;
     }
+
+    private static void SaveDecompileState(Dictionary<string, DecompileStateEntry> state) {
+        try {
+            Directory.CreateDirectory(DecompiledSourceDir);
+            List<string> lines = state
+                .OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase)
+                .Select(pair => $"{pair.Key}\t{pair.Value.SourceSha256}\t{pair.Value.IlspyVersion}")
+                .ToList();
+            File.WriteAllLines(DecompileStatePath, lines);
+        }
+        catch (Exception ex) {
+            Console.WriteLine($"写入反编译状态失败：{ex.Message}");
+        }
+    }
+
+    private static string GetIlspyVersion() {
+        try {
+            string output = CmdProcess.RunCapture("ilspycmd", "--version");
+            // 版本输出含 ilspycmd 与 ICSharpCode.Decompiler 两行，必须压成单行才能写进状态文件。
+            string version = string.Join(" | ",
+                output.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+                    .Select(line => line.Trim())
+                    .Where(line => line.Length > 0));
+            if (version.Length > 0) {
+                return version;
+            }
+        }
+        catch (Exception ex) {
+            Console.WriteLine($"读取 ilspycmd 版本失败：{ex.Message}");
+        }
+
+        return "unknown";
+    }
+
+    #region 模组匹配（模式 2 与模式 6 共用）
+
+    /// <summary>
+    /// 作为附属库的程序集名称前缀，绝不会作为主要模组 DLL。
+    /// </summary>
+    private static readonly string[] IgnoredModDllPrefixes =
+        ["System.", "Newtonsoft.Json", "0Harmony", "BepInEx.", "Mono.", "MonoMod.", "K4os.", "Unity."];
+
+    /// <summary>
+    /// 作为附属库的确切程序集基本名称，绝不会作为主要模组 DLL。
+    /// </summary>
+    private static readonly string[] IgnoredModDllNames =
+        ["websocket-sharp", "discord_game_sdk", "discord_game_sdk_dotnet", "Open.Nat", "HarmonyXInterop"];
 
     private static ModInfo FindBestMatchingMod(IReadOnlyList<ModInfo> installedMods, IEnumerable<string> keywords) {
         ModInfo bestMod = null;
@@ -221,30 +423,6 @@ static partial class AfterBuildEvent {
         return bestScore;
     }
 
-    private static string TrySelectPrimaryModDll(string pluginDir, ModInfo modInfo, ModDecompileTarget target) {
-        List<string> dllCandidates = Directory.GetFiles(pluginDir)
-            .Where(IsDllOrOld)
-            .Where(path => !IsIgnoredCompanionDll(Path.GetFileName(path)))
-            .ToList();
-        if (dllCandidates.Count == 0) {
-            return null;
-        }
-        if (dllCandidates.Count == 1) {
-            return dllCandidates[0];
-        }
-
-        string bestPath = null;
-        int bestScore = 0;
-        foreach (string path in dllCandidates) {
-            int score = ScoreAssemblyCandidate(path, modInfo, target.Keywords);
-            if (score > bestScore) {
-                bestScore = score;
-                bestPath = path;
-            }
-        }
-        return bestScore > 0 ? bestPath : null;
-    }
-
     private static int ScoreAssemblyCandidate(string assemblyPath, ModInfo modInfo, IEnumerable<string> keywords) {
         string assemblyName = NormalizeForMatch(GetAssemblyBaseName(Path.GetFileName(assemblyPath)));
         string displayName = NormalizeForMatch(modInfo.displayName);
@@ -272,11 +450,6 @@ static partial class AfterBuildEvent {
         return bestScore;
     }
 
-    private static bool IsDllOrOld(string path) {
-        return path.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
-               || path.EndsWith(".dll.old", StringComparison.OrdinalIgnoreCase);
-    }
-
     private static bool IsIgnoredCompanionDll(string fileName) {
         string assemblyBaseName = GetAssemblyBaseName(fileName);
         if (IgnoredModDllPrefixes.Any(prefix =>
@@ -286,6 +459,33 @@ static partial class AfterBuildEvent {
         return IgnoredModDllNames.Any(name =>
             string.Equals(assemblyBaseName, name, StringComparison.OrdinalIgnoreCase));
     }
+
+    private static string GetPackageSuffix(string packageName) {
+        int splitIndex = packageName.IndexOf('-');
+        return splitIndex >= 0 ? packageName.Substring(splitIndex + 1) : packageName;
+    }
+
+    private static string GetAssemblyBaseName(string fileName) {
+        return fileName.EndsWith(".dll.old", StringComparison.OrdinalIgnoreCase)
+            ? Path.GetFileNameWithoutExtension(fileName.Substring(0, fileName.Length - ".old".Length))
+            : Path.GetFileNameWithoutExtension(fileName);
+    }
+
+    private static string NormalizeForMatch(string value) {
+        if (string.IsNullOrWhiteSpace(value)) {
+            return "";
+        }
+
+        StringBuilder builder = new(value.Length);
+        foreach (char ch in value) {
+            if (char.IsLetterOrDigit(ch)) {
+                builder.Append(char.ToLowerInvariant(ch));
+            }
+        }
+        return builder.ToString();
+    }
+
+    #endregion
 
     private static void DecompileModDll(CmdProcess cmd, string dllPath) {
         string tempDllPath = null;
@@ -315,43 +515,18 @@ static partial class AfterBuildEvent {
         return tempDllPath;
     }
 
-    private static string GetPackageSuffix(string packageName) {
-        int splitIndex = packageName.IndexOf('-');
-        return splitIndex >= 0 ? packageName.Substring(splitIndex + 1) : packageName;
-    }
-
-    private static string GetAssemblyBaseName(string fileName) {
-        return fileName.EndsWith(".dll.old", StringComparison.OrdinalIgnoreCase)
-            ? Path.GetFileNameWithoutExtension(fileName.Substring(0, fileName.Length - ".old".Length))
-            : Path.GetFileNameWithoutExtension(fileName);
-    }
-
-    private static string NormalizeForMatch(string value) {
-        if (string.IsNullOrWhiteSpace(value)) {
-            return "";
-        }
-
-        StringBuilder builder = new(value.Length);
-        foreach (char ch in value) {
-            if (char.IsLetterOrDigit(ch)) {
-                builder.Append(char.ToLowerInvariant(ch));
-            }
-        }
-        return builder.ToString();
-    }
-
-    private static void DecompileDll(CmdProcess cmd, string dllName, string sourceDir = null) {
+    private static bool DecompileDll(CmdProcess cmd, string dllName, string sourceDir = null) {
         string dllPath = sourceDir != null
             ? $@"{sourceDir}\{dllName}"
             : $@"{NugetGameLibNet45Dir}\{dllName}";
         string dllNameNoExt = Path.GetFileNameWithoutExtension(dllName).Replace("-publicized", "");
         string dllBaseName = Path.GetFileNameWithoutExtension(dllName);
-        string outputDir = Path.GetFullPath($@"{SolutionDir}\gamedata\DecompiledSource\{dllNameNoExt}");
+        string outputDir = Path.GetFullPath($@"{DecompiledSourceDir}\{dllNameNoExt}");
         string csprojPath = Path.Combine(outputDir, $"{dllNameNoExt}.csproj");
         string publicizedCsprojPath = Path.Combine(outputDir, $"{dllBaseName}.csproj");
         if (!File.Exists(dllPath)) {
             Console.WriteLine($"未找到{dllPath}，跳过反编译");
-            return;
+            return false;
         }
         if (Directory.Exists(outputDir)) {
             try {
@@ -388,9 +563,11 @@ static partial class AfterBuildEvent {
 
         if (File.Exists(csprojPath)) {
             Console.WriteLine($"反编译完成：{outputDir}");
-        } else {
-            Console.Error.WriteLine($"反编译失败，未生成 {csprojPath}");
+            return true;
         }
+
+        Console.Error.WriteLine($"反编译失败，未生成 {csprojPath}");
+        return false;
     }
 
     private static void PublizeDll(CmdProcess cmd, string dllPath, string targetPath) {
