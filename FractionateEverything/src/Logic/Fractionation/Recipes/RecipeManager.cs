@@ -54,7 +54,8 @@ public static class RecipeManager {
         }
         AddRareCatalysisRecipes();
         AddInteractionRecipes();
-        AddReplacementRecipes();
+        // PreAdd 回调结束后 LDBTool 才合并物品，星环等模组的转化配方须按声明注册。
+        AddReplacementRecipes(requireLoadedItems: false);
         AdvancedRecipeCatalog.RegisterProtos(WorldviewRecipes);
     }
 
@@ -72,7 +73,7 @@ public static class RecipeManager {
         AddBasicMineralRecipes();
         AddRareCatalysisRecipes();
         AddInteractionRecipes();
-        AddReplacementRecipes();
+        AddReplacementRecipes(requireLoadedItems: true);
         FE.Logic.Civilization.Monument.MonumentCatalog.AddRecipes();
         FilterUnavailableRecipes();
         // 物品分类已完成，置换线索按主产物阶段开放；展示原型预注册不依赖此阶段。
@@ -326,10 +327,10 @@ public static class RecipeManager {
         }
     }
 
-    private static void AddReplacementRecipes() {
+    private static void AddReplacementRecipes(bool requireLoadedItems) {
         foreach (ConversionSpec spec in ConversionSpec.CreateAll(GenesisBook.Enable, OrbitalRing.Enable)) {
-            if (spec.Inputs.Any(input => !LDB.items.Exist(input.Item))
-                || spec.Outputs.Any(output => !LDB.items.Exist(output.Item))) { continue; }
+            if (requireLoadedItems && (spec.Inputs.Any(input => !LDB.items.Exist(input.Item))
+                || spec.Outputs.Any(output => !LDB.items.Exist(output.Item)))) { continue; }
             AddRecipe(new WorldviewRecipe(spec.Key, spec.Id, spec.Name, ERecipe.AdvancedConversion,
                 WorldviewRecipeKind.Replacement, ConversionSpec.Success,
                 spec.Inputs.Select(input => new WorldviewRecipeInput(input.Item, input.Count, input.Consume)).ToArray(),
